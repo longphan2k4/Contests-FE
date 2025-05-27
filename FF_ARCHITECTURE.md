@@ -26,6 +26,10 @@ src/
 │   ├── auth/           # Tính năng xác thực
 │   │   ├── components/ # Components của tính năng auth
 │   │   ├── hooks/      # Hooks của tính năng auth
+│   │   ├── pages/      # Pages của tính năng auth
+│   │   │   ├── LoginPage/
+│   │   │   ├── RegisterPage/
+│   │   │   └── index.ts
 │   │   ├── services/   # Services của tính năng auth
 │   │   ├── types/      # Types của tính năng auth
 │   │   ├── utils/      # Utils của tính năng auth
@@ -33,6 +37,11 @@ src/
 │   ├── contests/       # Tính năng cuộc thi
 │   │   ├── components/
 │   │   ├── hooks/
+│   │   ├── pages/      # Pages của tính năng contests
+│   │   │   ├── ContestListPage/
+│   │   │   ├── ContestDetailPage/
+│   │   │   ├── CreateContestPage/
+│   │   │   └── index.ts
 │   │   ├── services/
 │   │   ├── types/
 │   │   ├── utils/
@@ -47,6 +56,25 @@ src/
 └── main.tsx            # Entry point
 ```
 
+## Vai trò của thư mục Pages trong Feature-First
+
+Trong cấu trúc Feature-First, thư mục `pages` của mỗi tính năng đóng vai trò đặc biệt quan trọng:
+
+1. **Chứa các trang cụ thể**: Mỗi trang (page) là một thành phần React hoàn chỉnh được liên kết với một route cụ thể.
+
+2. **Kết hợp các components**: Pages sử dụng các components, hooks, services trong cùng một tính năng để tạo ra giao diện hoàn chỉnh.
+
+3. **Phân tách rõ ràng**: Mỗi page nên đặt trong một thư mục riêng với cấu trúc sau:
+   ```
+   PageName/
+   ├── PageName.tsx      # Component chính của trang
+   ├── PageName.test.tsx # Tests cho trang
+   ├── PageName.css      # Styles (nếu cần)
+   └── index.ts          # Export component
+   ```
+
+4. **Quản lý routing**: Pages được sử dụng trong file định tuyến (route) của tính năng, thường nằm trong `features/[feature-name]/routes.ts`.
+
 ## Áp dụng cho dự án hiện tại
 
 Để chuyển đổi từ cấu trúc hiện tại sang cấu trúc feature-first, chúng ta có thể thực hiện các bước sau:
@@ -54,8 +82,9 @@ src/
 1. Tạo thư mục `features` trong `src`
 2. Xác định các tính năng chính của ứng dụng (auth, contests, users, etc.)
 3. Tạo thư mục cho mỗi tính năng trong thư mục `features`
-4. Di chuyển các components, hooks, services từ các thư mục hiện tại sang thư mục tính năng tương ứng
-5. Tạo file `index.ts` trong mỗi tính năng để export các thành phần cần thiết
+4. Tạo cấu trúc thư mục con cho mỗi tính năng: `components`, `hooks`, `pages`, `services`, `types`, `utils`
+5. Di chuyển các components, hooks, services từ các thư mục hiện tại sang thư mục tính năng tương ứng
+6. Tạo file `index.ts` trong mỗi tính năng để export các thành phần cần thiết
 
 ## Quy tắc khi làm việc với cấu trúc Feature-First
 
@@ -63,7 +92,8 @@ src/
 2. **Chia sẻ qua common**: Các thành phần dùng chung nên được đặt trong thư mục `common`
 3. **Rõ ràng về ranh giới**: Mỗi tính năng cần có ranh giới rõ ràng về trách nhiệm và phạm vi
 4. **Sử dụng barrel file**: Mỗi tính năng nên có file `index.ts` để export các thành phần
+5. **Pages là điểm vào của tính năng**: Mỗi tính năng nên có các pages riêng để hiển thị giao diện người dùng
 
 ## Kết luận
 
-Cấu trúc Feature-First giúp dự án dễ quản lý, dễ mở rộng và dễ bảo trì hơn. Nó đặc biệt phù hợp với các dự án lớn có nhiều tính năng phức tạp và được phát triển bởi nhiều thành viên. 
+Cấu trúc Feature-First giúp dự án dễ quản lý, dễ mở rộng và dễ bảo trì hơn. Nó đặc biệt phù hợp với các dự án lớn có nhiều tính năng phức tạp và được phát triển bởi nhiều thành viên. Khi áp dụng đúng, mỗi tính năng sẽ có đầy đủ các thành phần cần thiết, bao gồm cả pages, giúp tính năng đó hoạt động độc lập và dễ dàng tích hợp vào ứng dụng. 
