@@ -31,6 +31,24 @@ src/
 │   │   │   ├── useContestDetail.ts       # Hook để lấy chi tiết cuộc thi
 │   │   │   ├── useContestMutation.ts     # Hook để tạo/cập nhật/xóa cuộc thi
 │   │   │   └── index.ts                  # Barrel file export tất cả hooks
+│   │   ├── pages/                        # Pages của tính năng
+│   │   │   ├── ContestListPage/          # Trang danh sách cuộc thi
+│   │   │   │   ├── ContestListPage.tsx   # File chính của page
+│   │   │   │   ├── ContestListPage.test.tsx # File test
+│   │   │   │   └── index.ts              # File barrel để export
+│   │   │   ├── ContestDetailPage/        # Trang chi tiết cuộc thi
+│   │   │   │   ├── ContestDetailPage.tsx
+│   │   │   │   ├── ContestDetailPage.test.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── CreateContestPage/        # Trang tạo cuộc thi mới
+│   │   │   │   ├── CreateContestPage.tsx
+│   │   │   │   ├── CreateContestPage.test.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── EditContestPage/          # Trang chỉnh sửa cuộc thi
+│   │   │   │   ├── EditContestPage.tsx
+│   │   │   │   ├── EditContestPage.test.tsx
+│   │   │   │   └── index.ts
+│   │   │   └── index.ts                  # Barrel file export tất cả pages
 │   │   ├── services/                     # API services
 │   │   │   ├── contestsApi.ts            # Các hàm gọi API liên quan đến cuộc thi
 │   │   │   └── index.ts                  # Barrel file export tất cả services
@@ -243,7 +261,152 @@ export const ContestList: React.FC = () => {
 };
 ```
 
-### 7. `features/contests/index.ts`
+### 7. `features/contests/pages/ContestListPage/ContestListPage.tsx`
+
+```tsx
+import React from 'react';
+import { Helmet } from 'react-helmet-async';
+import { ContestList } from '../../components/ContestList';
+import { PageLayout } from '@/layouts/PageLayout';
+import { Button } from '@/common/components/ui/button';
+import { Link } from 'react-router-dom';
+
+export const ContestListPage: React.FC = () => {
+  return (
+    <>
+      <Helmet>
+        <title>Danh sách cuộc thi | Platform Name</title>
+      </Helmet>
+      <PageLayout>
+        <div className="container mx-auto py-8">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold">Danh sách cuộc thi</h1>
+            <Link to="/contests/new">
+              <Button>Tạo cuộc thi mới</Button>
+            </Link>
+          </div>
+          <ContestList />
+        </div>
+      </PageLayout>
+    </>
+  );
+};
+
+export default ContestListPage;
+```
+
+### 8. `features/contests/pages/ContestDetailPage/ContestDetailPage.tsx`
+
+```tsx
+import React from 'react';
+import { useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { PageLayout } from '@/layouts/PageLayout';
+import { useContestDetail } from '../../hooks/useContestDetail';
+import { ContestDetail } from '../../components/ContestDetail';
+
+export const ContestDetailPage: React.FC = () => {
+  const { id = '' } = useParams<{ id: string }>();
+  const { data: contest, isLoading, error } = useContestDetail(id);
+
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto py-8 text-center">
+          <p>Đang tải...</p>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (error || !contest) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto py-8 text-center text-red-500">
+          <p>Có lỗi xảy ra khi tải thông tin cuộc thi</p>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  return (
+    <>
+      <Helmet>
+        <title>{contest.title} | Platform Name</title>
+      </Helmet>
+      <PageLayout>
+        <div className="container mx-auto py-8">
+          <ContestDetail contest={contest} />
+        </div>
+      </PageLayout>
+    </>
+  );
+};
+
+export default ContestDetailPage;
+```
+
+### 9. `features/contests/pages/CreateContestPage/CreateContestPage.tsx`
+
+```tsx
+import React from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
+import { PageLayout } from '@/layouts/PageLayout';
+import { ContestForm } from '../../components/ContestForm';
+import { Contest } from '../../types';
+import { useMutation } from '@tanstack/react-query';
+import { createContest } from '../../services/contestsApi';
+import { queryClient } from '@/lib/react-query';
+import { CONTESTS_QUERY_KEY } from '../../hooks/useContestList';
+
+export const CreateContestPage: React.FC = () => {
+  const navigate = useNavigate();
+  
+  const createContestMutation = useMutation({
+    mutationFn: createContest,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: [CONTESTS_QUERY_KEY] });
+      navigate(`/contests/${data.id}`);
+    },
+  });
+
+  const handleSubmit = (contestData: Omit<Contest, 'id' | 'createdAt' | 'updatedAt' | 'participants'>) => {
+    createContestMutation.mutate(contestData);
+  };
+
+  return (
+    <>
+      <Helmet>
+        <title>Tạo cuộc thi mới | Platform Name</title>
+      </Helmet>
+      <PageLayout>
+        <div className="container mx-auto py-8">
+          <h1 className="text-3xl font-bold mb-8">Tạo cuộc thi mới</h1>
+          <ContestForm 
+            onSubmit={handleSubmit} 
+            isLoading={createContestMutation.isPending}
+            error={createContestMutation.error?.message}
+          />
+        </div>
+      </PageLayout>
+    </>
+  );
+};
+
+export default CreateContestPage;
+```
+
+### 10. `features/contests/pages/index.ts`
+
+```typescript
+export * from './ContestListPage';
+export * from './ContestDetailPage';
+export * from './CreateContestPage';
+export * from './EditContestPage';
+```
+
+### 11. `features/contests/index.ts`
 
 ```typescript
 // Re-export components
@@ -251,6 +414,9 @@ export * from './components';
 
 // Re-export hooks
 export * from './hooks';
+
+// Re-export pages
+export * from './pages';
 
 // Re-export types
 export * from './types';
@@ -263,17 +429,17 @@ export * from './constants';
 export * from './routes';
 ```
 
-### 8. `features/contests/routes.ts`
+### 12. `features/contests/routes.ts`
 
 ```typescript
 import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 
 // Lazy-loaded pages
-const ContestsPage = lazy(() => import('@/pages/ContestsPage'));
-const ContestDetailPage = lazy(() => import('@/pages/ContestDetailPage'));
-const CreateContestPage = lazy(() => import('@/pages/CreateContestPage'));
-const EditContestPage = lazy(() => import('@/pages/EditContestPage'));
+const ContestListPage = lazy(() => import('./pages/ContestListPage'));
+const ContestDetailPage = lazy(() => import('./pages/ContestDetailPage'));
+const CreateContestPage = lazy(() => import('./pages/CreateContestPage'));
+const EditContestPage = lazy(() => import('./pages/EditContestPage'));
 
 export const contestsRoutes: RouteObject[] = [
   {
@@ -281,7 +447,7 @@ export const contestsRoutes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <ContestsPage />,
+        element: <ContestListPage />,
       },
       {
         path: ':id',
@@ -300,34 +466,68 @@ export const contestsRoutes: RouteObject[] = [
 ];
 ```
 
-## Pages sử dụng tính năng Contests
-
-### `pages/ContestsPage.tsx`
+## Sử dụng routes trong App.tsx
 
 ```tsx
-import React from 'react';
-import { Helmet } from 'react-helmet-async';
-import { ContestList } from '@/features/contests';
-import { PageLayout } from '@/layouts/PageLayout';
+import { Routes, Route, useRoutes } from 'react-router-dom';
+import { Suspense } from 'react';
+import { contestsRoutes } from './features/contests/routes';
+import { authRoutes } from './features/auth/routes';
+import { dashboardRoutes } from './features/dashboard/routes';
 
-const ContestsPage: React.FC = () => {
+function App() {
+  // Kết hợp tất cả các routes từ các tính năng
+  const routes = [
+    ...contestsRoutes,
+    ...authRoutes,
+    ...dashboardRoutes,
+    {
+      path: '*',
+      element: <div>404 - Không tìm thấy trang</div>,
+    },
+  ];
+
+  // Sử dụng useRoutes hook
+  const element = useRoutes(routes);
+
   return (
-    <>
-      <Helmet>
-        <title>Danh sách cuộc thi | Platform Name</title>
-      </Helmet>
-      <PageLayout>
-        <div className="container mx-auto py-8">
-          <h1 className="text-3xl font-bold mb-8">Danh sách cuộc thi</h1>
-          <ContestList />
-        </div>
-      </PageLayout>
-    </>
+    <Suspense fallback={<div>Đang tải...</div>}>
+      {element}
+    </Suspense>
   );
-};
+}
 
-export default ContestsPage;
+export default App;
 ```
+
+## Mối quan hệ giữa Pages và Components trong Feature-First
+
+Trong cấu trúc Feature-First, sự phân chia giữa pages và components rất quan trọng:
+
+1. **Pages là điểm vào của tính năng**:
+   - Pages là component cấp cao nhất của tính năng, được liên kết với một route cụ thể
+   - Mỗi page được truy cập thông qua một URL
+   - Pages thường có cấu trúc layout hoàn chỉnh với các thành phần như header, footer, sidebar
+
+2. **Components là các khối xây dựng**:
+   - Components là các thành phần UI nhỏ hơn, có thể tái sử dụng
+   - Components tập trung vào việc hiển thị và tương tác với dữ liệu
+   - Components không biết về routing hay cấu trúc trang web
+
+3. **Mối quan hệ giữa Pages và Components**:
+   - Pages sử dụng và kết hợp các components
+   - Pages cung cấp dữ liệu cho components thông qua props
+   - Pages xử lý logic nghiệp vụ và quản lý trạng thái
+   - Components tập trung vào việc hiển thị UI và xử lý tương tác người dùng cấp thấp
+
+4. **Phân chia trách nhiệm**:
+   - Pages: Routing, layout, quản lý trạng thái, điều hướng, xử lý dữ liệu
+   - Components: Hiển thị UI, tương tác người dùng, kiểm tra hợp lệ đầu vào
+
+Ví dụ minh họa mối quan hệ này:
+- `ContestListPage` (Page) sử dụng `ContestList` (Component), cung cấp layout và xử lý điều hướng
+- `ContestList` (Component) hiển thị danh sách các `ContestCard` (Component con), tập trung vào hiển thị dữ liệu
+- `ContestCard` (Component) chỉ hiển thị thông tin của một cuộc thi, không biết về cấu trúc trang hay routing
 
 ## Lợi ích của cấu trúc này
 
