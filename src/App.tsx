@@ -1,22 +1,11 @@
-import { Routes, Route } from "react-router-dom";
+import React from 'react';
+import AppRoutes from './routes';
+import './index.css';
 
-function App() {
+const App: React.FC = () => {
   return (
-    <Routes>
-      <Route path="/" element={
-        <div>
-          <h1>Chào mừng đến với trang quản trị</h1>
-          <p>Đây là nội dung chính của trang quản trị.</p>
-        </div>
-      } />
-      <Route path="*" element={
-        <div>
-          <h1>404 - Không tìm thấy trang</h1>
-          <p>Trang bạn đang tìm kiếm không tồn tại.</p>
-        </div>
-      } />
-    </Routes>
+      <AppRoutes />
   );
-}
+};
 
 export default App;

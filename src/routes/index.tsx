@@ -1,0 +1,39 @@
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+// import PrivateRoute from './PrivateRoute';
+import AdminRoutes from '../features/admin/AdminRoutes';
+import AuthRoutes from '../features/auth/routes';
+import PublicRoutes from './PublicRoutes';
+
+const AppRoutes: React.FC = () => {
+  return (
+    <Routes>
+      {/* Public Routes */}
+      {PublicRoutes()}
+
+      {/* Auth Routes - Đăng nhập, Đăng ký */}
+      {AuthRoutes()}
+
+      {/* Private Routes - Yêu cầu xác thực */}
+      {/* <Route element={<PrivateRoute />}>
+        {AdminRoutes()}
+      </Route> */}
+        {AdminRoutes()}
+
+      {/* Chuyển hướng từ / đến /auth/login nếu chưa đăng nhập hoặc /admin/dashboard nếu đã đăng nhập */}
+      <Route
+        path="/"
+        element={
+          sessionStorage.getItem('token')
+            ? <Navigate to="/admin/dashboard" replace />
+            : <Navigate to="/auth/login" replace />
+        }
+      />
+
+      {/* Xử lý route không tồn tại */}
+      <Route path="*" element={<div>Trang không tồn tại</div>} />
+    </Routes>
+  );
+};
+
+export default AppRoutes;
