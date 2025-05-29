@@ -16,14 +16,14 @@ import {
   Logout
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+// import axios from 'axios';
 
 interface AdminHeaderProps {
   toggle: () => void;
 }
 
 const AdminHeader: React.FC<AdminHeaderProps> = ({ toggle }) => {
-  const [schoolInfo, setSchoolInfo] = useState({
+  const [schoolInfo] = useState({
     schoolName: 'Trường Cao Đẳng Kỹ Thuật Cao Thắng',
     departmentName: 'Khoa Công nghệ thông tin'
   });
@@ -31,20 +31,20 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ toggle }) => {
 
   // Lấy dữ liệu từ Mock API
   useEffect(() => {
-    const fetchSchoolInfo = async () => {
-      try {
-        // Sử dụng Axios để gọi API mock (được xử lý bởi MSW)
-        const response = await axios.get('/api/schools/1');
-        setSchoolInfo({
-          schoolName: response.data.name,
-          departmentName: 'Khoa Công nghệ thông tin'
-        });
-      } catch (error) {
-        console.error('Lỗi khi lấy thông tin trường:', error);
-      }
-    };
+    // const fetchSchoolInfo = async () => {
+    //   try {
+    //     // Sử dụng Axios để gọi API mock (được xử lý bởi MSW)
+    //     const response = await axios.get('/api/schools/1');
+    //     setSchoolInfo({
+    //       schoolName: response.data.name,
+    //       departmentName: 'Khoa Công nghệ thông tin'
+    //     });
+    //   } catch (error) {
+    //     console.error('Lỗi khi lấy thông tin trường:', error);
+    //   }
+    // };
 
-    fetchSchoolInfo();
+    // fetchSchoolInfo();
   }, []);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
