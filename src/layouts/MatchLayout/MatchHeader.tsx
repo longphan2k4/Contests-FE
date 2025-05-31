@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 
 // Heroicons components (using outline versions)
 const RotateCcwIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0V9a8.002 8.002 0 0115.356 2M15 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m18-4a2 2 0 01-2 2H9a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v4z" />
   </svg>
 );
 
 const SendIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
   </svg>
 );
 
 const XIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
   </svg>
 );
@@ -54,9 +54,8 @@ interface MatchHeaderProps {
   helpItems?: Array<{ type: HelpType; status: HelpStatus }>;
 }
 
-// Enhanced Help Icon component with Heroicons and animations
+// Enhanced Help Icon component with responsive design
 const HelpIcon: React.FC<HelpIconProps> = ({ type, status }) => {
-  // Get the appropriate icon based on type
   const getIcon = () => {
     switch (type) {
       case 'revive1':
@@ -70,7 +69,6 @@ const HelpIcon: React.FC<HelpIconProps> = ({ type, status }) => {
     }
   };
 
-  // Different styles and animations based on status
   const getStatusStyles = (): string => {
     switch (status) {
       case 'disabled':
@@ -97,8 +95,8 @@ const HelpIcon: React.FC<HelpIconProps> = ({ type, status }) => {
   };
 
   return (
-    <div className="relative group mx-1">
-      <div className={`p-1 rounded-full bg-blue-700 ${getStatusStyles()}`} title={getTooltipText()}>
+    <div className="relative group mx-0.5 sm:mx-1">
+      <div className={`p-1 sm:p-1.5 rounded-full bg-blue-700 ${getStatusStyles()}`} title={getTooltipText()}>
         {getIcon()}
       </div>
       <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-blue-800 text-xs text-white rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
@@ -108,7 +106,7 @@ const HelpIcon: React.FC<HelpIconProps> = ({ type, status }) => {
   );
 };
 
-// Enhanced Header Component with contestant count and help icons
+// Responsive Header Component with contestant count and help icons
 const Header: React.FC<HeaderProps> = ({ remainingContestants, totalContestants, helpItems }) => {
   const contestantPercentage = (remainingContestants / totalContestants) * 100;
   
@@ -134,16 +132,17 @@ const Header: React.FC<HeaderProps> = ({ remainingContestants, totalContestants,
   }, [remainingContestants]);
 
   return (
-    <div className="flex items-center justify-between bg-white px-4 py-2 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg">
-      <div className={`font-bold transition-all duration-300 ${getContestantStyles()}`}>
-        <span className={`text-xl ml-1 ${animate ? 'scale-125 inline-block transition-transform' : ''}`}>
+    <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between bg-white px-2 sm:px-4 py-2 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg min-w-0">
+      {/* Contestant count - responsive sizing */}
+      <div className={`font-bold transition-all duration-300 ${getContestantStyles()} mb-1 sm:mb-0`}>
+        <span className={`text-lg sm:text-xl ml-1 ${animate ? 'scale-125 inline-block transition-transform' : ''}`}>
           {remainingContestants}
         </span>
-        <span className="text-md text-blue-200">/{totalContestants}</span>
+        <span className="text-sm sm:text-md text-blue-200">/{totalContestants}</span>
       </div>
       
-      {/* Help Icons */}
-      <div className="flex items-center ml-3">
+      {/* Help Icons - responsive spacing and layout */}
+      <div className="flex items-center justify-center sm:ml-3">
         {helpItems.map((item, index) => (
           <HelpIcon key={index} type={item.type} status={item.status} />
         ))}
@@ -152,26 +151,25 @@ const Header: React.FC<HeaderProps> = ({ remainingContestants, totalContestants,
   );
 };
 
-// Question Counter Component
+// Responsive Question Counter Component
 const QuestionCounter: React.FC<QuestionCounterProps> = ({ currentQuestion, totalQuestions }) => {
   return (
-    <div className="bg-white px-4 py-2 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg">
-      <div className="font-bold text-blue-900">
-        Câu: <span className="text-xl ml-1">{currentQuestion}</span>
-        <span className="text-md text-blue-200">/{totalQuestions}</span>
+    <div className="bg-white px-2 sm:px-4 py-2 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg min-w-0">
+      <div className="font-bold text-blue-900 text-center sm:text-left">
+        <span className="text-sm sm:text-base">Câu:</span>
+        <span className="text-lg sm:text-xl ml-1">{currentQuestion}</span>
+        <span className="text-sm sm:text-md text-blue-200">/{totalQuestions}</span>
       </div>
     </div>
   );
 };
 
-// DisplayScreen với animation countdown
+// Responsive DisplayScreen with animation countdown
 const DisplayScreen: React.FC<DisplayScreenProps> = ({ timeRemaining, setTimeRemaining }) => {
-  // Fake socket simulation - tự động đếm ngược
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeRemaining(prev => {
         if (prev <= 1) {
-          // Reset về 30s khi hết giờ (giả lập câu hỏi mới)
           return 30;
         }
         return prev - 1;
@@ -188,15 +186,15 @@ const DisplayScreen: React.FC<DisplayScreenProps> = ({ timeRemaining, setTimeRem
   };
 
   return (
-    <div className="flex items-center justify-center w-16 h-16 rounded-full border-4 transition-all duration-300 bg-white shadow-md border-blue-400">
-      <div className={`text-lg font-mono font-bold ${getTimerColor()}`}>
+    <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full border-4 transition-all duration-300 bg-white shadow-md border-blue-400 mx-2 sm:mx-4">
+      <div className={`text-sm sm:text-lg font-mono font-bold ${getTimerColor()}`}>
         {timeRemaining}s
       </div>
     </div>
   );
 };
 
-// Main MatchHeader Component with enhanced styling
+// Main responsive MatchHeader Component
 const MatchHeaderComponent: React.FC<MatchHeaderProps> = ({ 
   remainingContestants, 
   totalContestants, 
@@ -211,18 +209,44 @@ const MatchHeaderComponent: React.FC<MatchHeaderProps> = ({
   ]
 }) => {
   return (
-    <div className="w-full bg-gradient-to-r from-blue-900 to-blue-800 px-2 py-1 rounded-xl shadow-xl border border-blue-700">
-      <div className="flex justify-between items-center">
-        <div className="flex-1 flex justify-start">
+    <div className="w-full mx-auto bg-gradient-to-r from-blue-900 to-blue-800 px-2 sm:px-4 py-2 sm:py-3 rounded-xl shadow-xl border border-blue-700">
+      {/* Mobile Layout (stacked) */}
+      <div className="flex flex-col sm:hidden space-y-2">
+        {/* Top row: Question counter and timer */}
+        <div className="flex justify-center items-center space-x-4">
+          <div className="flex-1 max-w-xs">
+            <QuestionCounter 
+              currentQuestion={currentQuestion}
+              totalQuestions={totalQuestions}
+            />
+          </div>
+          <DisplayScreen timeRemaining={timeRemaining} setTimeRemaining={setTimeRemaining}/>
+        </div>
+        
+        {/* Bottom row: Contestants and help items */}
+        <div className="flex justify-center">
+          <div className="w-full max-w-xs">
+            <Header 
+              remainingContestants={remainingContestants}
+              totalContestants={totalContestants}
+              helpItems={helpItems}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Layout (horizontal) */}
+      <div className="hidden sm:flex justify-between items-center">
+        <div className="flex-1 flex justify-start min-w-0">
           <QuestionCounter 
             currentQuestion={currentQuestion}
             totalQuestions={totalQuestions}
           />
         </div>
-        <div className="mx-4">
+        <div className="flex-shrink-0">
           <DisplayScreen timeRemaining={timeRemaining} setTimeRemaining={setTimeRemaining}/>
         </div>
-        <div className="flex-1 flex justify-end">
+        <div className="flex-1 flex justify-end min-w-0">
           <Header 
             remainingContestants={remainingContestants}
             totalContestants={totalContestants}
@@ -234,7 +258,7 @@ const MatchHeaderComponent: React.FC<MatchHeaderProps> = ({
   );
 };
 
-// Demo component
+// Demo component with responsive container
 const MatchHeader: React.FC = () => {
   const [timeRemaining, setTimeRemaining] = useState<number>(25);
   const [remainingContestants, setRemainingContestants] = useState<number>(45);
@@ -262,8 +286,7 @@ const MatchHeader: React.FC = () => {
   }, [timeRemaining, totalQuestions]);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-100 p-2 sm:p-4"> 
         <MatchHeaderComponent
           remainingContestants={remainingContestants}
           totalContestants={totalContestants}
@@ -271,8 +294,7 @@ const MatchHeader: React.FC = () => {
           totalQuestions={totalQuestions}
           timeRemaining={timeRemaining}
           setTimeRemaining={setTimeRemaining}
-        />
-      </div>
+        />       
     </div>
   );
 };

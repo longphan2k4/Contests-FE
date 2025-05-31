@@ -4,6 +4,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminRoutes from '../features/admin/AdminRoutes';
 import AuthRoutes from '../features/auth/routes';
 import PublicRoutes from './PublicRoutes';
+// import MatchRoutes from '../features/match';
+import MatchPage from '../features/match/pages/MatchPage';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -29,7 +31,7 @@ const AppRoutes: React.FC = () => {
             : <Navigate to="/auth/login" replace />
         }
       />
-
+      <Route path="/match" element={<MatchPage />} />
       {/* Xử lý route không tồn tại */}
       <Route path="*" element={<div>Trang không tồn tại</div>} />
     </Routes>
