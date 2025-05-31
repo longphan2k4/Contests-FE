@@ -209,7 +209,7 @@ const MatchHeaderComponent: React.FC<MatchHeaderProps> = ({
   ]
 }) => {
   return (
-    <div className="w-full mx-auto bg-gradient-to-r from-blue-900 to-blue-800 px-2 sm:px-4 py-2 sm:py-3 rounded-xl shadow-xl border border-blue-700">
+    <div className="mx-auto bg-gradient-to-r from-blue-900 to-blue-800 px-2 sm:px-4 py-2 sm:py-3 rounded-xl shadow-xl border border-blue-700">
       {/* Mobile Layout (stacked) */}
       <div className="flex flex-col sm:hidden space-y-2">
         {/* Top row: Question counter and timer */}
@@ -286,7 +286,6 @@ const MatchHeader: React.FC = () => {
   }, [timeRemaining, totalQuestions]);
 
   return (
-  
         <MatchHeaderComponent
           remainingContestants={remainingContestants}
           totalContestants={totalContestants}

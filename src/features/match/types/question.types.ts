@@ -1,4 +1,5 @@
 // types/question.types.ts
+
 export interface QuestionData {
   questionNumber: number;
   phase: string;
@@ -8,6 +9,8 @@ export interface QuestionData {
   mediaUrl?: string;
   options?: string[];
   correctAnswer: string;
+  answerType?: 'option' | 'text' | 'image' | 'video' | 'audio';
+  answerMediaUrl?: string;
 }
 
 export interface QuestionInfoProps {
@@ -19,7 +22,7 @@ export interface QuestionInfoProps {
 
 export interface QuestionContentProps {
   content: string;
-  type: string;
+  type: 'Trắc Nghiệm' | 'Hình Ảnh' | 'Video' | 'Âm Thanh';
   mediaUrl?: string;
   options?: string[];
   isVisible: boolean;
@@ -27,6 +30,8 @@ export interface QuestionContentProps {
 
 export interface AnswerDisplayProps {
   answer: string;
+  answerType?: 'option' | 'text' | 'image' | 'video' | 'audio';
+  answerMediaUrl?: string;
   isVisible: boolean;
 }
 
@@ -36,4 +41,5 @@ export interface DemoControlsProps {
   onToggleQuestion: () => void;
   onToggleAnswer: () => void;
   onSwitchQuestionType: (type: QuestionData['type']) => void;
+  onSwitchAnswerType?: (type: 'option' | 'text' | 'image' | 'video' | 'audio') => void;
 }
