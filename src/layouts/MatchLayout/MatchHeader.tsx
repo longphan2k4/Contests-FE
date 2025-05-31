@@ -286,7 +286,7 @@ const MatchHeader: React.FC = () => {
   }, [timeRemaining, totalQuestions]);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-2 sm:p-4"> 
+  
         <MatchHeaderComponent
           remainingContestants={remainingContestants}
           totalContestants={totalContestants}
@@ -295,7 +295,6 @@ const MatchHeader: React.FC = () => {
           timeRemaining={timeRemaining}
           setTimeRemaining={setTimeRemaining}
         />       
-    </div>
   );
 };
 
