@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import banner from "../../../../assets/image/manhinhcho2.jpg"
+import banner from "../assets/manhinhcho2.jpg"
 
 // Type definitions
 interface Sparkle {

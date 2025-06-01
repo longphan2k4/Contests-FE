@@ -6,6 +6,7 @@ import AuthRoutes from '../features/auth/routes';
 import PublicRoutes from './PublicRoutes';
 // import MatchRoutes from '../features/match';
 import MatchPage from '../features/match/pages/MatchPage';
+import TechBanner from '../features/match/components/MediaPopup/BackGround';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -32,6 +33,11 @@ const AppRoutes: React.FC = () => {
         }
       />
       <Route path="/match" element={<MatchPage />} />
+      <Route path="/banner" element={<TechBanner />} />
+      {/* Các route khác */}
+      {/* <Route path="/match/*" element={<MatchRoutes />} /> */}
+
+      {/* Route mặc định */}
       {/* Xử lý route không tồn tại */}
       <Route path="*" element={<div>Trang không tồn tại</div>} />
     </Routes>
