@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { CheckCircleIcon, MagnifyingGlassIcon, PlayIcon } from '@heroicons/react/24/outline';
 import type { AnswerDisplayProps } from '../../types/question.types';
-import FullscreenModal from "../MediaPopup/FullScreenModal"
+import FullscreenModal from '../MediaPopup/FullScreenModal';
 
 const AnswerDisplay: React.FC<AnswerDisplayProps> = ({ 
   answer, 
@@ -135,7 +135,7 @@ const AnswerDisplay: React.FC<AnswerDisplayProps> = ({
         <img 
           src={answerMediaUrl} 
           alt="Đáp án hình ảnh - Toàn màn hình" 
-          className="max-w-full max-h-full object-contain"
+          className="w-full h-full object-contain"
         />
       );
     }
@@ -145,7 +145,7 @@ const AnswerDisplay: React.FC<AnswerDisplayProps> = ({
         <video 
           controls 
           autoPlay
-          className="max-w-full max-h-full object-contain"
+          className="w-full h-full object-contain"
         >
           <source src={answerMediaUrl} type="video/mp4" />
           Trình duyệt không hỗ trợ video.

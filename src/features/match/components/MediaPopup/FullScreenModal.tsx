@@ -82,7 +82,7 @@ const FullscreenModal: React.FC<FullscreenModalProps> = ({
 
       {/* Nội dung modal */}
       <div 
-        className="relative max-w-full max-h-full p-4 flex items-center justify-center"
+        className="w-full h-full flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
         {children}
