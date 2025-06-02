@@ -1,6 +1,6 @@
 import { Route, Navigate } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
-
+import ContestantsPage from './pages/ContestantsManage/ContestantsPage';
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
 const SchoolsPage = () => <div>Trang Quản lý trường học</div>;
@@ -10,7 +10,7 @@ const QuestionTopicsPage = () => <div>Trang Quản lý chủ đề câu hỏi</d
 const QuestionsPage = () => <div>Trang Quản lý câu hỏi</div>;
 const QuestionPackagesPage = () => <div>Trang Quản lý gói câu hỏi</div>;
 const ContestsPage = () => <div>Trang Quản lý cuộc thi</div>;
-const ContestantsPage = () => <div>Trang Quản lý thí sinh</div>;
+//const ContestantsPage = () => <div>Trang Quản lý thí sinh</div>;
 const ResultsPage = () => <div>Trang Kết quả</div>;
 const AwardsPage = () => <div>Trang Giải thưởng</div>;
 const SponsorsPage = () => <div>Trang Nhà tài trợ</div>;
