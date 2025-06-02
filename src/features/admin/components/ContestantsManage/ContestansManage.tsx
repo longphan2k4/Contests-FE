@@ -11,6 +11,8 @@ import type { FieldConfig } from '../AddPopup'
 import { Box } from '@mui/material';
 import Button from '../button';
 import SelectFilter from '../Select';
+
+
 const generateMockCandidates = (count: number): Candidate[] => {
   return Array.from({ length: count }, (_, index) => ({
     id: index + 1,
@@ -36,7 +38,7 @@ const ContestantsManage = () => {
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const [addOpen, setAddOpen] = useState(false);
 
-    const fields: FieldConfig<Candidate>[] = [
+const fields: FieldConfig<Candidate>[] = [
   { label: 'Tên', field: 'name', type: 'text' },
   { label: 'Email', field: 'email', type: 'email' },
   { label: 'Số điện thoại', field: 'phone', type: 'tel' },
@@ -52,8 +54,8 @@ const ContestantsManage = () => {
     );
   };
   const handleAddCandidate = (newCandidate: Candidate) => {
-  setData((prev) => [...prev, { ...newCandidate, id: prev.length + 1 }]);
-};
+    setData((prev) => [...prev, { ...newCandidate, id: prev.length + 1 }]);
+  };
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 100 },
@@ -80,10 +82,8 @@ const ContestantsManage = () => {
   ];
 
 
-  
   return (
-    <>
-    
+    <>    
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={2}>
             <SelectFilter<Candidate>
                 label="Lọc theo giới tính"
@@ -96,8 +96,6 @@ const ContestantsManage = () => {
                 Thêm thí sinh
             </Button>
         </Box>
-
-
       <AddPopup<Candidate>
         open={addOpen}
         onClose={() => setAddOpen(false)}
@@ -111,7 +109,6 @@ const ContestantsManage = () => {
         getRowId={(row) => row.id}
         searchField="name"
         />
-
       <ViewDetailPopup
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
@@ -119,7 +116,6 @@ const ContestantsManage = () => {
         fields={fields}
         title="Chi tiết thí sinh"
         />
-
       <EditPopup<Candidate>
         open={editOpen}
         onClose={() => setEditOpen(false)}
