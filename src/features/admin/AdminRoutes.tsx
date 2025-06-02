@@ -1,6 +1,7 @@
 import { Route, Navigate } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
 import ContestantsPage from './pages/ContestantsManage/ContestantsPage';
+import AboutAdminPage from './about/pages/AboutAdminPage';
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
 const SchoolsPage = () => <div>Trang Quản lý trường học</div>;
@@ -15,7 +16,6 @@ const ResultsPage = () => <div>Trang Kết quả</div>;
 const AwardsPage = () => <div>Trang Giải thưởng</div>;
 const SponsorsPage = () => <div>Trang Nhà tài trợ</div>;
 const ClassVideosPage = () => <div>Trang Videos lớp học</div>;
-const AboutPage = () => <div>Trang Thông tin website</div>;
 const SettingsPage = () => <div>Trang Cài đặt</div>;
 
 const AdminRoutes = () => {
@@ -34,7 +34,7 @@ const AdminRoutes = () => {
       <Route path="awards" element={<AwardsPage />} />
       <Route path="sponsors" element={<SponsorsPage />} />
       <Route path="class-videos" element={<ClassVideosPage />} />
-      <Route path="about" element={<AboutPage />} />
+      <Route path="about" element={<AboutAdminPage />} />
       <Route path="settings" element={<SettingsPage />} />
       <Route index element={<Navigate to="/admin/dashboard" replace />} />
     </Route>

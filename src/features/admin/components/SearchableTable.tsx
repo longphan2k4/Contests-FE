@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Box } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
-import Input from './input';
+import Input from './Input';
 
 type SearchableTableProps<T> = {
   data: T[];
