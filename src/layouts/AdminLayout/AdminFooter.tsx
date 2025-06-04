@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Link, Container } from '@mui/material';
-import { getMockAboutInfo } from '../../features/admin/about/services/aboutService';
+import { getAboutInfo } from '../../features/admin/about/services/aboutService';
 import type { About } from '../../features/admin/about/types/about';
 import LanguageIcon from '@mui/icons-material/Language';
 import EmailIcon from '@mui/icons-material/Email';
@@ -14,7 +14,7 @@ const AdminFooter: React.FC = () => {
   useEffect(() => {
     const fetchAboutInfo = async () => {
       try {
-        const data = getMockAboutInfo();
+        const data = await getAboutInfo();
         setAboutInfo(data);
       } catch (error) {
         console.error('Error fetching about info:', error);
@@ -55,11 +55,11 @@ const AdminFooter: React.FC = () => {
       <Container maxWidth="lg">
         <Box sx={{ textAlign: 'center', mb: 1 }}>
           <Typography variant="subtitle1" fontWeight="bold">
-            {aboutInfo.schoolName}
+            {aboutInfo.data.schoolName}
           </Typography>
-          {aboutInfo.departmentName && (
+          {aboutInfo.data.departmentName && (
             <Typography variant="body2" color="text.secondary">
-              {aboutInfo.departmentName}
+              {aboutInfo.data.departmentName}
             </Typography>
           )}
         </Box>
@@ -71,18 +71,18 @@ const AdminFooter: React.FC = () => {
           mb: 1,
           flexWrap: 'wrap'
         }}>
-          {aboutInfo.website && (
-            <Link href={aboutInfo.website} target="_blank" underline="hover" sx={{ display: 'flex', alignItems: 'center' }}>
+          {aboutInfo.data.website && (
+            <Link href={aboutInfo.data.website} target="_blank" underline="hover" sx={{ display: 'flex', alignItems: 'center' }}>
               <LanguageIcon fontSize="small" sx={{ mr: 0.5 }} /> Website
             </Link>
           )}
-          {aboutInfo.email && (
-            <Link href={`mailto:${aboutInfo.email}`} underline="hover" sx={{ display: 'flex', alignItems: 'center' }}>
+          {aboutInfo.data.email && (
+            <Link href={`mailto:${aboutInfo.data.email}`} underline="hover" sx={{ display: 'flex', alignItems: 'center' }}>
               <EmailIcon fontSize="small" sx={{ mr: 0.5 }} /> Email
             </Link>
           )}
-          {aboutInfo.fanpage && (
-            <Link href={aboutInfo.fanpage} target="_blank" underline="hover" sx={{ display: 'flex', alignItems: 'center' }}>
+          {aboutInfo.data.fanpage && (
+            <Link href={aboutInfo.data.fanpage} target="_blank" underline="hover" sx={{ display: 'flex', alignItems: 'center' }}>
               <FacebookIcon fontSize="small" sx={{ mr: 0.5 }} /> Fanpage
             </Link>
           )}

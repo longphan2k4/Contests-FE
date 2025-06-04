@@ -39,7 +39,7 @@ const AboutPublicPage = () => {
 
           {/* Bản đồ */}
           <Box sx={{ flex: 1 }}>
-            <MapCard mapEmbedCode={aboutInfo.mapEmbedCode} />
+            <MapCard mapEmbedCode={aboutInfo.data.mapEmbedCode} />
           </Box>
         </Stack>
       </Box>

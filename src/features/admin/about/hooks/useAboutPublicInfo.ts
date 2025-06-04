@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getMockAboutInfo } from '../services/aboutService';
+import { getAboutInfo } from '../services/aboutService';
 import type { About } from '../types/about';
 
 export const useAboutPublicInfo = () => {
@@ -10,7 +10,7 @@ export const useAboutPublicInfo = () => {
   useEffect(() => {
     const fetchAboutInfo = async () => {
       try {
-        const data = getMockAboutInfo();
+        const data = await getAboutInfo();
         setAboutInfo(data);
       } catch (err) {
         setError('Không thể tải thông tin website');
@@ -30,4 +30,4 @@ export const useAboutPublicInfo = () => {
   };
 };
 
-export default useAboutPublicInfo; 
+export default useAboutPublicInfo;
