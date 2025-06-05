@@ -8,7 +8,7 @@ interface UseAboutReturn {
   error: string | null;
   updating: boolean;
   fetchAbout: () => Promise<void>;
-  updateAboutInfo: (data: Partial<AboutData>) => Promise<void>;
+  updateAboutInfo: (data: Partial<AboutData>, logoFile?: File | null, bannerFile?: File | null) => Promise<void>;
 }
 
 export const useAbout = (): UseAboutReturn => {
@@ -31,11 +31,15 @@ export const useAbout = (): UseAboutReturn => {
     }
   };
 
-  const updateAboutInfo = async (data: Partial<AboutData>): Promise<void> => {
+  const updateAboutInfo = async (
+    data: Partial<AboutData>, 
+    logoFile?: File | null, 
+    bannerFile?: File | null
+  ): Promise<void> => {
     try {
       setUpdating(true);
       setError(null);
-      const updatedAbout = await updateAboutFromService(data);
+      const updatedAbout = await updateAboutFromService(data, logoFile, bannerFile);
       setAbout(updatedAbout);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi cập nhật thông tin giới thiệu');

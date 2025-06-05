@@ -5,7 +5,6 @@ import type { About } from '../types/about';
 export const useAboutInfo = () => {
   const [aboutInfo, setAboutInfo] = useState<About>({
     data: {
-      id: 1,
       schoolName: '',
       website: '',
       departmentName: '',
@@ -13,8 +12,8 @@ export const useAboutInfo = () => {
       fanpage: '',
       mapEmbedCode: '',
       isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      logo:'',
+      banner:'',
     }
   });
   const [loading, setLoading] = useState(true);

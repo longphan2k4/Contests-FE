@@ -28,6 +28,10 @@ export const aboutDataSchema = z.object({
 
   mapEmbedCode: z.string().optional(),
 
+  logo: z.string().optional().or(z.literal('')),
+
+  banner: z.string().optional().or(z.literal('')),
+
   isActive: z.boolean().default(true)
 });
 
@@ -63,6 +67,8 @@ export const aboutSchema = z.object({
     .nullable()
     .or(z.literal('')),
   mapEmbedCode: z.string().optional().nullable().or(z.literal('')),
+  logo: z.string().optional().nullable().or(z.literal('')),
+  banner: z.string().optional().nullable().or(z.literal('')),
   isActive: z.boolean().optional().default(true),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional()

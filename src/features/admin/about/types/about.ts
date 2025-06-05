@@ -2,7 +2,6 @@
  * Định nghĩa interface AboutData - dữ liệu chính
  */
 export interface AboutData {
-  id: number;
   departmentName: string;
   email: string;
   fanpage: string;
@@ -10,8 +9,9 @@ export interface AboutData {
   mapEmbedCode: string;
   schoolName: string;
   website: string;
-  createdAt: string;
-  updatedAt: string;
+  logo:string
+  banner:string
+
 }
 
 /**

@@ -11,9 +11,14 @@ const AboutAdminPage = () => {
   const { about, loading, error, updating, updateAboutInfo } = useAbout();
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
-  const handleUpdate = async (data: Partial<AboutData>): Promise<void> => {
+  // Xử lý cập nhật thông tin và file
+  const handleUpdate = async (
+    data: Partial<AboutData>, 
+    logoFile?: File | null, 
+    bannerFile?: File | null
+  ): Promise<void> => {
     try {
-      await updateAboutInfo(data);
+      await updateAboutInfo(data, logoFile, bannerFile);
       setShowSuccessAlert(true);
     } catch (error) {
       console.error('Failed to update:', error);
@@ -60,7 +65,6 @@ const AboutAdminPage = () => {
           )}
         </Box>
       </Card>
-
 
       {/* Success Alert */}
       <Snackbar

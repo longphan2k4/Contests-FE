@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Box,
   TextField,
@@ -14,76 +14,29 @@ import {
 import type { About, AboutData } from '../types/about';
 import SaveIcon from '@mui/icons-material/Save';
 import { LoadingButton } from '@mui/lab';
-import { aboutSchema } from '../validations/aboutValidation';
-import type { ZodIssue } from 'zod';
+import FileUpload from '../../components/FileUpload';
+import { useAboutForm } from '../hooks/useAboutForm';
 
 interface AboutFormProps {
   initialData: About;
-  onSubmit: (data: Partial<AboutData>) => Promise<void>;
+  onSubmit: (data: Partial<AboutData>, logoFile?: File | null, bannerFile?: File | null) => Promise<void>;
   isSubmitting: boolean;
 }
-
-type FormErrors = Partial<Record<keyof AboutData, string>>;
 
 /**
  * Component form chỉnh sửa thông tin giới thiệu
  */
 const AboutForm: React.FC<AboutFormProps> = ({ initialData, onSubmit, isSubmitting }) => {
-  const [formData, setFormData] = useState<Partial<AboutData>>(initialData.data);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [showSuccess, setShowSuccess] = useState(false);
-  
-  useEffect(() => {
-    setFormData(initialData.data);
-  }, [initialData]);
-  
-  const validate = (): boolean => {
-    const result = aboutSchema.safeParse(formData);
-    
-    if (!result.success) {
-      const formattedErrors: FormErrors = {};
-      result.error.errors.forEach((error: ZodIssue) => {
-        const path = error.path[0];
-        formattedErrors[path as keyof AboutData] = error.message;
-      });
-      setErrors(formattedErrors);
-      return false;
-    }
-    
-    setErrors({});
-    return true;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-
-    // Clear error when field is edited
-    if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: undefined
-      }));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validate()) {
-      return;
-    }
-
-    try {
-      await onSubmit(formData);
-      setShowSuccess(true);
-    } catch (error) {
-      console.error('Failed to submit form:', error);
-    }
-  };
+  const {
+    formData,
+    errors,
+    uploadError,
+    setUploadError,
+    handleChange,
+    handleLogoSelected,
+    handleBannerSelected,
+    handleSubmit
+  } = useAboutForm({ initialData, onSubmit });
 
   return (
     <Box component="form" onSubmit={handleSubmit} noValidate>
@@ -144,6 +97,33 @@ const AboutForm: React.FC<AboutFormProps> = ({ initialData, onSubmit, isSubmitti
         />
 
         <Divider />
+        <Typography variant="h6">Logo</Typography>
+        <FileUpload 
+          currentFile={formData.logo || null}
+          onFileSelected={handleLogoSelected}
+          acceptTypes="image/png, image/jpeg"
+          label="Tải lên logo"
+          maxSize={2}
+          previewWidth={300}
+        />
+        
+        {errors.logo && (
+          <Alert severity="error">{errors.logo}</Alert>
+        )}
+
+        <Typography variant="h6">Banner</Typography>
+        <FileUpload 
+          currentFile={formData.banner || null}
+          onFileSelected={handleBannerSelected}
+          acceptTypes="image/png, image/jpeg"
+          label="Tải lên banner"
+          maxSize={5}
+          previewWidth="100%"
+        />
+        
+        {errors.banner && (
+          <Alert severity="error">{errors.banner}</Alert>
+        )}
 
         <Typography variant="h6">Bản đồ</Typography>
         <TextField
@@ -193,17 +173,19 @@ const AboutForm: React.FC<AboutFormProps> = ({ initialData, onSubmit, isSubmitti
         </Stack>
       </Stack>
 
-      <Snackbar
-        open={showSuccess}
-        autoHideDuration={6000}
-        onClose={() => setShowSuccess(false)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        <Alert onClose={() => setShowSuccess(false)} severity="success">
-          <AlertTitle>Thành công</AlertTitle>
-          Cập nhật thông tin thành công!
-        </Alert>
-      </Snackbar>
+      {uploadError && (
+        <Snackbar
+          open={!!uploadError}
+          autoHideDuration={6000}
+          onClose={() => setUploadError(null)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <Alert onClose={() => setUploadError(null)} severity="error">
+            <AlertTitle>Lỗi tải lên</AlertTitle>
+            {uploadError}
+          </Alert>
+        </Snackbar>
+      )}
     </Box>
   );
 };
