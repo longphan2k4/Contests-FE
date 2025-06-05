@@ -118,7 +118,7 @@ const AboutForm: React.FC<AboutFormProps> = ({ initialData, onSubmit, isSubmitti
           acceptTypes="image/png, image/jpeg"
           label="Tải lên banner"
           maxSize={5}
-          previewWidth="100%"
+          previewWidth={300}
         />
         
         {errors.banner && (
