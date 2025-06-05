@@ -4,25 +4,14 @@ import {
   TextField,
   FormControlLabel,
   Switch,
-  MenuItem,
   Button,
   Stack,
   Typography,
   Paper
 } from '@mui/material';
 import type { School } from '../types/school';
-
-// Danh sách thành phố
-const CITIES = [
-  'Hà Nội', 
-  'TP. Hồ Chí Minh', 
-  'Đà Nẵng', 
-  'Hải Phòng', 
-  'Cần Thơ',
-  'Huế',
-  'Nha Trang',
-  'Vũng Tàu'
-];
+import { useNotification } from '../../../../hooks';
+import  NotificationSnackbar  from '../../components/NotificationSnackbar';
 
 interface SchoolFormProps {
   initialData?: Partial<School>;
@@ -31,6 +20,14 @@ interface SchoolFormProps {
   submitButtonText?: string;
 }
 
+const DEFAULT_FORM_DATA: Partial<School> = {
+  name: '',
+  address: '',
+  email: '',
+  phone: '',
+  isActive: true
+};
+
 const SchoolForm: React.FC<SchoolFormProps> = ({
   initialData = {},
   onSubmit,
@@ -38,25 +35,33 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
   submitButtonText = 'Lưu'
 }) => {
   const [formData, setFormData] = useState<Partial<School>>({
-    name: '',
-    address: '',
-    email: '',
-    phone: '',
-    isActive: true,
+    ...DEFAULT_FORM_DATA,
     ...initialData
   });
 
-  // Cập nhật form khi initialData thay đổi
+  // Thông báo
+  const {
+    notificationState,
+    showErrorNotification,
+    hideNotification
+  } = useNotification();
+
   useEffect(() => {
-    setFormData({
-      name: '',
-      address: '',
-      email: '',
-      phone: '',
-      isActive: true,
-      ...initialData
-    });
-  }, [initialData]);
+    // Chỉ chạy khi initialData có ít nhất một key (tức là parent truyền dữ liệu “edit”),
+    // và nội dung khác với formData hiện tại
+    if (
+      initialData &&
+      Object.keys(initialData).length > 0 
+      // Nếu bạn muốn chắc chắn field nào đó thay đổi, có thể so sánh riêng từng key, ví dụ initialData.id
+    ) {
+      setFormData({
+        ...DEFAULT_FORM_DATA,
+        ...initialData
+      });
+    }
+  // Để dependency array chỉ contain initialData (object literal mới mỗi lần vẫn gây loop),
+  // bạn có thể bóc riêng primitive field mà parent thay đổi, ví dụ initialData.id:
+  }, [initialData?.id]); 
 
   // Thay đổi kiểu dữ liệu cho phép undefined
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
@@ -68,7 +73,6 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
     if (!formData.name?.trim()) {
       newErrors.name = 'Tên trường không được để trống';
     }
-
 
     // Kiểm tra email
     if (!formData.email?.trim()) {
@@ -83,7 +87,15 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    // Nếu có lỗi, hiển thị thông báo lỗi đầu tiên
+    if (Object.keys(newErrors).length > 0) {
+      const firstError = Object.values(newErrors)[0];
+      showErrorNotification(firstError, 'Lỗi dữ liệu');
+      return false;
+    }
+    
+    return true;
   };
 
   const handleChange = (
@@ -120,171 +132,129 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
   };
 
   return (
-    <Paper component="form" onSubmit={handleSubmit} sx={{ p: 3 }}>
-      <Stack spacing={3}>
-        {/* Thông tin cơ bản */}
-        <Box>
-          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-            Thông tin cơ bản
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-              <Box sx={{ flex: 1 }}>
+    <>
+      <Paper component="form" onSubmit={handleSubmit} sx={{ p: 3 }}>
+        <Stack spacing={3}>
+          {/* Thông tin cơ bản */}
+          <Box>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Thông tin cơ bản
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    required
+                    label="Tên trường"
+                    name="name"
+                    value={formData.name || ''}
+                    onChange={handleChange}
+                    error={!!errors.name}
+                    helperText={errors.name}
+                    disabled={isSubmitting}
+                    margin="normal"
+                  />
+                </Box>
+              </Stack>
+              <Box>
                 <TextField
                   fullWidth
-                  required
-                  label="Tên trường"
-                  name="name"
-                  value={formData.name || ''}
-                  onChange={handleChange}
-                  error={!!errors.name}
-                  helperText={errors.name}
-                  disabled={isSubmitting}
-                  margin="normal"
-                />
-              </Box>
-            </Stack>
-            <Box>
-              <TextField
-                fullWidth
-                label="Địa chỉ"
-                name="address"
-                value={formData.address || ''}
-                onChange={handleChange}
-                disabled={isSubmitting}
-                margin="normal"
-              />
-            </Box>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-              <Box sx={{ flex: 1 }}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Thành phố"
-                  name="city"
+                  label="Địa chỉ"
+                  name="address"
                   value={formData.address || ''}
                   onChange={handleChange}
                   disabled={isSubmitting}
                   margin="normal"
-                >
-                  {CITIES.map((city) => (
-                    <MenuItem key={city} value={city}>
-                      {city}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <TextField
-                  fullWidth
-                  label="Quận/Huyện"
-                  name="district"
-                  value={formData.district || ''}
-                  onChange={handleChange}
-                  disabled={isSubmitting}
-                  margin="normal"
                 />
               </Box>
-            </Stack>
+            </Box>
           </Box>
-        </Box>
 
-        {/* Thông tin liên hệ */}
-        <Box>
-          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-            Thông tin liên hệ
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-              <Box sx={{ flex: 1 }}>
-                <TextField
-                  fullWidth
-                  required
-                  type="email"
-                  label="Email"
-                  name="email"
-                  value={formData.email || ''}
-                  onChange={handleChange}
-                  error={!!errors.email}
-                  helperText={errors.email}
-                  disabled={isSubmitting}
-                  margin="normal"
-                />
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <TextField
-                  fullWidth
-                  type="tel"
-                  label="Số điện thoại"
-                  name="phone"
-                  value={formData.phone || ''}
-                  onChange={handleChange}
-                  error={!!errors.phone}
-                  helperText={errors.phone}
-                  disabled={isSubmitting}
-                  margin="normal"
-                />
-              </Box>
-            </Stack>
-            <Box>
-              <TextField
-                fullWidth
-                type="url"
-                label="Website"
-                name="website"
-                value={formData.website || ''}
-                onChange={handleChange}
-                disabled={isSubmitting}
-                margin="normal"
+          {/* Thông tin liên hệ */}
+          <Box>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Thông tin liên hệ
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    required
+                    type="email"
+                    label="Email"
+                    name="email"
+                    value={formData.email || ''}
+                    onChange={handleChange}
+                    error={!!errors.email}
+                    helperText={errors.email}
+                    disabled={isSubmitting}
+                    margin="normal"
+                  />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    type="tel"
+                    label="Số điện thoại"
+                    name="phone"
+                    value={formData.phone || ''}
+                    onChange={handleChange}
+                    error={!!errors.phone}
+                    helperText={errors.phone}
+                    disabled={isSubmitting}
+                    margin="normal"
+                  />
+                </Box>
+              </Stack>
+            </Box>
+          </Box>
+
+          {/* Thông tin khác */}
+          <Box>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Thông tin khác
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.isActive || false}
+                    onChange={handleSwitchChange}
+                    name="isActive"
+                    disabled={isSubmitting}
+                  />
+                }
+                label="Trường đang hoạt động"
               />
             </Box>
           </Box>
-        </Box>
 
-        {/* Thông tin khác */}
-        <Box>
-          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-            Thông tin khác
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              label="Mô tả"
-              name="description"
-              value={formData.description || ''}
-              onChange={handleChange}
-              disabled={isSubmitting}
-              margin="normal"
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.isActive || false}
-                  onChange={handleSwitchChange}
-                  name="isActive"
-                  disabled={isSubmitting}
-                />
-              }
-              label="Trường đang hoạt động"
-            />
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+            <Stack direction="row" spacing={2}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={isSubmitting}
+              >
+                {submitButtonText}
+              </Button>
+            </Stack>
           </Box>
-        </Box>
+        </Stack>
+      </Paper>
 
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            disabled={isSubmitting}
-          >
-            {submitButtonText}
-          </Button>
-        </Box>
-      </Stack>
-    </Paper>
+      <NotificationSnackbar
+        open={notificationState.open}
+        onClose={hideNotification}
+        severity={notificationState.severity}
+        title={notificationState.title}
+        message={notificationState.message}
+      />
+    </>
   );
 };
 
-export default SchoolForm; 
+export default SchoolForm;

@@ -100,7 +100,15 @@ export const useCreateSchool = () => {
       setSuccess(true);
       return newSchool;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi tạo trường học mới');
+      // Xử lý lỗi từ backend
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosError = err as { response?: { data?: { message?: string } } };
+        // Lấy thông báo lỗi từ response nếu có
+        const errorMessage = axiosError.response?.data?.message || 'Lỗi khi tạo trường học mới';
+        setError(errorMessage);
+      } else {
+        setError(err instanceof Error ? err.message : 'Lỗi khi tạo trường học mới');
+      }
       return null;
     } finally {
       setLoading(false);
@@ -125,7 +133,15 @@ export const useUpdateSchool = () => {
       setSuccess(true);
       return updatedSchool;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi cập nhật trường học');
+      // Xử lý lỗi từ backend
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosError = err as { response?: { data?: { message?: string } } };
+        // Lấy thông báo lỗi từ response nếu có
+        const errorMessage = axiosError.response?.data?.message || `Lỗi khi cập nhật trường học (ID: ${id})`;
+        setError(errorMessage);
+      } else {
+        setError(err instanceof Error ? err.message : `Lỗi khi cập nhật trường học (ID: ${id})`);
+      }
       return null;
     } finally {
       setLoading(false);
@@ -150,7 +166,15 @@ export const useDeleteSchool = () => {
       setSuccess(true);
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi xóa trường học');
+      // Xử lý lỗi từ backend
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosError = err as { response?: { data?: { message?: string } } };
+        // Lấy thông báo lỗi từ response nếu có
+        const errorMessage = axiosError.response?.data?.message || `Lỗi khi xóa trường học (ID: ${id})`;
+        setError(errorMessage);
+      } else {
+        setError(err instanceof Error ? err.message : `Lỗi khi xóa trường học (ID: ${id})`);
+      }
       return false;
     } finally {
       setLoading(false);

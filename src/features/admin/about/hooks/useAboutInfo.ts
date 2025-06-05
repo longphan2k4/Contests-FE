@@ -12,9 +12,8 @@ export const useAboutInfo = () => {
       fanpage: '',
       mapEmbedCode: '',
       isActive: true,
-      logo:'',
-      banner:'',
-    }
+      logo: '',
+      banner: ''}
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -54,8 +53,8 @@ export const useAboutInfo = () => {
   };
 
   // Khôi phục dữ liệu mặc định
-  const handleResetToDefault = async () => {
-    const defaultData = await getAboutInfo();
+  const handleResetToDefault = () => {
+    const defaultData = getMockAboutInfo();
     setAboutInfo(defaultData);
   };
 
