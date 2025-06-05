@@ -6,7 +6,7 @@ import {
   DialogActions,
   TextField,
 } from '@mui/material';
-import Button from './button';
+import Button from './Button'; 
 export type FieldConfig<T> = {
   label: string;
   field: keyof T;
