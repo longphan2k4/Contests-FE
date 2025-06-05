@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
-import { getMockAboutInfo, updateAboutInfo } from '../services/aboutService';
+import { getAboutInfo, updateAboutInfo } from '../services/aboutService';
 import type { About } from '../types/about';
 
 export const useAboutInfo = () => {
   const [aboutInfo, setAboutInfo] = useState<About>({
-    id: 0,
-    schoolName: '',
-    website: '',
-    departmentName: '',
-    email: '',
-    fanpage: '',
-    mapEmbedCode: '',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    data: {
+      schoolName: '',
+      website: '',
+      departmentName: '',
+      email: '',
+      fanpage: '',
+      mapEmbedCode: '',
+      isActive: true,
+      logo:'',
+      banner:'',
+    }
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,8 +23,10 @@ export const useAboutInfo = () => {
   useEffect(() => {
     const fetchAboutInfo = async () => {
       try {
-        const data = getMockAboutInfo();
-        setAboutInfo(data);
+        // const data = getMockAboutInfo();
+        const aboutInfo = await getAboutInfo();
+        console.log(aboutInfo);
+        setAboutInfo(aboutInfo);
       } catch (err) {
         setError('Không thể tải thông tin website');
         console.error(err);
@@ -39,7 +42,7 @@ export const useAboutInfo = () => {
   const handleSubmit = async (data: About): Promise<void> => {
     try {
       setLoading(true);
-      await updateAboutInfo(data);
+      await updateAboutInfo(data.data);
       setAboutInfo(data);
     } catch (err) {
       setError('Không thể cập nhật thông tin website');
@@ -51,8 +54,8 @@ export const useAboutInfo = () => {
   };
 
   // Khôi phục dữ liệu mặc định
-  const handleResetToDefault = () => {
-    const defaultData = getMockAboutInfo();
+  const handleResetToDefault = async () => {
+    const defaultData = await getAboutInfo();
     setAboutInfo(defaultData);
   };
 
@@ -65,4 +68,4 @@ export const useAboutInfo = () => {
   };
 };
 
-export default useAboutInfo; 
+export default useAboutInfo;

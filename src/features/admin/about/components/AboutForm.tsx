@@ -1,148 +1,193 @@
-import React, { useState } from 'react';
-import { Box, Typography, TextField, Button, Stack } from '@mui/material';
-import type { About } from '../types/about';
+import React from 'react';
+import {
+  Box,
+  TextField,
+  FormControlLabel,
+  Switch,
+  Stack,
+  Alert,
+  AlertTitle,
+  Typography,
+  Divider,
+  Snackbar
+} from '@mui/material';
+import type { About, AboutData } from '../types/about';
+import SaveIcon from '@mui/icons-material/Save';
+import { LoadingButton } from '@mui/lab';
+import FileUpload from '../../components/FileUpload';
+import { useAboutForm } from '../hooks/useAboutForm';
 
 interface AboutFormProps {
-  aboutInfo: About;
-  onSubmit: (data: About) => Promise<void>;
-  onReset: () => void;
+  initialData: About;
+  onSubmit: (data: Partial<AboutData>, logoFile?: File | null, bannerFile?: File | null) => Promise<void>;
+  isSubmitting: boolean;
 }
 
 /**
  * Component form chỉnh sửa thông tin giới thiệu
  */
-const AboutForm: React.FC<AboutFormProps> = ({ aboutInfo, onSubmit, onReset }) => {
-  const [formData, setFormData] = useState<About>(aboutInfo);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-
-  // Xử lý thay đổi input
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // Xử lý submit form
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      await onSubmit(formData);
-      setSuccess('Cập nhật thông tin thành công');
-    } catch (err) {
-      setError('Không thể cập nhật thông tin');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Xử lý reset form
-  const handleReset = () => {
-    onReset();
-    setFormData(aboutInfo);
-    setSuccess('Đã khôi phục dữ liệu mặc định');
-  };
+const AboutForm: React.FC<AboutFormProps> = ({ initialData, onSubmit, isSubmitting }) => {
+  const {
+    formData,
+    errors,
+    uploadError,
+    setUploadError,
+    handleChange,
+    handleLogoSelected,
+    handleBannerSelected,
+    handleSubmit
+  } = useAboutForm({ initialData, onSubmit });
 
   return (
     <Box component="form" onSubmit={handleSubmit} noValidate>
       <Stack spacing={3}>
-        {/* Thông tin cơ bản */}
-        <TextField
-          required
-          fullWidth
-          label="Tên trường"
-          name="schoolName"
-          value={formData.schoolName}
-          onChange={handleChange}
-        />
-        
-        {/* Thông tin website và khoa */}
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+        <Typography variant="h6">Thông tin cơ bản</Typography>
+        <Stack direction="row" spacing={2}>
+          <TextField
+            fullWidth
+            label="Tên đơn vị"
+            name="schoolName"
+            value={formData.schoolName || ''}
+            onChange={handleChange}
+            error={!!errors.schoolName}
+            helperText={errors.schoolName}
+            required
+          />
+          <TextField
+            fullWidth
+            label="Tên phòng ban"
+            name="departmentName"
+            value={formData.departmentName || ''}
+            onChange={handleChange}
+            error={!!errors.departmentName}
+            helperText={errors.departmentName}
+            required
+          />
+        </Stack>
+
+        <Stack direction="row" spacing={2}>
+          <TextField
+            fullWidth
+            label="Email"
+            name="email"
+            value={formData.email || ''}
+            onChange={handleChange}
+            error={!!errors.email}
+            helperText={errors.email}
+          />
           <TextField
             fullWidth
             label="Website"
             name="website"
             value={formData.website || ''}
             onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            label="Tên khoa"
-            name="departmentName"
-            value={formData.departmentName || ''}
-            onChange={handleChange}
+            error={!!errors.website}
+            helperText={errors.website}
           />
         </Stack>
-        
-        {/* Thông tin liên hệ */}
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <TextField
-            fullWidth
-            label="Email"
-            name="email"
-            type="email"
-            value={formData.email || ''}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            label="Fanpage"
-            name="fanpage"
-            value={formData.fanpage || ''}
-            onChange={handleChange}
-          />
-        </Stack>
-        
-        {/* Mã nhúng bản đồ */}
+
         <TextField
           fullWidth
-          label="Mã nhúng bản đồ (Google Maps Embed)"
-          name="mapEmbedCode"
-          multiline
-          rows={4}
-          value={formData.mapEmbedCode || ''}
+          label="Fanpage"
+          name="fanpage"
+          value={formData.fanpage || ''}
           onChange={handleChange}
-          helperText="Dán mã nhúng iframe từ Google Maps"
+          error={!!errors.fanpage}
+          helperText={errors.fanpage}
+        />
+
+        <Divider />
+        <Typography variant="h6">Logo</Typography>
+        <FileUpload 
+          currentFile={formData.logo || null}
+          onFileSelected={handleLogoSelected}
+          acceptTypes="image/png, image/jpeg"
+          label="Tải lên logo"
+          maxSize={2}
+          previewWidth={300}
         />
         
-        {/* Thông báo lỗi và thành công */}
-        {error && (
-          <Typography color="error">{error}</Typography>
+        {errors.logo && (
+          <Alert severity="error">{errors.logo}</Alert>
         )}
+
+        <Typography variant="h6">Banner</Typography>
+        <FileUpload 
+          currentFile={formData.banner || null}
+          onFileSelected={handleBannerSelected}
+          acceptTypes="image/png, image/jpeg"
+          label="Tải lên banner"
+          maxSize={5}
+          previewWidth={300}
+        />
         
-        {success && (
-          <Typography color="primary">{success}</Typography>
+        {errors.banner && (
+          <Alert severity="error">{errors.banner}</Alert>
         )}
-        
-        {/* Các nút hành động */}
-        <Stack direction="row" spacing={2}>
-          <Button
+
+        <Typography variant="h6">Bản đồ</Typography>
+        <TextField
+          fullWidth
+          label="Mã nhúng Google Maps"
+          name="mapEmbedCode"
+          value={formData.mapEmbedCode || ''}
+          onChange={handleChange}
+          multiline
+          rows={4}
+          placeholder="<iframe src='https://www.google.com/maps/embed?...'></iframe>"
+        />
+
+        {formData.mapEmbedCode && (
+          <Box>
+            <Typography variant="subtitle2" gutterBottom>Xem trước:</Typography>
+            <Box sx={{ border: '1px solid #ddd', p: 1, borderRadius: 1, minHeight: 300 }}>
+              <div dangerouslySetInnerHTML={{ __html: formData.mapEmbedCode || '' }} />
+            </Box>
+          </Box>
+        )}
+
+        <Divider />
+
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <FormControlLabel
+            control={
+              <Switch
+                checked={formData.isActive || false}
+                onChange={handleChange}
+                name="isActive"
+                color="primary"
+              />
+            }
+            label="Hiển thị trên trang web"
+          />
+          
+          <LoadingButton
             type="submit"
             variant="contained"
-            color="primary"
-            disabled={loading}
+            loading={isSubmitting}
+            loadingPosition="start"
+            startIcon={<SaveIcon />}
           >
-            {loading ? 'Đang xử lý...' : 'Cập nhật thông tin'}
-          </Button>
-          <Button
-            type="button"
-            variant="outlined"
-            onClick={handleReset}
-          >
-            Khôi phục mặc định
-          </Button>
+            Lưu thay đổi
+          </LoadingButton>
         </Stack>
       </Stack>
+
+      {uploadError && (
+        <Snackbar
+          open={!!uploadError}
+          autoHideDuration={6000}
+          onClose={() => setUploadError(null)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <Alert onClose={() => setUploadError(null)} severity="error">
+            <AlertTitle>Lỗi tải lên</AlertTitle>
+            {uploadError}
+          </Alert>
+        </Snackbar>
+      )}
     </Box>
   );
 };
 
-export default AboutForm; 
+export default AboutForm;
