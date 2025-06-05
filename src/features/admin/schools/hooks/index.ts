@@ -1,22 +1,27 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getSchools, getSchoolById, createSchool, updateSchool, deleteSchool } from '../services';
-import type { School, SchoolFilter, SchoolsResponse } from '../types/school';
+import { getSchools, getSchoolById, createSchool, updateSchool, deleteSchool, toggleSchoolActive } from '../services/schoolService';
+import type { School, SchoolFilter} from '../types/school';
 
 // Hook để lấy danh sách trường học
 export const useSchools = (initialFilter?: SchoolFilter) => {
   const [schools, setSchools] = useState<School[]>([]);
   const [total, setTotal] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<SchoolFilter>(initialFilter || {});
+  const [filter, setFilter] = useState<SchoolFilter>(initialFilter || { page: 1, limit: 10 });
 
   const fetchSchools = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await getSchools(filter);
-      setSchools(response.schools);
-      setTotal(response.total);
+      
+      // API trả về cấu trúc mới
+      setSchools(response.school);
+      setTotal(response.pagination.total);
+      setTotalPages(response.pagination.totalPages);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Lỗi khi tải danh sách trường học');
       setSchools([]);
@@ -27,33 +32,22 @@ export const useSchools = (initialFilter?: SchoolFilter) => {
   }, [filter]);
 
   // Chỉ fetch khi component mount hoặc filter thay đổi căn bản
-  // Không fetch lại khi isActive thay đổi (được xử lý ở client)
   useEffect(() => {
     fetchSchools();
   }, [fetchSchools]);
 
   // Dùng debounce để tránh fetch quá nhiều lần
   const updateFilter = useCallback((newFilter: Partial<SchoolFilter>) => {
-    // Nếu chỉ là isActive thay đổi, không cần fetch lại
-    if (Object.keys(newFilter).length === 1 && 'isActive' in newFilter) {
-      setFilter(prev => ({
-        ...prev,
-        isActive: newFilter.isActive
-      }));
-      return;
-    }
-
     setFilter((prev) => ({
       ...prev,
       ...newFilter,
-      // Reset về trang đầu khi thay đổi bộ lọc
-      page: newFilter.page !== undefined ? newFilter.page : 0
     }));
   }, []);
 
   return {
     schools,
     total,
+    totalPages,
     loading,
     error,
     filter,
@@ -164,4 +158,29 @@ export const useDeleteSchool = () => {
   };
 
   return { remove, loading, error, success };
-}; 
+};
+
+// Hook để chuyển đổi trạng thái hoạt động của trường học
+export const useToggleSchoolActive = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
+
+  const toggle = async (id: number): Promise<School | null> => {
+    try {
+      setLoading(true);
+      setError(null);
+      setSuccess(false);
+      const updatedSchool = await toggleSchoolActive(id);
+      setSuccess(true);
+      return updatedSchool;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Lỗi khi chuyển đổi trạng thái trường học');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { toggle, loading, error, success };
+};

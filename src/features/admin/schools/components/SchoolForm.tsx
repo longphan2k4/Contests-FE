@@ -39,14 +39,9 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<Partial<School>>({
     name: '',
-    code: '',
     address: '',
-    city: '',
-    district: '',
     email: '',
     phone: '',
-    website: '',
-    description: '',
     isActive: true,
     ...initialData
   });
@@ -55,14 +50,9 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
   useEffect(() => {
     setFormData({
       name: '',
-      code: '',
       address: '',
-      city: '',
-      district: '',
       email: '',
       phone: '',
-      website: '',
-      description: '',
       isActive: true,
       ...initialData
     });
@@ -79,10 +69,6 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
       newErrors.name = 'Tên trường không được để trống';
     }
 
-    // Kiểm tra mã trường
-    if (!formData.code?.trim()) {
-      newErrors.code = 'Mã trường không được để trống';
-    }
 
     // Kiểm tra email
     if (!formData.email?.trim()) {
@@ -157,20 +143,6 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
                   margin="normal"
                 />
               </Box>
-              <Box sx={{ flex: 1 }}>
-                <TextField
-                  fullWidth
-                  required
-                  label="Mã trường"
-                  name="code"
-                  value={formData.code || ''}
-                  onChange={handleChange}
-                  error={!!errors.code}
-                  helperText={errors.code || 'Mã viết tắt của trường, ví dụ: HUST'}
-                  disabled={isSubmitting}
-                  margin="normal"
-                />
-              </Box>
             </Stack>
             <Box>
               <TextField
@@ -190,7 +162,7 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
                   fullWidth
                   label="Thành phố"
                   name="city"
-                  value={formData.city || ''}
+                  value={formData.address || ''}
                   onChange={handleChange}
                   disabled={isSubmitting}
                   margin="normal"

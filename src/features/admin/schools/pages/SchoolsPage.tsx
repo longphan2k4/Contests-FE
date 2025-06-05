@@ -14,7 +14,7 @@ import { useSchools } from '../hooks';
 import type { SchoolFilter } from '../types/school';
 
 const SchoolsPage: React.FC = () => {
-  const { schools, loading, error, filter, updateFilter } = useSchools();
+  const { schools, loading, error, filter, updateFilter, totalPages } = useSchools();
 
   const handleFilterChange = (newFilter: SchoolFilter) => {
     updateFilter(newFilter);
@@ -62,6 +62,7 @@ const SchoolsPage: React.FC = () => {
           schools={schools} 
           filter={filter}
           onFilterChange={handleFilterChange}
+          totalPages={totalPages}
         />
       </Paper>
     </Box>
