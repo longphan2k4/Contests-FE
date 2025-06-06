@@ -2,6 +2,7 @@ import { Route, Navigate } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
 import ContestantsPage from './pages/ContestantsManage/ContestantsPage';
 import AboutAdminPage from './about/pages/AboutAdminPage';
+import UsersPage from './UsersManagement/pages/UsersPage';
 import {
   SchoolsPage,
   SchoolCreatePage,
