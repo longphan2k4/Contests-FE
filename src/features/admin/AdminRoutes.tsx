@@ -2,6 +2,7 @@ import { Route, Navigate } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
 import ContestantsPage from './pages/ContestantsManage/ContestantsPage';
 import AboutAdminPage from './about/pages/AboutAdminPage';
+import UsersPage from './UsersManagement/pages/UsersPage';
 import {
   SchoolsPage,
   SchoolCreatePage,
@@ -44,6 +45,8 @@ const AdminRoutes = () => {
       <Route path="class-videos" element={<ClassVideosPage />} />
       <Route path="about" element={<AboutAdminPage />} />
       <Route path="settings" element={<SettingsPage />} />
+      <Route path="users" element={<UsersPage />} />
+      {/* Chuyển hướng về dashboard nếu không có route nào khớp */}
       <Route index element={<Navigate to="/admin/dashboard" replace />} />
     </Route>
   );
