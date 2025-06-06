@@ -1,33 +1,34 @@
-import { useState, useEffect } from 'react';
-import { Box, FormControlLabel, Checkbox } from '@mui/material';
+import { useState } from 'react';
+import { Box, FormControlLabel, Checkbox, Pagination } from '@mui/material';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import SearchableTable from '../../components/SearchableTable';
 import TableActionButton from '../../components/TableActionButton';
-import SelectFilter from '../../components/Select';
-import type { School } from '../types';
-import type { SchoolFilter } from '../types/school';
+import type { School, SchoolFilter } from '../types/school';
 
 interface SchoolListProps {
   schools: School[];
   filter?: SchoolFilter;
   onFilterChange?: (filter: SchoolFilter) => void;
+  totalPages?: number;
 }
 
-const SchoolList = ({ schools, filter, onFilterChange }: SchoolListProps) => {
-  const [filteredData, setFilteredData] = useState<School[]>(schools);
+const SchoolList = ({ 
+  schools, 
+  filter, 
+  onFilterChange,
+  totalPages = 1
+}: SchoolListProps) => {
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(filter?.isActive || false);
 
-  // Chỉ áp dụng bộ lọc local, không gọi API lại
-  useEffect(() => {
-    let result = schools;
-    
-    // Lọc theo trạng thái hoạt động
-    if (showActiveOnly) {
-      result = result.filter(school => school.isActive);
+  // Xử lý thay đổi trang
+  const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
+    if (onFilterChange) {
+      onFilterChange({
+        ...filter,
+        page
+      });
     }
-    
-    setFilteredData(result);
-  }, [schools, showActiveOnly]);
+  };
 
   // Handle local filter changes
   const handleActiveFilterChange = (checked: boolean) => {
@@ -76,28 +77,10 @@ const SchoolList = ({ schools, filter, onFilterChange }: SchoolListProps) => {
     },
   ];
 
-  // Danh sách các thành phố để lọc
-  const cities = Array.from(new Set(schools.map(school => school.city)));
-
-  const handleCityFilter = (cityFilteredData: School[]) => {
-    setFilteredData(showActiveOnly 
-      ? cityFilteredData.filter(school => school.isActive)
-      : cityFilteredData
-    );
-  };
-
   return (
     <>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={2}>
-        <Box display="flex" alignItems="center" gap={2}>
-          <SelectFilter<School>
-            label="Lọc theo thành phố"
-            field="city"
-            options={cities}
-            data={schools}
-            onFilter={handleCityFilter}
-          />
-          
+        <Box display="flex" alignItems="center" gap={2}>          
           <FormControlLabel
             control={
               <Checkbox 
@@ -111,11 +94,22 @@ const SchoolList = ({ schools, filter, onFilterChange }: SchoolListProps) => {
       </Box>
 
       <SearchableTable
-        data={filteredData}
+        data={schools}
         columns={columns}
         getRowId={(row) => row.id}
         searchField="name"
       />
+
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" mt={3}>
+          <Pagination 
+            count={totalPages} 
+            page={filter?.page || 1}
+            onChange={handlePageChange}
+            color="primary" 
+          />
+        </Box>
+      )}
     </>
   );
 };

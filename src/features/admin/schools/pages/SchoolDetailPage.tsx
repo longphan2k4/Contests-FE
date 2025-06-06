@@ -155,18 +155,15 @@ const SchoolDetailPage: React.FC = () => {
           {/* Thông tin cơ bản */}
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
             <Avatar
-              src={school.logo}
               alt={school.name}
               variant="rounded"
               sx={{ width: 80, height: 80, mr: 2 }}
             >
-              {school.code.charAt(0)}
             </Avatar>
             <Box>
               <Typography variant="h5">{school.name}</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
                 <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
-                  Mã: <strong>{school.code}</strong>
                 </Typography>
                 <Chip
                   label={school.isActive ? 'Đang hoạt động' : 'Không hoạt động'}

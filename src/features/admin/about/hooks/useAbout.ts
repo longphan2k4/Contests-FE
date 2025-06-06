@@ -32,8 +32,8 @@ export const useAbout = (): UseAboutReturn => {
   };
 
   const updateAboutInfo = async (
-    data: Partial<AboutData>, 
-    logoFile?: File | null, 
+    data: Partial<AboutData>,
+    logoFile?: File | null,
     bannerFile?: File | null
   ): Promise<void> => {
     try {

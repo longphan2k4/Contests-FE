@@ -4,15 +4,9 @@
 export interface School {
   id: number;
   name: string;
-  code: string;
   address: string;
-  city: string;
-  district: string;
   email: string;
   phone: string;
-  website?: string;
-  logo?: string;
-  description?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -23,18 +17,36 @@ export interface School {
  */
 export interface SchoolFilter {
   search?: string;
-  city?: string;
-  isActive?: boolean;
   page?: number;
   limit?: number;
+  isActive?: boolean;
+}
+
+/**
+ * Interface cho kết quả phân trang
+ */
+export interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
 }
 
 /**
  * Interface cho kết quả danh sách có phân trang
  */
 export interface SchoolsResponse {
-  schools: School[];
-  total: number;
-  page: number;
-  limit: number;
+  school: School[];
+  pagination: Pagination;
+}
+
+/**
+ * Interface cho API response
+ */
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
 } 
