@@ -48,7 +48,7 @@ export const useSchoolForm = (
         ...initialData
       });
     }
-  }, [initialData?.id]);
+  }, [initialData]);
 
   const validateForm = (): boolean => {
     try {

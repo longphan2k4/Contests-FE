@@ -16,23 +16,27 @@ const InfoItem: React.FC<InfoItemProps> = ({ icon, label, value, isLink = false,
   if (!value) return null;
 
   return (
-    <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
       <Box sx={{ mr: 1 }}>{icon}</Box>
       <Box>
-        <strong>{label}:</strong>{' '}
-        {isLink ? (
-          <Link 
-            href={linkType === 'email' ? `mailto:${value}` : value}
-            target={linkType === 'web' ? '_blank' : undefined}
-            rel={linkType === 'web' ? 'noopener' : undefined}
-          >
-            {value}
-          </Link>
-        ) : (
-          value
-        )}
+        <Typography component="span" variant="body1" sx={{ fontWeight: 'bold' }}>
+          {label}:
+        </Typography>{' '}
+        <Typography component="span" variant="body1">
+          {isLink ? (
+            <Link 
+              href={linkType === 'email' ? `mailto:${value}` : value}
+              target={linkType === 'web' ? '_blank' : undefined}
+              rel={linkType === 'web' ? 'noopener' : undefined}
+            >
+              {value}
+            </Link>
+          ) : (
+            value
+          )}
+        </Typography>
       </Box>
-    </Typography>
+    </Box>
   );
 };
 

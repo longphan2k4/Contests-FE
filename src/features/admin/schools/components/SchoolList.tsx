@@ -9,20 +9,24 @@ interface SchoolListProps {
   filter?: SchoolFilter;
   onFilterChange?: (filter: SchoolFilter) => void;
   totalPages?: number;
+  onViewDetail?: (school: School) => void;
+  onEdit?: (school: School) => void;
 }
 
 const SchoolList: React.FC<SchoolListProps> = ({ 
   schools, 
   filter, 
   onFilterChange,
-  totalPages = 1
+  totalPages = 1,
+  onViewDetail,
+  onEdit
 }) => {
   const {
     showActiveOnly,
     columns,
     handlePageChange,
     handleActiveFilterChange
-  } = useSchoolList(filter, onFilterChange);
+  } = useSchoolList(filter, onFilterChange, onViewDetail, onEdit);
 
   return (
     <>
