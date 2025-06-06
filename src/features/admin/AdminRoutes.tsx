@@ -2,10 +2,15 @@ import { Route, Navigate } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
 import ContestantsPage from './pages/ContestantsManage/ContestantsPage';
 import AboutAdminPage from './about/pages/AboutAdminPage';
-import UsersPage from './UsersManagement/pages/UsersPage';
+import {
+  SchoolsPage,
+  SchoolCreatePage,
+  SchoolDetailPage
+} from './schools/pages';
+
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
-const SchoolsPage = () => <div>Trang Quản lý trường học</div>;
+//const SchoolsPage = () => <div>Trang Quản lý trường học</div>;
 const ClassesPage = () => <div>Trang Quản lý lớp học</div>;
 const StudentsPage = () => <div>Trang Quản lý sinh viên</div>;
 const QuestionTopicsPage = () => <div>Trang Quản lý chủ đề câu hỏi</div>;
@@ -24,6 +29,8 @@ const AdminRoutes = () => {
     <Route path="/admin" element={<AdminLayout />}>
       <Route path="dashboard" element={<Dashboard />} />
       <Route path="schools" element={<SchoolsPage />} />
+      <Route path="schools/create" element={<SchoolCreatePage />} />
+      <Route path="schools/:id" element={<SchoolDetailPage />} />
       <Route path="classes" element={<ClassesPage />} />
       <Route path="students" element={<StudentsPage />} />
       <Route path="question-topics" element={<QuestionTopicsPage />} />
