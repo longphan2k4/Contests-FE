@@ -19,7 +19,7 @@ interface CreateSchoolDialogProps {
 }
 
 const CreateSchoolDialog = ({ open, onClose, onCreated }: CreateSchoolDialogProps) => {
-  const { create, loading, error } = useCreateSchool();
+  const { create, loading, error, validationErrors } = useCreateSchool();
   const {
     notificationState,
     showErrorNotification,
@@ -27,12 +27,12 @@ const CreateSchoolDialog = ({ open, onClose, onCreated }: CreateSchoolDialogProp
     hideNotification
   } = useNotification();
 
-  // Hiển thị lỗi nếu có
+  // Hiển thị lỗi chung nếu có và không phải lỗi validation
   useEffect(() => {
-    if (error) {
+    if (error && (!validationErrors || validationErrors.length === 0)) {
       showErrorNotification(error);
     }
-  }, [error, showErrorNotification]);
+  }, [error, validationErrors, showErrorNotification]);
 
   const handleSubmit = async (data: Partial<School>) => {
     try {
@@ -48,7 +48,7 @@ const CreateSchoolDialog = ({ open, onClose, onCreated }: CreateSchoolDialogProp
         }, 1500);
       }
     } catch {
-      // Lỗi đã được xử lý bởi hook useCreateSchool và useEffect bên trên
+      // Lỗi đã được xử lý bởi hook useCreateSchool và useEffect
     }
   };
 
@@ -83,6 +83,7 @@ const CreateSchoolDialog = ({ open, onClose, onCreated }: CreateSchoolDialogProp
             onSubmit={handleSubmit} 
             isSubmitting={loading}
             submitButtonText="Tạo mới"
+            validationErrors={validationErrors}
           />
         </DialogContent>
       </Dialog>
@@ -98,4 +99,4 @@ const CreateSchoolDialog = ({ open, onClose, onCreated }: CreateSchoolDialogProp
   );
 };
 
-export default CreateSchoolDialog; 
+export default CreateSchoolDialog;

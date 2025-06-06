@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import React from 'react';
 import { Box, FormControlLabel, Checkbox, Pagination } from '@mui/material';
-import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import SearchableTable from '../../components/SearchableTable';
-import TableActionButton from '../../components/TableActionButton';
 import type { School, SchoolFilter } from '../types/school';
+import SearchableTable from '../../components/SearchableTable';
+import { useSchoolList } from '../hooks/list/useSchoolList';
 
 interface SchoolListProps {
   schools: School[];
@@ -12,70 +11,18 @@ interface SchoolListProps {
   totalPages?: number;
 }
 
-const SchoolList = ({ 
+const SchoolList: React.FC<SchoolListProps> = ({ 
   schools, 
   filter, 
   onFilterChange,
   totalPages = 1
-}: SchoolListProps) => {
-  const [showActiveOnly, setShowActiveOnly] = useState<boolean>(filter?.isActive || false);
-
-  // Xử lý thay đổi trang
-  const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
-    if (onFilterChange) {
-      onFilterChange({
-        ...filter,
-        page
-      });
-    }
-  };
-
-  // Handle local filter changes
-  const handleActiveFilterChange = (checked: boolean) => {
-    setShowActiveOnly(checked);
-    
-    if (onFilterChange) {
-      onFilterChange({
-        ...filter,
-        isActive: checked
-      });
-    }
-  };
-
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'name', headerName: 'Tên trường', flex: 2 },
-    { field: 'address', headerName: 'Địa chỉ', width: 150 },
-    { field: 'email', headerName: 'Email', width: 200 },
-    { field: 'phone', headerName: 'SĐT', width: 150 },
-    { 
-      field: 'isActive', 
-      headerName: 'Trạng thái', 
-      width: 120,
-      renderCell: (params: GridRenderCellParams<School>) => (
-        <span style={{ color: params.row.isActive ? 'green' : 'red' }}>
-          {params.row.isActive ? 'Hoạt động' : 'Đã khóa'}
-        </span>
-      )
-    },
-    {
-      field: 'actions',
-      headerName: 'Hành động',
-      width: 150,
-      sortable: false,
-      filterable: false,
-      renderCell: (params: GridRenderCellParams<School>) => (
-        <TableActionButton
-          onView={() => {
-            window.location.href = `/admin/schools/${params.row.id}`;
-          }}
-          onEdit={() => {
-            window.location.href = `/admin/schools/edit/${params.row.id}`;
-          }}
-        />
-      ),
-    },
-  ];
+}) => {
+  const {
+    showActiveOnly,
+    columns,
+    handlePageChange,
+    handleActiveFilterChange
+  } = useSchoolList(filter, onFilterChange);
 
   return (
     <>

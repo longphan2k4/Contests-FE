@@ -43,10 +43,31 @@ export interface SchoolsResponse {
 }
 
 /**
+ * Interface cho lỗi validation từ backend 
+ */
+export interface ValidationError {
+  field: string;
+  message: string;
+}
+
+/**
+ * Interface cho API response with error
+ */
+export interface ApiErrorResponse {
+  success: boolean;
+  message: string;
+  error?: {
+    type: string;
+    details: ValidationError[];
+  };
+  timestamp: string;
+}
+
+/**
  * Interface cho API response
  */
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
-} 
+}
