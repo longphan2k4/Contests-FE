@@ -10,14 +10,18 @@ import {
   Select,
   MenuItem,
   Stack,
-  Button,
   useTheme,
   useMediaQuery,
-  CircularProgress
+  CircularProgress,
+  Tooltip,
+  IconButton,
+  Button
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
-import { DataGrid, type GridRenderCellParams, type GridRowId } from '@mui/x-data-grid';
+import { DataGrid, type GridRenderCellParams } from '@mui/x-data-grid';
 import SearchIcon from '@mui/icons-material/Search';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
 import type { QuestionTopic } from '../types/questionTopic';
 import { useQuestionTopicList } from '../hooks/list/useQuestionTopicList';
 
@@ -34,7 +38,7 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [searchTerm, setSearchTerm] = useState('');
   const [showActiveOnly, setShowActiveOnly] = useState(false);
-  const [selectionModel, setSelectionModel] = useState<{ type: 'include', ids: Set<GridRowId> }>({ type: 'include', ids: new Set() });
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   const {
     questionTopics,
@@ -62,6 +66,11 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
     updateFilter({ page });
   };
 
+  const handleDeleteSelected = async () => {
+    // TODO: Gọi API xoá các chủ đề với selectedIds
+    // Sau khi xoá thành công, làm mới danh sách và setSelectedIds([])
+  };
+
   const columns = [
     {
       field: 'stt',
@@ -79,7 +88,7 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
     {
       field: 'isActive',
       headerName: 'Trạng thái',
-      width: 120,
+      width: 200,
       renderCell: (params: GridRenderCellParams<QuestionTopic, boolean>) => (
         <Typography
           color={params.value ? 'success.main' : 'error.main'}
@@ -90,36 +99,29 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
       ),
     },
     {
-      field: 'createdAt',
-      headerName: 'Ngày tạo',
-      width: 180,
-      renderCell: (params: GridRenderCellParams<QuestionTopic>) => (
-        <Typography>
-          {new Date(params.row.createdAt).toLocaleString('vi-VN')}
-        </Typography>
-      ),
-    },
-    {
       field: 'actions',
       headerName: 'Thao tác',
-      width: 150,
+      width: 300,
       renderCell: (params: GridRenderCellParams<QuestionTopic>) => (
         <Stack direction="row" spacing={1}>
-          <Button
-            size="small"
-            variant="outlined"
-            onClick={() => onViewDetail?.(params.row)}
-          >
-            Chi tiết
-          </Button>
-          <Button
-            size="small"
-            variant="outlined"
-            color="primary"
-            onClick={() => onEdit?.(params.row)}
-          >
-            Sửa
-          </Button>
+          <Tooltip title="Xem chi tiết">
+            <IconButton
+              size="small"
+              color="primary"
+              onClick={() => onViewDetail?.(params.row)}
+            >
+              <VisibilityIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Chỉnh sửa">
+            <IconButton
+              size="small"
+              color="secondary"
+              onClick={() => onEdit?.(params.row)}
+            >
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
         </Stack>
       ),
     },
@@ -159,6 +161,16 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
             <MenuItem value="inactive">Đã ẩn</MenuItem>
           </Select>
         </FormControl>
+        {selectedIds.size > 0 && (
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleDeleteSelected}
+            sx={{ ml: 2 }}
+          >
+            Xoá ({selectedIds.size})
+          </Button>
+        )}
         <Box flex={1} />
         <Typography sx={{ alignSelf: 'center' }}>
           Tổng số: {total} chủ đề
@@ -185,6 +197,7 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
             getRowId={(row) => row.id}
             loading={loading}
             autoHeight
+            hideFooter
             disableRowSelectionOnClick
             checkboxSelection
             pageSizeOptions={[10, 25, 50]}
@@ -197,9 +210,11 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
             onPaginationModelChange={({ page, pageSize }) => {
               updateFilter({ page: page + 1, limit: pageSize });
             }}
-            rowSelectionModel={selectionModel}
+            rowSelectionModel={{ type: 'include', ids: selectedIds }}
             onRowSelectionModelChange={(model) => {
-              setSelectionModel(model as { type: 'include', ids: Set<GridRowId> });
+              if (model && typeof model === 'object' && 'ids' in model) {
+                setSelectedIds(new Set(model.ids as unknown as number[]));
+              }
             }}
             initialState={{
               pagination: {
@@ -210,12 +225,34 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
             }}
           />
 
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
+              <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
+              <Select
+                labelId="page-size-select-label"
+                value={String(filter.limit || 10)}
+                onChange={(e) => updateFilter({ limit: Number(e.target.value), page: 1 })}
+                label="Hiển thị"
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={25}>25</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+              </Select>
+            </FormControl>
+            <Typography>
+              Trang {filter.page || 1} / {totalPages}
+            </Typography>
+          </Box>
+
           {totalPages > 1 && (
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
               <Pagination
                 count={totalPages}
                 page={filter.page || 1}
                 onChange={handlePageChange}
+                showFirstButton 
+                showLastButton  
                 color="primary"
               />
             </Box>

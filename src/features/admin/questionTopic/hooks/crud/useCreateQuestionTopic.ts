@@ -10,8 +10,6 @@ export const useCreateQuestionTopic = () => {
       setIsCreating(true);
       await createQuestionTopic(data);
       return true;
-    } catch (error) {
-      throw error;
     } finally {
       setIsCreating(false);
     }

@@ -16,6 +16,7 @@ import { useNotification } from '../../../../hooks';
 import NotificationSnackbar from '../../components/NotificationSnackbar';
 import { useCreateQuestionTopic, useUpdateQuestionTopic } from '../hooks/crud';
 import type { CreateQuestionTopicInput, UpdateQuestionTopicInput } from '../schemas/questionTopic.schema';
+import QuestionTopicDetailPopup from '../components/QuestionTopicDetailPopup';
 
 const QuestionTopicsPage: React.FC = () => {
   const { loading, error, refresh } = useQuestionTopicList();
@@ -124,7 +125,13 @@ const QuestionTopicsPage: React.FC = () => {
         maxWidth="md"
         fullWidth
       >
-        {/* TODO: Thêm QuestionTopicDetail component */}
+      {selectedQuestionTopic && (
+          <QuestionTopicDetailPopup
+            questionTopic={selectedQuestionTopic}
+            open={isDetailPopupOpen}
+            onClose={handleCloseDialog}
+          />
+        )}
       </Dialog>
 
       <Dialog 
@@ -137,6 +144,7 @@ const QuestionTopicsPage: React.FC = () => {
           onSubmit={handleCreateSubmit}
           onCancel={handleCloseDialog}
           isSubmitting={isCreating}
+          mode="create"
         />
       </Dialog>
 
@@ -146,12 +154,15 @@ const QuestionTopicsPage: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <QuestionTopicForm
-          questionTopic={selectedQuestionTopic || undefined}
-          onSubmit={handleUpdateSubmit}
-          onCancel={handleCloseDialog}
-          isSubmitting={isUpdating}
-        />
+        {selectedQuestionTopic && (
+          <QuestionTopicForm
+            questionTopic={selectedQuestionTopic}
+            onSubmit={handleUpdateSubmit}
+            onCancel={handleCloseDialog}
+            isSubmitting={isUpdating}
+            mode="edit"
+          />
+        )}
       </Dialog>
 
       <NotificationSnackbar

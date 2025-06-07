@@ -78,7 +78,9 @@ export const getQuestionTopics = async (filter?: QuestionTopicFilter): Promise<Q
 export const getQuestionTopicById = async (id: number): Promise<QuestionTopic> => {
   try {
     const response = await api.get<ApiResponse<QuestionTopic>>(`/question-topic/${id}`);
+    console.log(response.data.data);
     return response.data.data;
+
   } catch (error) {
     console.error(`Error fetching question topic with id ${id}:`, error);
     throw error;
@@ -90,7 +92,8 @@ export const getQuestionTopicById = async (id: number): Promise<QuestionTopic> =
  */
 export const createQuestionTopic = async (questionTopicData: Partial<QuestionTopic>): Promise<QuestionTopic> => {
   try {
-    const response = await api.post<ApiResponse<QuestionTopic>>('/question-topic', questionTopicData);
+    const response = await api.post<ApiResponse<QuestionTopic>>('/question-topics', questionTopicData);
+    console.log(response.data.data);
     return response.data.data;
   } catch (error) {
     console.error('Error creating question topic:', error);
@@ -103,7 +106,7 @@ export const createQuestionTopic = async (questionTopicData: Partial<QuestionTop
  */
 export const updateQuestionTopic = async (id: number, questionTopicData: Partial<QuestionTopic>): Promise<QuestionTopic> => {
   try {
-    const response = await api.patch<ApiResponse<QuestionTopic>>(`/question-topic/${id}`, questionTopicData);
+    const response = await api.put<ApiResponse<QuestionTopic>>(`/question-topics/${id}`, questionTopicData);
     return response.data.data;
   } catch (error) {
     console.error(`Error updating question topic with id ${id}:`, error);

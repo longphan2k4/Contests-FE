@@ -51,7 +51,12 @@ const SchoolStatusSwitch: React.FC<SchoolStatusSwitchProps> = ({
         />
       }
       labelPlacement="start"
-      sx={{ margin: 0 }}
+      sx={{ 
+        margin: 0,
+        '& .MuiFormControlLabel-label': {
+          color: isActive ? 'success.main' : 'error.main'
+        }
+      }}
     />
   );
 };

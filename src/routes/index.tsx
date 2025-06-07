@@ -23,8 +23,8 @@ const AppRoutes: React.FC = () => {
         {AdminRoutes()}
       </Route> */}
       <Route element={<PrivateRoute roles={["Admin", "Judge"]} />}>
-      </Route>
       {AdminRoutes()}
+      </Route>
 
       {/* Chuyển hướng từ / đến /auth/login nếu chưa đăng nhập hoặc /admin/dashboard nếu đã đăng nhập */}
       <Route
