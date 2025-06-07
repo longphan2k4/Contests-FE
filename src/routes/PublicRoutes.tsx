@@ -1,20 +1,15 @@
 import { Route } from "react-router-dom";
-// import PublicRoute from "./PublicRoute";
-
-// Tạo placeholder component cho các trang công khai
-const HomePage = () => <div>Trang chủ</div>;
-const AboutUsPage = () => <div>Giới thiệu</div>;
-const ContactPage = () => <div>Liên hệ</div>;
-const FAQPage = () => <div>Câu hỏi thường gặp</div>;
-
+import Forbidden403 from "../components/403";
+import NotFound404 from "../components/404";
+const HomePage = () => <div>Trang Chủ</div>;
 const PublicRoutes = () => {
   return (
     <>
       <Route path="/">
         <Route index element={<HomePage />} />
-        <Route path="about-us" element={<AboutUsPage />} />
-        <Route path="contact" element={<ContactPage />} />
-        <Route path="faq" element={<FAQPage />} />
+        <Route path="403" element={<Forbidden403 />} />
+        <Route path="404" element={<NotFound404 />} />
+        <Route path="*" element={<NotFound404 />} />
       </Route>
     </>
   );

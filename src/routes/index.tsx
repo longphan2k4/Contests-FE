@@ -8,6 +8,7 @@ import PublicRoutes from "./PublicRoutes";
 import MatchPage from "../features/match/pages/MatchPage";
 import TechBanner from "../features/match/components/MediaPopup/BackGround";
 import PrivateRoute from "./PrivateRoute";
+import Forbidden403 from "../components/403";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -24,6 +25,7 @@ const AppRoutes: React.FC = () => {
 
       <Route path="/match" element={<MatchPage />} />
       <Route path="/banner" element={<TechBanner />} />
+      <Route path="/403" element={<Forbidden403 />} />
       <Route path="*" element={<div>Trang không tồn tại</div>} />
     </Routes>
   );

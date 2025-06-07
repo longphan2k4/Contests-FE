@@ -10,7 +10,6 @@ import { useLogin } from "../hooks/useLogin";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../hooks/useprofile";
 import { useNotification } from "../../../contexts/NotificationContext";
-
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const form = useForm<LoginSchemaType>({
