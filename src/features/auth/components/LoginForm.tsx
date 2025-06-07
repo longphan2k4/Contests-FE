@@ -121,7 +121,7 @@ const LoginForm: React.FC<LoginFormFieldsProps> = ({
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
         <Link
           component={RouterLink}
-          to="/auth/forgot-password"
+          to="/forgot-password"
           variant="body2"
           sx={{
             color: CAO_THANG_COLORS.secondary,

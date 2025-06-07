@@ -1,135 +1,131 @@
-import { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  TextField, 
-  Button, 
-  InputAdornment, 
-  IconButton, 
+import { useState } from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  InputAdornment,
+  IconButton,
   Alert,
-  FormHelperText
-} from '@mui/material';
-import { Visibility, VisibilityOff, Lock } from '@mui/icons-material';
-import { CAO_THANG_COLORS } from '../../../../common/theme';
+  FormHelperText,
+} from "@mui/material";
+import { Visibility, VisibilityOff, Lock } from "@mui/icons-material";
+import { CAO_THANG_COLORS } from "../../../../common/theme";
 
 interface ResetPasswordStepProps {
-  onSubmit: (password: string) => Promise<void>;
+  onSubmit: (data: { newPassword: string; confirmNewPassword: string }) => void;
   onBack: () => void;
+  loading?: boolean;
 }
 
-const ResetPasswordStep = ({ onSubmit, onBack }: ResetPasswordStepProps) => {
+const ResetPasswordStep = ({
+  onSubmit,
+  onBack,
+  loading,
+}: ResetPasswordStepProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  
+  const [error, setError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
   const [formData, setFormData] = useState({
-    password: '',
-    confirmPassword: '',
+    newPassword: "",
+    confirmNewPassword: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
-
-    // Xóa lỗi khi người dùng bắt đầu nhập lại
-    if (name === 'password') {
-      setPasswordError('');
-    } else if (name === 'confirmPassword') {
-      setConfirmPasswordError('');
+    if (name === "newPassword") {
+      setPasswordError("");
+    } else if (name === "confirmNewPassword") {
+      setConfirmPasswordError("");
     }
   };
 
   const handleClickShowPassword = () => {
-    setShowPassword((show) => !show);
+    setShowPassword(show => !show);
   };
 
   const handleClickShowConfirmPassword = () => {
-    setShowConfirmPassword((show) => !show);
+    setShowConfirmPassword(show => !show);
   };
 
   const validatePassword = (): boolean => {
     let isValid = true;
-
-    // Kiểm tra độ dài mật khẩu
-    if (formData.password.length < 8) {
-      setPasswordError('Mật khẩu phải có ít nhất 8 ký tự');
+    if (formData.newPassword.length < 8) {
+      setPasswordError("Mật khẩu phải có ít nhất 8 ký tự");
       isValid = false;
-    } 
-    // Kiểm tra độ phức tạp của mật khẩu (chứa chữ hoa, chữ thường, số, ký tự đặc biệt)
-    else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(formData.password)) {
-      setPasswordError('Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt');
-      isValid = false;
-    }
-
-    // Kiểm tra xác nhận mật khẩu
-    if (formData.password !== formData.confirmPassword) {
-      setConfirmPasswordError('Xác nhận mật khẩu không khớp');
+    } else if (
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(
+        formData.newPassword
+      )
+    ) {
+      setPasswordError(
+        "Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt"
+      );
       isValid = false;
     }
-
+    if (formData.newPassword !== formData.confirmNewPassword) {
+      setConfirmPasswordError("Xác nhận mật khẩu không khớp");
+      isValid = false;
+    }
     return isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    // Kiểm tra mật khẩu
     if (!validatePassword()) {
       return;
     }
-    
-    setLoading(true);
-    setError('');
-    
+    setError("");
     try {
-      // Gọi API đặt lại mật khẩu
-      await onSubmit(formData.password);
+      await onSubmit({
+        newPassword: formData.newPassword,
+        confirmNewPassword: formData.confirmNewPassword,
+      });
     } catch {
-      setError('Không thể đặt lại mật khẩu. Vui lòng thử lại sau.');
-    } finally {
-      setLoading(false);
+      setError("Không thể đặt lại mật khẩu. Vui lòng thử lại sau.");
     }
   };
 
   return (
     <>
-      <Typography 
-        variant="h4" 
-        align="center" 
+      <Typography
+        variant="h4"
+        align="center"
         gutterBottom
-        sx={{ 
+        sx={{
           fontWeight: 700,
           background: `linear-gradient(45deg, ${CAO_THANG_COLORS.primary}, ${CAO_THANG_COLORS.light})`,
-          backgroundClip: 'text',
-          textFillColor: 'transparent',
-          mb: 2
+          backgroundClip: "text",
+          textFillColor: "transparent",
+          mb: 2,
         }}
       >
         ĐẶT LẠI MẬT KHẨU
       </Typography>
 
-      <Typography 
-        variant="body1" 
+      <Typography
+        variant="body1"
         align="center"
-        sx={{ mb: 4, color: 'text.secondary' }}
+        sx={{ mb: 4, color: "text.secondary" }}
       >
         Vui lòng nhập mật khẩu mới cho tài khoản của bạn
       </Typography>
 
       {error && (
-        <Alert 
-          severity="error" 
-          sx={{ 
+        <Alert
+          severity="error"
+          sx={{
             mb: 3,
-            borderRadius: '8px',
-            border: '1px solid',
-            borderColor: 'error.light',
+            borderRadius: "8px",
+            border: "1px solid",
+            borderColor: "error.light",
           }}
         >
           {error}
@@ -141,12 +137,12 @@ const ResetPasswordStep = ({ onSubmit, onBack }: ResetPasswordStepProps) => {
           <TextField
             required
             fullWidth
-            name="password"
+            name="newPassword"
             label="Mật khẩu mới"
-            type={showPassword ? 'text' : 'password'}
-            id="password"
+            type={showPassword ? "text" : "password"}
+            id="newPassword"
             autoComplete="new-password"
-            value={formData.password}
+            value={formData.newPassword}
             onChange={handleChange}
             error={!!passwordError}
             sx={{ mb: passwordError ? 0 : 3 }}
@@ -175,17 +171,16 @@ const ResetPasswordStep = ({ onSubmit, onBack }: ResetPasswordStepProps) => {
             </FormHelperText>
           )}
         </Box>
-
         <Box sx={{ mb: 3 }}>
           <TextField
             required
             fullWidth
-            name="confirmPassword"
+            name="confirmNewPassword"
             label="Xác nhận mật khẩu mới"
-            type={showConfirmPassword ? 'text' : 'password'}
-            id="confirmPassword"
+            type={showConfirmPassword ? "text" : "password"}
+            id="confirmNewPassword"
             autoComplete="new-password"
-            value={formData.confirmPassword}
+            value={formData.confirmNewPassword}
             onChange={handleChange}
             error={!!confirmPasswordError}
             sx={{ mb: confirmPasswordError ? 0 : 3 }}
@@ -214,16 +209,16 @@ const ResetPasswordStep = ({ onSubmit, onBack }: ResetPasswordStepProps) => {
             </FormHelperText>
           )}
         </Box>
-        
-        <Box sx={{ display: 'flex', gap: 2 }}>
+
+        <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
             fullWidth
             onClick={onBack}
             sx={{
               py: 1.5,
-              borderRadius: '10px',
-              fontSize: '16px',
+              borderRadius: "10px",
+              fontSize: "16px",
               fontWeight: 600,
             }}
           >
@@ -238,12 +233,12 @@ const ResetPasswordStep = ({ onSubmit, onBack }: ResetPasswordStepProps) => {
             disabled={loading}
             sx={{
               py: 1.5,
-              borderRadius: '10px',
-              fontSize: '16px',
+              borderRadius: "10px",
+              fontSize: "16px",
               fontWeight: 600,
             }}
           >
-            {loading ? 'Đang xử lý...' : 'Đặt lại mật khẩu'}
+            {loading ? "Đang xử lý..." : "Đặt lại mật khẩu"}
           </Button>
         </Box>
       </form>
@@ -251,4 +246,4 @@ const ResetPasswordStep = ({ onSubmit, onBack }: ResetPasswordStepProps) => {
   );
 };
 
-export default ResetPasswordStep; 
+export default ResetPasswordStep;
