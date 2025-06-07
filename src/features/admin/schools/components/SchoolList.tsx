@@ -10,13 +10,11 @@ import {
   Select,
   MenuItem,
   Stack,
-  Button,
-  IconButton
+  Button
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import type { School, SchoolFilter } from '../types/school';
 import { useSchoolList } from '../hooks/list/useSchoolList';
 import { useDeleteSchool } from '../hooks';
@@ -43,16 +41,22 @@ const SchoolList: React.FC<SchoolListProps> = ({
   const {
     columns,
     handlePageChange
-  } = useSchoolList(filter, onFilterChange, onViewDetail, onEdit);
+  } = useSchoolList(filter, onFilterChange, onViewDetail, onEdit, () => {
+    // Gọi lại API để fetch dữ liệu mới
+    if (onFilterChange) {
+      onFilterChange({
+        ...filter,
+        page: filter?.page || 1
+      });
+    }
+  });
 
   const [searchValue, setSearchValue] = useState(filter?.search || '');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [pageSize, setPageSize] = useState(filter?.limit || 10);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [activeFilter, setActiveFilter] = useState<boolean | undefined>(filter?.isActive);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
-  console.log("selectedIds", selectedIds);
-  console.log('length', selectedIds.length);
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value.trim();
     setSearchValue(value);
@@ -92,13 +96,17 @@ const SchoolList: React.FC<SchoolListProps> = ({
     }
   };
 
-  // Debug log
-  // console.log("Render SchoolList with:", { 
-  //   currentPage: filter?.page, 
-  //   totalPages, 
-  //   totalItems,
-  //   schoolsCount: schools.length
-  // });
+  const handleStatusFilterChange = (event: SelectChangeEvent) => {
+    const newStatus = event.target.value as 'all' | 'active' | 'inactive';
+    setStatusFilter(newStatus);
+    if (onFilterChange) {
+      onFilterChange({
+        ...filter,
+        isActive: newStatus === 'all' ? undefined : newStatus === 'active',
+        page: 1
+      });
+    }
+  };
 
   // Cleanup timeout khi component unmount
   React.useEffect(() => {
@@ -108,52 +116,51 @@ const SchoolList: React.FC<SchoolListProps> = ({
       }
     };
   }, [searchTimeout]);
+
   const { handleDeleteSchools } = useDeleteSchool();
+
   return (
     <>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Stack direction="row" spacing={2} alignItems="center">
-        <IconButton
-          color={activeFilter ? "primary" : "default"}
-          onClick={() => {
-            const newValue = !activeFilter;
-            setActiveFilter(newValue);
-            if (onFilterChange) {
-              onFilterChange({
-                ...filter,
-                isActive: newValue ? true : undefined,
-                page: 1
-              });
-            }
-          }}
-          sx={{ ml: 1 }}
-          >
-      <FilterListIcon />
-        </IconButton>
+          <TextField
+            size="small"
+            placeholder="Tìm kiếm trường học"
+            value={searchValue}
+            onChange={handleSearchChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ minWidth: 300 }}
+          />
 
-        <TextField
-          size="small"
-          placeholder="Tìm kiếm trường học"
-          value={searchValue}
-          onChange={handleSearchChange}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ minWidth: 300 }}
-        />
-        {selectedIds.length > 0 && (
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => handleDeleteSchools(selectedIds)}
-          >
-            Xoá trường ({selectedIds.length})
-          </Button>
-        )}
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel id="status-filter-label">Trạng thái</InputLabel>
+            <Select
+              labelId="status-filter-label"
+              value={statusFilter}
+              label="Trạng thái"
+              onChange={handleStatusFilterChange}
+            >
+              <MenuItem value="all">Tất cả</MenuItem>
+              <MenuItem value="active">Đang hoạt động</MenuItem>
+              <MenuItem value="inactive">Không hoạt động</MenuItem>
+            </Select>
+          </FormControl>
+
+          {selectedIds.length > 0 && (
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => handleDeleteSchools(selectedIds)}
+            >
+              Xoá trường ({selectedIds.length})
+            </Button>
+          )}
         </Stack>
         <Typography variant="body2" color="text.secondary">
           Tổng số: {totalItems} trường học

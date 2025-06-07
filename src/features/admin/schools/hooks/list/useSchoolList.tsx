@@ -4,12 +4,14 @@ import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import type { School, SchoolFilter } from '../../types/school';
 import { Visibility as VisibilityIcon, Edit as EditIcon } from '@mui/icons-material';
 import { IconButton, Tooltip } from '@mui/material';
+import SchoolStatusSwitch from '../../components/SchoolStatusSwitch';
 
 export const useSchoolList = (
   filter?: SchoolFilter,
   onFilterChange?: (filter: SchoolFilter) => void,
   onViewDetail?: (school: School) => void,
-  onEdit?: (school: School) => void
+  onEdit?: (school: School) => void,
+  onRefresh?: () => void
 ) => {
   const [showActiveOnly, setShowActiveOnly] = useState(false);
 
@@ -60,11 +62,17 @@ export const useSchoolList = (
     {
       field: 'isActive',
       headerName: 'Trạng thái',
-      width: 150,
-      renderCell: (params) => (
-        <span style={{ color: params.value ? 'green' : 'red' }}>
-          {params.value ? 'Đang hoạt động' : 'Không hoạt động'}
-        </span>
+      width: 200,
+      renderCell: (params: GridRenderCellParams<School>) => (
+        <SchoolStatusSwitch
+          schoolId={params.row.id}
+          isActive={params.row.isActive}
+          onStatusChange={(newStatus) => {
+            // Cập nhật lại dữ liệu trong bảng
+            params.row.isActive = newStatus;
+          }}
+          onRefresh={onRefresh}
+        />
       )
     },
     {
