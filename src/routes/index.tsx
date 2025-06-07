@@ -22,7 +22,7 @@ const AppRoutes: React.FC = () => {
       {/* <Route element={<PrivateRoute />}>
         {AdminRoutes()}
       </Route> */}
-      <Route element={<PrivateRoute roles={["Admin", "Judge"]} />}>
+      <Route element={<PrivateRoute roles={["Admin"]} />}>
       {AdminRoutes()}
       </Route>
 
