@@ -9,6 +9,8 @@ import { useForm } from "react-hook-form";
 import { useLogin } from "../hooks/useLogin";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../hooks/useprofile";
+import { useNotification } from "../../../contexts/NotificationContext";
+
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const form = useForm<LoginSchemaType>({
@@ -21,32 +23,31 @@ const LoginPage = () => {
   const { mutate } = useLogin();
   const { refetch } = useProfile();
   const navigate = useNavigate();
+  const { showSuccessNotification, showErrorNotification } = useNotification();
   const onSubmit = async (data: LoginSchemaType) => {
     setLoading(true);
     mutate(data, {
       onSuccess: async data => {
         setLoading(false);
+
         if (data.success) {
-          // Lưu accessToken vào cookie và localStorage nếu có
-          if (data.data?.accessToken) {
-            const expires = new Date();
-            expires.setDate(expires.getDate() + 30);
-            document.cookie = `feAccessToken=${
-              data.data.accessToken
-            }; path=/; expires=${expires.toUTCString()}`;
-            localStorage.setItem("feAccessToken", data.data.accessToken);
-          }
-          // Đảm bảo context user được cập nhật trước khi chuyển trang
-          await refetch();
-          if (data.data?.role === "admin" || data.data?.role === "Admin") {
-            navigate("/admin/dashboard");
-          } else if (data.data?.role === "Judge") {
-            navigate("/");
-          } else {
-            navigate("/");
-          }
-        } else {
-          alert(data.message || "Đăng nhập thất bại");
+          showSuccessNotification("Đăng nhập thành công");
+        }
+        // Lưu accessToken vào cookie và localStorage nếu có
+        if (data.data?.accessToken) {
+          const expires = new Date();
+          expires.setDate(expires.getDate() + 30);
+          document.cookie = `feAccessToken=${
+            data.data.accessToken
+          }; path=/; expires=${expires.toUTCString()}`;
+          localStorage.setItem("feAccessToken", data.data.accessToken);
+        }
+        // Đảm bảo context user được cập nhật trước khi chuyển trang
+        await refetch();
+        if (data.data?.role === "admin" || data.data?.role === "Admin") {
+          navigate("/admin/dashboard");
+        } else if (data.data?.role === "Judge") {
+          navigate("/");
         }
       },
       onError: error => {
@@ -62,11 +63,11 @@ const LoginPage = () => {
               }
             }
           );
-          alert("Đăng nhập thất bại:");
+          showErrorNotification("Đăng nhập thất bại:");
         } else if (errWithResponse?.response?.data?.message) {
-          alert(errWithResponse.response.data.message);
+          showErrorNotification(errWithResponse.response.data.message);
         } else {
-          alert("Đăng nhập thất bại, vui lòng thử lại sau.");
+          showErrorNotification("Đăng nhập thất bại, vui lòng thử lại sau.");
         }
       },
     });

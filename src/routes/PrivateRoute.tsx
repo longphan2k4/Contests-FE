@@ -4,14 +4,13 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { useAuth } from "../features/auth/hooks/authContext";
 
 interface PrivateRouteProps {
-  roles?: string[]; // roles được phép truy cập
+  roles?: string[];
   children?: React.ReactNode;
 }
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ roles, children }) => {
   const location = useLocation();
   const { user, loading } = useAuth();
-
   if (loading) {
     return (
       <div
@@ -28,7 +27,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ roles, children }) => {
   }
 
   if (!user || !user.role) {
-    return <Navigate to="/" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (roles && !roles.includes(user.role)) {
