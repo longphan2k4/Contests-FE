@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import type { User } from '../types/User';
+import React, { useState, useEffect } from "react";
+import type { User } from "../types/User";
 
 interface EditUserModalProps {
   isOpen: boolean;
@@ -8,7 +8,12 @@ interface EditUserModalProps {
   onSave: (user: User) => void;
 }
 
-const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, onSave }) => {
+const EditUserModal: React.FC<EditUserModalProps> = ({
+  isOpen,
+  onClose,
+  user,
+  onSave,
+}) => {
   const [formData, setFormData] = useState<User | null>(user);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -38,27 +43,31 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, on
   return (
     <div
       className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 transition-opacity duration-200 ease-in-out ${
-        isOpen ? 'opacity-100' : 'opacity-0'
+        isOpen ? "opacity-100" : "opacity-0"
       }`}
       onClick={onClose}
     >
       <div
         className={`bg-white rounded-lg w-full h-full md:w-auto md:h-auto md:max-w-md max-h-[90vh] overflow-y-auto p-6 transform transition-transform duration-200 ease-in-out ${
-          isOpen ? 'scale-100' : 'scale-90'
+          isOpen ? "scale-100" : "scale-90"
         }`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         <h2 className="text-xl font-semibold mb-4">Chỉnh sửa người dùng</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium mb-1">Tên đăng nhập</label>
+              <label className="block text-sm font-medium mb-1">
+                Tên đăng nhập
+              </label>
               <input
                 type="text"
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, username: e.target.value })
+                }
               />
             </div>
             <div className="sm:col-span-2">
@@ -68,7 +77,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, on
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
               />
             </div>
             <div>
@@ -76,7 +87,12 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, on
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as 'Admin' | 'Judge' })}
+                onChange={e =>
+                  setFormData({
+                    ...formData,
+                    role: e.target.value as "Admin" | "Judge",
+                  })
+                }
               >
                 <option value="Judge">Judge</option>
                 <option value="Admin">Admin</option>
@@ -87,10 +103,14 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, on
                 type="checkbox"
                 id="editIsActive"
                 checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                onChange={e =>
+                  setFormData({ ...formData, isActive: e.target.checked })
+                }
                 className="mr-2"
               />
-              <label htmlFor="editIsActive" className="text-sm font-medium">Kích hoạt</label>
+              <label htmlFor="editIsActive" className="text-sm font-medium">
+                Kích hoạt
+              </label>
             </div>
           </div>
           <div className="flex justify-end space-x-2 pt-4">

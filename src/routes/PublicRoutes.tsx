@@ -1,5 +1,5 @@
-import { Route } from 'react-router-dom';
-import PublicRoute from './PublicRoute';
+import { Route } from "react-router-dom";
+// import PublicRoute from "./PublicRoute";
 
 // Tạo placeholder component cho các trang công khai
 const HomePage = () => <div>Trang chủ</div>;
@@ -10,7 +10,7 @@ const FAQPage = () => <div>Câu hỏi thường gặp</div>;
 const PublicRoutes = () => {
   return (
     <>
-      <Route path="/" element={<PublicRoute />}>
+      <Route path="/">
         <Route index element={<HomePage />} />
         <Route path="about-us" element={<AboutUsPage />} />
         <Route path="contact" element={<ContactPage />} />
@@ -20,4 +20,4 @@ const PublicRoutes = () => {
   );
 };
 
-export default PublicRoutes; 
+export default PublicRoutes;
