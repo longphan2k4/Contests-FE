@@ -5,8 +5,7 @@ import AboutAdminPage from './about/pages/AboutAdminPage';
 import UsersPage from './UsersManagement/pages/UsersPage';
 import {
   SchoolsPage,
-  SchoolCreatePage,
-  SchoolDetailPage
+
 } from './schools/pages';
 
 // Các component trang admin
@@ -30,8 +29,6 @@ const AdminRoutes = () => {
     <Route path="/admin" element={<AdminLayout />}>
       <Route path="dashboard" element={<Dashboard />} />
       <Route path="schools" element={<SchoolsPage />} />
-      <Route path="schools/create" element={<SchoolCreatePage />} />
-      <Route path="schools/:id" element={<SchoolDetailPage />} />
       <Route path="classes" element={<ClassesPage />} />
       <Route path="students" element={<StudentsPage />} />
       <Route path="question-topics" element={<QuestionTopicsPage />} />

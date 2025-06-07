@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getAboutInfo, updateAboutInfo } from '../services/aboutService';
 import type { About } from '../types/about';
 
@@ -13,31 +13,29 @@ export const useAboutInfo = () => {
       mapEmbedCode: '',
       isActive: true,
       logo: '',
-      banner: ''}
+      banner: '',
+    }
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Lấy dữ liệu ban đầu
-  useEffect(() => {
-    const fetchAboutInfo = async () => {
-      try {
-        // const data = getMockAboutInfo();
-        const aboutInfo = await getAboutInfo();
-        console.log(aboutInfo);
-        setAboutInfo(aboutInfo);
-      } catch (err) {
-        setError('Không thể tải thông tin website');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAboutInfo();
+  const fetchAboutInfo = useCallback(async () => {
+    try {
+      setLoading(true);
+      const aboutData = await getAboutInfo();
+      setAboutInfo(aboutData);
+    } catch (err) {
+      setError('Không thể tải thông tin website');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Xử lý submit form
+  useEffect(() => {
+    fetchAboutInfo();
+  }, [fetchAboutInfo]);
+
   const handleSubmit = async (data: About): Promise<void> => {
     try {
       setLoading(true);
@@ -46,17 +44,21 @@ export const useAboutInfo = () => {
     } catch (err) {
       setError('Không thể cập nhật thông tin website');
       console.error(err);
-      throw err; // Ném lỗi để component có thể xử lý
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  // Khôi phục dữ liệu mặc định
-  const handleResetToDefault = () => {
-    const defaultData = getMockAboutInfo();
-    setAboutInfo(defaultData);
-  };
+  const handleResetToDefault = useCallback(async () => {
+    try {
+      const defaultData = await getAboutInfo();
+      setAboutInfo(defaultData);
+    } catch (err) {
+      setError('Không thể tải thông tin mặc định');
+      console.error(err);
+    }
+  }, []);
 
   return {
     aboutInfo,

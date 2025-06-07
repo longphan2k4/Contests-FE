@@ -9,14 +9,19 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import SchoolList from '../components/SchoolList';
 import { useSchools } from '../hooks';
-import type { SchoolFilter } from '../types/school';
+import type { School, SchoolFilter } from '../types/school';
 import CreateSchoolDialog from '../components/CreateSchoolDialog';
+import SchoolDetailPopup from '../components/SchoolDetailPopup';
+import EditSchoolDialog from '../components/EditSchoolDialog';
 import { useNotification } from '../../../../hooks';
 import  NotificationSnackbar  from '../../components/NotificationSnackbar';
 
 const SchoolsPage: React.FC = () => {
-  const { schools, loading, error, filter, updateFilter, totalPages, refresh } = useSchools();
+  const { schools, loading, error, filter, updateFilter, totalPages, total, refresh } = useSchools();
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
+  const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
+  const [isDetailPopupOpen, setDetailPopupOpen] = useState(false);
+  const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   const {
     notificationState,
     showErrorNotification,
@@ -44,6 +49,33 @@ const SchoolsPage: React.FC = () => {
 
   const handleSchoolCreated = () => {
     refresh(); // Làm mới danh sách để hiển thị trường mới
+  };
+
+  // Xử lý khi người dùng nhấn nút xem chi tiết
+  const handleViewDetail = (school: School) => {
+    setSelectedSchool(school);
+    setDetailPopupOpen(true);
+  };
+
+  // Xử lý khi người dùng đóng popup chi tiết
+  const handleCloseDetail = () => {
+    setDetailPopupOpen(false);
+  };
+
+  // Xử lý khi người dùng nhấn nút chỉnh sửa
+  const handleEdit = (school: School) => {
+    setSelectedSchool(school);
+    setEditDialogOpen(true);
+  };
+
+  // Xử lý khi người dùng đóng dialog chỉnh sửa
+  const handleCloseEdit = () => {
+    setEditDialogOpen(false);
+  };
+
+  // Xử lý khi cập nhật trường học thành công
+  const handleSchoolUpdated = () => {
+    refresh(); // Làm mới danh sách để hiển thị trường đã cập nhật
   };
 
   return (
@@ -78,11 +110,14 @@ const SchoolsPage: React.FC = () => {
             </Box>
           )}
 
-          <SchoolList 
-            schools={schools} 
+          <SchoolList
+            schools={schools}
             filter={filter}
             onFilterChange={handleFilterChange}
             totalPages={totalPages}
+            totalItems={total}
+            onViewDetail={handleViewDetail}
+            onEdit={handleEdit}
           />
         </Paper>
 
@@ -92,6 +127,25 @@ const SchoolsPage: React.FC = () => {
           onClose={handleCloseCreateDialog}
           onCreated={handleSchoolCreated}
         />
+
+        {/* Popup xem chi tiết trường học */}
+        {selectedSchool && (
+          <SchoolDetailPopup
+            school={selectedSchool}
+            open={isDetailPopupOpen}
+            onClose={handleCloseDetail}
+          />
+        )}
+
+        {/* Dialog chỉnh sửa trường học */}
+        {selectedSchool && (
+          <EditSchoolDialog
+            school={selectedSchool}
+            open={isEditDialogOpen}
+            onClose={handleCloseEdit}
+            onUpdated={handleSchoolUpdated}
+          />
+        )}
       </Box>
 
       {/* Notification Snackbar */}

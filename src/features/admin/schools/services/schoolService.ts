@@ -35,7 +35,7 @@ export const getSchools = async (filter?: SchoolFilter): Promise<SchoolsResponse
     const params = new URLSearchParams();
     if (filter?.page) params.append('page', String(filter.page));
     if (filter?.limit) params.append('limit', String(filter.limit));
-    if (filter?.search) params.append('search', filter.search);
+    if (filter?.search) params.append('search', filter.search.trim());
     if (filter?.isActive !== undefined) params.append('isActive', String(filter.isActive));
 
     const response = await api.get<ApiResponse<SchoolsResponse>>('/school', { params });
@@ -77,7 +77,7 @@ export const createSchool = async (schoolData: Partial<School>): Promise<School>
  */
 export const updateSchool = async (id: number, schoolData: Partial<School>): Promise<School> => {
   try {
-    const response = await api.put<ApiResponse<School>>(`/school/${id}`, schoolData);
+    const response = await api.patch<ApiResponse<School>>(`/school/${id}`, schoolData);
     return response.data.data;
   } catch (error) {
     console.error(`Error updating school with id ${id}:`, error);
@@ -88,11 +88,11 @@ export const updateSchool = async (id: number, schoolData: Partial<School>): Pro
 /**
  * Xóa trường học
  */
-export const deleteSchool = async (id: number): Promise<void> => {
+export const deleteSchool = async (ids: number[]): Promise<void> => {
   try {
-    await api.delete(`/school/${id}`);
+    await api.delete(`/school/${ids}`);
   } catch (error) {
-    console.error(`Error deleting school with id ${id}:`, error);
+    console.error(`Error deleting schools with ids ${ids}:`, error);
     throw error;
   }
 };
