@@ -1,12 +1,13 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 // import PrivateRoute from './PrivateRoute';
-import AdminRoutes from '../features/admin/AdminRoutes';
-import AuthRoutes from '../features/auth/routes';
-import PublicRoutes from './PublicRoutes';
+import AdminRoutes from "../features/admin/AdminRoutes";
+import AuthRoutes from "../features/auth/routes";
+import PublicRoutes from "./PublicRoutes";
 // import MatchRoutes from '../features/match';
-import MatchPage from '../features/match/pages/MatchPage';
-import TechBanner from '../features/match/components/MediaPopup/BackGround';
+import MatchPage from "../features/match/pages/MatchPage";
+import TechBanner from "../features/match/components/MediaPopup/BackGround";
+import PrivateRoute from "./PrivateRoute";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -21,15 +22,19 @@ const AppRoutes: React.FC = () => {
       {/* <Route element={<PrivateRoute />}>
         {AdminRoutes()}
       </Route> */}
+      <Route element={<PrivateRoute roles={["Admin", "Judge"]} />}>
         {AdminRoutes()}
+      </Route>
 
       {/* Chuyển hướng từ / đến /auth/login nếu chưa đăng nhập hoặc /admin/dashboard nếu đã đăng nhập */}
       <Route
         path="/"
         element={
-          sessionStorage.getItem('token')
-            ? <Navigate to="/admin/dashboard" replace />
-            : <Navigate to="/auth/login" replace />
+          sessionStorage.getItem("token") ? (
+            <Navigate to="/admin/dashboard" replace />
+          ) : (
+            <Navigate to="/auth/login" replace />
+          )
         }
       />
       <Route path="/match" element={<MatchPage />} />
