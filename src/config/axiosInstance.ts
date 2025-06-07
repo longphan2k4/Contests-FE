@@ -1,6 +1,7 @@
 import axios from "axios";
+const BASE_URL = import.meta.env.VITE_API_URL;
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:3000/api/",
+  baseURL: BASE_URL,
   withCredentials: true,
 });
 axiosInstance.interceptors.response.use(
@@ -9,7 +10,7 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config;
     if (error.response && error.response.status === 403) {
       console.error("Forbidden request:", error);
-      window.location.href = "/";
+      window.location.href = "/403";
       return Promise.reject(error);
     }
     if (error.response.status === 401 && !originalRequest._retry) {

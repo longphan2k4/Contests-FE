@@ -11,26 +11,40 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { data, refetch, isLoading, error } = useProfile();
+  const { data, refetch, error } = useProfile();
   const [user, setUser] = useState<UserType | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const hasToken = document.cookie.includes("feAccessToken=");
+
     if (hasToken) {
-      refetch();
+      setUser(null); // reset user
+      (async () => {
+        try {
+          await refetch();
+        } catch (err) {
+          setUser(null);
+        } finally {
+          setLoading(false);
+        }
+      })();
+    } else {
+      setUser(null);
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (data)
-      setUser(data.data); // API trả về user trực tiếp, không phải data.user
-    else setUser(null);
-  }, [data]);
-  useEffect(() => {
-    if (error) setUser(null);
-  }, [error]);
+    if (data?.data) {
+      setUser(data.data);
+    } else if (error) {
+      setUser(null);
+    }
+  }, [data, error]);
+
   return (
-    <AuthContext.Provider value={{ user, loading: isLoading, setUser }}>
+    <AuthContext.Provider value={{ user, loading, setUser }}>
       {children}
     </AuthContext.Provider>
   );

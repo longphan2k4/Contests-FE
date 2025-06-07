@@ -8,6 +8,7 @@ import PublicRoutes from "./PublicRoutes";
 import MatchPage from "../features/match/pages/MatchPage";
 import TechBanner from "../features/match/components/MediaPopup/BackGround";
 import PrivateRoute from "./PrivateRoute";
+import Forbidden403 from "../components/403";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -18,32 +19,13 @@ const AppRoutes: React.FC = () => {
       {/* Auth Routes - Đăng nhập, Đăng ký */}
       {AuthRoutes()}
 
-      {/* Private Routes - Yêu cầu xác thực */}
-      {/* <Route element={<PrivateRoute />}>
-        {AdminRoutes()}
-      </Route> */}
       <Route element={<PrivateRoute roles={["Admin"]} />}>
-      {AdminRoutes()}
+        {AdminRoutes()}
       </Route>
 
-      {/* Chuyển hướng từ / đến /auth/login nếu chưa đăng nhập hoặc /admin/dashboard nếu đã đăng nhập */}
-      <Route
-        path="/"
-        element={
-          sessionStorage.getItem("token") ? (
-            <Navigate to="/admin/dashboard" replace />
-          ) : (
-            <Navigate to="/auth/login" replace />
-          )
-        }
-      />
       <Route path="/match" element={<MatchPage />} />
       <Route path="/banner" element={<TechBanner />} />
-      {/* Các route khác */}
-      {/* <Route path="/match/*" element={<MatchRoutes />} /> */}
-
-      {/* Route mặc định */}
-      {/* Xử lý route không tồn tại */}
+      <Route path="/403" element={<Forbidden403 />} />
       <Route path="*" element={<div>Trang không tồn tại</div>} />
     </Routes>
   );
