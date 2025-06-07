@@ -13,8 +13,7 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
     if (error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry =
-        true && originalRequest.url !== "/auth/refresh-token";
+      originalRequest._retry = true && originalRequest.url !== "/auth/refresh-token";
       try {
         await axiosInstance.get("/auth/refresh-token");
         return axiosInstance(originalRequest);
