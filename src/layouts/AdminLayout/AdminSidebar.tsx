@@ -12,6 +12,7 @@ import {
   Typography
 } from '@mui/material';
 import {
+
   Dashboard as DashboardIcon,
   School as SchoolIcon,
   Group as GroupIcon,
@@ -67,11 +68,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
       label: 'Lớp học',
       path: '/admin/classes',
     },
+// Ky long: quản lý người dùng
     {
       key: 'students',
       icon: <GroupIcon />,
-      label: 'Sinh viên',
-      path: '/admin/students',
+      label: 'Quản lý người dùng',
+      path: '/admin/users',
     },
     {
       key: 'question-management',

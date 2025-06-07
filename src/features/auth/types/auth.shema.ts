@@ -1,4 +1,3 @@
-import { ro } from "@faker-js/faker";
 import z from "zod";
 export const LoginSchema = z.object({
   identifier: z
@@ -15,5 +14,19 @@ export const LoginSchema = z.object({
     })
     .min(1, "Vui lòng nhập mật khẩu"),
 });
+export const UserType = z.object({
+  username: z.string(),
+  email: z.string(),
+  role: z.enum(["Admin", "Judge"]),
+  isActive: z.boolean(),
+});
+
+// Define AuthContextType as a TypeScript type, not a Zod schema
+export type AuthContextType = {
+  user: UserType | null;
+  setUser: (user: UserType | null) => void;
+  loading: boolean;
+};
 
 export type LoginSchemaType = z.infer<typeof LoginSchema>;
+export type UserType = z.infer<typeof UserType>;

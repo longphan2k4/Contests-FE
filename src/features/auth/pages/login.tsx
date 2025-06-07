@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form";
 import { useLogin } from "../hooks/useLogin";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../hooks/useprofile";
-import { ro } from "@faker-js/faker";
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const form = useForm<LoginSchemaType>({
@@ -19,21 +18,36 @@ const LoginPage = () => {
   const {
     formState: { errors },
   } = form;
-  const { mutate, isSuccess } = useLogin();
-  const { data, refetch } = useProfile();
-  React.useEffect(() => {
-    if (data) {
-      const role = data.role || (data.data && data.data.role);
-      console.log("Role:", role);
-    }
-  }, [data]);
+  const { mutate } = useLogin();
+  const { refetch } = useProfile();
+  const navigate = useNavigate();
   const onSubmit = async (data: LoginSchemaType) => {
     setLoading(true);
     mutate(data, {
-      onSuccess: () => {
-        refetch();
-        alert("Đăng nhập thành công!");
+      onSuccess: async data => {
         setLoading(false);
+        if (data.success) {
+          // Lưu accessToken vào cookie và localStorage nếu có
+          if (data.data?.accessToken) {
+            const expires = new Date();
+            expires.setDate(expires.getDate() + 30);
+            document.cookie = `feAccessToken=${
+              data.data.accessToken
+            }; path=/; expires=${expires.toUTCString()}`;
+            localStorage.setItem("feAccessToken", data.data.accessToken);
+          }
+          // Đảm bảo context user được cập nhật trước khi chuyển trang
+          await refetch();
+          if (data.data?.role === "admin" || data.data?.role === "Admin") {
+            navigate("/admin/dashboard");
+          } else if (data.data?.role === "Judge") {
+            navigate("/");
+          } else {
+            navigate("/");
+          }
+        } else {
+          alert(data.message || "Đăng nhập thất bại");
+        }
       },
       onError: error => {
         setLoading(false);

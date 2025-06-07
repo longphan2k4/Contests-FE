@@ -9,7 +9,7 @@ import type { Candidate } from './types';
 import AddPopup from '../AddPopup';
 import type { FieldConfig } from '../AddPopup'
 import { Box } from '@mui/material';
-import Button from '../button';
+import Button from '../Button';
 import SelectFilter from '../Select';
 
 

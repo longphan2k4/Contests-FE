@@ -1,22 +1,41 @@
-import React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import React from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import CircularProgress from "@mui/material/CircularProgress";
+import { useAuth } from "../features/auth/hooks/authContext";
 
 interface PrivateRouteProps {
+  roles?: string[]; // roles được phép truy cập
   children?: React.ReactNode;
 }
 
-const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
+const PrivateRoute: React.FC<PrivateRouteProps> = ({ roles, children }) => {
   const location = useLocation();
-  
-  // Thay thế bằng logic kiểm tra đăng nhập thực tế của bạn
-  const isAuthenticated = sessionStorage.getItem('token') !== null;
-  
-  if (!isAuthenticated) {
-    // Chuyển hướng tới trang đăng nhập, lưu lại URL hiện tại để quay lại sau khi đăng nhập
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "40vh",
+        }}
+      >
+        <CircularProgress />
+      </div>
+    );
   }
-  
+
+  if (!user || !user.role) {
+    return <Navigate to="/" state={{ from: location }} replace />;
+  }
+
+  if (roles && !roles.includes(user.role)) {
+    return <Navigate to="/not-authorized" replace />;
+  }
+
   return children ? <>{children}</> : <Outlet />;
 };
 
-export default PrivateRoute; 
+export default PrivateRoute;
