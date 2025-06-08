@@ -1,3 +1,4 @@
+
 import { Route, Navigate } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
 import ContestantsPage from './pages/ContestantsManage/ContestantsPage';
@@ -5,11 +6,17 @@ import AboutAdminPage from './about/pages/AboutAdminPage';
 import UsersPage from './UsersManagement/pages/UsersPage';
 import {
   SchoolsPage,
-
 } from './schools/pages';
 import {
   QuestionTopicsPage,
 } from './questionTopic/pages';
+import { Route, Navigate } from "react-router-dom";
+import AdminLayout from "../../layouts/AdminLayout";
+import ContestantsPage from "./pages/ContestantsManage/ContestantsPage";
+import AboutAdminPage from "./about/pages/AboutAdminPage";
+import UsersPage from "./user/page/UsersPage";
+import { SchoolsPage } from "./schools/pages";
+
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
 //const SchoolsPage = () => <div>Trang Quản lý trường học</div>;
@@ -51,4 +58,4 @@ const AdminRoutes = () => {
   );
 };
 
-export default AdminRoutes; 
+export default AdminRoutes;
