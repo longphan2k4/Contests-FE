@@ -1,186 +1,262 @@
-import axiosInstance from '../../../../config/axiosInstance';
 import type { 
   QuestionDetail, 
-  QuestionDetailFilter, 
-  QuestionDetailResponse, 
-  QuestionDetailFormData, 
-  ReorderRequest,
-  ApiResponse
-} from '../types/questionDetail';
+  QuestionDetailStats,
+  ApiResponse,
+  ReorderRequest
+} from '../types';
+import axiosInstance from '../../../../config/axiosInstance';
 
-/**
- * Lấy danh sách chi tiết câu hỏi từ API
- */
-export const getQuestionDetails = async (filter?: QuestionDetailFilter): Promise<QuestionDetailResponse> => {
-  try {
-    // Xây dựng các tham số query
-    const params = new URLSearchParams();
-    if (filter?.page) params.append('page', String(filter.page));
-    if (filter?.limit) params.append('limit', String(filter.limit));
-    if (filter?.questionId) params.append('questionId', String(filter.questionId));
-    if (filter?.questionPackageId) params.append('questionPackageId', String(filter.questionPackageId));
-    if (filter?.isActive !== undefined) params.append('isActive', String(filter.isActive));
-    if (filter?.search) params.append('search', filter.search.trim());
+const BASE_URL = '/question-details';
 
-    const response = await axiosInstance.get<ApiResponse<QuestionDetailResponse>>('/question-details', { params });
-    return response.data.data;
-  } catch (error) {
-    console.error('Error fetching question details:', error);
-    throw error;
-  }
-};
+interface BulkCreateResponse {
+  created: QuestionDetail[];
+  summary: {
+    totalRequested: number;
+    successful: number;
+    failed: number;
+  };
+}
 
-/**
- * Lấy chi tiết một question detail
- */
-export const getQuestionDetailById = async (questionId: number, questionPackageId: number): Promise<QuestionDetail> => {
-  try {
-    const response = await axiosInstance.get<ApiResponse<QuestionDetail>>(`/question-details/${questionId}/${questionPackageId}`);
-    return response.data.data;
-  } catch (error) {
-    console.error(`Error fetching question detail:`, error);
-    throw error;
-  }
-};
+interface ReorderResponse {
+  updated: QuestionDetail[];
+  summary: {
+    totalRequested: number;
+    successful: number;
+    failed: number;
+  };
+}
 
-/**
- * Tạo question detail mới
- */
-export const createQuestionDetail = async (data: QuestionDetailFormData): Promise<QuestionDetail> => {
-  try {
-    const response = await axiosInstance.post<ApiResponse<QuestionDetail>>('/question-details', data);
-    return response.data.data;
-  } catch (error) {
-    console.error('Error creating question detail:', error);
-    throw error;
-  }
-};
+interface BatchDeletePayload {
+  items: Array<{
+    questionId: number;
+    questionPackageId: number;
+  }>;
+}
 
-/**
- * Cập nhật question detail
- */
-export const updateQuestionDetail = async (
-  questionId: number, 
-  questionPackageId: number, 
-  data: Partial<QuestionDetailFormData>
-): Promise<QuestionDetail> => {
-  try {
-    const response = await axiosInstance.put<ApiResponse<QuestionDetail>>(
-      `/question-details/${questionId}/${questionPackageId}`, 
-      data
-    );
-    return response.data.data;
-  } catch (error) {
-    console.error(`Error updating question detail:`, error);
-    throw error;
-  }
-};
-
-/**
- * Xóa question detail (soft delete)
- */
-export const deleteQuestionDetail = async (questionId: number, questionPackageId: number): Promise<QuestionDetail> => {
-  try {
-    const response = await axiosInstance.delete<ApiResponse<QuestionDetail>>(`/question-details/${questionId}/${questionPackageId}`);
-    return response.data.data;
-  } catch (error) {
-    console.error(`Error deleting question detail:`, error);
-    throw error;
-  }
-};
-
-/**
- * Xóa question detail (hard delete)
- */
-export const hardDeleteQuestionDetail = async (questionId: number, questionPackageId: number): Promise<void> => {
-  try {
-    await axiosInstance.delete(`/question-details/${questionId}/${questionPackageId}/hard`);
-  } catch (error) {
-    console.error(`Error hard deleting question detail:`, error);
-    throw error;
-  }
-};
-
-/**
- * Tạo nhiều question detail cùng lúc
- */
-export const bulkCreateQuestionDetails = async (data: QuestionDetailFormData[]): Promise<QuestionDetail[]> => {
-  try {
-    const response = await axiosInstance.post<ApiResponse<{ created: QuestionDetail[] }>>('/question-details/bulk', {
-      questionDetails: data
-    });
-    return response.data.data.created;
-  } catch (error) {
-    console.error('Error bulk creating question details:', error);
-    throw error;
-  }
-};
-
-/**
- * Sắp xếp lại thứ tự câu hỏi trong gói
- */
-export const reorderQuestionDetails = async (data: ReorderRequest): Promise<QuestionDetail[]> => {
-  try {
-    const response = await axiosInstance.put<ApiResponse<{ updated: QuestionDetail[] }>>('/question-details/reorder', data);
-    return response.data.data.updated;
-  } catch (error) {
-    console.error('Error reordering question details:', error);
-    throw error;
-  }
-};
-
-/**
- * Lấy danh sách câu hỏi theo gói
- */
-export const getQuestionsByPackage = async (
-  packageId: number, 
-  page: number = 1, 
-  limit: number = 10, 
-  includeInactive: boolean = false
-): Promise<QuestionDetailResponse> => {
-  try {
-    const params = new URLSearchParams();
-    params.append('page', String(page));
-    params.append('limit', String(limit));
-    if (!includeInactive) {
-      params.append('isActive', 'true');
+export const questionDetailService = {
+  /**
+   * Lấy danh sách chi tiết câu hỏi từ API
+   * GET /api/question-details
+   */
+  getQuestionDetails: async (params: {
+    page?: number;
+    limit?: number;
+    questionId?: number;
+    questionPackageId?: number;
+    isActive?: boolean;
+    search?: string;
+  }): Promise<ApiResponse<QuestionDetail[]>> => {
+    try {
+      const response = await axiosInstance.get<ApiResponse<QuestionDetail[]>>(BASE_URL, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách chi tiết câu hỏi:', error);
+      throw error;
     }
-    
-    const response = await axiosInstance.get<ApiResponse<QuestionDetailResponse>>(
-      `/question-details/package/${packageId}`, 
-      { params }
-    );
-    return response.data.data;
-  } catch (error) {
-    console.error(`Error fetching questions by package:`, error);
-    throw error;
-  }
-};
+  },
 
-/**
- * Lấy danh sách gói câu hỏi theo câu hỏi
- */
-export const getPackagesByQuestion = async (
-  questionId: number,
-  page: number = 1,
-  limit: number = 10,
-  isActive?: boolean
-): Promise<QuestionDetailResponse> => {
-  try {
-    const params = new URLSearchParams();
-    params.append('page', String(page));
-    params.append('limit', String(limit));
-    if (isActive !== undefined) {
-      params.append('isActive', String(isActive));
+  /**
+   * Lấy chi tiết một question detail
+   * GET /api/question-details/{questionId}/{questionPackageId}
+   */
+  getQuestionDetailById: async (questionId: number, questionPackageId: number): Promise<QuestionDetail> => {
+    try {
+      const response = await axiosInstance.get<ApiResponse<QuestionDetail>>(`${BASE_URL}/${questionId}/${questionPackageId}`);
+      return response.data.data;
+    } catch (error) {
+      console.error('Lỗi khi lấy chi tiết câu hỏi:', error);
+      throw error;
     }
-    
-    const response = await axiosInstance.get<ApiResponse<QuestionDetailResponse>>(
-      `/question-details/question/${questionId}`,
-      { params }
-    );
-    return response.data.data;
-  } catch (error) {
-    console.error(`Error fetching packages by question:`, error);
-    throw error;
+  },
+
+  /**
+   * Tạo question detail mới
+   * POST /api/question-details
+   */
+  createQuestionDetail: async (data: {
+    questionId: number;
+    questionPackageId: number;
+    questionOrder: number;
+    isActive: boolean;
+  }): Promise<QuestionDetail> => {
+    try {
+      const response = await axiosInstance.post<ApiResponse<QuestionDetail>>(BASE_URL, data);
+      return response.data.data;
+    } catch (error) {
+      console.error('Lỗi khi tạo chi tiết câu hỏi mới:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Cập nhật question detail
+   * PUT /api/question-details/{questionId}/{questionPackageId}
+   */
+  updateQuestionDetail: async (questionId: number, questionPackageId: number, data: {
+    questionOrder?: number;
+    isActive?: boolean;
+  }): Promise<QuestionDetail> => {
+    try {
+      const response = await axiosInstance.put<ApiResponse<QuestionDetail>>(`${BASE_URL}/${questionId}/${questionPackageId}`, data);
+      return response.data.data;
+    } catch (error) {
+      console.error('Lỗi khi cập nhật chi tiết câu hỏi:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Xóa question detail (soft delete)
+   * DELETE /api/question-details/{questionId}/{questionPackageId}
+   */
+  deleteQuestionDetail: async (questionId: number, questionPackageId: number): Promise<QuestionDetail> => {
+    try {
+      const response = await axiosInstance.delete<ApiResponse<QuestionDetail>>(`${BASE_URL}/${questionId}/${questionPackageId}`);
+      return response.data.data;
+    } catch (error) {
+      console.error('Lỗi khi xóa chi tiết câu hỏi:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Xóa question detail (hard delete)
+   * DELETE /api/question-details/{questionId}/{questionPackageId}/hard
+   */
+  hardDeleteQuestionDetail: async (questionId: number, questionPackageId: number): Promise<void> => {
+    try {
+      await axiosInstance.delete(`${BASE_URL}/${questionId}/${questionPackageId}/hard`);
+    } catch (error) {
+      console.error('Lỗi khi xóa vĩnh viễn chi tiết câu hỏi:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Tạo nhiều question detail cùng lúc
+   * POST /api/question-details/bulk
+   */
+  bulkCreateQuestionDetails: async (data: {
+    questionDetails: Array<{
+      questionId: number;
+      questionPackageId: number;
+      questionOrder: number;
+      isActive: boolean;
+    }>;
+  }): Promise<BulkCreateResponse> => {
+    try {
+      const response = await axiosInstance.post<ApiResponse<BulkCreateResponse>>(`${BASE_URL}/bulk`, data);
+      return response.data.data;
+    } catch (error) {
+      console.error('Lỗi khi tạo nhiều chi tiết câu hỏi:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Sắp xếp lại thứ tự câu hỏi trong gói
+   * PUT /api/question-details/reorder
+   */
+  reorderQuestionDetails: async (data: ReorderRequest): Promise<ReorderResponse> => {
+    try {
+      const response = await axiosInstance.put<ApiResponse<ReorderResponse>>(`${BASE_URL}/reorder`, data);
+      return response.data.data;
+    } catch (error) {
+      console.error('Lỗi khi sắp xếp lại thứ tự câu hỏi:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lấy danh sách câu hỏi theo gói
+   * GET /api/question-details/package/{packageId}
+   */
+  getQuestionsByPackage: async (
+    packageId: number, 
+    params: {
+      page?: number;
+      limit?: number;
+      isActive?: boolean;
+      includeInactive?: boolean;
+    }
+  ): Promise<ApiResponse<QuestionDetail[]>> => {
+    try {
+      const response = await axiosInstance.get<ApiResponse<QuestionDetail[]>>(`${BASE_URL}/package/${packageId}`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách câu hỏi theo gói:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lấy danh sách gói câu hỏi theo câu hỏi
+   * GET /api/question-details/question/{questionId}
+   */
+  getPackagesByQuestion: async (
+    questionId: number,
+    params: {
+      page?: number;
+      limit?: number;
+      isActive?: boolean;
+    }
+  ): Promise<ApiResponse<QuestionDetail[]>> => {
+    try {
+      const response = await axiosInstance.get<ApiResponse<QuestionDetail[]>>(`${BASE_URL}/question/${questionId}`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách gói câu hỏi theo câu hỏi:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lấy thống kê chi tiết câu hỏi
+   * GET /api/question-details/stats
+   */
+  getQuestionDetailStats: async (questionPackageId?: number): Promise<QuestionDetailStats> => {
+    try {
+      const response = await axiosInstance.get<ApiResponse<QuestionDetailStats>>(`${BASE_URL}/stats`, {
+        params: { questionPackageId }
+      });
+      return response.data.data;
+    } catch (error) {
+      console.error('Lỗi khi lấy thống kê chi tiết câu hỏi:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lấy danh sách chi tiết câu hỏi theo gói (alias cho getQuestionsByPackage)
+   * GET /api/question-details/package/{packageId}
+   */
+  getQuestionDetailsByPackage: async (packageId: number, params: {
+    page?: number;
+    limit?: number;
+    isActive?: boolean;
+    includeInactive?: boolean;
+  }): Promise<ApiResponse<QuestionDetail[]>> => {
+    try {
+      const response = await axiosInstance.get<ApiResponse<QuestionDetail[]>>(`${BASE_URL}/package/${packageId}`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách chi tiết câu hỏi theo gói:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Xóa nhiều câu hỏi cùng lúc
+   * POST /api/question-details/batch-delete
+   */
+  batchDelete: async (payload: BatchDeletePayload) => {
+    try {
+      const response = await axiosInstance.post(`${BASE_URL}/batch-delete`, payload);
+      console.log(response);
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi xóa nhiều câu hỏi:', error);
+      throw error;
+    }
   }
 }; 

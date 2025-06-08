@@ -1,2 +1,1 @@
-export * from './questionDetailService';
-export * from './questionDetailStatsService'; 
+export { questionDetailService } from './questionDetailService';

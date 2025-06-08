@@ -99,7 +99,7 @@ export const useSchoolList = (
           <Tooltip title="Chỉnh sửa">
             <IconButton
               size="small"
-              color="secondary"
+              color="primary"
               onClick={(e) => {
                 e.stopPropagation();
                 if (onEdit && params.row) {

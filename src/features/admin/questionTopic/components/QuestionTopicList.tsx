@@ -116,7 +116,7 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
           <Tooltip title="Chỉnh sửa">
             <IconButton
               size="small"
-              color="secondary"
+              color="primary"
               onClick={() => onEdit?.(params.row)}
             >
               <EditIcon />

@@ -1,171 +1,322 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Snackbar, 
-  Alert,
-  Container
+import type { SelectChangeEvent } from '@mui/material';
+import {
+  Box,
+  Button,
+  Paper,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+  CircularProgress,
+  InputAdornment,
+  Stack,
+  Checkbox,
+  Tooltip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Pagination,
+  Chip
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
-import { QuestionDetailList, QuestionDetailForm } from '../components';
-import { 
-  useCreateQuestionDetail,
-  useUpdateQuestionDetail,
-  useDeleteQuestionDetail
-} from '../hooks';
-import type { QuestionDetail, QuestionDetailFormData, Question } from '../types/questionDetail';
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Search as SearchIcon
+} from '@mui/icons-material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
-// Dữ liệu mẫu cho câu hỏi
-const dummyQuestions: Question[] = [
-  { id: 1, title: 'Câu hỏi mẫu 1', content: 'Nội dung câu hỏi mẫu 1' },
-  { id: 2, title: 'Câu hỏi mẫu 2', content: 'Nội dung câu hỏi mẫu 2' },
-  { id: 3, title: 'Câu hỏi mẫu 3', content: 'Nội dung câu hỏi mẫu 3' }
-];
+import { useQuestionDetails } from '../hooks/useQuestionDetails';
+import { QuestionDetailDialog } from '../components/QuestionDetailDialog';
+import type { QuestionDetail } from '../types';
 
 const QuestionDetailListPage: React.FC = () => {
-  const { packageId } = useParams<{ packageId: string }>();
-  
-  const [formOpen, setFormOpen] = useState(false);
-  const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
-  const [selectedDetail, setSelectedDetail] = useState<QuestionDetail | null>(null);
-  const [availableQuestions] = useState<Question[]>(dummyQuestions);
-  const [notification, setNotification] = useState<{
-    open: boolean;
-    message: string;
-    severity: 'success' | 'error';
-  }>({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<QuestionDetail | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const { create, loading: createLoading, error: createError, validationErrors: createValidationErrors } = useCreateQuestionDetail();
-  const { update, loading: updateLoading, error: updateError, validationErrors: updateValidationErrors } = useUpdateQuestionDetail();
-  const { softDelete, error: deleteError } = useDeleteQuestionDetail();
-  
-  const packageIdNumber = packageId ? parseInt(packageId) : undefined;
+  const {
+    questionDetails,
+    loading,
+    error,
+    selectedIds,
+    setSelectedIds,
+    total,
+    totalPages,
+    filter,
+    updateFilter,
+    handleDeleteSelected,
+    handleCreateOrUpdate,
+  } = useQuestionDetails();
 
-  const handleAddClick = () => {
-    setFormMode('create');
-    setSelectedDetail(null);
-    setFormOpen(true);
+  const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
+    updateFilter({ page });
   };
 
-  const handleEditClick = (detail: QuestionDetail) => {
-    setFormMode('edit');
-    setSelectedDetail(detail);
-    setFormOpen(true);
+  const handleChangeRowsPerPage = (event: SelectChangeEvent<string>) => {
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    updateFilter({ limit: newRowsPerPage, page: 1 });
   };
 
-  const handleDeleteClick = async (detail: QuestionDetail) => {
-    try {
-      await softDelete(detail.questionId, detail.questionPackageId);
-      setNotification({
-        open: true,
-        message: 'Xóa câu hỏi thành công',
-        severity: 'success'
-      });
-    } catch {
-      setNotification({
-        open: true,
-        message: 'Lỗi khi xóa câu hỏi: ' + (deleteError || 'Đã xảy ra lỗi'),
-        severity: 'error'
-      });
+  const handleAdd = () => {
+    setEditingQuestion(null);
+    setDialogOpen(true);
+  };
+
+  const handleEdit = (record: QuestionDetail) => {
+    setEditingQuestion(record);
+    setDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setEditingQuestion(null);
+  };
+
+  const handleDialogSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const values = {
+      questionId: Number(formData.get('questionId')),
+      questionOrder: Number(formData.get('questionOrder')),
+      isActive: formData.get('isActive') === 'true'
+    };
+
+    const success = await handleCreateOrUpdate(values);
+    if (success) {
+      handleDialogClose();
     }
   };
 
-  const handleFormSubmit = async (data: QuestionDetailFormData) => {
-    try {
-      if (formMode === 'create') {
-        await create(data);
-        setNotification({
-          open: true,
-          message: 'Thêm câu hỏi thành công',
-          severity: 'success'
-        });
-      } else {
-        if (selectedDetail) {
-          await update(selectedDetail.questionId, selectedDetail.questionPackageId, data);
-          setNotification({
-            open: true,
-            message: 'Cập nhật câu hỏi thành công',
-            severity: 'success'
-          });
-        }
-      }
-      setFormOpen(false);
-    } catch {
-      setNotification({
-        open: true,
-        message: formMode === 'create' 
-          ? 'Lỗi khi thêm câu hỏi: ' + (createError || 'Đã xảy ra lỗi')
-          : 'Lỗi khi cập nhật câu hỏi: ' + (updateError || 'Đã xảy ra lỗi'),
-        severity: 'error'
-      });
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleSearch = () => {
+    updateFilter({ page: 1 });
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
     }
-  };
-
-  const handleViewClick = (detail: QuestionDetail) => {
-    // TODO: Implement view functionality
-    console.log('View detail:', detail);
-  };
-
-  const handleCloseNotification = () => {
-    setNotification(prev => ({ ...prev, open: false }));
   };
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Quản lý chi tiết câu hỏi
+    <Box>
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h4" component="h1">
+          Quản lý chi tiết gói câu hỏi
         </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={handleAddClick}
-          sx={{ mb: 2 }}
+          onClick={handleAdd}
         >
-          Thêm câu hỏi
+          Thêm câu hỏi vào gói 
         </Button>
       </Box>
+      <Paper sx={{ p: 3 }}>
+        {error && (
+          <Box sx={{ mb: 2 }}>
+            <Typography color="error">{error}</Typography>
+          </Box>
+        )}
 
-      <QuestionDetailList
-        packageId={packageIdNumber}
-        onView={handleViewClick}
-        onEdit={handleEditClick}
-        onDelete={handleDeleteClick}
-        onAdd={handleAddClick}
-      />
-
-      <QuestionDetailForm
-        open={formOpen}
-        onClose={() => setFormOpen(false)}
-        onSubmit={handleFormSubmit}
-        questionDetail={selectedDetail || undefined}
-        packageId={packageIdNumber}
-        loading={createLoading || updateLoading}
-        errors={formMode === 'create' ? createValidationErrors : updateValidationErrors}
-        questions={availableQuestions}
-        mode={formMode}
-      />
-
-      <Snackbar
-        open={notification.open}
-        autoHideDuration={6000}
-        onClose={handleCloseNotification}
-      >
-        <Alert
-          onClose={handleCloseNotification}
-          severity={notification.severity}
-          sx={{ width: '100%' }}
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          sx={{ mb: 3 }}
         >
-          {notification.message}
-        </Alert>
-      </Snackbar>
-    </Container>
+          <TextField
+            label="Tìm kiếm"
+            variant="outlined"
+            size="small"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onKeyPress={handleKeyPress}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ minWidth: 200 }}
+          />
+          {selectedIds.size > 0 && (
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleDeleteSelected}
+              startIcon={<DeleteIcon />}
+            >
+              Xóa ({selectedIds.size})
+            </Button>
+          )}
+          <Box flex={1} />
+
+          <Typography sx={{ alignSelf: 'center' }}>
+            Tổng số: {total} câu hỏi
+          </Typography>
+        </Stack>
+
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            <CircularProgress />
+          </Box>
+        ) : questionDetails.length === 0 ? (
+          <Typography sx={{ textAlign: 'center', p: 3 }}>
+            Không có dữ liệu
+          </Typography>
+        ) : (
+          <>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={selectedIds.size === questionDetails.length && questionDetails.length > 0}
+                        indeterminate={selectedIds.size > 0 && selectedIds.size < questionDetails.length}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedIds(new Set(questionDetails.map(q => q.questionId)));
+                          } else {
+                            setSelectedIds(new Set());
+                          }
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell width={80}>STT</TableCell>
+                    <TableCell>Tiêu đề câu hỏi</TableCell>
+                    <TableCell width={120}>Loại câu hỏi</TableCell>
+                    <TableCell width={120}>Độ khó</TableCell>
+                    <TableCell width={120}>Trạng thái</TableCell>
+                    <TableCell width={150}>Thao tác</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {questionDetails.map((row) => (
+                    <TableRow key={`${row.questionId}-${row.questionPackageId}`}>
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          checked={selectedIds.has(row.questionId)}
+                          onChange={(e) => {
+                            const newSelectedIds = new Set(selectedIds);
+                            if (e.target.checked) {
+                              newSelectedIds.add(row.questionId);
+                            } else {
+                              newSelectedIds.delete(row.questionId);
+                            }
+                            setSelectedIds(newSelectedIds);
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>{row.questionOrder}</TableCell>
+                      <TableCell>{row.question?.plainText || 'Không có tiêu đề'}</TableCell>
+                      <TableCell>
+                        {row.question?.questionType === 'multiple_choice' ? 'Trắc nghiệm' : 
+                         row.question?.questionType === 'essay' ? 'Tự luận' : row.question?.questionType}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={row.question?.difficulty || 'N/A'}
+                          color={
+                            row.question?.difficulty === 'Alpha' ? 'info' :
+                            row.question?.difficulty === 'Beta' ? 'warning' :
+                            row.question?.difficulty === 'Gold' ? 'success' : 'default'
+                          }
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={row.isActive ? 'Đang hoạt động' : 'Không hoạt động'}
+                          color={row.isActive ? 'success' : 'error'}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+
+                        <Stack direction="row" spacing={1}>
+                        <Tooltip title="Xem chi tiết">
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => handleEdit(row)}
+                          >
+                            <VisibilityIcon />
+                          </IconButton>
+                        </Tooltip>
+
+                          <Tooltip title="Chỉnh sửa">
+                            <IconButton
+                              color="primary"
+                              onClick={() => handleEdit(row)}
+                              size="small"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
+                <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
+                <Select
+                  labelId="page-size-select-label"
+                  value={String(filter.limit)}
+                  onChange={handleChangeRowsPerPage}
+                  label="Hiển thị"
+                >
+                  <MenuItem value={5}>5</MenuItem>
+                  <MenuItem value={10}>10</MenuItem>
+                  <MenuItem value={25}>25</MenuItem>
+                  <MenuItem value={50}>50</MenuItem>
+                </Select>
+              </FormControl>
+              <Typography>
+                Trang {filter.page} / {totalPages}
+              </Typography>
+            </Box>
+
+            {totalPages > 0 && (
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <Pagination
+                  count={totalPages}
+                  page={filter.page}
+                  onChange={handlePageChange}
+                  showFirstButton 
+                  showLastButton  
+                  color="primary"
+                />
+              </Box>
+            )}
+          </>
+        )}
+      </Paper>
+
+      <QuestionDetailDialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        onSubmit={handleDialogSubmit}
+        editingQuestion={editingQuestion}
+      />
+    </Box>
   );
 };
 
