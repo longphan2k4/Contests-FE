@@ -1,7 +1,7 @@
-import React from 'react';
-import { Switch, FormControlLabel } from '@mui/material';
-import { useToggleSchoolActive } from '../hooks/crud/useToggleSchoolActive';
-import { useNotification } from '../../../../contexts/NotificationContext';
+import React from "react";
+import { Switch, FormControlLabel } from "@mui/material";
+import { useToggleSchoolActive } from "../hooks/crud/useToggleSchoolActive";
+import { useNotification } from "../../../../contexts/NotificationContext";
 
 interface SchoolStatusSwitchProps {
   schoolId: number;
@@ -14,7 +14,7 @@ const SchoolStatusSwitch: React.FC<SchoolStatusSwitchProps> = ({
   schoolId,
   isActive,
   onStatusChange,
-  onRefresh
+  onRefresh,
 }) => {
   const { toggle, loading } = useToggleSchoolActive();
   const { showSuccessNotification, showErrorNotification } = useNotification();
@@ -24,8 +24,10 @@ const SchoolStatusSwitch: React.FC<SchoolStatusSwitchProps> = ({
       const updatedSchool = await toggle(schoolId);
       if (updatedSchool) {
         showSuccessNotification(
-          `Trạng thái trường học đã được ${updatedSchool.isActive ? 'kích hoạt' : 'vô hiệu hóa'}`,
-          'Cập nhật thành công'
+          `Trạng thái trường học đã được ${
+            updatedSchool.isActive ? "kích hoạt" : "vô hiệu hóa"
+          }`,
+          "Cập nhật thành công"
         );
         onStatusChange?.(updatedSchool.isActive);
         onRefresh?.();
@@ -33,15 +35,15 @@ const SchoolStatusSwitch: React.FC<SchoolStatusSwitchProps> = ({
     } catch (error) {
       console.log(error);
       showErrorNotification(
-        'Không thể cập nhật trạng thái trường học',
-        'Lỗi cập nhật',
+        "Không thể cập nhật trạng thái trường học",
+        "Lỗi cập nhật"
       );
     }
   };
 
   return (
     <FormControlLabel
-      label={isActive ? 'Đang hoạt động' : 'Đã vô hiệu hóa'}
+      label={isActive ? "Đang hoạt động" : "Đã vô hiệu hóa"}
       control={
         <Switch
           checked={isActive}
@@ -56,4 +58,4 @@ const SchoolStatusSwitch: React.FC<SchoolStatusSwitchProps> = ({
   );
 };
 
-export default SchoolStatusSwitch; 
+export default SchoolStatusSwitch;
