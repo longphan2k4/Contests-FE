@@ -1,3 +1,15 @@
+
+import { Route, Navigate } from 'react-router-dom';
+import AdminLayout from '../../layouts/AdminLayout';
+import ContestantsPage from './pages/ContestantsManage/ContestantsPage';
+import AboutAdminPage from './about/pages/AboutAdminPage';
+import UsersPage from './UsersManagement/pages/UsersPage';
+import {
+  SchoolsPage,
+} from './schools/pages';
+import {
+  QuestionTopicsPage,
+} from './questionTopic/pages';
 import { Route, Navigate } from "react-router-dom";
 import AdminLayout from "../../layouts/AdminLayout";
 import ContestantsPage from "./pages/ContestantsManage/ContestantsPage";
@@ -10,7 +22,7 @@ const Dashboard = () => <div>Trang Dashboard</div>;
 //const SchoolsPage = () => <div>Trang Quản lý trường học</div>;
 const ClassesPage = () => <div>Trang Quản lý lớp học</div>;
 const StudentsPage = () => <div>Trang Quản lý sinh viên</div>;
-const QuestionTopicsPage = () => <div>Trang Quản lý chủ đề câu hỏi</div>;
+// const QuestionTopicsPage = () => <div>Trang Quản lý chủ đề câu hỏi</div>;
 const QuestionsPage = () => <div>Trang Quản lý câu hỏi</div>;
 const QuestionPackagesPage = () => <div>Trang Quản lý gói câu hỏi</div>;
 const ContestsPage = () => <div>Trang Quản lý cuộc thi</div>;

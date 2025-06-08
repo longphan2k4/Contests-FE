@@ -187,7 +187,7 @@ const SchoolList: React.FC<SchoolListProps> = ({
               <MenuItem value="inactive">Không hoạt động</MenuItem>
             </Select>
           </FormControl>
-
+          {/* xoá nhiều */}
           {selectedIds.length > 0 && (
             <Button
               variant="contained"

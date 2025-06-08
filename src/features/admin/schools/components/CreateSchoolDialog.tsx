@@ -61,8 +61,8 @@ const CreateSchoolDialog = ({ open, onClose, onCreated }: CreateSchoolDialogProp
         fullWidth
         scroll="paper"
       >
-        <DialogTitle>
-          Thêm trường học mới
+      <DialogTitle sx={{ m: 0, p: 2, bgcolor: 'secondary.main', color: 'white' }}>
+        Thêm trường học mới
           {!loading && (
             <IconButton
               aria-label="close"
