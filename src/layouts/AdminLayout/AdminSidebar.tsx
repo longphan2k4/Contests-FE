@@ -105,12 +105,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
           label: 'Chi tiết câu hỏi',
           path: '/admin/question-packages/1',
         },
-        {
-          key: 'question-stats',
-          icon: <BarChartIcon fontSize="small" />,
-          label: 'Thống kê câu hỏi',
-          path: '/admin/question-packages/1/stats',
-        }
+
       ]
     },
     {
