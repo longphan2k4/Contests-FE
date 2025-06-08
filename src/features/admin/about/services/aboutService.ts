@@ -1,13 +1,14 @@
 import axios from 'axios';
 import type { About, AboutData } from '../types/about';
 import { API_URL } from '../../../../config/env';
+import axiosInstance from '../../../../config/axiosInstance';
 
 /**
  * Lấy thông tin About từ API
  */
 export const getAboutInfo = async (): Promise<About> => {
   try {
-    const response = await axios.get(`${API_URL}/about/1`);
+    const response = await axiosInstance.get(`${API_URL}/about/1`);
     return response.data;
   } catch (error) {
     console.error('Error fetching about info:', error);
