@@ -16,4 +16,4 @@ export const CreateUser = async (payload: CreateUserInput) => {
   return res.data;
 };
 
-// export const UpdateUser = as;
+// export const UpdateUser =

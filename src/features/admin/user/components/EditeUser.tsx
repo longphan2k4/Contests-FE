@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
 import { Box, Button } from "@mui/material";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   UpdateUserSchema,
@@ -40,7 +40,6 @@ export default function EditeUser({
   } = useForm<UpdateUserInput>({
     resolver: zodResolver(UpdateUserSchema),
     defaultValues: {
-      username: user?.username,
       email: user?.email,
       password: "",
       role: user?.role,
@@ -51,7 +50,6 @@ export default function EditeUser({
   useEffect(() => {
     if (user) {
       reset({
-        username: user.username,
         email: user.email,
         password: "", // không hiển thị password
         role: user.role,
@@ -73,13 +71,6 @@ export default function EditeUser({
       >
         <form id="create-school-form" onSubmit={handleSubmit(handleFormSubmit)}>
           <FormInput
-            label="Tên tài khoản"
-            id="username"
-            placeholder="Nhập tên tài khoản"
-            error={errors.username}
-            register={register("username")}
-          />
-          <FormInput
             label="Email"
             id="email"
             placeholder="Nhập email"
@@ -99,11 +90,19 @@ export default function EditeUser({
             label="Vai trò"
             register={register("role")}
             options={roleOptions}
+            error={errors.role}
+            defaultValue={user?.role}
           />
-          <FormSwitch
+          <Controller
             name="isActive"
             control={control}
-            label={watch("isActive") ? "Đang hoạt động" : "Đã vô hiệu hóa"}
+            defaultValue={true}
+            render={({ field }) => (
+              <FormSwitch
+                value={field.value ?? false}
+                onChange={field.onChange}
+              />
+            )}
           />
           <Button
             type="submit"
