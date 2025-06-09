@@ -20,12 +20,7 @@ export const CreateUserSchema = z.object({
 });
 
 export const UserIdShema = z.object({
-  id: z
-    .string()
-    .transform(val => parseInt(val))
-    .refine(val => !isNaN(val) && val > 0, {
-      message: "Id phải là một số nguyên dương",
-    }),
+  id: z.number().nullable(),
 });
 
 export const UserShema = z.object({
@@ -61,3 +56,4 @@ export const UpdateUserSchema = z.object({
 export type User = z.infer<typeof UserShema>;
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
+export type UserIdParam = z.infer<typeof UserIdShema>;

@@ -1,51 +1,28 @@
-import { Switch, FormControlLabel, Typography } from "@mui/material";
-import { Controller, type Control } from "react-hook-form";
+// src/components/common/CommonSwitch.tsx
+import React from "react";
+import { Switch, FormControlLabel } from "@mui/material";
 
-interface FormSwitchProps {
-  name: string;
-  control: Control<any>;
+interface CommonSwitchProps {
   label?: string;
-  labelPlacement?: "start" | "end" | "top" | "bottom";
-  disabled?: boolean;
-  showLabel?: boolean;
+  value: boolean;
+  onChange: (newValue: boolean) => void;
 }
 
-const FormSwitch: React.FC<FormSwitchProps> = ({
-  name,
-  control,
+const FormSwitch: React.FC<CommonSwitchProps> = ({
   label,
-  labelPlacement = "end",
-  disabled = false,
-  showLabel = true,
+  value,
+  onChange,
 }) => {
   return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field: { value, onChange } }) =>
-        showLabel && label ? (
-          <FormControlLabel
-            control={
-              <Switch
-                checked={value}
-                onChange={onChange}
-                disabled={disabled}
-                color="primary"
-              />
-            }
-            label={label}
-            labelPlacement={labelPlacement}
-            sx={{ margin: 0 }}
-          />
-        ) : (
-          <Switch
-            checked={value}
-            onChange={onChange}
-            disabled={disabled}
-            color="primary"
-          />
-        )
+    <FormControlLabel
+      control={
+        <Switch
+          checked={value}
+          onChange={e => onChange(e.target.checked)}
+          color="primary"
+        />
       }
+      label={value === true ? "Đang hoạt động" : "Đã vô hiệu hóa"}
     />
   );
 };

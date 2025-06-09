@@ -8,7 +8,7 @@ import {
 import { Box } from "@mui/material";
 
 interface ViewUserProps {
-  user: User;
+  user: User | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -19,13 +19,13 @@ export default function ViewUser({
   onClose,
 }: ViewUserProps): React.ReactElement {
   const fields = [
-    { label: "ID", value: user.id },
-    { label: "Tên tài khoản", value: user.username },
-    { label: "Email", value: user.email },
-    { label: "Vai trò", value: user.role },
+    { label: "ID", value: user?.id },
+    { label: "Tên tài khoản", value: user?.username },
+    { label: "Email", value: user?.email },
+    { label: "Vai trò", value: user?.role },
     {
       label: "Trạng thái",
-      value: user.isActive ? "Đang hoạt động" : "Đã bị vô hiệu hóa",
+      value: user?.isActive ? "Đang hoạt động" : "Đã bị vô hiệu hóa",
     },
   ];
   return (

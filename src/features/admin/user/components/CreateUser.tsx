@@ -2,7 +2,7 @@ import React from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
 import { Box, Button } from "@mui/material";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateUserSchema, type CreateUserInput } from "../types/user.shame";
 
@@ -31,12 +31,18 @@ export default function CreateSchoolDialog({
     formState: { errors },
     watch,
     control,
+    reset,
   } = useForm<CreateUserInput>({
     resolver: zodResolver(CreateUserSchema),
+    defaultValues: {
+      isActive: true,
+      role: "Judge",
+    },
   });
 
   const handleFormSubmit = (data: CreateUserInput) => {
     onSubmit(data);
+    reset();
     onClose();
   };
   return (
@@ -75,11 +81,16 @@ export default function CreateSchoolDialog({
             label="Vai trò"
             register={register("role")}
             options={roleOptions}
+            defaultValue="Judge"
+            error={errors.role}
           />
-          <FormSwitch
+          <Controller
             name="isActive"
             control={control}
-            label={watch("isActive") ? "Đang hoạt động" : "Đã vô hiệu hóa"}
+            defaultValue={true}
+            render={({ field }) => (
+              <FormSwitch value={field.value} onChange={field.onChange} />
+            )}
           />
           <Button
             type="submit"
