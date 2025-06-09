@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   CodeBracketIcon, 
   TrophyIcon, 
@@ -16,7 +17,12 @@ const HomePage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentBanner, setCurrentBanner] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+const navigate = useNavigate(); // Khởi tạo useNavigate
 
+    // Hàm điều hướng đến /login
+    const handleRegisterClick = () => {
+        navigate('/login');
+    };
   // Banner data
   const banners = [
     {
@@ -176,8 +182,8 @@ const HomePage = () => {
             <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors duration-300">Quy định</a>
             <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors duration-300">Liên hệ</a>
           </div>
-          <button className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-2 rounded-full hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25 text-white">
-            Đăng ký ngay
+          <button onClick={handleRegisterClick} className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-2 rounded-full hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25 text-white">
+            Đăng nhập
           </button>
         </div>
       </nav>
