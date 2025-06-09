@@ -5,6 +5,7 @@ import AboutAdminPage from "./about/pages/AboutAdminPage";
 import UsersPage from "./user/page/UsersPage";
 import { SchoolsPage } from "./schools/pages";
 import { QuestionTopicsPage } from "./questionTopic/pages";
+import { QuestionDetailListPage } from "./question-details/pages";
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
 //const SchoolsPage = () => <div>Trang Quản lý trường học</div>;
@@ -28,6 +29,7 @@ const AdminRoutes = () => {
       <Route path="classes" element={<ClassesPage />} />
       <Route path="students" element={<StudentsPage />} />
       <Route path="question-topics" element={<QuestionTopicsPage />} />
+      <Route path="question-packages/:packageId" element={<QuestionDetailListPage />} />
       <Route path="questions" element={<QuestionsPage />} />
       <Route path="contests" element={<ContestsPage />} />
       <Route path="contestants" element={<ContestantsPage />} />
