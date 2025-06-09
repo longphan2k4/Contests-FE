@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { Box, CssBaseline, Toolbar } from '@mui/material';
-import { Outlet } from 'react-router-dom';
-import AdminHeader from './AdminHeader';
-import AdminFooter from './AdminFooter';
-import AdminSidebar from './AdminSidebar';
-import Notification from '../../components/Notification';
-import { NotificationProvider } from '../../contexts/NotificationContext';
+import React, { useState } from "react";
+import { Box, CssBaseline, Toolbar } from "@mui/material";
+import { Outlet } from "react-router-dom";
+import AdminHeader from "./AdminHeader";
+import AdminSidebar from "./AdminSidebar";
+import Notification from "../../components/Notification";
+import { NotificationProvider } from "../../contexts/NotificationContext";
 
 const AdminLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -18,7 +17,7 @@ const AdminLayout: React.FC = () => {
 
   return (
     <NotificationProvider>
-      <Box sx={{ display: 'flex', minHeight: '120vh' }}>
+      <Box sx={{ display: "flex", minHeight: "120vh" }}>
         <CssBaseline />
         <AdminHeader toggle={toggle} />
         <AdminSidebar collapsed={collapsed} />
@@ -29,26 +28,28 @@ const AdminLayout: React.FC = () => {
             p: 3,
             width: { sm: `calc(100% - ${drawerWidth}px)` },
             ml: { sm: `${drawerWidth}px` },
-            display: 'flex',
-            flexDirection: 'column',
-            transition: (theme) => theme.transitions.create(['margin', 'width'], {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
+            display: "flex",
+            flexDirection: "column",
+            transition: theme =>
+              theme.transitions.create(["margin", "width"], {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+              }),
           }}
         >
           <Toolbar /> {/* Spacer to prevent content from going under AppBar */}
-          <Box sx={{ 
-            flex: 1, 
-            mb: 2, 
-            backgroundColor: 'white', 
-            borderRadius: 1,
-            boxShadow: 1,
-            p: 3
-          }}>
+          <Box
+            sx={{
+              flex: 1,
+              mb: 2,
+              backgroundColor: "white",
+              borderRadius: 1,
+              boxShadow: 1,
+              p: 3,
+            }}
+          >
             <Outlet />
           </Box>
-          <AdminFooter />
         </Box>
         <Notification />
       </Box>
@@ -56,4 +57,4 @@ const AdminLayout: React.FC = () => {
   );
 };
 
-export default AdminLayout; 
+export default AdminLayout;

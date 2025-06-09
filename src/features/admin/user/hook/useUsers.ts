@@ -7,4 +7,4 @@ export const useUsers = () => {
   });
 };
 
-export default { useQuery };
+export default { useUsers };

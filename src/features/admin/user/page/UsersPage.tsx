@@ -1,132 +1,191 @@
-import React, { useState, useEffect } from "react";
-import { Box, Typography, Button } from "@mui/material";
+import React, { useState, useEffect, useCallback, memo } from "react";
+import { Box, Typography, CircularProgress, Alert } from "@mui/material";
+import { Button } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+
 import CreateUser from "../components/CreateUser";
 import ViewUser from "../components/ViewUser";
 import EditUser from "../components/EditeUser";
 import UserList from "../components/UserList";
+import { useNotification } from "../../../../contexts/NotificationContext";
+
 import { useUsers } from "../hook/useUsers";
+import { useUserById } from "../hook/userUserById";
+import { useCreateUser } from "../hook/useCreate";
+import { data } from "react-router-dom";
+
 import {
   type User,
   type CreateUserInput,
   type UpdateUserInput,
 } from "../types/user.shame";
-import AddIcon from "@mui/icons-material/Add";
 
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [isCreate, setIsCreate] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
-  const [isView, setIsView] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<User>({
-    id: 1,
-    username: "haha",
-    email: "hhaa",
-    role: "Judge",
-    isActive: false,
-  });
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const { data, isLoading, isError } = useUsers();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+
+  const [pendingAction, setPendingAction] = useState<"view" | "edit" | null>(
+    null
+  );
+  const { showSuccessNotification, showErrorNotification } = useNotification();
+
+  const {
+    data: usersQuery,
+    isLoading: isUsersLoading,
+    isError: isUsersError,
+    refetch: refetchUsers,
+  } = useUsers();
+
+  const { data: selectedUserData } = useUserById(selectedUserId);
+
+  const { mutate: mutateCreate } = useCreateUser();
+
   useEffect(() => {
-    if (data) {
-      setUsers(data.data.user);
-      console.log(data);
+    if (usersQuery) {
+      setUsers(usersQuery.data.user);
     }
-  }, []);
-  if (isLoading) {
-    return <div>Loading</div>;
-  }
-  if (isError) {
-    return <div>Err</div>;
-  }
-  const openCreate = () => setIsCreate(true);
-  const closeCreate = () => setIsCreate(false);
-  const toggleActive = (id: number) => {
+  }, [usersQuery]);
+
+  useEffect(() => {
+    if (!selectedUserData || !pendingAction) return;
+
+    setSelectedUser(selectedUserData);
+
+    if (pendingAction === "view") setIsViewOpen(true);
+    if (pendingAction === "edit") setIsEditOpen(true);
+
+    setPendingAction(null);
+  }, [selectedUserData, pendingAction]);
+
+  const openCreate = () => setIsCreateOpen(true);
+  const closeCreate = () => setIsCreateOpen(false);
+
+  const toggleActive = useCallback((id: number) => {
     setUsers(prev =>
-      prev.map(user =>
-        user.id === id ? { ...user, isActive: !user.isActive } : user
-      )
+      prev.map(u => (u.id === id ? { ...u, isActive: !u.isActive } : u))
     );
+  }, []);
+
+  const handleDelete = useCallback((id: number) => {
+    setUsers(prev => prev.filter(u => u.id !== id));
+    // TODO: gọi API xoá user
+  }, []);
+
+  const handleCreate = (payload: CreateUserInput) => {
+    mutateCreate(payload, {
+      onSuccess: data => {
+        if (data)
+          showSuccessNotification(
+            `Tạo tài khoản ${payload.username} thành công`
+          );
+        refetchUsers();
+      },
+      onError: (err: any) => {
+        if (err.response?.data?.message) {
+          showErrorNotification(err.response?.data?.message);
+        }
+      },
+    });
   };
 
-  const handleDelete = (id: number) => {
-    setUsers(prev => prev.filter(user => user.id !== id));
+  const handleUpdate = (payload: UpdateUserInput) => {
+    // TODO: gọi API cập nhật user
   };
 
-  const handleCreate = (data: CreateUserInput) => {
-    const newUser: User = {
-      ...data,
-      id: Date.now(), // chỉ demo
-      isActive: true,
-    };
-    setUsers(prev => [...prev, newUser]);
-    closeCreate();
-  };
-  const handleUpdate = (data: UpdateUserInput) => {};
+  const handleAction = useCallback(
+    (type: "view" | "edit" | "delete", id: number) => {
+      if (type === "delete") {
+        handleDelete(id);
+        return;
+      }
+      setSelectedUserId(id);
+      setPendingAction(type);
+    },
+    [handleDelete]
+  );
 
-  const handleAction = (type: "view" | "edit" | "delete", id: number) => {
-    const user = users.find(u => u.id === id);
-    if (!user) return;
-    setSelectedUser(user);
-    if (type === "view") setIsView(true);
-    if (type === "edit") setIsEdit(true);
-    if (type === "delete") handleDelete(id);
-  };
+  if (isUsersLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isUsersError) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert
+          severity="error"
+          action={<Button onClick={() => refetchUsers}>Thử lại</Button>}
+        >
+          Không thể tải danh sách người dùng.
+        </Alert>
+      </Box>
+    );
+  }
 
   return (
-    <>
-      <Box sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-          <Typography variant="h5">Quản lý người dùng</Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={openCreate}
-          >
-            Thêm người dùng mới
-          </Button>
-        </Box>
-
-        <Box
-          sx={{
-            background: "#FFFFFF",
-            p: "24px",
-            boxShadow:
-              "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)",
-            border: "1px solid #ccc",
-            borderRadius: "16px",
-          }}
+    <Box sx={{ p: 3 }}>
+      {/* Header */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+        <Typography variant="h5">Quản lý người dùng</Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={openCreate}
         >
-          <UserList
-            uses={users}
-            onView={id => handleAction("view", id)}
-            onEdit={id => handleAction("edit", id)}
-            onDelete={id => handleAction("delete", id)}
-            onToggle={toggleActive}
-          />
-        </Box>
+          Thêm người dùng
+        </Button>
+      </Box>
 
-        {/* Popups */}
-        <CreateUser
-          isOpen={isCreate}
-          onClose={closeCreate}
-          onSubmit={handleCreate}
-        />
-
-        <EditUser
-          user={selectedUser}
-          isOpen={isEdit}
-          onClose={() => setIsEdit(false)}
-          onSubmit={handleUpdate}
-        />
-
-        <ViewUser
-          isOpen={isView}
-          onClose={() => setIsView(false)}
-          user={selectedUser}
+      {/* User list card */}
+      <Box
+        sx={{
+          background: "#FFFFFF",
+          p: 3,
+          borderRadius: 2,
+          border: "1px solid",
+          borderColor: "divider",
+          boxShadow:
+            "0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12)",
+        }}
+      >
+        <UserList
+          users={users}
+          onView={id => handleAction("view", id)}
+          onEdit={id => handleAction("edit", id)}
+          onDelete={id => handleAction("delete", id)}
+          onToggle={toggleActive}
         />
       </Box>
-    </>
+
+      {/* Modals */}
+      <CreateUser
+        isOpen={isCreateOpen}
+        onClose={closeCreate}
+        onSubmit={handleCreate}
+      />
+
+      <ViewUser
+        isOpen={isViewOpen}
+        onClose={() => setIsViewOpen(false)}
+        user={selectedUser}
+      />
+
+      <EditUser
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        user={selectedUser}
+        onSubmit={handleUpdate}
+      />
+    </Box>
   );
 };
 
-export default UsersPage;
+export default memo(UsersPage);

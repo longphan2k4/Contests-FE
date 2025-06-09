@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
 import { Box, Button } from "@mui/material";
@@ -36,6 +36,7 @@ export default function EditeUser({
     formState: { errors },
     watch,
     control,
+    reset,
   } = useForm<UpdateUserInput>({
     resolver: zodResolver(UpdateUserSchema),
     defaultValues: {
@@ -47,6 +48,17 @@ export default function EditeUser({
     },
   });
 
+  useEffect(() => {
+    if (user) {
+      reset({
+        username: user.username,
+        email: user.email,
+        password: "", // không hiển thị password
+        role: user.role,
+        isActive: user.isActive,
+      });
+    }
+  }, [user, reset]);
   const handleFormSubmit = (data: UpdateUserInput) => {
     onSubmit(data);
     onClose();

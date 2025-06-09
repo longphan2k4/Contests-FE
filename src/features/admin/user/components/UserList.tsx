@@ -10,7 +10,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import { type User } from "../types/user.shame";
 
 interface UserListProps {
-  uses: User[];
+  users: User[];
   onView: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
@@ -18,7 +18,7 @@ interface UserListProps {
 }
 
 export default function UserList({
-  uses,
+  users,
   onView,
   onEdit,
   onDelete,
@@ -70,7 +70,7 @@ export default function UserList({
 
   return (
     <Box sx={{ height: "100vh", width: "100%" }}>
-      <DataGrid rows={uses} columns={columns} getRowId={row => row.id} />
+      <DataGrid rows={users} columns={columns} getRowId={row => row.id} />
     </Box>
   );
 }
