@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box, IconButton } from "@mui/material";
 import DataGrid from "../../../../components/DataGrid";
 import IsSwitch from "../../../../components/IsSwitch";
@@ -11,6 +11,8 @@ import { type User } from "../types/user.shame";
 
 interface UserListProps {
   users: User[];
+  selectedUserIds: number[];
+  setSelectedUserIds: React.Dispatch<React.SetStateAction<number[]>>;
   onView: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
@@ -18,6 +20,8 @@ interface UserListProps {
 }
 
 export default function UserList({
+  selectedUserIds,
+  setSelectedUserIds,
   users,
   onView,
   onEdit,
@@ -67,10 +71,20 @@ export default function UserList({
       ),
     },
   ];
-
   return (
-    <Box sx={{ height: "100vh", width: "100%" }}>
-      <DataGrid rows={users} columns={columns} getRowId={row => row.id} />
+    <Box>
+      <DataGrid
+        rows={users}
+        columns={columns}
+        getRowId={row => row.id}
+        selectedIds={selectedUserIds}
+        onSelectChange={selection => {
+          const idsArray = Array.isArray(selection)
+            ? selection
+            : Array.from((selection as any).ids || []);
+          setSelectedUserIds(idsArray.map(id => Number(id)));
+        }}
+      />
     </Box>
   );
 }

@@ -4,16 +4,14 @@ import FormInput from "../../../../components/FormInput";
 import { Box, Button } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  UpdateUserSchema,
-  type UpdateUserInput,
-  type User,
-} from "../types/user.shame";
+import { UpdateUserSchema, type UpdateUserInput } from "../types/user.shame";
 
 import FormSelect from "../../../../components/FormSelect";
 import FormSwitch from "../../../../components/FormSwitch";
+
+import { useUserById } from "../hook/userUserById";
 interface EditeUserProp {
-  user: User | null;
+  id: number | null;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: UpdateUserInput) => void;
@@ -25,7 +23,7 @@ const roleOptions = [
 ];
 
 export default function EditeUser({
-  user,
+  id,
   isOpen,
   onClose,
   onSubmit,
@@ -39,24 +37,19 @@ export default function EditeUser({
     reset,
   } = useForm<UpdateUserInput>({
     resolver: zodResolver(UpdateUserSchema),
-    defaultValues: {
-      email: user?.email,
-      password: "",
-      role: user?.role,
-      isActive: user?.isActive,
-    },
   });
+
+  const { data: user } = useUserById(id);
 
   useEffect(() => {
     if (user) {
       reset({
         email: user.email,
-        password: "", // không hiển thị password
         role: user.role,
         isActive: user.isActive,
       });
     }
-  }, [user, reset]);
+  }, [user, reset, isOpen]);
   const handleFormSubmit = (data: UpdateUserInput) => {
     onSubmit(data);
     onClose();
