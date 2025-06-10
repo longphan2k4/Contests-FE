@@ -97,6 +97,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
           label: "Gói câu hỏi",
           path: "/admin/question-packages",
         },
+        // giả lập chi tiết câu hỏi
+        {
+          key: "question-packages",
+          icon: <QuestionIcon fontSize="small" />,
+          label: "Chi tiết câu hỏi",
+          path: "/admin/question-packages/1",
+        },
       ],
     },
     {

@@ -99,17 +99,7 @@
 - [ ] Thêm loading state
 - [ ] Thêm error handling
 
-## 7. Testing
-### Unit Tests
-- [ ] Test các hooks
-- [ ] Test các services
-- [ ] Test các utils
 
-### Integration Tests
-- [ ] Test luồng tạo mới
-- [ ] Test luồng chỉnh sửa
-- [ ] Test luồng xóa
-- [ ] Test validation
 
 ## 8. Tối ưu hóa
 - [ ] Thêm debounce cho search
@@ -128,5 +118,3 @@
 - [ ] Code review
 - [ ] UI/UX review
 - [ ] Performance review
-- [ ] Security review
-- [ ] Accessibility review 
