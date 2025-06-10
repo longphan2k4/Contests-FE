@@ -1,5 +1,3 @@
-// src/components/common/CommonDataGrid.tsx
-
 import React from "react";
 import {
   DataGrid,
@@ -13,6 +11,8 @@ interface CommonDataGridProps<T> {
   getRowId: (row: T) => string | number;
   selectedIds?: (string | number)[];
   onSelectChange?: (selectedIds: (string | number)[]) => void;
+  // New props for responsiveness
+  responsiveColumns?: { [key: string]: { xs?: string; sm?: string } }; // e.g., { field: { xs: "none", sm: "table-cell" } }
 }
 
 const CommonDataGrid = <T,>({
@@ -21,11 +21,29 @@ const CommonDataGrid = <T,>({
   getRowId,
   selectedIds,
   onSelectChange,
+  responsiveColumns = {},
 }: CommonDataGridProps<T>) => {
+  // Map columns to include responsive display styles
+  const responsiveColumnsDef: GridColDef[] = columns.map(col => ({
+    ...col,
+    headerClassName: "data-grid-header",
+    cellClassName: "data-grid-cell",
+    ...(responsiveColumns[col.field]
+      ? {
+          sx: {
+            display: responsiveColumns[col.field] || {
+              xs: "table-cell",
+              sm: "table-cell",
+            },
+          },
+        }
+      : {}),
+  }));
+
   return (
     <DataGrid
       rows={rows}
-      columns={columns}
+      columns={responsiveColumnsDef}
       getRowId={getRowId}
       autoHeight
       disableRowSelectionOnClick
@@ -40,9 +58,24 @@ const CommonDataGrid = <T,>({
         "& .MuiDataGrid-cell:focus": {
           outline: "none",
         },
-        border: "1px solid #e0e0e0",
+        "& .data-grid-header": {
+          fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          padding: { xs: "4px 8px", sm: "8px 16px" },
+        },
+        "& .data-grid-cell": {
+          fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          padding: { xs: "4px 8px", sm: "8px 16px" },
+        },
+        "& .MuiDataGrid-checkboxInput": {
+          transform: { xs: "scale(0.9)", sm: "scale(1)" },
+        },
+        border: "1px solid",
+        borderColor: "divider",
         borderRadius: 1,
-        mb: 2,
+        mb: { xs: 1, sm: 2 },
+        // Ensure table fits within parent container
+        width: "100%",
+        overflowX: "auto",
       }}
     />
   );

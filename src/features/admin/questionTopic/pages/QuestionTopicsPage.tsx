@@ -115,6 +115,9 @@ const QuestionTopicsPage: React.FC = () => {
           <QuestionTopicList
             onViewDetail={handleViewDetail}
             onEdit={handleEdit}
+            onDeleteSuccess={refresh}
+            showSuccessNotification={showSuccessNotification}
+            showErrorNotification={showErrorNotification}
           />
         )}
       </Paper>

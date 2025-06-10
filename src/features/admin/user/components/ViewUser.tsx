@@ -1,23 +1,22 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import {
-  UpdateUserSchema,
-  type UpdateUserInput,
-  type User,
-} from "../types/user.shame";
+import { type User } from "../types/user.shame";
 import { Box } from "@mui/material";
 
+import { useUserById } from "../hook/userUserById";
+
 interface ViewUserProps {
-  user: User | null;
+  id: number | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export default function ViewUser({
-  user,
+  id,
   isOpen,
   onClose,
 }: ViewUserProps): React.ReactElement {
+  const { data: user } = useUserById(id);
   const fields = [
     { label: "ID", value: user?.id },
     { label: "Tên tài khoản", value: user?.username },

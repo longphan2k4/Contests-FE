@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { 
+import React, { useState } from "react";
+import {
   Drawer,
   Box,
   List,
@@ -9,10 +9,9 @@ import {
   ListItemText,
   Collapse,
   Divider,
-  Typography
-} from '@mui/material';
+  Typography,
+} from "@mui/material";
 import {
-
   Dashboard as DashboardIcon,
   School as SchoolIcon,
   Group as GroupIcon,
@@ -25,9 +24,9 @@ import {
   Videocam as VideoIcon,
   MenuBook as BookIcon,
   ExpandLess,
-  ExpandMore
-} from '@mui/icons-material';
-import { Link, useLocation } from 'react-router-dom';
+  ExpandMore,
+} from "@mui/icons-material";
+import { Link, useLocation } from "react-router-dom";
 
 interface AdminSidebarProps {
   collapsed: boolean;
@@ -51,110 +50,117 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
 
   const menuItems: MenuItem[] = [
     {
-      key: 'dashboard',
+      key: "dashboard",
       icon: <DashboardIcon />,
-      label: 'Bảng điều khiển',
-      path: '/admin/dashboard',
+      label: "Bảng điều khiển",
+      path: "/admin/dashboard",
     },
     {
-      key: 'schools',
+      key: "schools",
       icon: <BankIcon />,
-      label: 'Trường học',
-      path: '/admin/schools',
+      label: "Trường học",
+      path: "/admin/schools",
     },
     {
-      key: 'classes',
+      key: "classes",
       icon: <SchoolIcon />,
-      label: 'Lớp học',
-      path: '/admin/classes',
+      label: "Lớp học",
+      path: "/admin/classes",
     },
-// Ky long: quản lý người dùng
+    // Ky long: quản lý người dùng
     {
-      key: 'students',
+      key: "students",
       icon: <GroupIcon />,
-      label: 'Quản lý người dùng',
-      path: '/admin/users',
+      label: "Quản lý người dùng",
+      path: "/admin/users",
     },
     {
-      key: 'question-management',
+      key: "question-management",
       icon: <QuestionIcon />,
-      label: 'Quản lý câu hỏi',
+      label: "Quản lý câu hỏi",
       children: [
         {
-          key: 'topics',
+          key: "topics",
           icon: <QuestionIcon fontSize="small" />,
-          label: 'Chủ đề',
-          path: '/admin/question-topics',
+          label: "Chủ đề",
+          path: "/admin/question-topics",
         },
         {
-          key: 'questions',
+          key: "questions",
           icon: <QuestionIcon fontSize="small" />,
-          label: 'Câu hỏi',
-          path: '/admin/questions',
+          label: "Câu hỏi",
+          path: "/admin/questions",
         },
         {
-          key: 'packages',
+          key: "packages",
           icon: <QuestionIcon fontSize="small" />,
-          label: 'Gói câu hỏi',
-          path: '/admin/question-packages',
-        }
-      ]
+          label: "Gói câu hỏi",
+          path: "/admin/question-packages",
+        },
+        // giả lập chi tiết câu hỏi
+        {
+          key: "question-packages",
+          icon: <QuestionIcon fontSize="small" />,
+          label: "Chi tiết câu hỏi",
+          path: "/admin/question-packages/1",
+        },
+      ],
     },
     {
-      key: 'contests',
+      key: "contests",
       icon: <TrophyIcon />,
-      label: 'Cuộc thi',
-      path: '/admin/contests',
+      label: "Cuộc thi",
+      path: "/admin/contests",
     },
     {
-      key: 'contestants',
+      key: "contestants",
       icon: <GroupIcon />,
-      label: 'Thí sinh',
-      path: '/admin/contestants',
+      label: "Thí sinh",
+      path: "/admin/contestants",
     },
     {
-      key: 'results',
+      key: "results",
       icon: <BarChartIcon />,
-      label: 'Kết quả',
-      path: '/admin/results',
+      label: "Kết quả",
+      path: "/admin/results",
     },
     {
-      key: 'awards',
+      key: "awards",
       icon: <TrophyIcon />,
-      label: 'Giải thưởng',
-      path: '/admin/awards',
+      label: "Giải thưởng",
+      path: "/admin/awards",
     },
     {
-      key: 'sponsors',
+      key: "sponsors",
       icon: <BookIcon />,
-      label: 'Nhà tài trợ',
-      path: '/admin/sponsors',
+      label: "Nhà tài trợ",
+      path: "/admin/sponsors",
     },
     {
-      key: 'videos',
+      key: "videos",
       icon: <VideoIcon />,
-      label: 'Videos',
-      path: '/admin/class-videos',
+      label: "Videos",
+      path: "/admin/class-videos",
     },
     {
-      key: 'about',
+      key: "about",
       icon: <FileIcon />,
-      label: 'Thông tin website',
-      path: '/admin/about',
+      label: "Thông tin website",
+      path: "/admin/about",
     },
     {
-      key: 'settings',
+      key: "settings",
       icon: <SettingsIcon />,
-      label: 'Cài đặt',
-      path: '/admin/settings',
+      label: "Cài đặt",
+      path: "/admin/settings",
     },
   ];
 
   const renderMenuItems = (items: MenuItem[]) => {
-    return items.map((item) => {
+    return items.map(item => {
       const isSelected = location.pathname === item.path;
       const isSubMenuOpen = openSubMenu === item.key;
-      
+
       if (item.children) {
         return (
           <React.Fragment key={item.key}>
@@ -167,11 +173,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
             </ListItem>
             <Collapse in={isSubMenuOpen} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
-                {item.children.map((child) => (
+                {item.children.map(child => (
                   <ListItem key={child.key} disablePadding>
-                    <ListItemButton 
-                      component={Link} 
-                      to={child.path || ''}
+                    <ListItemButton
+                      component={Link}
+                      to={child.path || ""}
                       sx={{ pl: 4 }}
                       selected={location.pathname === child.path}
                     >
@@ -185,12 +191,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
           </React.Fragment>
         );
       }
-      
+
       return (
         <ListItem key={item.key} disablePadding>
-          <ListItemButton 
-            component={Link} 
-            to={item.path || ''}
+          <ListItemButton
+            component={Link}
+            to={item.path || ""}
             selected={isSelected}
           >
             <ListItemIcon>{item.icon}</ListItemIcon>
@@ -209,46 +215,49 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
       sx={{
         width: drawerWidth,
         flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { 
-          width: drawerWidth, 
-          boxSizing: 'border-box',
-          whiteSpace: collapsed ? 'nowrap' : 'normal',
-          overflowX: 'hidden',
-          transition: (theme) => theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
+        [`& .MuiDrawer-paper`]: {
+          width: drawerWidth,
+          boxSizing: "border-box",
+          whiteSpace: collapsed ? "nowrap" : "normal",
+          overflowX: "hidden",
+          transition: theme =>
+            theme.transitions.create("width", {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
         },
       }}
     >
-      <Box sx={{ 
-        height: 64, 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        p: 2
-      }}>
-        <Typography 
-          variant="h6" 
-          noWrap 
+      <Box
+        sx={{
+          height: 64,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 2,
+        }}
+      >
+        <Typography
+          variant="h6"
+          noWrap
           component="div"
-          sx={{ 
-            fontWeight: 'bold',
-            display: collapsed ? 'none' : 'block'
+          sx={{
+            fontWeight: "bold",
+            display: collapsed ? "none" : "block",
           }}
         >
           Quản lý cuộc thi
         </Typography>
         {collapsed && (
-          <Typography variant="h6" fontWeight="bold">QCT</Typography>
+          <Typography variant="h6" fontWeight="bold">
+            QCT
+          </Typography>
         )}
       </Box>
       <Divider />
-      <List>
-        {renderMenuItems(menuItems)}
-      </List>
+      <List>{renderMenuItems(menuItems)}</List>
     </Drawer>
   );
 };
 
-export default AdminSidebar; 
+export default AdminSidebar;

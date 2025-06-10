@@ -1,12 +1,17 @@
+import axios from "axios";
 import axiosInstance from "../../../../config/axiosInstance";
-import { type UserIdParam, type CreateUserInput } from "../types/user.shame";
+import {
+  type UserIdParam,
+  type CreateUserInput,
+  type UpdateUserInput,
+  type UserQuery,
+} from "../types/user.shame";
 
-export const getAllUsers = async () => {
-  const res = await axiosInstance.get("/user");
+export const getAllUsers = async (params: UserQuery = {}) => {
+  const res = await axiosInstance.get("/user", { params });
   return res.data;
 };
-
-export const getUserById = async (id: number) => {
+export const getUserById = async (id: number | null) => {
   const res = await axiosInstance.get(`/user/${id}`);
   return res.data.data;
 };
@@ -16,4 +21,12 @@ export const CreateUser = async (payload: CreateUserInput) => {
   return res.data;
 };
 
-// export const UpdateUser =
+export const UpdateUser = async (id: number, payload: UpdateUserInput) => {
+  const res = await axiosInstance.patch(`/user/${id}`, payload);
+  return res.data;
+};
+
+export const ToggleActive = async (id: number) => {
+  const res = await axiosInstance.patch(`/user/${id}/toggle-active`);
+  return res.data;
+};
