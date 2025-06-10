@@ -1,5 +1,5 @@
 import React from 'react';
-import { AcademicCapIcon } from '@heroicons/react/24/outline';
+import Logo from "../../assets/image/logo/logo-caothang.png"
 import type { ProgramItem } from '../../features/home/types/home/ProgramItem';
 import { CodeBracketIcon, CircleStackIcon, ComputerDesktopIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
 
@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
     },
     {
       id: 2,
-      name: "Hệ thống Thông tin",
+      name: "Quản trị mạng",
       duration: "3 năm", 
       description: "Quản trị và phát triển hệ thống thông tin doanh nghiệp",
       icon: <CircleStackIcon className="w-8 h-8" />
@@ -28,7 +28,7 @@ const Footer: React.FC = () => {
     },
     {
       id: 4,
-      name: "Ứng dụng Di động",
+      name: "Sửa chữa máy tính",
       duration: "3 năm",
       description: "Phát triển ứng dụng trên nền tảng iOS, Android và Cross-platform",
       icon: <DevicePhoneMobileIcon className="w-8 h-8" />
@@ -41,9 +41,7 @@ const Footer: React.FC = () => {
         <div className="grid md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <AcademicCapIcon className="w-6 h-6" />
-              </div>
+               <img src={Logo} alt="Logo" className="w-7 h-10 object-cover" />
               <div>
                 <h3 className="font-bold">CĐ Kỹ Thuật Cao Thắng</h3>
                 <p className="text-sm text-gray-400">Khoa CNTT</p>
@@ -59,7 +57,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-2 text-gray-400">
               {['Trang chủ', 'Giới thiệu', 'Đào tạo', 'Tuyển sinh'].map((item) => (
                 <li key={item}>
-                  <a href="#" className="hover:text-white transition-colors">{item}</a>
+                  <a href="https://cntt.caothang.edu.vn" className="hover:text-white transition-colors">{item}</a>
                 </li>
               ))}
             </ul>
@@ -70,7 +68,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-2 text-gray-400">
               {programs.map((program) => (
                 <li key={program.id}>
-                  <a href="#" className="hover:text-white transition-colors">{program.name}</a>
+                  <a href="https://cntt.caothang.edu.vn" className="hover:text-white transition-colors">{program.name}</a>
                 </li>
               ))}
             </ul>
@@ -84,7 +82,7 @@ const Footer: React.FC = () => {
                 { icon: 't', color: 'bg-blue-400 hover:bg-blue-500' },
                 { icon: 'y', color: 'bg-red-600 hover:bg-red-700' }
               ].map((social, index) => (
-                <a key={index} href="#" className={`w-10 h-10 ${social.color} rounded-full flex items-center justify-center transition-colors`}>
+                <a key={index} href="https://www.facebook.com/cntt.caothang.edu.vn" className={`w-10 h-10 ${social.color} rounded-full flex items-center justify-center transition-colors`}>
                   <span className="text-sm font-semibold">{social.icon}</span>
                 </a>
               ))}

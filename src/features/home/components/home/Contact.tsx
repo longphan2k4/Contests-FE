@@ -14,12 +14,12 @@ const Contact: React.FC = () => {
 
         <div className="grid md:grid-cols-3 gap-8">
           {[
-            { icon: <MapPinIcon className="w-8 h-8" />, title: 'Địa chỉ', content: '65 Huỳnh Thúc Kháng, Đống Đa, Hà Nội' },
-            { icon: <PhoneIcon className="w-8 h-8" />, title: 'Điện thoại', content: '(024) 3858 8888' },
-            { icon: <EnvelopeIcon className="w-8 h-8" />, title: 'Email', content: 'info@caothang.edu.vn' }
+            { icon: <MapPinIcon className="w-8 h-8" />, title: 'Địa chỉ', content: '65 Huỳnh Thúc Kháng, P.Bến Nghé, Q.1, Tp.HCM.' },
+            { icon: <PhoneIcon className="w-8 h-8" />, title: 'Điện thoại', content: '028 38 212 868 - 028 38 212 360' },
+            { icon: <EnvelopeIcon className="w-8 h-8" />, title: 'Email', content: 'ktcaothang@caothang.edu.vn' }
           ].map((item, index) => (
             <div key={index} className="text-center">
-              <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 {item.icon}
               </div>
               <h3 className="text-xl font-bold mb-2">{item.title}</h3>
@@ -30,7 +30,7 @@ const Contact: React.FC = () => {
 
         <div className="text-center mt-12">
           <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:shadow-xl transition-all duration-300">
-            Đăng ký tư vấn miễn phí
+            <a href='https://chatbot.caothang.edu.vn/'>Đăng ký tư vấn miễn phí</a>
           </button>
         </div>
       </div>

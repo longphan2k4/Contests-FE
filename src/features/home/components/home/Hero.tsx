@@ -57,9 +57,9 @@ const Hero: React.FC = () => {
     autoplaySpeed: 5000, // Tự động chuyển slide mỗi 5 giây
     arrows: false, // Tắt arrows mặc định vì chúng ta có custom arrows
     fade: true,
-    pauseOnHover: true, // Tạm dừng khi hover
-    pauseOnFocus: true, // Tạm dừng khi focus
-    pauseOnDotsHover: true, // Tạm dừng khi hover vào dots
+    // pauseOnHover: false, // Tạm dừng khi hover
+    // pauseOnFocus: false, // Tạm dừng khi focus
+    // pauseOnDotsHover: false, // Tạm dừng khi hover vào dots
     afterChange: (index: number) => setCurrentSlide(index),
   };
 
