@@ -82,7 +82,7 @@ const About: React.FC = () => {
                   { title: 'Học phí hợp lý', desc: 'Chất lượng cao với mức học phí phù hợp' }
                 ].map((item, index) => (
                   <div key={index} className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <div className="w-8 h-8  bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                       <ChevronRightIcon className="w-4 h-4" />
                     </div>
                     <div>
