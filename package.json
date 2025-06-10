@@ -30,6 +30,8 @@
     "react-router-dom": "^7.6.1",
     "react-toastify": "^11.0.5",
     "recharts": "^2.15.3",
+    "react-slick": "^0.30.3",
+    "slick-carousel": "^1.8.1",
     "zod": "^3.25.56"
   },
   "devDependencies": {
@@ -37,6 +39,7 @@
     "@tailwindcss/postcss": "^4.1.7",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "@types/react-slick": "^0.23.13",
     "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.25.0",
