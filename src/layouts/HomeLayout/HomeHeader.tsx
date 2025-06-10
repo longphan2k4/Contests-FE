@@ -1,6 +1,5 @@
 import React from 'react';
-import { AcademicCapIcon } from '@heroicons/react/24/outline';
-
+import Logo from "../../assets/image/logo/logo-caothang.png"
 const Header: React.FC = () => {
   const navItems = [
     { name: 'Trang chủ', id: 'hero' },
@@ -23,10 +22,10 @@ const Header: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <AcademicCapIcon className="w-8 h-8 text-white" />
+                <img src={Logo} alt="Logo" className="w-7 h-10 object-cover" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">CĐ Kỹ Thuật Cao Thắng</h1>
+              <h1 className="text-xl font-bold text-gray-800">Cao đẳng Kỹ Thuật Cao Thắng</h1>
               <p className="text-sm text-gray-600">Khoa CNTT</p>
             </div>
           </div>
