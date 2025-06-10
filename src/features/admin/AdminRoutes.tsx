@@ -12,6 +12,9 @@ import QuestionsPackagesPage from "./questionpackages/page/QuestionsPackagesPage
 const Dashboard = () => <div>Trang Dashboard</div>;
 //const SchoolsPage = () => <div>Trang Quản lý trường học</div>;
 const ClassesPage = () => <div>Trang Quản lý lớp học</div>;
+import ClassesPage from "./class/page/ClassPage";
+// Các component trang admin
+const Dashboard = () => <div>Trang Dashboard</div>;
 // const QuestionTopicsPage = () => <>Trang Quản lý chủ đề câu hỏi</
 const QuestionsPage = () => <div>Trang Quản lý câu hỏi</div>;
 const ContestsPage = () => <div>Trang Quản lý cuộc thi</div>;
@@ -30,7 +33,10 @@ const AdminRoutes = () => {
       <Route path="classes" element={<ClassesPage />} />
       <Route path="students" element={<StudentsPage />} />
       <Route path="question-topics" element={<QuestionTopicsPage />} />
-      <Route path="question-packages/:packageId" element={<QuestionDetailListPage />} />
+      <Route
+        path="question-packages/:packageId"
+        element={<QuestionDetailListPage />}
+      />
       <Route path="questions" element={<QuestionsPage />} />
       <Route path="question-packages" element={<QuestionsPackagesPage />} />
       <Route path="contests" element={<ContestsPage />} />
