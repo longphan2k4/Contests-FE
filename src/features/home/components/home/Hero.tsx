@@ -61,7 +61,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative h-screen overflow-hidden">
+    <section id="hero" className="relative h-screen overflow-hidden">
       <Slider {...sliderSettings}>
         {heroSlides.map((slide, index) => (
           <div key={index} className="relative h-screen">

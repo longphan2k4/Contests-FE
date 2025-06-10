@@ -2,6 +2,21 @@ import React from 'react';
 import { AcademicCapIcon } from '@heroicons/react/24/outline';
 
 const Header: React.FC = () => {
+  const navItems = [
+    { name: 'Trang chủ', id: 'hero' },
+    { name: 'Cuộc thi', id: 'contest' }, // Thay 'Giới thiệu' bằng 'Cuộc thi', liên kết đến Stats
+    { name: 'Đào tạo', id: 'programs' },
+    { name: 'Tin tức', id: 'news' },
+    { name: 'Liên hệ', id: 'contact' },
+  ];
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -17,10 +32,14 @@ const Header: React.FC = () => {
           </div>
           
           <nav className="hidden md:flex space-x-8">
-            {['Trang chủ', 'Giới thiệu', 'Đào tạo', 'Tin tức', 'Liên hệ'].map((item) => (
-              <a href="#" key={item} className="text-gray-700 hover:text-blue-600 font-medium transition-colors">
-                {item}
-              </a>
+            {navItems.map((item) => (
+              <button
+                key={item.name}
+                onClick={() => scrollToSection(item.id)}
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors cursor-pointer"
+              >
+                {item.name}
+              </button>
             ))}
           </nav>
 

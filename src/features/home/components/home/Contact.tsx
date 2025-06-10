@@ -3,7 +3,7 @@ import { MapPinIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/outline
 
 const Contact: React.FC = () => {
   return (
-    <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+    <section id="contact" className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4">Liên hệ với chúng tôi</h2>
