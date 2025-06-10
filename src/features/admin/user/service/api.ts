@@ -5,6 +5,7 @@ import {
   type CreateUserInput,
   type UpdateUserInput,
   type UserQuery,
+  type deleteUsersType,
 } from "../types/user.shame";
 
 export const getAllUsers = async (params: UserQuery = {}) => {
@@ -28,5 +29,10 @@ export const UpdateUser = async (id: number, payload: UpdateUserInput) => {
 
 export const ToggleActive = async (id: number) => {
   const res = await axiosInstance.patch(`/user/${id}/toggle-active`);
+  return res.data;
+};
+
+export const DeleteUssers = async (ids: deleteUsersType) => {
+  const res = await axiosInstance.post("/user/delete-many", ids);
   return res.data;
 };

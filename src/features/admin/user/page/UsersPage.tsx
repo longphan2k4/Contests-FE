@@ -19,12 +19,13 @@ import CreateUser from "../components/CreateUser";
 import ViewUser from "../components/ViewUser";
 import EditUser from "../components/EditeUser";
 import UserList from "../components/UserList";
-import { useNotification } from "../../../../contexts/NotificationContext";
+import { useToast } from "../../../../contexts/toastContext";
 
 import { useUsers } from "../hook/useUsers";
 import { useCreateUser } from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
 import { useActive } from "../hook/useActive";
+import { useDeletes } from "../hook/useDeletes";
 import AddIcon from "@mui/icons-material/Add";
 
 import {
@@ -34,13 +35,13 @@ import {
   type UserQuery,
   Role,
   type pagination,
+  type deleteUsersType,
 } from "../types/user.shame";
 import SearchIcon from "@mui/icons-material/Search";
 
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [pagination, setPagination] = useState<pagination>({});
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -50,7 +51,7 @@ const UsersPage: React.FC = () => {
   const [filter, setFilter] = useState<UserQuery>({});
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
 
-  const { showSuccessNotification, showErrorNotification } = useNotification();
+  const { showToast } = useToast();
 
   const {
     data: usersQuery,
@@ -64,6 +65,8 @@ const UsersPage: React.FC = () => {
   const { mutate: mutateUpdate } = useUpdate();
 
   const { mutate: mutateActive } = useActive();
+
+  const { mutate: mutateDeletes } = useDeletes();
 
   useEffect(() => {
     if (usersQuery) {
@@ -80,30 +83,45 @@ const UsersPage: React.FC = () => {
       { id: id },
       {
         onSuccess: data => {
-          showSuccessNotification(
-            `Cập nhật trạng thái ${selectedUser?.username} thành công`
-          );
+          showToast(`Cập nhật trạng thái thành công`, "success");
+
           refetchUsers();
           setSelectedUserId(null);
         },
         onError: (err: any) => {
-          showErrorNotification(err.response?.data?.message);
+          showToast(err.response?.data?.message, "error");
         },
       }
     );
   }, []);
 
-  const handleDelete = useCallback((id: number) => {}, []);
+  const handeDeletes = (ids: deleteUsersType) => {
+    mutateDeletes(ids, {
+      onSuccess: data => {
+        data.messages.forEach((item: any, index: number) => {
+          if (item.status === "error") {
+            showToast(item.msg, "error");
+          } else {
+            showToast(item.msg, "success");
+          }
+        });
+        refetchUsers();
+      },
+      onError: err => {
+        console.log(err);
+      },
+    });
+  };
 
   const handleCreate = (payload: CreateUserInput) => {
     mutateCreate(payload, {
       onSuccess: data => {
-        if (data) showSuccessNotification(`Tạo tài khoản thành công`);
+        if (data) showToast(`Tạo tài khoản thành công`, "success");
         refetchUsers();
       },
       onError: (err: any) => {
         if (err.response?.data?.message) {
-          showErrorNotification(err.response?.data?.message);
+          showToast(err.response?.data?.message, "success");
         }
       },
     });
@@ -115,22 +133,23 @@ const UsersPage: React.FC = () => {
         { id: selectedUserId, payload },
         {
           onSuccess: () => {
-            showSuccessNotification(`Cập nhật tài khoản thành công`);
+            showToast(`Cập nhật tài khoản thành công`, "success");
             refetchUsers();
           },
           onError: (err: any) => {
             if (err.response?.data?.message)
-              showErrorNotification(err.response?.data?.message);
+              showToast(err.response?.data?.message, "error");
           },
         }
       );
     }
   };
 
+  const handleDelete = useCallback(() => {}, []);
+
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
       if (type === "delete") {
-        handleDelete(id);
         return;
       }
       setSelectedUserId(id);
@@ -159,7 +178,6 @@ const UsersPage: React.FC = () => {
       </Box>
     );
   }
-  console.log(selectedUserIds);
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
@@ -284,6 +302,7 @@ const UsersPage: React.FC = () => {
                 variant="contained"
                 color="error"
                 sx={{ width: { xs: "100%", sm: "auto" } }}
+                onClick={() => handeDeletes({ ids: selectedUserIds })}
               >
                 Xoá người ({selectedUserIds.length})
               </Button>
@@ -301,7 +320,7 @@ const UsersPage: React.FC = () => {
                 color="text.secondary"
                 alignSelf={{ xs: "flex-start", sm: "center" }}
               >
-                Tổng số: {pagination.total} trường học
+                Tổng số: {pagination.total} người dùng
               </Typography>
             </Box>
           </Stack>

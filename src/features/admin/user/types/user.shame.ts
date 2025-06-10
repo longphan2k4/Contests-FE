@@ -83,7 +83,14 @@ export type pagination = {
   hasPrev?: boolean;
 };
 
+export const deleteUsersSchema = z.object({
+  ids: z
+    .array(z.number().int().positive("ID phải là số nguyên dương"))
+    .min(1, "Phải chọn ít nhất 1 ID để xoá"),
+});
+
 export type User = z.infer<typeof UserShema>;
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
 export type UserIdParam = z.infer<typeof UserIdShema>;
+export type deleteUsersType = z.infer<typeof deleteUsersSchema>;
