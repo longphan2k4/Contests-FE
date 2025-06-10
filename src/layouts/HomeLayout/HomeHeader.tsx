@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Logo from "../../assets/image/logo/logo-caothang.png"
 const Header: React.FC = () => {
   // Mock navigate function for demo
-  const navigate = (path: string) => {
-    console.log('Navigate to:', path);
-  };
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState('hero');
 
