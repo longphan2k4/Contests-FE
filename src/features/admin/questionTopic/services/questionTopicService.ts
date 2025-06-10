@@ -96,6 +96,34 @@ export const deleteQuestionTopic = async (ids: number[]): Promise<void> => {
   }
 };
 
+interface BatchDeleteResponse {
+  success: boolean;
+  message: string;
+  data: {
+    totalRequested: number;
+    successful: number;
+    failed: number;
+    successfulIds: number[];
+    failedIds: number[];
+  };
+  timestamp: string;
+}
+
+/**
+ * Xóa nhiều chủ đề câu hỏi
+ */
+export const deleteMultipleQuestionTopics = async (ids: number[]): Promise<BatchDeleteResponse> => {
+  try {
+    const response = await axiosInstance.post<BatchDeleteResponse>(`/question-topics/batch-delete`, { ids });
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting question topics with ids ${ids}:`, error);
+    throw error;
+  }
+};
+
+
 /**
  * Kích hoạt/vô hiệu hóa chủ đề câu hỏi
  */

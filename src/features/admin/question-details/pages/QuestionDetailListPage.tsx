@@ -239,9 +239,16 @@ const QuestionDetailListPage: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={row.isActive ? 'Đang hoạt động' : 'Không hoạt động'}
-                          color={row.isActive ? 'success' : 'error'}
+                          label={row.isActive ? 'Đang hoạt động' : 'Đã ẩn'}
                           size="small"
+                          sx={{
+                            color: row.isActive ? 'success.main' : 'error.main',
+                            backgroundColor: 'transparent',
+                            fontWeight: 600,
+                            fontSize: 15,
+                            border: 0,
+                            boxShadow: 'none',
+                          }}
                         />
                       </TableCell>
                       <TableCell>

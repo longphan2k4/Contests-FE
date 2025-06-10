@@ -10,8 +10,6 @@ export const useUpdateQuestionTopic = () => {
       setIsUpdating(true);
       await updateQuestionTopic(id, data);
       return true;
-    } catch (error) {
-      throw error;
     } finally {
       setIsUpdating(false);
     }
