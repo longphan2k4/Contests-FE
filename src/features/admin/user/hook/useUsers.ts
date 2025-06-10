@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAllUsers } from "../service/api";
-export const useUsers = () => {
+import { type UserQuery } from "../types/user.shame";
+
+export const useUsers = (filter: UserQuery) => {
   return useQuery({
-    queryKey: ["users"],
-    queryFn: getAllUsers,
+    queryKey: ["users", filter],
+    queryFn: () => getAllUsers(filter),
+    placeholderData: prevData => prevData, // ✅ Giữ lại data cũ
   });
 };
-
-export default { useUsers };
