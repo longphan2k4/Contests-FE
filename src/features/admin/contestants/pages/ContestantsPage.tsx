@@ -1,5 +1,5 @@
 import { Typography, Box } from '@mui/material';
-import ContestantsManage from '../../components/ContestantsManage/ContestansManage';
+import ContestantsManage from '../components/ContestansManage';
 const ContestantsPage = () => {
   return (
     <Box p={4}>

@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { faker } from '@faker-js/faker';
-import SearchableTable from '../SearchableTable';
-import TableActionButton from '../TableActionButton';
-import ViewDetailPopup from '../ViewDetailPopup';
-import EditPopup from '../EditPopup';
+import SearchableTable from '../../components/SearchableTable';
+import TableActionButton from '../../components/TableActionButton';
+import ViewDetailPopup from '../../components/ViewDetailPopup';
+import EditPopup from '../../components/EditPopup';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import type { Candidate } from './types';
-import AddPopup from '../AddPopup';
-import type { FieldConfig } from '../AddPopup'
+import { type Candidate } from '../types/types';
+import AddPopup from '../../components/AddPopup';
+import { type FieldConfig } from '../../components/AddPopup';
 import { Box } from '@mui/material';
-import Button from '../Button';
-import SelectFilter from '../Select';
+import Button from '../../components/Button';
+import SelectFilter from '../../components/Select';
 
 
 const generateMockCandidates = (count: number): Candidate[] => {

@@ -70,7 +70,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
     },
 // Ky long: quản lý người dùng
     {
-      key: 'students',
+      key: 'users',
       icon: <GroupIcon />,
       label: 'Quản lý người dùng',
       path: '/admin/users',
@@ -111,6 +111,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
       icon: <GroupIcon />,
       label: 'Thí sinh',
       path: '/admin/contestants',
+    },
+    {
+      key: 'students',
+      icon: <GroupIcon />,
+      label: 'Quản lý sinh viên',
+      path: '/admin/students',
     },
     {
       key: 'results',
