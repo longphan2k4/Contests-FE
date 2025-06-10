@@ -1,11 +1,10 @@
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import { getUserById } from "../service/api";
-import { type User } from "../types/user.shame";
+// useUserById.ts
 export const useUserById = (id: number | null) => {
-  return useQuery<User, Error>({
+  return useQuery({
     queryKey: ["user", id],
-    queryFn: () => getUserById(id!),
-    enabled: id !== null,
-    retry: false,
+    queryFn: () => getUserById(id),
+    enabled: !!id,
   });
 };

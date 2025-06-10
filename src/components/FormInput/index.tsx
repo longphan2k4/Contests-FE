@@ -26,7 +26,6 @@ const FormInput = ({
   return (
     <TextField
       margin="normal"
-      required
       fullWidth
       type={type}
       id={id}

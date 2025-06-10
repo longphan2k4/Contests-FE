@@ -24,15 +24,22 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import type { QuestionTopic } from '../types/questionTopic';
 import { useQuestionTopicList } from '../hooks/list/useQuestionTopicList';
+import { useDeleteQuestionTopic } from '../hooks';
 
 interface QuestionTopicListProps {
   onViewDetail?: (questionTopic: QuestionTopic) => void;
   onEdit?: (questionTopic: QuestionTopic) => void;
+  onDeleteSuccess?: () => void;
+  showSuccessNotification: (message: string, title?: string) => void;
+  showErrorNotification: (message: string, title?: string) => void;
 }
 
 const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
   onViewDetail,
-  onEdit
+  onEdit,
+  onDeleteSuccess,
+  showSuccessNotification,
+  showErrorNotification
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -48,6 +55,8 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
     updateFilter,
     total
   } = useQuestionTopicList();
+
+  const { handleDeleteSelected } = useDeleteQuestionTopic();
 
   const totalPages = Math.ceil(total / (filter.limit || 10));
 
@@ -66,9 +75,18 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
     updateFilter({ page });
   };
 
-  const handleDeleteSelected = async () => {
-    // TODO: Gọi API xoá các chủ đề với selectedIds
-    // Sau khi xoá thành công, làm mới danh sách và setSelectedIds([])
+  const handleDelete = async (ids: number[]) => {
+    try {
+      const response = await handleDeleteSelected(ids);
+      if (response) {
+        showSuccessNotification('Xóa chủ đề thành công');
+        setSelectedIds(new Set());
+        onDeleteSuccess?.();
+      }
+    } catch (error) {
+      console.log(error);
+      showErrorNotification('Có lỗi xảy ra khi xóa chủ đề');
+    }
   };
 
   const columns = [
@@ -116,7 +134,7 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
           <Tooltip title="Chỉnh sửa">
             <IconButton
               size="small"
-              color="secondary"
+              color="primary"
               onClick={() => onEdit?.(params.row)}
             >
               <EditIcon />
@@ -165,7 +183,7 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
           <Button
             variant="contained"
             color="error"
-            onClick={handleDeleteSelected}
+            onClick={() => handleDelete(Array.from(selectedIds))}
             sx={{ ml: 2 }}
           >
             Xoá ({selectedIds.size})

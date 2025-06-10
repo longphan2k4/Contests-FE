@@ -1,41 +1,11 @@
-import axios from 'axios';
+import axiosInstance from '../../../../config/axiosInstance';
 import type { 
   QuestionTopic, 
   QuestionTopicFilter, 
   QuestionTopicsResponse
 } from '../types/questionTopic';
-import { API_URL } from '../../../../config/env';
-import { loginFake } from '../../schools/services/loginFake';
 
 
-interface ApiResponse<T> {
-  data: T;
-  message: string;
-  status: number;
-}
-
-// Tạo axios instance với cấu hình mặc định
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  }
-});
-
-// Thêm interceptor để tự động đăng nhập nếu cần
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      await loginFake();
-      // Thử lại request ban đầu
-      return api(error.config);
-    }
-    return Promise.reject(error);
-  }
-);
 
 /**
  * Lấy danh sách chủ đề câu hỏi từ API
@@ -50,7 +20,7 @@ export const getQuestionTopics = async (filter?: QuestionTopicFilter): Promise<Q
     if (filter?.sortBy) params.append('sortBy', filter.sortBy);
     if (filter?.sortOrder) params.append('sortOrder', filter.sortOrder);
 
-    const response = await api.get<QuestionTopicsResponse>('/question-topics', { params });
+    const response = await axiosInstance.get<QuestionTopicsResponse>('/question-topics', { params });
     return response.data;
   } catch (error) {
     console.error('Error fetching question topics:', error);
@@ -77,9 +47,9 @@ export const getQuestionTopics = async (filter?: QuestionTopicFilter): Promise<Q
  */
 export const getQuestionTopicById = async (id: number): Promise<QuestionTopic> => {
   try {
-    const response = await api.get<ApiResponse<QuestionTopic>>(`/question-topic/${id}`);
-    console.log(response.data.data);
-    return response.data.data;
+    const response = await axiosInstance.get<QuestionTopic>(`/question-topic/${id}`);
+    console.log(response.data);
+    return response.data;
 
   } catch (error) {
     console.error(`Error fetching question topic with id ${id}:`, error);
@@ -92,9 +62,9 @@ export const getQuestionTopicById = async (id: number): Promise<QuestionTopic> =
  */
 export const createQuestionTopic = async (questionTopicData: Partial<QuestionTopic>): Promise<QuestionTopic> => {
   try {
-    const response = await api.post<ApiResponse<QuestionTopic>>('/question-topics', questionTopicData);
-    console.log(response.data.data);
-    return response.data.data;
+    const response = await axiosInstance.post<QuestionTopic>('/question-topics', questionTopicData);
+    console.log(response.data);
+    return response.data;
   } catch (error) {
     console.error('Error creating question topic:', error);
     throw error;
@@ -106,8 +76,8 @@ export const createQuestionTopic = async (questionTopicData: Partial<QuestionTop
  */
 export const updateQuestionTopic = async (id: number, questionTopicData: Partial<QuestionTopic>): Promise<QuestionTopic> => {
   try {
-    const response = await api.put<ApiResponse<QuestionTopic>>(`/question-topics/${id}`, questionTopicData);
-    return response.data.data;
+    const response = await axiosInstance.put<QuestionTopic>(`/question-topics/${id}`, questionTopicData);
+    return response.data;
   } catch (error) {
     console.error(`Error updating question topic with id ${id}:`, error);
     throw error;
@@ -119,12 +89,40 @@ export const updateQuestionTopic = async (id: number, questionTopicData: Partial
  */
 export const deleteQuestionTopic = async (ids: number[]): Promise<void> => {
   try {
-    await api.delete(`/question-topic/${ids}`);
+    await axiosInstance.delete(`/question-topic/${ids}`);
   } catch (error) {
     console.error(`Error deleting question topics with ids ${ids}:`, error);
     throw error;
   }
 };
+
+interface BatchDeleteResponse {
+  success: boolean;
+  message: string;
+  data: {
+    totalRequested: number;
+    successful: number;
+    failed: number;
+    successfulIds: number[];
+    failedIds: number[];
+  };
+  timestamp: string;
+}
+
+/**
+ * Xóa nhiều chủ đề câu hỏi
+ */
+export const deleteMultipleQuestionTopics = async (ids: number[]): Promise<BatchDeleteResponse> => {
+  try {
+    const response = await axiosInstance.post<BatchDeleteResponse>(`/question-topics/batch-delete`, { ids });
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting question topics with ids ${ids}:`, error);
+    throw error;
+  }
+};
+
 
 /**
  * Kích hoạt/vô hiệu hóa chủ đề câu hỏi
