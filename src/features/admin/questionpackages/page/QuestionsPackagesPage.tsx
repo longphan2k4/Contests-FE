@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
+import { useNavigate } from "react-router-dom";
 import PaginationControl from "../components/PaginationControl";
 import {
   Box,
@@ -31,15 +32,16 @@ import {
 } from "../types/questionpackages.shame";
 
 const QuestionPackagesPage: React.FC = () => {
+  const navigate = useNavigate();
   const { showSuccessNotification, showErrorNotification } = useNotification();
 
   // Filter state
   const [filter, setFilter] = useState<Filter>({
-  page: 1,
-  limit: 10,
-  keyword: "",
-  searchText: "",
-});
+    page: 1,
+    limit: 10,
+    keyword: "",
+    searchText: "",
+  });
  
   const { mutate: deleteQuestionPackage } = useDeleteQuestionPackage();
   // Search input state
@@ -63,11 +65,11 @@ const QuestionPackagesPage: React.FC = () => {
 
   // Fetch question packages list with react query hook
   const {
-  data: questionPackagesResponse,
-  isLoading,
-  isError,
-  refetch,
-} = useQuestionPackages(filter);
+    data: questionPackagesResponse,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuestionPackages(filter);
 
   // Fetch selected package details
   const { data: selectedData } = useQuestionPackageById(selectedId);
@@ -80,11 +82,10 @@ const QuestionPackagesPage: React.FC = () => {
 
   // Sync fetched question packages into local state
   useEffect(() => {
-  if (questionPackagesResponse?.data) {
-    setQuestionPackages(questionPackagesResponse.data);
-  }
-}, [questionPackagesResponse]);
-
+    if (questionPackagesResponse?.data) {
+      setQuestionPackages(questionPackagesResponse.data);
+    }
+  }, [questionPackagesResponse]);
 
   // When selectedData or pendingAction changes, open corresponding modal
   useEffect(() => {
@@ -108,6 +109,7 @@ const QuestionPackagesPage: React.FC = () => {
       page: 1, // reset to first page when searching
     }));
   };
+
   // Open and close create modal
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
@@ -125,17 +127,17 @@ const QuestionPackagesPage: React.FC = () => {
   // Delete question package locally (simulate API call)
   const handleDelete = useCallback((id: number) => {
     if (window.confirm("Bạn có chắc muốn xoá gói câu hỏi này không?")) {
-    deleteQuestionPackage(id, {
-      onSuccess: () => {
-        // Nếu bạn đang dùng local state students, thì cần cập nhật:
-        setQuestionPackages(prev => prev.filter(s => s.id !== id));
-      },
-      onError: () => {
-        alert("Xoá học sinh thất bại");
-      }
-    });
-  }
-}, [deleteQuestionPackage]);
+      deleteQuestionPackage(id, {
+        onSuccess: () => {
+          // Nếu bạn đang dùng local state students, thì cần cập nhật:
+          setQuestionPackages(prev => prev.filter(s => s.id !== id));
+        },
+        onError: () => {
+          alert("Xoá học sinh thất bại");
+        }
+      });
+    }
+  }, [deleteQuestionPackage]);
 
   // Create new question package
   const handleCreate = (payload: CreateUpdateQuestionPackageInput) => {
@@ -156,14 +158,14 @@ const QuestionPackagesPage: React.FC = () => {
   };
 
   // Update existing question package
-const handleUpdate = (payload: CreateUpdateQuestionPackageInput) => {
-  if (selectedId === null) return; // kiểm tra xem đã chọn đúng id chưa
+  const handleUpdate = (payload: CreateUpdateQuestionPackageInput) => {
+    if (selectedId === null) return; // kiểm tra xem đã chọn đúng id chưa
 
-  editQuestionPackage({
-    id: selectedId,
-    data: payload,
-  });
-};
+    editQuestionPackage({
+      id: selectedId,
+      data: payload,
+    });
+  };
 
   // Handle actions: view, edit, delete
   const handleAction = useCallback(
@@ -177,6 +179,11 @@ const handleUpdate = (payload: CreateUpdateQuestionPackageInput) => {
     },
     [handleDelete]
   );
+
+  // Handle view questions
+  const handleViewQuestions = useCallback((id: number) => {
+    navigate(`/admin/question-packages/${id}`);
+  }, [navigate]);
 
   const filteredPackages = questionPackagesResponse?.data || [];
   
@@ -227,44 +234,43 @@ const handleUpdate = (payload: CreateUpdateQuestionPackageInput) => {
         }}
       >
 
- {/* Search and total */}
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-        flexWrap="wrap"
-        gap={2}
-      >
-        <TextField
-          size="small"
-          placeholder="Tìm kiếm gói câu hỏi"
-          value={searchValue}
-          onChange={handleSearchChange}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          sx={{
-            minWidth: { xs: "100%", sm: 300 },
-            maxWidth: { xs: "100%", sm: 300 },
-          }}
-        />
-
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          flexShrink={0}
-          textAlign={{ xs: "right", sm: "right" }}
-          sx={{ minWidth: 120 }}
+        {/* Search and total */}
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2}
+          flexWrap="wrap"
+          gap={2}
         >
-          Tổng số: {total} gói câu hỏi
-        </Typography>
-      </Box>
+          <TextField
+            size="small"
+            placeholder="Tìm kiếm gói câu hỏi"
+            value={searchValue}
+            onChange={handleSearchChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              minWidth: { xs: "100%", sm: 300 },
+              maxWidth: { xs: "100%", sm: 300 },
+            }}
+          />
 
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            flexShrink={0}
+            textAlign={{ xs: "right", sm: "right" }}
+            sx={{ minWidth: 120 }}
+          >
+            Tổng số: {total} gói câu hỏi
+          </Typography>
+        </Box>
 
         <QuestionPackageList
           questionPackages={filteredPackages}
@@ -272,6 +278,7 @@ const handleUpdate = (payload: CreateUpdateQuestionPackageInput) => {
           onEdit={(id) => handleAction("edit", id)}
           onDelete={(id) => handleAction("delete", id)}
           onToggle={toggleActive}
+          onViewQuestions={handleViewQuestions}
           totalItems={total}
           filter={filter}
           onFilterChange={setFilter}
