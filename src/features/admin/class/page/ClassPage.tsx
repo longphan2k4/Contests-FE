@@ -20,12 +20,15 @@ import ViewClass from "../components/ViewClass";
 import EditClass from "../components/EditeClass";
 import ClassList from "../components/ClassesList";
 import { useToast } from "../../../../contexts/toastContext";
+import ConfirmDeleteMany from "../../../../components/Confirm";
+import ConfirmDelete from "../../../../components/Confirm";
 
 import { useClasses } from "../hook/useClasses";
 import { useCreate } from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
 import { useActive } from "../hook/useActive";
-import { useDeletes } from "../hook/useDeleteMany";
+import { useDeleteMany } from "../hook/useDeleteMany";
+import { useDelete } from "../hook/useDelete";
 import AddIcon from "@mui/icons-material/Add";
 
 import {
@@ -49,6 +52,8 @@ const ClassesPage: React.FC = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isComfirmDelete, setIsComfirmDelete] = useState(false);
+  const [isComfirmDeleteMany, setIsComfirmDeleteMany] = useState(false);
 
   const [filter, setFilter] = useState<ClassQuery>({});
   const [selectedClassIds, setSelectedClassIds] = useState<number[]>([]);
@@ -71,7 +76,8 @@ const ClassesPage: React.FC = () => {
 
   const { mutate: mutateActive } = useActive();
 
-  const { mutate: mutateDeletes } = useDeletes();
+  const { mutate: mutateDelete } = useDelete();
+  const { mutate: mutateDeleteMany } = useDeleteMany();
 
   useEffect(() => {
     if (ClasssQuery) {
@@ -106,7 +112,7 @@ const ClassesPage: React.FC = () => {
   }, []);
 
   const handeDeletes = (ids: deleteClasssType) => {
-    mutateDeletes(ids, {
+    mutateDeleteMany(ids, {
       onSuccess: data => {
         data.messages.forEach((item: any, index: number) => {
           if (item.status === "error") {
@@ -155,14 +161,25 @@ const ClassesPage: React.FC = () => {
     }
   };
 
-  const handleDelete = useCallback(() => {}, []);
+  const handleDelete = useCallback((id: number | null) => {
+    if (!id) return;
+    mutateDelete(id, {
+      onSuccess: () => {
+        showToast(`Xóa lớp học thàn công`);
+      },
+      onError: (error: any) => {
+        showToast(error.response?.data?.message, "error");
+      },
+    });
+  }, []);
 
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
-      if (type === "delete") {
-        return;
-      }
       setSelectedClassId(id);
+
+      if (type === "delete") {
+        setIsComfirmDelete(true);
+      }
       if (type === "view") setIsViewOpen(true);
       if (type === "edit") setIsEditOpen(true);
     },
@@ -313,7 +330,7 @@ const ClassesPage: React.FC = () => {
                 variant="contained"
                 color="error"
                 sx={{ width: { xs: "100%", sm: "auto" } }}
-                onClick={() => handeDeletes({ ids: selectedClassIds })}
+                onClick={() => setIsComfirmDeleteMany(true)}
               >
                 Xoá người ({selectedClassIds.length})
               </Button>
@@ -414,6 +431,20 @@ const ClassesPage: React.FC = () => {
           onClose={() => setIsEditOpen(false)}
           id={selectedClassId}
           onSubmit={handleUpdate}
+        />
+        <ConfirmDelete
+          open={isComfirmDelete}
+          title="Xóa lớp học"
+          onClose={() => setIsComfirmDelete(false)}
+          description="Bạn có chắc chắn xóa lớp học này không"
+          onConfirm={() => handleDelete(selectedClassId)}
+        />
+
+        <ConfirmDeleteMany
+          open={isComfirmDeleteMany}
+          title="Xóa lớp học"
+          onClose={() => setIsComfirmDeleteMany(false)}
+          onConfirm={() => handeDeletes({ ids: selectedClassIds })}
         />
       </Box>
     </Box>

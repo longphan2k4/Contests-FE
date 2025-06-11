@@ -434,7 +434,7 @@ const UsersPage: React.FC = () => {
       <ConfirmDeleteMany
         open={isConfirmDeleteMany}
         onClose={() => setIsConfirmDeleteMany(false)}
-        title="Xác nhận xóa "
+        title="Xác nhận xóa người dùng "
         description={`Bạn có chắc xóa ${selectedUserIds.length} tài khoản này không`}
         onConfirm={() => handeDeletes({ ids: selectedUserIds })}
       />
@@ -442,8 +442,8 @@ const UsersPage: React.FC = () => {
       <ConfirmDeleteMany
         open={isConfirmDelete}
         onClose={() => setIsConfirmDelete(false)}
-        title="Xác nhận xóa "
-        description={`Bạn có chắc xóa tài khoản này không`}
+        title="Xác nhận xóa người dùng "
+        description={`Bạn có chắc chắn xóa tài khoản này không`}
         onConfirm={() => handleDelete(selectedUserId)}
       />
     </Box>
