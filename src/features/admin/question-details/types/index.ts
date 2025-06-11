@@ -77,10 +77,25 @@ export interface ApiResponse<T> {
   message: string;
   data: T;
   pagination?: {
-    currentPage: number;
+    currentPage?: number;
+    page?: number;
     totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
+    totalItems?: number;
+    total?: number;
+    itemsPerPage?: number;
+    limit?: number;
+    hasNext?: boolean;
+    hasPrev?: boolean;
+  };
+  filters?: {
+    totalQuestions: number;
+    filteredQuestions: number;
+    appliedFilters: {
+      questionType?: string;
+      difficulty?: string;
+      isActive?: boolean;
+      search?: string;
+    };
   };
   timestamp: string;
 }
@@ -109,4 +124,14 @@ export interface ReorderResponse {
     successful: number;
     failed: number;
   };
+}
+
+// Định nghĩa interface cho cấu trúc phản hồi của API lấy danh sách câu hỏi theo gói
+export interface QuestionPackageResponse {
+  packageInfo: {
+    id: number;
+    name: string;
+    description?: string;
+  };
+  questions: QuestionDetail[];
 } 

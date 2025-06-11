@@ -8,7 +8,12 @@ import axios from 'axios';
 interface Filter {
   page: number;
   limit: number;
-  isActive: boolean;
+  isActive?: boolean;
+  questionType?: string;
+  difficulty?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  search?: string;
 }
 
 interface QuestionDetailFormValues {
@@ -26,6 +31,17 @@ interface ApiError {
   }>;
 }
 
+interface FilterStats {
+  totalQuestions: number;
+  filteredQuestions: number;
+  appliedFilters: {
+    questionType?: string;
+    difficulty?: string;
+    isActive?: boolean;
+    search?: string;
+  };
+}
+
 export const useQuestionDetails = () => {
   const { packageId } = useParams<{ packageId: string }>();
   const [questionDetails, setQuestionDetails] = useState<QuestionDetail[]>([]);
@@ -34,10 +50,13 @@ export const useQuestionDetails = () => {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [filterStats, setFilterStats] = useState<FilterStats | null>(null);
   const [filter, setFilter] = useState<Filter>({
     page: 1,
     limit: 10,
-    isActive: true
+    isActive: true,
+    sortBy: 'questionOrder',
+    sortOrder: 'asc'
   });
 
   const { showSuccessNotification, showErrorNotification } = useNotification();
@@ -60,23 +79,41 @@ export const useQuestionDetails = () => {
           page: filter.page, 
           limit: filter.limit,
           isActive: filter.isActive,
+          questionType: filter.questionType,
+          difficulty: filter.difficulty,
+          sortBy: filter.sortBy,
+          sortOrder: filter.sortOrder,
+          search: filter.search,
           includeInactive: filter.isActive === undefined ? true : false
         }
       );
-      if (response && Array.isArray(response.data)) {
-        setQuestionDetails(response.data);
+      if (response && response.data) {
+        const questionData = response.data.questions || [];
+        setQuestionDetails(questionData);
+        
         if (response.pagination) {
-          setTotal(response.pagination.totalItems);
-          setTotalPages(Math.ceil(response.pagination.totalItems / filter.limit));
+          setTotal(response.pagination.totalItems || response.pagination.total || 0);
+          setTotalPages(response.pagination.totalPages || Math.ceil((response.pagination.total || 0) / filter.limit));
         } else {
-          setTotal(response.data.length);
+          setTotal(questionData.length);
           setTotalPages(1);
+        }
+        
+        if (response.filters) {
+          setFilterStats({
+            totalQuestions: response.filters.totalQuestions,
+            filteredQuestions: response.filters.filteredQuestions,
+            appliedFilters: response.filters.appliedFilters
+          });
+        } else {
+          setFilterStats(null);
         }
       } else {
         setQuestionDetails([]);
         setError('Không có dữ liệu câu hỏi');
         setTotal(0);
         setTotalPages(0);
+        setFilterStats(null);
       }
     } catch (error) {
       console.error('Error fetching question details:', error);
@@ -90,6 +127,7 @@ export const useQuestionDetails = () => {
       setQuestionDetails([]);
       setTotal(0);
       setTotalPages(0);
+      setFilterStats(null);
     } finally {
       setLoading(false);
     }
@@ -208,6 +246,7 @@ export const useQuestionDetails = () => {
     handleDelete,
     handleDeleteSelected,
     handleCreateOrUpdate,
-    fetchQuestionDetails
+    fetchQuestionDetails,
+    filterStats
   };
 }; 

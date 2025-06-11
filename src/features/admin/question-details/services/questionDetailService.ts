@@ -2,7 +2,8 @@ import type {
   QuestionDetail, 
   QuestionDetailStats,
   ApiResponse,
-  ReorderRequest
+  ReorderRequest,
+  QuestionPackageResponse
 } from '../types';
 import axiosInstance from '../../../../config/axiosInstance';
 
@@ -178,10 +179,15 @@ export const questionDetailService = {
       limit?: number;
       isActive?: boolean;
       includeInactive?: boolean;
+      questionType?: string;
+      difficulty?: string;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      search?: string;
     }
-  ): Promise<ApiResponse<QuestionDetail[]>> => {
+  ): Promise<ApiResponse<QuestionPackageResponse>> => {
     try {
-      const response = await axiosInstance.get<ApiResponse<QuestionDetail[]>>(`${BASE_URL}/package/${packageId}`, { params });
+      const response = await axiosInstance.get<ApiResponse<QuestionPackageResponse>>(`${BASE_URL}/package/${packageId}`, { params });
       return response.data;
     } catch (error) {
       console.error('Lỗi khi lấy danh sách câu hỏi theo gói:', error);
@@ -235,9 +241,16 @@ export const questionDetailService = {
     limit?: number;
     isActive?: boolean;
     includeInactive?: boolean;
-  }): Promise<ApiResponse<QuestionDetail[]>> => {
+    questionType?: string;
+    difficulty?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    search?: string;
+  }): Promise<ApiResponse<QuestionPackageResponse>> => {
     try {
-      const response = await axiosInstance.get<ApiResponse<QuestionDetail[]>>(`${BASE_URL}/package/${packageId}`, { params });
+      console.log('params', params);
+      const response = await axiosInstance.get<ApiResponse<QuestionPackageResponse>>(`${BASE_URL}/package/${packageId}`, { params });
+      console.log('response', response);
       return response.data;
     } catch (error) {
       console.error('Lỗi khi lấy danh sách chi tiết câu hỏi theo gói:', error);

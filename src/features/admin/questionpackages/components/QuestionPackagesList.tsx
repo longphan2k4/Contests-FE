@@ -4,6 +4,7 @@ import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import IsSwitch from "../../../../components/IsSwitch";
 import type { QuestionPackage } from "../types/questionpackages.shame";
 
@@ -23,6 +24,7 @@ interface QuestionPackagesListProps {
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
   onToggle: (id: number) => void;
+  onViewQuestions: (id: number) => void;
 }
 
 export default function QuestionPackagesList({
@@ -32,6 +34,7 @@ export default function QuestionPackagesList({
   onEdit,
   onDelete,
   onToggle,
+  onViewQuestions,
 }: QuestionPackagesListProps): React.ReactElement {
 
   const columns: GridColDef[] = [
@@ -64,6 +67,9 @@ export default function QuestionPackagesList({
           <IconButton color="primary" onClick={() => onView(params.row.id)}>
             <VisibilityIcon />
           </IconButton>
+          <IconButton color="primary" onClick={() => onViewQuestions(params.row.id)}>
+            <QuestionAnswerIcon />
+          </IconButton>
           <IconButton color="primary" onClick={() => onEdit(params.row.id)}>
             <EditIcon />
           </IconButton>
@@ -83,7 +89,6 @@ export default function QuestionPackagesList({
         getRowId={(row: QuestionPackage) => row.id}
         hideFooterPagination
       />
-
     </Box>
   );
 }
