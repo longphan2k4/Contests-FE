@@ -8,7 +8,12 @@ import axios from 'axios';
 interface Filter {
   page: number;
   limit: number;
-  isActive: boolean;
+  isActive?: boolean;
+  questionType?: string;
+  difficulty?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  search?: string;
 }
 
 interface QuestionDetailFormValues {
@@ -18,12 +23,15 @@ interface QuestionDetailFormValues {
   questionPackageId?: number;
 }
 
-interface ApiError {
-  message: string;
-  errors?: Array<{
-    message: string;
-    field?: string;
-  }>;
+interface FilterStats {
+  totalQuestions: number;
+  filteredQuestions: number;
+  appliedFilters: {
+    questionType?: string;
+    difficulty?: string;
+    isActive?: boolean;
+    search?: string;
+  };
 }
 
 export const useQuestionDetails = () => {
@@ -34,11 +42,15 @@ export const useQuestionDetails = () => {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [filterStats, setFilterStats] = useState<FilterStats | null>(null);
   const [filter, setFilter] = useState<Filter>({
     page: 1,
     limit: 10,
-    isActive: true
+    isActive: true,
+    sortBy: 'questionOrder',
+    sortOrder: 'asc'
   });
+  const [packageName, setPackageName] = useState<string | null>(null);
 
   const { showSuccessNotification, showErrorNotification } = useNotification();
 
@@ -60,23 +72,42 @@ export const useQuestionDetails = () => {
           page: filter.page, 
           limit: filter.limit,
           isActive: filter.isActive,
+          questionType: filter.questionType,
+          difficulty: filter.difficulty,
+          sortBy: filter.sortBy,
+          sortOrder: filter.sortOrder,
+          search: filter.search,
           includeInactive: filter.isActive === undefined ? true : false
         }
       );
-      if (response && Array.isArray(response.data)) {
-        setQuestionDetails(response.data);
+      if (response && response.data) {
+        const questionData = response.data.questions || [];
+        setQuestionDetails(questionData);
+        setPackageName(response.data.packageInfo?.name || null);
+        
         if (response.pagination) {
-          setTotal(response.pagination.totalItems);
-          setTotalPages(Math.ceil(response.pagination.totalItems / filter.limit));
+          setTotal(response.pagination.totalItems || response.pagination.total || 0);
+          setTotalPages(response.pagination.totalPages || Math.ceil((response.pagination.total || 0) / filter.limit));
         } else {
-          setTotal(response.data.length);
+          setTotal(questionData.length);
           setTotalPages(1);
+        }
+        
+        if (response.filters) {
+          setFilterStats({
+            totalQuestions: response.filters.totalQuestions,
+            filteredQuestions: response.filters.filteredQuestions,
+            appliedFilters: response.filters.appliedFilters
+          });
+        } else {
+          setFilterStats(null);
         }
       } else {
         setQuestionDetails([]);
         setError('Không có dữ liệu câu hỏi');
         setTotal(0);
         setTotalPages(0);
+        setFilterStats(null);
       }
     } catch (error) {
       console.error('Error fetching question details:', error);
@@ -90,6 +121,7 @@ export const useQuestionDetails = () => {
       setQuestionDetails([]);
       setTotal(0);
       setTotalPages(0);
+      setFilterStats(null);
     } finally {
       setLoading(false);
     }
@@ -141,12 +173,19 @@ export const useQuestionDetails = () => {
     } catch (error) {
       console.error('Error deleting selected questions:', error);
       if (axios.isAxiosError(error)) {
-        const errorData = error.response?.data as ApiError;
-        if (errorData?.message) {
+        const errorData = error.response?.data;
+        console.log('errorData',errorData);
+        if (errorData?.data?.failedItems && Array.isArray(errorData.data.failedItems)) {
+          const first = errorData.data.failedItems[0];
+          const found = questionDetails.find(
+            q => q.questionId === first.questionId && q.questionPackageId === first.questionPackageId
+          );
+          showErrorNotification(`Câu hỏi số ${found?.questionOrder ?? '-'}: ${first.reason}`);
+        } else if (errorData?.message) {
           showErrorNotification(errorData.message);
         } else if (errorData?.errors) {
           // Xử lý trường hợp có nhiều lỗi
-          const errorMessages = errorData.errors.map(err => err.message).join('\n');
+          const errorMessages = errorData.errors.map((err: { message: string }) => err.message).join('\n');
           showErrorNotification(errorMessages);
         } else {
           showErrorNotification('Có lỗi xảy ra khi xóa các câu hỏi đã chọn');
@@ -208,6 +247,8 @@ export const useQuestionDetails = () => {
     handleDelete,
     handleDeleteSelected,
     handleCreateOrUpdate,
-    fetchQuestionDetails
+    fetchQuestionDetails,
+    filterStats,
+    packageName
   };
 }; 
