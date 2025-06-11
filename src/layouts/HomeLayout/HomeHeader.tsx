@@ -1,20 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useProfile } from '../../features/auth/hooks/useprofile'; // Import useProfile hook
+import { useNotification } from '../../contexts/NotificationContext'; // Import notification context
 import Logo from "../../assets/image/logo/logo-caothang.png"
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState('hero');
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  
+  // Get user profile data
+  const { data: userProfile, isLoading: profileLoading } = useProfile();
+  const { showSuccessNotification } = useNotification();
+  
   const handleHomeClick = () => {
     navigate('/');
   };
-  const handleRegisterClick = () => {
+  
+  const handleLoginClick = () => {
     navigate('/login');
   };
 
   const handleContestClick = () => {
     navigate('/contest');
+  };
+
+  const handleLogout = () => {
+    // Clear tokens from cookie and localStorage
+    document.cookie = 'feAccessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+    localStorage.removeItem('feAccessToken');
+    
+    // Show success notification
+    showSuccessNotification('Đăng xuất thành công');
+    
+    // Navigate to home page
+    navigate('/');
+    
+    // Reload page to reset all states
+    window.location.reload();
   };
 
   const navItems = [
@@ -29,24 +53,42 @@ const Header: React.FC = () => {
     setActiveItem(item.id);
     if (item.type === 'navigate' && item.id === 'contest') {
       handleContestClick();
-    } else { if (item.type === 'navigate' && item.id === 'home') {
-      handleHomeClick();
-      }else{
-      const element = document.getElementById(item.id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+    } else { 
+      if (item.type === 'navigate' && item.id === 'home') {
+        handleHomeClick();
+      } else {
+        const element = document.getElementById(item.id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
       }
     }
-  }
   };
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.user-menu-container')) {
+        setShowUserMenu(false);
+      }
+    };
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    document.addEventListener('click', handleClickOutside);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('click', handleClickOutside);
+    };
   }, []);
+
+  // Check if user is logged in
+  const isLoggedIn = userProfile?.success && userProfile?.data;
+  const userName = userProfile?.data?.name || userProfile?.data?.username || 'Người dùng';
 
   return (
     <header 
@@ -111,14 +153,96 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
-            <button 
-              onClick={handleRegisterClick}
-              className="relative overflow-hidden bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 group-hover:opacity-20 blur transition-all duration-300"></div>
-              <span className="relative z-10">Đăng nhập</span>
-            </button>
+            {!profileLoading && (
+              <>
+                {isLoggedIn ? (
+                  // User is logged in - show user menu
+                  <div className="relative user-menu-container">
+                    <button
+                      onClick={() => setShowUserMenu(!showUserMenu)}
+                      className="flex items-center space-x-3 bg-gradient-to-r from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100 px-4 py-2 rounded-xl border border-cyan-200 hover:border-cyan-300 transition-all duration-300 group"
+                    >
+                      <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        {userName.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-medium text-gray-700 group-hover:text-cyan-700">
+                          Xin chào
+                        </span>
+                        <span className="text-sm font-semibold text-cyan-700">
+                          {userName}
+                        </span>
+                      </div>
+                      <svg 
+                        className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {showUserMenu && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in slide-in-from-top-2 duration-200">
+                        <div className="px-4 py-2 border-b border-gray-100">
+                          <p className="text-xs text-gray-500">Đăng nhập với tư cách</p>
+                          <p className="text-sm font-semibold text-gray-700">{userName}</p>
+                          {userProfile?.data?.role && (
+                            <p className="text-xs text-cyan-600 capitalize">{userProfile.data.role}</p>
+                          )}
+                        </div>
+                        
+                        <button
+                          onClick={() => {
+                            if (userProfile?.data?.role === 'admin' || userProfile?.data?.role === 'Admin') {
+                              navigate('/admin/dashboard');
+                            } else {
+                              navigate('/dashboard');
+                            }
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 transition-colors duration-200"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <span>Trang cá nhân</span>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            handleLogout();
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            <span>Đăng xuất</span>
+                          </div>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  // User is not logged in - show login button
+                  <button 
+                    onClick={handleLoginClick}
+                    className="relative overflow-hidden bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 group"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 group-hover:opacity-20 blur transition-all duration-300"></div>
+                    <span className="relative z-10">Đăng nhập</span>
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
