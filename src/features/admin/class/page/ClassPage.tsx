@@ -25,7 +25,7 @@ import { useClasses } from "../hook/useClasses";
 import { useCreate } from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
 import { useActive } from "../hook/useActive";
-import { useDeletes } from "../hook/useDeletes";
+import { useDeletes } from "../hook/useDeleteMany";
 import AddIcon from "@mui/icons-material/Add";
 
 import {

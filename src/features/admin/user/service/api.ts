@@ -36,3 +36,8 @@ export const DeleteUssers = async (ids: deleteUsersType) => {
   const res = await axiosInstance.post("/user/delete-many", ids);
   return res.data;
 };
+
+export const DeleteUser = async (id: number) => {
+  const res = await axiosInstance.delete(`/user/${id}`);
+  return res.data;
+};

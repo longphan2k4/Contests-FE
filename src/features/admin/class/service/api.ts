@@ -39,3 +39,8 @@ export const listSchool = async () => {
   const res = await axiosInstance.get("/school/list-school");
   return res.data;
 };
+
+export const DeleteClass = async (id: number) => {
+  const res = await axiosInstance.delete(`/class/${id}`);
+  return res.data;
+};

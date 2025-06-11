@@ -20,12 +20,15 @@ import ViewUser from "../components/ViewUser";
 import EditUser from "../components/EditeUser";
 import UserList from "../components/UserList";
 import { useToast } from "../../../../contexts/toastContext";
+import ConfirmDeleteMany from "../../../../components/Confirm";
+import ConfirmDelete from "../../../../components/Confirm";
 
 import { useUsers } from "../hook/useUsers";
 import { useCreateUser } from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
 import { useActive } from "../hook/useActive";
-import { useDeletes } from "../hook/useDeletes";
+import { useDeleteMany } from "../hook/useDeleteMany";
+import { useDelete } from "../hook/useDelete";
 import AddIcon from "@mui/icons-material/Add";
 
 import {
@@ -47,6 +50,8 @@ const UsersPage: React.FC = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isConfirmDeleteMany, setIsConfirmDeleteMany] = useState(false);
+  const [isConfirmDelete, setIsConfirmDelete] = useState(false);
 
   const [filter, setFilter] = useState<UserQuery>({});
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
@@ -66,7 +71,9 @@ const UsersPage: React.FC = () => {
 
   const { mutate: mutateActive } = useActive();
 
-  const { mutate: mutateDeletes } = useDeletes();
+  const { mutate: mutateDeleteMany } = useDeleteMany();
+
+  const { mutate: mutateDelete } = useDelete();
 
   useEffect(() => {
     if (usersQuery) {
@@ -96,7 +103,7 @@ const UsersPage: React.FC = () => {
   }, []);
 
   const handeDeletes = (ids: deleteUsersType) => {
-    mutateDeletes(ids, {
+    mutateDeleteMany(ids, {
       onSuccess: data => {
         data.messages.forEach((item: any, index: number) => {
           if (item.status === "error") {
@@ -145,19 +152,36 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  const handleDelete = useCallback(() => {}, []);
+  const handleDelete = useCallback((id: number | null) => {
+    if (!id) return;
+    mutateDelete(id, {
+      onSuccess: () => {
+        showToast(`Xóa người dùng thành công`, "success");
+        refetchUsers();
+      },
+      onError: (error: any) => {
+        showToast(error.response?.data?.message, "success");
+      },
+    });
+  }, []);
 
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
-      if (type === "delete") {
-        return;
-      }
       setSelectedUserId(id);
+
+      if (type === "delete") {
+        setIsConfirmDelete(true);
+      }
+
       if (type === "view") setIsViewOpen(true);
       if (type === "edit") setIsEditOpen(true);
     },
-    [handleDelete]
+    []
   );
+
+  const hanldConfirmDeleteManyDeletes = () => {
+    setIsConfirmDeleteMany(true);
+  };
 
   if (isUsersLoading) {
     return (
@@ -302,7 +326,9 @@ const UsersPage: React.FC = () => {
                 variant="contained"
                 color="error"
                 sx={{ width: { xs: "100%", sm: "auto" } }}
-                onClick={() => handeDeletes({ ids: selectedUserIds })}
+                onClick={() => {
+                  hanldConfirmDeleteManyDeletes();
+                }}
               >
                 Xoá người ({selectedUserIds.length})
               </Button>
@@ -405,6 +431,21 @@ const UsersPage: React.FC = () => {
           onSubmit={handleUpdate}
         />
       </Box>
+      <ConfirmDeleteMany
+        open={isConfirmDeleteMany}
+        onClose={() => setIsConfirmDeleteMany(false)}
+        title="Xác nhận xóa "
+        description={`Bạn có chắc xóa ${selectedUserIds.length} tài khoản này không`}
+        onConfirm={() => handeDeletes({ ids: selectedUserIds })}
+      />
+
+      <ConfirmDeleteMany
+        open={isConfirmDelete}
+        onClose={() => setIsConfirmDelete(false)}
+        title="Xác nhận xóa "
+        description={`Bạn có chắc xóa tài khoản này không`}
+        onConfirm={() => handleDelete(selectedUserId)}
+      />
     </Box>
   );
 };

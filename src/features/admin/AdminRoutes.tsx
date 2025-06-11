@@ -8,14 +8,10 @@ import { QuestionTopicsPage } from "./questionTopic/pages";
 import { QuestionDetailListPage } from "./question-details/pages";
 import StudentsPage from "./students/page/StudentsPage";
 import QuestionsPackagesPage from "./questionpackages/page/QuestionsPackagesPage";
-// Các component trang admin
-const Dashboard = () => <div>Trang Dashboard</div>;
-//const SchoolsPage = () => <div>Trang Quản lý trường học</div>;
-const ClassesPage = () => <div>Trang Quản lý lớp học</div>;
 import ClassesPage from "./class/page/ClassPage";
+
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
-// const QuestionTopicsPage = () => <>Trang Quản lý chủ đề câu hỏi</
 const QuestionsPage = () => <div>Trang Quản lý câu hỏi</div>;
 const ContestsPage = () => <div>Trang Quản lý cuộc thi</div>;
 //const ContestantsPage = () => <div>Trang Quản lý thí sinh</div>;
