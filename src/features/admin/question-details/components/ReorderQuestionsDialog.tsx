@@ -95,7 +95,7 @@ const SortableItem = ({ id, question }: SortableItemProps) => {
       <ListItemText
         primary={question.question?.plainText || question.question?.title || 'Không có tiêu đề'}
         secondary={
-          <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+          <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>
             <Chip
               size="small"
               label={
@@ -118,6 +118,16 @@ const SortableItem = ({ id, question }: SortableItemProps) => {
                 question.question?.difficulty === 'Gold' ? 'success' : 'default'
               }
             />
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 600,
+                color: question.isActive ? 'success.main' : 'error.main',
+                ml: 1
+              }}
+            >
+              {question.isActive ? 'Đang hoạt động' : 'Vô hiệu hóa'}
+            </Typography>
           </Box>
         }
       />

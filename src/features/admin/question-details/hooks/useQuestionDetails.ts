@@ -23,14 +23,6 @@ interface QuestionDetailFormValues {
   questionPackageId?: number;
 }
 
-interface ApiError {
-  message: string;
-  errors?: Array<{
-    message: string;
-    field?: string;
-  }>;
-}
-
 interface FilterStats {
   totalQuestions: number;
   filteredQuestions: number;
@@ -58,6 +50,7 @@ export const useQuestionDetails = () => {
     sortBy: 'questionOrder',
     sortOrder: 'asc'
   });
+  const [packageName, setPackageName] = useState<string | null>(null);
 
   const { showSuccessNotification, showErrorNotification } = useNotification();
 
@@ -90,6 +83,7 @@ export const useQuestionDetails = () => {
       if (response && response.data) {
         const questionData = response.data.questions || [];
         setQuestionDetails(questionData);
+        setPackageName(response.data.packageInfo?.name || null);
         
         if (response.pagination) {
           setTotal(response.pagination.totalItems || response.pagination.total || 0);
@@ -179,12 +173,19 @@ export const useQuestionDetails = () => {
     } catch (error) {
       console.error('Error deleting selected questions:', error);
       if (axios.isAxiosError(error)) {
-        const errorData = error.response?.data as ApiError;
-        if (errorData?.message) {
+        const errorData = error.response?.data;
+        console.log('errorData',errorData);
+        if (errorData?.data?.failedItems && Array.isArray(errorData.data.failedItems)) {
+          const first = errorData.data.failedItems[0];
+          const found = questionDetails.find(
+            q => q.questionId === first.questionId && q.questionPackageId === first.questionPackageId
+          );
+          showErrorNotification(`Câu hỏi số ${found?.questionOrder ?? '-'}: ${first.reason}`);
+        } else if (errorData?.message) {
           showErrorNotification(errorData.message);
         } else if (errorData?.errors) {
           // Xử lý trường hợp có nhiều lỗi
-          const errorMessages = errorData.errors.map(err => err.message).join('\n');
+          const errorMessages = errorData.errors.map((err: { message: string }) => err.message).join('\n');
           showErrorNotification(errorMessages);
         } else {
           showErrorNotification('Có lỗi xảy ra khi xóa các câu hỏi đã chọn');
@@ -247,6 +248,7 @@ export const useQuestionDetails = () => {
     handleDeleteSelected,
     handleCreateOrUpdate,
     fetchQuestionDetails,
-    filterStats
+    filterStats,
+    packageName
   };
 }; 

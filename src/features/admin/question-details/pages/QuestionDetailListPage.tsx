@@ -65,6 +65,7 @@ const QuestionDetailListPage: React.FC = () => {
     handleCreateOrUpdate,
     fetchQuestionDetails,
     filterStats,
+    packageName
   } = useQuestionDetails();
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
@@ -153,7 +154,7 @@ const QuestionDetailListPage: React.FC = () => {
 
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h4" component="h1">
-          Chi tiết gói câu hỏi
+          {packageName || 'Chi tiết gói câu hỏi'}
         </Typography>
         <Stack direction="row" spacing={2}>
           <Button
@@ -299,7 +300,7 @@ const QuestionDetailListPage: React.FC = () => {
                     <TableCell>Tiêu đề câu hỏi</TableCell>
                     <TableCell width={120}>Loại câu hỏi</TableCell>
                     <TableCell width={120}>Độ khó</TableCell>
-                    <TableCell width={120}>Trạng thái</TableCell>
+                    <TableCell width={135} align="center">Trạng thái</TableCell>
                     <TableCell width={150}>Thao tác</TableCell>
                   </TableRow>
                 </TableHead>
@@ -337,12 +338,20 @@ const QuestionDetailListPage: React.FC = () => {
                           size="small"
                         />
                       </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={row.isActive ? 'Đang hoạt động' : 'Vô hiệu hóa'}
-                          color={row.isActive ? 'success' : 'error'}
-                          size="small"
-                        />
+                      <TableCell width={120} align="center">
+                        <Typography
+                          variant="subtitle2"
+                          sx={{
+                            fontWeight: 500,
+                            color: row.isActive ? 'success.main' : 'error.main',
+                            textAlign: 'center',
+                            fontSize: 14,
+                            lineHeight: 1.4,
+                            py: 0.5
+                          }}
+                        >
+                          {row.isActive ? 'Đang hoạt động' : 'Vô hiệu hóa'}
+                        </Typography>
                       </TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={1}>
