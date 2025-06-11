@@ -5,6 +5,7 @@ export interface QuestionDetail {
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
+  uniqueId?: string;
   question?: {
     id: number;
     title?: string;
@@ -102,9 +103,9 @@ export interface ApiResponse<T> {
 
 export interface ReorderRequest {
   questionPackageId: number;
-  questionOrders: Array<{
+  reorders: Array<{
     questionId: number;
-    questionOrder: number;
+    newOrder: number;
   }>;
 }
 

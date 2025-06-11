@@ -32,19 +32,22 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Search as SearchIcon
+  Search as SearchIcon,
+  DragIndicator as DragIcon
 } from '@mui/icons-material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 import { useQuestionDetails } from '../hooks/useQuestionDetails';
 import { QuestionDetailDialog } from '../components/QuestionDetailDialog';
+import { ReorderQuestionsDialog } from '../components/ReorderQuestionsDialog';
 import type { QuestionDetail } from '../types';
 // import { useNotification } from '../../../../contexts/NotificationContext';
 
 const QuestionDetailListPage: React.FC = () => {
   const { packageId } = useParams<{ packageId: string }>();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [reorderDialogOpen, setReorderDialogOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<QuestionDetail | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -60,6 +63,7 @@ const QuestionDetailListPage: React.FC = () => {
     updateFilter,
     handleDeleteSelected,
     handleCreateOrUpdate,
+    fetchQuestionDetails,
     filterStats,
   } = useQuestionDetails();
 
@@ -124,6 +128,14 @@ const QuestionDetailListPage: React.FC = () => {
     updateFilter({ search: event.target.value });
   };
 
+  const handleOpenReorderDialog = () => {
+    setReorderDialogOpen(true);
+  };
+
+  const handleCloseReorderDialog = () => {
+    setReorderDialogOpen(false);
+  };
+
   return (
     <Box>
       <Breadcrumbs 
@@ -143,13 +155,22 @@ const QuestionDetailListPage: React.FC = () => {
         <Typography variant="h4" component="h1">
           Chi tiết gói câu hỏi
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAdd}
-        >
-          Thêm câu hỏi vào gói 
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="outlined"
+            startIcon={<DragIcon />}
+            onClick={handleOpenReorderDialog}
+          >
+            Sắp xếp thứ tự
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAdd}
+          >
+            Thêm câu hỏi vào gói 
+          </Button>
+        </Stack>
       </Box>
 
       {filterStats && (
@@ -385,6 +406,15 @@ const QuestionDetailListPage: React.FC = () => {
         onSubmit={handleDialogSubmit}
         editingQuestion={editingQuestion}
       />
+
+      {packageId && (
+        <ReorderQuestionsDialog
+          open={reorderDialogOpen}
+          onClose={handleCloseReorderDialog}
+          packageId={Number(packageId)}
+          refreshQuestions={fetchQuestionDetails}
+        />
+      )}
     </Box>
   );
 };
