@@ -1,30 +1,7 @@
-import axios from 'axios';
 import type { School, SchoolFilter, SchoolsResponse, ApiResponse } from '../types/school';
-import { API_URL } from '../../../../config/env';
-import { loginFake } from './loginFake';
+import axiosInstance from '../../../../config/axiosInstance';
 
-// Tạo axios instance với cấu hình mặc định
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  }
-});
 
-// Thêm interceptor để tự động đăng nhập nếu cần
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      await loginFake();
-      // Thử lại request ban đầu
-      return api(error.config);
-    }
-    return Promise.reject(error);
-  }
-);
 
 /**
  * Lấy danh sách trường học từ API
@@ -38,7 +15,7 @@ export const getSchools = async (filter?: SchoolFilter): Promise<SchoolsResponse
     if (filter?.search) params.append('search', filter.search.trim());
     if (filter?.isActive !== undefined) params.append('isActive', String(filter.isActive));
 
-    const response = await api.get<ApiResponse<SchoolsResponse>>('/school', { params });
+    const response = await axiosInstance.get<ApiResponse<SchoolsResponse>>('/school', { params });
     return response.data.data;
   } catch (error) {
     console.error('Error fetching schools:', error);
@@ -51,7 +28,7 @@ export const getSchools = async (filter?: SchoolFilter): Promise<SchoolsResponse
  */
 export const getSchoolById = async (id: number): Promise<School> => {
   try {
-    const response = await api.get<ApiResponse<School>>(`/school/${id}`);
+    const response = await axiosInstance.get<ApiResponse<School>>(`/school/${id}`);
     return response.data.data;
   } catch (error) {
     console.error(`Error fetching school with id ${id}:`, error);
@@ -64,7 +41,7 @@ export const getSchoolById = async (id: number): Promise<School> => {
  */
 export const createSchool = async (schoolData: Partial<School>): Promise<School> => {
   try {
-    const response = await api.post<ApiResponse<School>>('/school', schoolData);
+    const response = await axiosInstance.post<ApiResponse<School>>('/school', schoolData);
     return response.data.data;
   } catch (error) {
     console.error('Error creating school:', error);
@@ -77,7 +54,7 @@ export const createSchool = async (schoolData: Partial<School>): Promise<School>
  */
 export const updateSchool = async (id: number, schoolData: Partial<School>): Promise<School> => {
   try {
-    const response = await api.patch<ApiResponse<School>>(`/school/${id}`, schoolData);
+    const response = await axiosInstance.patch<ApiResponse<School>>(`/school/${id}`, schoolData);
     return response.data.data;
   } catch (error) {
     console.error(`Error updating school with id ${id}:`, error);
@@ -90,7 +67,7 @@ export const updateSchool = async (id: number, schoolData: Partial<School>): Pro
  */
 export const deleteSchool = async (ids: number[]): Promise<void> => {
   try {
-    await api.delete(`/school/${ids}`);
+    await axiosInstance.delete(`/school/${ids}`);
   } catch (error) {
     console.error(`Error deleting schools with ids ${ids}:`, error);
     throw error;
