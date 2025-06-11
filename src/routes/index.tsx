@@ -9,6 +9,7 @@ import MatchPage from "../features/match/pages/MatchPage";
 import TechBanner from "../features/match/components/MediaPopup/BackGround";
 import PrivateRoute from "./PrivateRoute";
 import Forbidden403 from "../components/403";
+import ProfilePage from "../features/account/components/profile/ProfilePage";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -21,6 +22,10 @@ const AppRoutes: React.FC = () => {
 
       <Route element={<PrivateRoute roles={["Admin"]} />}>
         {AdminRoutes()}
+      </Route>
+      {/* Protected Routes */}
+      <Route element={<PrivateRoute />}>
+        <Route path="/account/profile" element={<ProfilePage />} />
       </Route>
       <Route path="/match" element={<MatchPage />} />
       <Route path="/banner" element={<TechBanner />} />
