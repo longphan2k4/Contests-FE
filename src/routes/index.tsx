@@ -9,7 +9,7 @@ import MatchPage from "../features/match/pages/MatchPage";
 import TechBanner from "../features/match/components/MediaPopup/BackGround";
 import PrivateRoute from "./PrivateRoute";
 import Forbidden403 from "../components/403";
-import ProfilePage from "../features/account/components/profile/ProfilePage";
+import ProfilePage from "../features/account/pages/ProfilePage";
 
 const AppRoutes: React.FC = () => {
   return (
