@@ -1,17 +1,17 @@
 import { Route, Navigate } from "react-router-dom";
 import AdminLayout from "../../layouts/AdminLayout";
-import ContestantsPage from "./pages/ContestantsManage/ContestantsPage";
+import ContestantsPage from "./contestants/pages/ContestantsPage";
 import AboutAdminPage from "./about/pages/AboutAdminPage";
 import UsersPage from "./user/page/UsersPage";
 import { SchoolsPage } from "./schools/pages";
 import { QuestionTopicsPage } from "./questionTopic/pages";
 import { QuestionDetailListPage } from "./question-details/pages";
+import StudentsPage from "./students/page/StudentsPage";
+import QuestionsPackagesPage from "./questionpackages/page/QuestionsPackagesPage";
+import ClassesPage from "./class/page/ClassPage";
+
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
-//const SchoolsPage = () => <div>Trang Quản lý trường học</div>;
-const ClassesPage = () => <div>Trang Quản lý lớp học</div>;
-const StudentsPage = () => <div>Trang Quản lý sinh viên</div>;
-// const QuestionTopicsPage = () => <>Trang Quản lý chủ đề câu hỏi</
 const QuestionsPage = () => <div>Trang Quản lý câu hỏi</div>;
 const ContestsPage = () => <div>Trang Quản lý cuộc thi</div>;
 //const ContestantsPage = () => <div>Trang Quản lý thí sinh</div>;
@@ -29,8 +29,12 @@ const AdminRoutes = () => {
       <Route path="classes" element={<ClassesPage />} />
       <Route path="students" element={<StudentsPage />} />
       <Route path="question-topics" element={<QuestionTopicsPage />} />
-      <Route path="question-packages/:packageId" element={<QuestionDetailListPage />} />
+      <Route
+        path="question-packages/:packageId"
+        element={<QuestionDetailListPage />}
+      />
       <Route path="questions" element={<QuestionsPage />} />
+      <Route path="question-packages" element={<QuestionsPackagesPage />} />
       <Route path="contests" element={<ContestsPage />} />
       <Route path="contestants" element={<ContestantsPage />} />
       <Route path="results" element={<ResultsPage />} />

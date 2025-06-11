@@ -10,7 +10,7 @@ import type { FieldError, UseFormRegisterReturn } from "react-hook-form";
 interface FormSelectProps {
   label: string;
   id: string;
-  options: { label: string; value: string }[];
+  options: { label: string; value: string | number }[];
   register?: UseFormRegisterReturn;
   error?: FieldError;
   defaultValue?: string;

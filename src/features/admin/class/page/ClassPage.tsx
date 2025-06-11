@@ -15,16 +15,16 @@ import {
 import { Button } from "@mui/material";
 import { Pagination } from "@mui/material";
 
-import CreateUser from "../components/CreateUser";
-import ViewUser from "../components/ViewUser";
-import EditUser from "../components/EditeUser";
-import UserList from "../components/UserList";
+import CreateClass from "../components/CreateClass";
+import ViewClass from "../components/ViewClass";
+import EditClass from "../components/EditeClass";
+import ClassList from "../components/ClassesList";
 import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDeleteMany from "../../../../components/Confirm";
 import ConfirmDelete from "../../../../components/Confirm";
 
-import { useUsers } from "../hook/useUsers";
-import { useCreateUser } from "../hook/useCreate";
+import { useClasses } from "../hook/useClasses";
+import { useCreate } from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
 import { useActive } from "../hook/useActive";
 import { useDeleteMany } from "../hook/useDeleteMany";
@@ -32,55 +32,65 @@ import { useDelete } from "../hook/useDelete";
 import AddIcon from "@mui/icons-material/Add";
 
 import {
-  type User,
-  type CreateUserInput,
-  type UpdateUserInput,
-  type UserQuery,
-  Role,
+  type Classes,
+  type CreateClassInput,
+  type UpdateClassInput,
+  type ClassQuery,
   type pagination,
-  type deleteUsersType,
-} from "../types/user.shame";
+  type deleteClasssType,
+} from "../types/class.shame";
 import SearchIcon from "@mui/icons-material/Search";
 
-const UsersPage: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+import { type listSChool } from "../types/class.shame";
+import { useListSChool } from "../hook/useListSchool";
+
+const ClassesPage: React.FC = () => {
+  const [Classes, setClasses] = useState<Classes[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [pagination, setPagination] = useState<pagination>({});
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isConfirmDeleteMany, setIsConfirmDeleteMany] = useState(false);
-  const [isConfirmDelete, setIsConfirmDelete] = useState(false);
+  const [isComfirmDelete, setIsComfirmDelete] = useState(false);
+  const [isComfirmDeleteMany, setIsComfirmDeleteMany] = useState(false);
 
-  const [filter, setFilter] = useState<UserQuery>({});
-  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
+  const [filter, setFilter] = useState<ClassQuery>({});
+  const [selectedClassIds, setSelectedClassIds] = useState<number[]>([]);
+  const [school, setSchool] = useState<listSChool[]>([]);
 
   const { showToast } = useToast();
 
   const {
-    data: usersQuery,
-    isLoading: isUsersLoading,
-    isError: isUsersError,
-    refetch: refetchUsers,
-  } = useUsers(filter);
+    data: ClasssQuery,
+    isLoading: isClasssLoading,
+    isError: isClasssError,
+    refetch: refetchClasss,
+  } = useClasses(filter);
 
-  const { mutate: mutateCreate } = useCreateUser();
+  const { data: schoolData } = useListSChool();
+
+  const { mutate: mutateCreate } = useCreate();
 
   const { mutate: mutateUpdate } = useUpdate();
 
   const { mutate: mutateActive } = useActive();
 
+  const { mutate: mutateDelete } = useDelete();
   const { mutate: mutateDeleteMany } = useDeleteMany();
 
-  const { mutate: mutateDelete } = useDelete();
+  useEffect(() => {
+    if (ClasssQuery) {
+      setClasses(ClasssQuery.data.classes);
+      setPagination(ClasssQuery.data.pagination);
+    }
+  }, [ClasssQuery]);
 
   useEffect(() => {
-    if (usersQuery) {
-      setUsers(usersQuery.data.user);
-      setPagination(usersQuery.data.pagination);
+    if (schoolData) {
+      setSchool(schoolData.data);
     }
-  }, [usersQuery]);
+  }, [schoolData]);
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
@@ -89,11 +99,10 @@ const UsersPage: React.FC = () => {
     mutateActive(
       { id: id },
       {
-        onSuccess: data => {
+        onSuccess: () => {
           showToast(`Cập nhật trạng thái thành công`, "success");
-
-          refetchUsers();
-          setSelectedUserId(null);
+          refetchClasss();
+          setSelectedClassId(null);
         },
         onError: (err: any) => {
           showToast(err.response?.data?.message, "error");
@@ -102,7 +111,7 @@ const UsersPage: React.FC = () => {
     );
   }, []);
 
-  const handeDeletes = (ids: deleteUsersType) => {
+  const handeDeletes = (ids: deleteClasssType) => {
     mutateDeleteMany(ids, {
       onSuccess: data => {
         data.messages.forEach((item: any, index: number) => {
@@ -112,19 +121,19 @@ const UsersPage: React.FC = () => {
             showToast(item.msg, "success");
           }
         });
-        refetchUsers();
+        refetchClasss();
       },
       onError: err => {
-        console.log(err);
+        showToast("Xóa lớp học thất bại");
       },
     });
   };
 
-  const handleCreate = (payload: CreateUserInput) => {
+  const handleCreate = (payload: CreateClassInput) => {
     mutateCreate(payload, {
       onSuccess: data => {
         if (data) showToast(`Tạo tài khoản thành công`, "success");
-        refetchUsers();
+        refetchClasss();
       },
       onError: (err: any) => {
         if (err.response?.data?.message) {
@@ -134,14 +143,14 @@ const UsersPage: React.FC = () => {
     });
   };
 
-  const handleUpdate = (payload: UpdateUserInput) => {
-    if (selectedUserId) {
+  const handleUpdate = (payload: UpdateClassInput) => {
+    if (selectedClassId) {
       mutateUpdate(
-        { id: selectedUserId, payload },
+        { id: selectedClassId, payload },
         {
           onSuccess: () => {
             showToast(`Cập nhật tài khoản thành công`, "success");
-            refetchUsers();
+            refetchClasss();
           },
           onError: (err: any) => {
             if (err.response?.data?.message)
@@ -156,48 +165,42 @@ const UsersPage: React.FC = () => {
     if (!id) return;
     mutateDelete(id, {
       onSuccess: () => {
-        showToast(`Xóa người dùng thành công`, "success");
-        refetchUsers();
+        showToast(`Xóa lớp học thàn công`);
       },
       onError: (error: any) => {
-        showToast(error.response?.data?.message, "success");
+        showToast(error.response?.data?.message, "error");
       },
     });
   }, []);
 
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
-      setSelectedUserId(id);
+      setSelectedClassId(id);
 
       if (type === "delete") {
-        setIsConfirmDelete(true);
+        setIsComfirmDelete(true);
       }
-
       if (type === "view") setIsViewOpen(true);
       if (type === "edit") setIsEditOpen(true);
     },
-    []
+    [handleDelete]
   );
 
-  const hanldConfirmDeleteManyDeletes = () => {
-    setIsConfirmDeleteMany(true);
-  };
-
-  if (isUsersLoading) {
+  if (isClasssLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
-  if (isUsersError) {
+  if (isClasssError) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchUsers}>Thử lại</Button>}
+          action={<Button onClick={() => refetchClasss}>Thử lại</Button>}
         >
-          Không thể tải danh sách người dùng.
+          Không thể tải danh danh sách lớp
         </Alert>
       </Box>
     );
@@ -206,17 +209,17 @@ const UsersPage: React.FC = () => {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h5">Quản lý người dùng</Typography>
+        <Typography variant="h5">Quản lý lớp học</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={openCreate}
         >
-          Thêm người dùng
+          Thêm lớp học
         </Button>
       </Box>
 
-      {/* User list card */}
+      {/* Class list card */}
       <Box
         sx={{
           background: "#FFFFFF",
@@ -301,36 +304,35 @@ const UsersPage: React.FC = () => {
               size="small"
               sx={{ minWidth: { xs: "100%", sm: 200 } }}
             >
-              <InputLabel>Vai trò</InputLabel>
+              <InputLabel>Trường</InputLabel>
               <Select
-                value={filter.role ?? "all"}
-                label="Vai trò"
+                value={filter.schoolId ?? "all"}
+                label="Trường"
                 onChange={e =>
                   setFilter(prev => ({
                     ...prev,
-                    role:
-                      e.target.value === "all"
-                        ? undefined
-                        : (e.target.value as Role),
+                    schoolId:
+                      e.target.value === "all" ? undefined : e.target.value,
                   }))
                 }
               >
                 <MenuItem value="all">Tất cả</MenuItem>
-                <MenuItem value="Admin">Admin</MenuItem>
-                <MenuItem value="Judge">Trọng tài</MenuItem>
+                {school.map(s => (
+                  <MenuItem key={s.id} value={s.id}>
+                    {s.name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
 
-            {selectedUserIds.length > 0 && (
+            {selectedClassIds.length > 0 && (
               <Button
                 variant="contained"
                 color="error"
                 sx={{ width: { xs: "100%", sm: "auto" } }}
-                onClick={() => {
-                  hanldConfirmDeleteManyDeletes();
-                }}
+                onClick={() => setIsComfirmDeleteMany(true)}
               >
-                Xoá người ({selectedUserIds.length})
+                Xoá người ({selectedClassIds.length})
               </Button>
             )}
 
@@ -346,15 +348,15 @@ const UsersPage: React.FC = () => {
                 color="text.secondary"
                 alignSelf={{ xs: "flex-start", sm: "center" }}
               >
-                Tổng số: {pagination.total} người dùng
+                Tổng số: {pagination.total} lớp học
               </Typography>
             </Box>
           </Stack>
 
-          <UserList
-            users={users}
-            selectedUserIds={selectedUserIds}
-            setSelectedUserIds={setSelectedUserIds}
+          <ClassList
+            Classes={Classes}
+            selectedClassIds={selectedClassIds}
+            setSelectedClassIds={setSelectedClassIds}
             onView={id => handleAction("view", id)}
             onEdit={id => handleAction("edit", id)}
             onDelete={id => handleAction("delete", id)}
@@ -412,42 +414,41 @@ const UsersPage: React.FC = () => {
             showLastButton
           />
         </Box>
-        <CreateUser
+        <CreateClass
           isOpen={isCreateOpen}
           onClose={closeCreate}
           onSubmit={handleCreate}
         />
 
-        <ViewUser
+        <ViewClass
           isOpen={isViewOpen}
           onClose={() => setIsViewOpen(false)}
-          id={selectedUserId}
+          id={selectedClassId}
         />
 
-        <EditUser
+        <EditClass
           isOpen={isEditOpen}
           onClose={() => setIsEditOpen(false)}
-          id={selectedUserId}
+          id={selectedClassId}
           onSubmit={handleUpdate}
         />
-      </Box>
-      <ConfirmDeleteMany
-        open={isConfirmDeleteMany}
-        onClose={() => setIsConfirmDeleteMany(false)}
-        title="Xác nhận xóa người dùng "
-        description={`Bạn có chắc xóa ${selectedUserIds.length} tài khoản này không`}
-        onConfirm={() => handeDeletes({ ids: selectedUserIds })}
-      />
+        <ConfirmDelete
+          open={isComfirmDelete}
+          title="Xóa lớp học"
+          onClose={() => setIsComfirmDelete(false)}
+          description="Bạn có chắc chắn xóa lớp học này không"
+          onConfirm={() => handleDelete(selectedClassId)}
+        />
 
-      <ConfirmDeleteMany
-        open={isConfirmDelete}
-        onClose={() => setIsConfirmDelete(false)}
-        title="Xác nhận xóa người dùng "
-        description={`Bạn có chắc chắn xóa tài khoản này không`}
-        onConfirm={() => handleDelete(selectedUserId)}
-      />
+        <ConfirmDeleteMany
+          open={isComfirmDeleteMany}
+          title="Xóa lớp học"
+          onClose={() => setIsComfirmDeleteMany(false)}
+          onConfirm={() => handeDeletes({ ids: selectedClassIds })}
+        />
+      </Box>
     </Box>
   );
 };
 
-export default memo(UsersPage);
+export default memo(ClassesPage);
