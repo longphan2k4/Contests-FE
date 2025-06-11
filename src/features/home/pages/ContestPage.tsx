@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import Header from '../../../layouts/HomeLayout/HomeHeader';
 import BannerSlideshow from '../components/contest/Banner';
-import VideoSection from '../components/contest/video';
+import VideoSection from '../components/contest/Video';
 import HeroSection from '../components/contest/Hero';
 import StatsSection from '../components/contest/Stats';
 import FeaturesSection from '../components/contest/Features';
