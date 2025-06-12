@@ -4,7 +4,9 @@ import {
   Typography,
   Paper,
   Button,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SchoolList from '../components/SchoolList';
@@ -27,6 +29,9 @@ const SchoolsPage: React.FC = () => {
     showErrorNotification,
     hideNotification
   } = useNotification();
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Hiển thị lỗi từ api nếu có
   useEffect(() => {
@@ -80,19 +85,39 @@ const SchoolsPage: React.FC = () => {
 
   return (
     <>
-      <Box sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-          <Typography variant="h5">Quản lý trường học</Typography>
+      <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'stretch', sm: 'center' },
+          mb: 3,
+          gap: 2
+        }}>
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              fontSize: { xs: '1.5rem', sm: '2rem' },
+              textAlign: { xs: 'center', sm: 'left' }
+            }}
+          >
+            Quản lý trường học
+          </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleOpenCreateDialog}
+            fullWidth={isMobile}
           >
             Thêm trường học
           </Button>
         </Box>
 
-        <Paper sx={{ p: 3, position: 'relative' }}>
+        <Paper sx={{ 
+          p: { xs: 1, sm: 2, md: 3 }, 
+          position: 'relative',
+          overflowX: 'auto'
+        }}>
           {loading && (
             <Box sx={{ 
               display: 'flex', 
