@@ -138,7 +138,7 @@ const ChangeAccountInfoForm: React.FC<ChangeAccountInfoFormProps> = ({
           )}
 
           <form onSubmit={handleSubmit} id="change-account-info-form">
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ my: 2 }}>
               <TextField
                 required
                 fullWidth

@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Box, Fade, Alert, Skeleton, Card, CardContent } from "@mui/material";
-import { ErrorOutline } from "@mui/icons-material";
+import { Typography, Box, Fade, Alert, Skeleton, Card, CardContent, IconButton, Tooltip } from "@mui/material";
+import { ErrorOutline, Home } from "@mui/icons-material"; // Thêm Home
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/authContext";
 import { useProfile } from "../../auth/hooks/useprofile";
 import useChangePassword from "../hooks/useChangePassword";
 import useChangeAccountInfo from "../hooks/useChangeAccountInfo";
 import { useNotification } from "../../../contexts/NotificationContext";
+import { CAO_THANG_COLORS } from "../../../common/theme"; // Thêm theme
 import ProfileLayout from "../components/ProfileLayout";
 import AccountInfo from "../components/AccountInfo";
 import ChangePasswordForm from "../components/ChangePasswordForm";
 import ChangeAccountInfoForm from "../components/ChangeAccountInfoForm";
 import type { ChangePasswordData } from "../types/ChangePasswordForm.types";
 import type { ChangeAccountInfoData } from "../types/ChangeAccountInfoForm.types";
-import type { UserType } from "../../auth/types/auth.shema"; // Import UserType
+import type { UserType } from "../../auth/types/auth.shema";
 
 const ProfilePage: React.FC = () => {
   const { user, loading: authLoading, setUser } = useAuth();
@@ -69,10 +70,8 @@ const ProfilePage: React.FC = () => {
         onSuccess: async (data: { data?: UserType; message?: string }) => {
           showSuccessNotification("Cập nhật thông tin thành công!");
           if (data?.data) {
-            // Nếu API trả về UserType
             setUser(data.data);
           } else {
-            // Nếu API không trả về UserType, gọi refetch
             await refetch();
           }
           setTimeout(() => {
@@ -87,6 +86,10 @@ const ProfilePage: React.FC = () => {
         },
       }
     );
+  };
+
+  const handleNavigateHome = () => {
+    navigate("/");
   };
 
   const LoadingSkeleton = () => (
@@ -138,6 +141,28 @@ const ProfilePage: React.FC = () => {
 
   return (
     <ProfileLayout>
+      {/* Thêm nút Home */}
+      <Tooltip title="Về trang chủ">
+        <IconButton
+          onClick={handleNavigateHome}
+          aria-label="Về trang chủ"
+          sx={{
+            position: "fixed",
+            top: 16,
+            right: 16,
+            backgroundColor: CAO_THANG_COLORS.primary,
+            color: "#fff",
+            "&:hover": {
+              backgroundColor: CAO_THANG_COLORS.secondary,
+            },
+            zIndex: 1200,
+            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2)",
+          }}
+        >
+          <Home />
+        </IconButton>
+      </Tooltip>
+
       <Fade in={mounted} timeout={800}>
         <Box>
           {authLoading || isFetching ? (
