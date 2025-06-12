@@ -22,6 +22,7 @@ import UserList from "../components/UserList";
 import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDeleteMany from "../../../../components/Confirm";
 import ConfirmDelete from "../../../../components/Confirm";
+import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 
 import { useUsers } from "../hook/useUsers";
 import { useCreateUser } from "../hook/useCreate";
@@ -36,9 +37,9 @@ import {
   type CreateUserInput,
   type UpdateUserInput,
   type UserQuery,
-  Role,
   type pagination,
   type deleteUsersType,
+  Role,
 } from "../types/user.shame";
 import SearchIcon from "@mui/icons-material/Search";
 
@@ -244,6 +245,7 @@ const UsersPage: React.FC = () => {
               mb: 2,
             }}
           >
+            {/* Ô tìm kiếm */}
             <TextField
               label="Tìm kiếm"
               variant="outlined"
@@ -262,78 +264,77 @@ const UsersPage: React.FC = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{ minWidth: { xs: "100%", sm: 200 } }}
+              sx={{
+                flex: { sm: 1 },
+                minWidth: { xs: "100%", sm: 200 },
+              }}
             />
 
-            <FormControl
-              size="small"
-              sx={{ minWidth: { xs: "100%", sm: 200 } }}
-            >
-              <InputLabel>Trạng thái</InputLabel>
-              <Select
-                value={
-                  filter.isActive === undefined
-                    ? "all"
-                    : filter.isActive
-                    ? "active"
-                    : "inactive"
-                }
-                label="Trạng thái"
-                onChange={e =>
-                  setFilter(prev => ({
-                    ...prev,
-                    isActive:
-                      e.target.value === "all"
-                        ? undefined
-                        : e.target.value === "active"
-                        ? true
-                        : false,
-                  }))
-                }
-              >
-                <MenuItem value="all">Tất cả</MenuItem>
-                <MenuItem value="active">Đang hoạt động</MenuItem>
-                <MenuItem value="inactive">Đã ẩn</MenuItem>
-              </Select>
-            </FormControl>
+            <FormAutocompleteFilter
+              label="Trạng thái"
+              options={[
+                { label: "Tất cả", value: "all" },
+                { label: "Hoạt động", value: "active" },
+                { label: "Không hoạt động", value: "inactive" },
+              ]}
+              value={
+                filter.isActive === undefined
+                  ? "all"
+                  : filter.isActive
+                  ? "active"
+                  : "inactive"
+              }
+              onChange={val => {
+                setFilter(prev => ({
+                  ...prev,
+                  isActive:
+                    val === "all"
+                      ? undefined
+                      : val === "active"
+                      ? true
+                      : val === "inactive"
+                      ? false
+                      : undefined, // fallback nếu Autocomplete trả undefined
+                }));
+              }}
+              sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
+            />
 
-            <FormControl
-              size="small"
-              sx={{ minWidth: { xs: "100%", sm: 200 } }}
-            >
-              <InputLabel>Vai trò</InputLabel>
-              <Select
-                value={filter.role ?? "all"}
-                label="Vai trò"
-                onChange={e =>
-                  setFilter(prev => ({
-                    ...prev,
-                    role:
-                      e.target.value === "all"
-                        ? undefined
-                        : (e.target.value as Role),
-                  }))
-                }
-              >
-                <MenuItem value="all">Tất cả</MenuItem>
-                <MenuItem value="Admin">Admin</MenuItem>
-                <MenuItem value="Judge">Trọng tài</MenuItem>
-              </Select>
-            </FormControl>
+            {/* Vai trò */}
+            <FormAutocompleteFilter
+              label="Vai trò"
+              options={[
+                { label: "Tất cả", value: "all" },
+                { label: "Admin", value: "Admin" },
+                { label: "Trọng tài", value: "Judge" },
+              ]}
+              value={filter.role ?? "all"}
+              onChange={(val: string | number | undefined) =>
+                setFilter(prev => ({
+                  ...prev,
+                  role: val === "all" ? undefined : (val as Role),
+                }))
+              }
+              sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
+            />
 
+            {/* Nút xoá người */}
             {selectedUserIds.length > 0 && (
               <Button
                 variant="contained"
                 color="error"
-                sx={{ width: { xs: "100%", sm: "auto" } }}
-                onClick={() => {
-                  hanldConfirmDeleteManyDeletes();
+                onClick={hanldConfirmDeleteManyDeletes}
+                sx={{
+                  flex: { sm: 1 },
+                  width: { xs: "100%", sm: "auto" },
+                  whiteSpace: "nowrap",
                 }}
               >
                 Xoá người ({selectedUserIds.length})
               </Button>
             )}
 
+            {/* Tổng số người dùng */}
             <Box
               sx={{
                 ml: { xs: 0, sm: "auto" },
@@ -439,7 +440,7 @@ const UsersPage: React.FC = () => {
         onConfirm={() => handeDeletes({ ids: selectedUserIds })}
       />
 
-      <ConfirmDeleteMany
+      <ConfirmDelete
         open={isConfirmDelete}
         onClose={() => setIsConfirmDelete(false)}
         title="Xác nhận xóa người dùng "

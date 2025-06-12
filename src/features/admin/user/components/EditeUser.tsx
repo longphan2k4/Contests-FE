@@ -81,8 +81,9 @@ export default function EditeUser({
           <FormSelect
             id="role"
             label="Vai trò"
-            register={register("role")}
+            control={control}
             options={roleOptions}
+            name="role"
             error={errors.role}
             defaultValue={user?.role}
           />
@@ -100,7 +101,7 @@ export default function EditeUser({
           <Button
             type="submit"
             variant="contained"
-            sx={{ mt: 2, display: "block  " }}
+            sx={{ mt: 2, display: "block ", float: "right", marginTop: "24px" }}
           >
             Cập nhật
           </Button>

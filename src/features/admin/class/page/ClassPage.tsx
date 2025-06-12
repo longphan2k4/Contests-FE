@@ -22,6 +22,7 @@ import ClassList from "../components/ClassesList";
 import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDeleteMany from "../../../../components/Confirm";
 import ConfirmDelete from "../../../../components/Confirm";
+import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 
 import { useClasses } from "../hook/useClasses";
 import { useCreate } from "../hook/useCreate";
@@ -268,62 +269,54 @@ const ClassesPage: React.FC = () => {
               sx={{ minWidth: { xs: "100%", sm: 200 } }}
             />
 
-            <FormControl
-              size="small"
-              sx={{ minWidth: { xs: "100%", sm: 200 } }}
-            >
-              <InputLabel>Trạng thái</InputLabel>
-              <Select
-                value={
-                  filter.isActive === undefined
-                    ? "all"
-                    : filter.isActive
-                    ? "active"
-                    : "inactive"
-                }
-                label="Trạng thái"
-                onChange={e =>
-                  setFilter(prev => ({
-                    ...prev,
-                    isActive:
-                      e.target.value === "all"
-                        ? undefined
-                        : e.target.value === "active"
-                        ? true
-                        : false,
-                  }))
-                }
-              >
-                <MenuItem value="all">Tất cả</MenuItem>
-                <MenuItem value="active">Đang hoạt động</MenuItem>
-                <MenuItem value="inactive">Đã ẩn</MenuItem>
-              </Select>
-            </FormControl>
+            <FormAutocompleteFilter
+              label="Trạng thái"
+              options={[
+                { label: "Tất cả", value: "all" },
+                { label: "Hoạt động", value: "active" },
+                { label: "Không hoạt động", value: "inactive" },
+              ]}
+              value={
+                filter.isActive === undefined
+                  ? "all"
+                  : filter.isActive
+                  ? "active"
+                  : "inactive"
+              }
+              onChange={val => {
+                setFilter(prev => ({
+                  ...prev,
+                  isActive:
+                    val === "all"
+                      ? undefined
+                      : val === "active"
+                      ? true
+                      : val === "inactive"
+                      ? false
+                      : undefined, // fallback nếu Autocomplete trả undefined
+                }));
+              }}
+              sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
+            />
 
-            <FormControl
-              size="small"
-              sx={{ minWidth: { xs: "100%", sm: 200 } }}
-            >
-              <InputLabel>Trường</InputLabel>
-              <Select
-                value={filter.schoolId ?? "all"}
-                label="Trường"
-                onChange={e =>
-                  setFilter(prev => ({
-                    ...prev,
-                    schoolId:
-                      e.target.value === "all" ? undefined : e.target.value,
-                  }))
-                }
-              >
-                <MenuItem value="all">Tất cả</MenuItem>
-                {school.map(s => (
-                  <MenuItem key={s.id} value={s.id}>
-                    {s.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <FormAutocompleteFilter
+              label="Trường"
+              options={[
+                { label: "Tất cả", value: "all" },
+                ...school.map(s => ({
+                  label: s.name,
+                  value: s.id,
+                })),
+              ]}
+              value={filter.schoolId ?? "all"}
+              onChange={(val: string | number | undefined) =>
+                setFilter(prev => ({
+                  ...prev,
+                  schoolId: val === "all" ? undefined : Number(val),
+                }))
+              }
+              sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
+            />
 
             {selectedClassIds.length > 0 && (
               <Button
@@ -332,7 +325,7 @@ const ClassesPage: React.FC = () => {
                 sx={{ width: { xs: "100%", sm: "auto" } }}
                 onClick={() => setIsComfirmDeleteMany(true)}
               >
-                Xoá người ({selectedClassIds.length})
+                Xoá ({selectedClassIds.length})
               </Button>
             )}
 

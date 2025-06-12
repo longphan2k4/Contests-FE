@@ -1,119 +1,112 @@
-import React, { useEffect, useState } from "react";
-import AppFormDialog from "../../../../components/AppFormDialog";
-import FormInput from "../../../../components/FormInput";
+import React, { useEffect, useMemo } from "react";
 import { Box, Button } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UpdateClassSchema, type UpdateClassInput } from "../types/class.shame";
 
+import AppFormDialog from "../../../../components/AppFormDialog";
+import FormInput from "../../../../components/FormInput";
 import FormSelect from "../../../../components/FormSelect";
 import FormSwitch from "../../../../components/FormSwitch";
 
+import { UpdateClassSchema, type UpdateClassInput } from "../types/class.shame";
 import { useClassById } from "../hook/useClassById";
 import { useListSChool } from "../hook/useListSchool";
 
-interface EditeClassProp {
+interface EditClassProps {
   id: number | null;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: UpdateClassInput) => void;
 }
 
-type options = {
-  label: string;
-  value: string | number;
-};
-
-export default function EditeClass({
+export default function EditClass({
   id,
   isOpen,
   onClose,
   onSubmit,
-}: EditeClassProp): React.ReactElement {
+}: EditClassProps): React.ReactElement {
   const {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
     control,
     reset,
   } = useForm<UpdateClassInput>({
     resolver: zodResolver(UpdateClassSchema),
   });
 
-  const { data: Class } = useClassById(id);
+  const { data: classData } = useClassById(id);
+  const { data: schoolData } = useListSChool();
 
-  useEffect(() => {
-    if (Class) {
-      reset({
-        name: Class.name,
-        schoolId: Class.schoolId,
-        isActive: Class.isActive,
-      });
-    }
-  }, [Class, reset, isOpen]);
-  const handleFormSubmit = (data: UpdateClassInput) => {
-    onSubmit(data);
-    onClose();
-  };
-
-  const [School, setSchool] = useState<options[]>([]);
-  const { data } = useListSChool();
-
-  useEffect(() => {
-    if (data && data.success) {
-      const formattedSchools: options[] = data.data.map((item: any) => ({
+  const schoolOptions = useMemo(() => {
+    if (schoolData?.success) {
+      return schoolData.data.map((item: any) => ({
         label: item.name,
         value: item.id,
       }));
-
-      setSchool(formattedSchools);
     }
-  }, [data]);
+    return [];
+  }, [schoolData]);
+
+  useEffect(() => {
+    if (isOpen && classData) {
+      reset({
+        name: classData.name,
+        schoolId: classData.schoolId,
+        isActive: classData.isActive,
+      });
+    }
+  }, [isOpen, classData, reset]);
+
+  const handleFormSubmit = (formData: UpdateClassInput) => {
+    onSubmit(formData);
+    onClose();
+  };
 
   return (
-    <Box>
-      <AppFormDialog
-        open={isOpen}
-        onClose={onClose}
-        title={`Cập nhật ${Class?.name}`}
-        maxWidth="sm"
-      >
-        <form id="create-school-form" onSubmit={handleSubmit(handleFormSubmit)}>
-          <FormInput
-            label="Tên tài khoản"
-            id="name"
-            placeholder="Nhập tên tài khoản"
-            error={errors.name}
-            register={register("name")}
-          />
-          <FormSelect
-            id="schoolId"
-            label="Trường"
-            register={register("schoolId")}
-            options={School}
-            error={errors.schoolId}
-          />
-          <Controller
-            name="isActive"
-            control={control}
-            defaultValue={true}
-            render={({ field }) => (
-              <FormSwitch
-                value={field.value ?? false}
-                onChange={field.onChange}
-              />
-            )}
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{ mt: 2, display: "block  " }}
-          >
-            Thêm
-          </Button>
-        </form>
-      </AppFormDialog>
-    </Box>
+    <AppFormDialog
+      open={isOpen}
+      onClose={onClose}
+      title={`Cập nhật lớp: ${classData?.name || ""}`}
+      maxWidth="sm"
+    >
+      <form id="edit-class-form" onSubmit={handleSubmit(handleFormSubmit)}>
+        <FormInput
+          id="name"
+          label="Tên lớp"
+          placeholder="Nhập tên lớp"
+          register={register("name")}
+          error={errors.name}
+        />
+
+        <FormSelect
+          id="schoolId"
+          name="schoolId"
+          label="Trường"
+          control={control}
+          options={schoolOptions}
+          error={errors.schoolId}
+        />
+
+        <Controller
+          name="isActive"
+          control={control}
+          render={({ field }) => (
+            <FormSwitch
+              value={field.value ?? false}
+              onChange={field.onChange}
+            />
+          )}
+        />
+
+        <Button
+          type="submit"
+          variant="contained"
+          sx={{ mt: 2, display: "block ", float: "right", marginTop: "24px" }}
+        >
+          Cập nhật
+        </Button>
+      </form>
+    </AppFormDialog>
   );
 }
