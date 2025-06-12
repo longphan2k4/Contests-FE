@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
 import { Box, Button } from "@mui/material";
@@ -40,9 +40,14 @@ export default function CreateSchoolDialog({
     },
   });
 
+  useEffect(() => {
+    if (isOpen) {
+      reset();
+    }
+  }, [isOpen, reset]);
   const handleFormSubmit = (data: CreateUserInput) => {
     onSubmit(data);
-    reset();
+
     onClose();
   };
   return (
@@ -78,12 +83,14 @@ export default function CreateSchoolDialog({
           />
           <FormSelect
             id="role"
+            name="role"
             label="Vai trò"
-            register={register("role")}
+            control={control}
             options={roleOptions}
             defaultValue="Judge"
             error={errors.role}
           />
+
           <Controller
             name="isActive"
             control={control}
@@ -95,7 +102,7 @@ export default function CreateSchoolDialog({
           <Button
             type="submit"
             variant="contained"
-            sx={{ mt: 2, display: "block  " }}
+            sx={{ mt: 2, display: "block ", float: "right", marginTop: "24px" }}
           >
             Thêm
           </Button>
