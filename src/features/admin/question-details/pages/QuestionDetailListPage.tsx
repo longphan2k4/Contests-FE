@@ -446,7 +446,7 @@ const QuestionDetailListPage: React.FC = () => {
           refreshQuestions={fetchQuestionDetails}
         />
       )}
-
+  
       <ConfirmDeleteDialog
         open={openConfirmDelete}
         onClose={() => setOpenConfirmDelete(false)}

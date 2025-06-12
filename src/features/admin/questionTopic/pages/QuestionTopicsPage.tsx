@@ -12,11 +12,18 @@ import QuestionTopicList from '../components/QuestionTopicList';
 import QuestionTopicForm from '../components/QuestionTopicForm';
 import { useQuestionTopicList } from '../hooks';
 import type { QuestionTopic } from '../types/questionTopic';
-import { useNotification } from '../../../../hooks';
-import NotificationSnackbar from '../../components/NotificationSnackbar';
-import { useCreateQuestionTopic, useUpdateQuestionTopic } from '../hooks/crud';
+import { useToast } from '../../../../contexts/toastContext';
+import { useCreateQuestionTopic, useUpdateQuestionTopic, useDeleteQuestionTopic } from '../hooks/crud';
 import type { CreateQuestionTopicInput, UpdateQuestionTopicInput } from '../schemas/questionTopic.schema';
 import QuestionTopicDetailPopup from '../components/QuestionTopicDetailPopup';
+import ConfirmDeleteDialog from '../../../../components/ConfirmDeleteDialog';
+import type { Message } from '../types/message';
+import type { BatchDeleteResponse } from '../services/questionTopicService';
+
+interface FailedItem {
+  id: number;
+  reason: string;
+}
 
 const QuestionTopicsPage: React.FC = () => {
   const { loading, error, refresh } = useQuestionTopicList();
@@ -24,22 +31,20 @@ const QuestionTopicsPage: React.FC = () => {
   const [isDetailPopupOpen, setDetailPopupOpen] = useState(false);
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
-  const {
-    notificationState,
-    showErrorNotification,
-    showSuccessNotification,
-    hideNotification
-  } = useNotification();
+  const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const { showToast } = useToast();
 
   const { handleCreate: createQuestionTopic, isCreating } = useCreateQuestionTopic();
   const { handleUpdate: updateQuestionTopic, isUpdating } = useUpdateQuestionTopic();
+  const { handleDeleteSelected } = useDeleteQuestionTopic();
 
   // Hiển thị lỗi từ api nếu có
   React.useEffect(() => {
     if (error) {
-      showErrorNotification(error);
+      showToast(error, 'error');
     }
-  }, [error, showErrorNotification]);
+  }, [error, showToast]);
 
   // Xử lý khi người dùng nhấn nút xem chi tiết
   const handleViewDetail = (questionTopic: QuestionTopic) => {
@@ -66,15 +71,63 @@ const QuestionTopicsPage: React.FC = () => {
     setSelectedQuestionTopic(null);
   };
 
+  // Xử lý khi người dùng nhấn nút xóa
+  const handleDelete = (ids: number[]) => {
+    setSelectedIds(ids);
+    setOpenConfirmDelete(true);
+  };
+
+  // Xử lý khi người dùng xác nhận xóa
+  const handleConfirmDelete = async () => {
+    try {
+      const response = await handleDeleteSelected(selectedIds);
+      console.log("nhận response", response);
+
+      if (response && typeof response === 'object' && 'data' in response) {
+        const res = response as BatchDeleteResponse;
+        if (res.data.failedIds.length > 0) {
+          res.data.failedIds.forEach((item: FailedItem) => {
+            showToast(`ID ${item.id}: ${item.reason}`, 'error');
+          });
+        }
+        if (res.data.successfulIds.length > 0) {
+          res.data.successfulIds.forEach((id: number) => {
+            showToast(`ID ${id}: Xóa thành công`, 'success');
+          });
+        }
+      } else if (response === true) {
+        showToast('Xóa chủ đề thành công', 'success');
+      }
+      
+      refresh();
+    } catch (error) {
+      if (error && typeof error === 'object' && 'messages' in error) {
+        const messages = (error as { messages: Message[] }).messages;
+        messages.forEach((item) => {
+          if (item.status === "error") {
+            showToast(item.msg, "error");
+          } else {
+            showToast(item.msg, "success");
+          }
+        });
+      } else {
+        showToast("Xóa chủ đề thất bại", "error");
+      }
+    } finally {
+      setOpenConfirmDelete(false);
+      setSelectedIds([]);
+    }
+  };
+
   // Xử lý khi submit form tạo mới
   const handleCreateSubmit = async (data: CreateQuestionTopicInput) => {
     try {
       await createQuestionTopic(data);
-      showSuccessNotification('Tạo chủ đề mới thành công');
+      showToast('Tạo chủ đề mới thành công', 'success');
       handleCloseDialog();
       refresh();
     } catch {
-      showErrorNotification('Có lỗi xảy ra khi tạo chủ đề mới');
+      showToast('Có lỗi xảy ra khi tạo chủ đề mới', 'error');
     }
   };
 
@@ -83,11 +136,11 @@ const QuestionTopicsPage: React.FC = () => {
     if (!selectedQuestionTopic) return;
     try {
       await updateQuestionTopic(selectedQuestionTopic.id, data);
-      showSuccessNotification('Cập nhật chủ đề thành công');
+      showToast('Cập nhật chủ đề thành công', 'success');
       handleCloseDialog();
       refresh();
     } catch {
-      showErrorNotification('Có lỗi xảy ra khi cập nhật chủ đề');
+      showToast('Có lỗi xảy ra khi cập nhật chủ đề', 'error');
     }
   };
 
@@ -115,9 +168,7 @@ const QuestionTopicsPage: React.FC = () => {
           <QuestionTopicList
             onViewDetail={handleViewDetail}
             onEdit={handleEdit}
-            onDeleteSuccess={refresh}
-            showSuccessNotification={showSuccessNotification}
-            showErrorNotification={showErrorNotification}
+            onDelete={handleDelete}
           />
         )}
       </Paper>
@@ -128,7 +179,7 @@ const QuestionTopicsPage: React.FC = () => {
         maxWidth="md"
         fullWidth
       >
-      {selectedQuestionTopic && (
+        {selectedQuestionTopic && (
           <QuestionTopicDetailPopup
             questionTopic={selectedQuestionTopic}
             open={isDetailPopupOpen}
@@ -168,11 +219,12 @@ const QuestionTopicsPage: React.FC = () => {
         )}
       </Dialog>
 
-      <NotificationSnackbar
-        open={notificationState.open}
-        message={notificationState.message}
-        severity={notificationState.severity}
-        onClose={hideNotification}
+      <ConfirmDeleteDialog
+        open={openConfirmDelete}
+        onClose={() => setOpenConfirmDelete(false)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa chủ đề"
+        content="Bạn có chắc chắn muốn xóa chủ đề này không?"
       />
     </Box>
   );
