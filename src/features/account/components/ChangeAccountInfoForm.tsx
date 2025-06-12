@@ -111,12 +111,16 @@ const ChangeAccountInfoForm: React.FC<ChangeAccountInfoFormProps> = ({
           sx: { borderRadius: "16px", p: 2 },
         }}
       >
-        <DialogTitle sx={{ pb: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}>
-            <Person sx={{ color: CAO_THANG_COLORS.secondary }} />
-            Đổi thông tin tài khoản
-          </Typography>
-        </DialogTitle>
+       <DialogTitle sx={{ pb: 2 }}>
+  <Typography
+    variant="h6"
+    component="span" // Hoặc component="div"
+    sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}
+  >
+    <Person sx={{ color: CAO_THANG_COLORS.secondary }} />
+    Đổi thông tin tài khoản
+  </Typography>
+</DialogTitle>
 
         <DialogContent sx={{ pb: 1 }}>
           {error && (

@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { Typography, Box, Fade, Alert, Skeleton, Card, CardContent } from "@mui/material";
 import { ErrorOutline } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/authContext";
 import { useProfile } from "../../auth/hooks/useprofile";
 import useChangePassword from "../hooks/useChangePassword";
-import useChangeAccountInfo from "../hooks/useChangeAccountInfo"; // Thêm hook mới
+import useChangeAccountInfo from "../hooks/useChangeAccountInfo";
 import { useNotification } from "../../../contexts/NotificationContext";
 import ProfileLayout from "../components/ProfileLayout";
 import AccountInfo from "../components/AccountInfo";
 import ChangePasswordForm from "../components/ChangePasswordForm";
-import ChangeAccountInfoForm from "../components/ChangeAccountInfoForm"; // Thêm component mới
+import ChangeAccountInfoForm from "../components/ChangeAccountInfoForm";
 import type { ChangePasswordData } from "../types/ChangePasswordForm.types";
 import type { ChangeAccountInfoData } from "../types/ChangeAccountInfoForm.types";
+import type { UserType } from "../../auth/types/auth.shema"; // Import UserType
 
 const ProfilePage: React.FC = () => {
-  const { user, loading: authLoading } = useAuth();
-  const { isFetching } = useProfile();
+  const { user, loading: authLoading, setUser } = useAuth();
+  const { isFetching, refetch } = useProfile();
   const { mutate: changePassword, status: changePasswordStatus } = useChangePassword();
-  const { mutate: changeAccountInfo, status: changeAccountInfoStatus } = useChangeAccountInfo(); // Thêm hook
+  const { mutate: changeAccountInfo, status: changeAccountInfoStatus } = useChangeAccountInfo();
   const { showSuccessNotification, showErrorNotification } = useNotification();
+  const navigate = useNavigate();
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
 
@@ -35,7 +38,7 @@ const ProfilePage: React.FC = () => {
       {
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword,
-        confirmNewPassword: formData.confirmNewPassword,
+        confirmNewPassword: formData.currentPassword,
       },
       {
         onSuccess: () => {
@@ -63,10 +66,18 @@ const ProfilePage: React.FC = () => {
         email: formData.email,
       },
       {
-        onSuccess: () => {
+        onSuccess: async (data: { data?: UserType; message?: string }) => {
           showSuccessNotification("Cập nhật thông tin thành công!");
-          // Có thể reload trang hoặc cập nhật user context
-          window.location.reload();
+          if (data?.data) {
+            // Nếu API trả về UserType
+            setUser(data.data);
+          } else {
+            // Nếu API không trả về UserType, gọi refetch
+            await refetch();
+          }
+          setTimeout(() => {
+            navigate("/account/profile");
+          }, 1500);
         },
         onError: (error: any) => {
           const apiMessage = error.response?.data?.message;
@@ -139,7 +150,7 @@ const ProfilePage: React.FC = () => {
                   animation: "slideInUp 0.6s ease-out forwards",
                 },
                 "& > *:nth-of-type(2)": { animationDelay: "0.2s" },
-                "& > *:nth-of-type(3)": { animationDelay: "0.4s" }, // Thêm delay cho component mới
+                "& > *:nth-of-type(3)": { animationDelay: "0.4s" },
                 "@keyframes slideInUp": {
                   from: { opacity: 0, transform: "translateY(20px)" },
                   to: { opacity: 1, transform: "translateY(0)" },
