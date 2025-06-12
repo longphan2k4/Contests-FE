@@ -17,7 +17,6 @@ import { useCreateQuestionTopic, useUpdateQuestionTopic, useDeleteQuestionTopic 
 import type { CreateQuestionTopicInput, UpdateQuestionTopicInput } from '../schemas/questionTopic.schema';
 import QuestionTopicDetailPopup from '../components/QuestionTopicDetailPopup';
 import ConfirmDeleteDialog from '../../../../components/ConfirmDeleteDialog';
-import type { Message } from '../types/message';
 import type { BatchDeleteResponse } from '../services/questionTopicService';
 
 interface FailedItem {

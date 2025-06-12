@@ -26,7 +26,9 @@ import {
   Pagination,
   Chip,
   Breadcrumbs,
-  Link
+  Link,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -71,6 +73,9 @@ const QuestionDetailListPage: React.FC = () => {
     packageName,
     handleDelete
   } = useQuestionDetails();
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
     updateFilter({ page });
@@ -155,7 +160,7 @@ const QuestionDetailListPage: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
       <Breadcrumbs 
         separator={<NavigateNextIcon fontSize="small" />}
         aria-label="breadcrumb"
@@ -169,15 +174,27 @@ const QuestionDetailListPage: React.FC = () => {
         </Typography>
       </Breadcrumbs>
 
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" component="h1">
+      <Box sx={{ 
+        mb: 4, 
+        display: 'flex', 
+        flexDirection: { xs: 'column', sm: 'row' },
+        justifyContent: 'space-between', 
+        alignItems: { xs: 'stretch', sm: 'center' },
+        gap: 2
+      }}>
+        <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
           {packageName || 'Chi tiết gói câu hỏi'}
         </Typography>
-        <Stack direction="row" spacing={2}>
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={2}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           <Button
             variant="outlined"
             startIcon={<DragIcon />}
             onClick={handleOpenReorderDialog}
+            fullWidth={isMobile}
           >
             Sắp xếp thứ tự
           </Button>
@@ -185,6 +202,7 @@ const QuestionDetailListPage: React.FC = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAdd}
+            fullWidth={isMobile}
           >
             Thêm câu hỏi vào gói 
           </Button>
@@ -200,91 +218,101 @@ const QuestionDetailListPage: React.FC = () => {
         </Box>
       )}
 
-      <Paper sx={{ p: 3 }}>
+      <Paper sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
         {error && (
           <Box sx={{ mb: 2 }}>
             <Typography color="error">{error}</Typography>
           </Box>
         )}
 
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          sx={{ mb: 3 }}
-        >
-          <TextField
-            label="Tìm kiếm"
-            variant="outlined"
-            size="small"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ minWidth: 200 }}
-          />
+        <Stack spacing={2} sx={{ mb: 3 }}>
+          <Box sx={{ 
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, 1fr)',
+              md: 'repeat(4, 1fr)'
+            },
+            gap: 2
+          }}>
+            <TextField
+              label="Tìm kiếm"
+              variant="outlined"
+              size="small"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              fullWidth
+            />
 
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Loại câu hỏi</InputLabel>
-            <Select
-              value={filter.questionType || ''}
-              onChange={handleQuestionTypeChange}
-              label="Loại câu hỏi"
-            >
-              <MenuItem value="">Tất cả</MenuItem>
-              <MenuItem value="multiple_choice">Trắc nghiệm</MenuItem>
-              <MenuItem value="essay">Tự luận</MenuItem>
-            </Select>
-          </FormControl>
+            <FormControl size="small" fullWidth>
+              <InputLabel>Loại câu hỏi</InputLabel>
+              <Select
+                value={filter.questionType || ''}
+                onChange={handleQuestionTypeChange}
+                label="Loại câu hỏi"
+              >
+                <MenuItem value="">Tất cả</MenuItem>
+                <MenuItem value="multiple_choice">Trắc nghiệm</MenuItem>
+                <MenuItem value="essay">Tự luận</MenuItem>
+              </Select>
+            </FormControl>
 
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Độ khó</InputLabel>
-            <Select
-              value={filter.difficulty || ''}
-              onChange={handleDifficultyChange}
-              label="Độ khó"
-            >
-              <MenuItem value="">Tất cả</MenuItem>
-              <MenuItem value="Alpha">Alpha</MenuItem>
-              <MenuItem value="Beta">Beta</MenuItem>
-              <MenuItem value="Gold">Gold</MenuItem>
-            </Select>
-          </FormControl>
+            <FormControl size="small" fullWidth>
+              <InputLabel>Độ khó</InputLabel>
+              <Select
+                value={filter.difficulty || ''}
+                onChange={handleDifficultyChange}
+                label="Độ khó"
+              >
+                <MenuItem value="">Tất cả</MenuItem>
+                <MenuItem value="Alpha">Alpha</MenuItem>
+                <MenuItem value="Beta">Beta</MenuItem>
+                <MenuItem value="Gold">Gold</MenuItem>
+              </Select>
+            </FormControl>
 
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Trạng thái</InputLabel>
-            <Select
-              value={filter.isActive === true ? 'active' : 
-                     filter.isActive === false ? 'inactive' : ''}
-              onChange={handleStatusChange}
-              label="Trạng thái"
-            >
-              <MenuItem value="">Tất cả</MenuItem>
-              <MenuItem value="active">Đang hoạt động</MenuItem>
-              <MenuItem value="inactive">Vô hiệu hóa</MenuItem>
-            </Select>
-          </FormControl>
+            <FormControl size="small" fullWidth>
+              <InputLabel>Trạng thái</InputLabel>
+              <Select
+                value={filter.isActive === true ? 'active' : 
+                       filter.isActive === false ? 'inactive' : ''}
+                onChange={handleStatusChange}
+                label="Trạng thái"
+              >
+                <MenuItem value="">Tất cả</MenuItem>
+                <MenuItem value="active">Đang hoạt động</MenuItem>
+                <MenuItem value="inactive">Vô hiệu hóa</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </Stack>
 
-          {selectedIds.size > 0 && (
+        {selectedIds.size > 0 && (
+          <Box sx={{ mb: 2 }}>
             <Button
               variant="contained"
               color="error"
               onClick={handleDeleteSelected}
               startIcon={<DeleteIcon />}
+              fullWidth={isMobile}
             >
               Xóa ({selectedIds.size})
             </Button>
-          )}
-          <Box flex={1} />
+          </Box>
+        )}
 
-          <Typography sx={{ alignSelf: 'center' }}>
+        <Box sx={{ mb: 2, textAlign: { xs: 'center', sm: 'right' } }}>
+          <Typography>
             Tổng số: {total} câu hỏi
           </Typography>
-        </Stack>
+        </Box>
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
@@ -296,7 +324,13 @@ const QuestionDetailListPage: React.FC = () => {
           </Typography>
         ) : (
           <>
-            <TableContainer>
+            <TableContainer sx={{ 
+              overflowX: 'auto',
+              '& .MuiTableCell-root': {
+                whiteSpace: 'nowrap',
+                minWidth: { xs: 'auto', sm: '100px' }
+              }
+            }}>
               <Table>
                 <TableHead>
                   <TableRow>
@@ -315,8 +349,12 @@ const QuestionDetailListPage: React.FC = () => {
                     </TableCell>
                     <TableCell width={80}>STT</TableCell>
                     <TableCell>Tiêu đề câu hỏi</TableCell>
-                    <TableCell width={120}>Loại câu hỏi</TableCell>
-                    <TableCell width={120}>Độ khó</TableCell>
+                    {!isMobile && (
+                      <>
+                        <TableCell width={120}>Loại câu hỏi</TableCell>
+                        <TableCell width={120}>Độ khó</TableCell>
+                      </>
+                    )}
                     <TableCell width={135} align="center">Trạng thái</TableCell>
                     <TableCell width={150}>Thao tác</TableCell>
                   </TableRow>
@@ -340,21 +378,25 @@ const QuestionDetailListPage: React.FC = () => {
                       </TableCell>
                       <TableCell>{row.questionOrder}</TableCell>
                       <TableCell>{row.question?.plainText || 'Không có tiêu đề'}</TableCell>
-                      <TableCell>
-                        {row.question?.questionType === 'multiple_choice' ? 'Trắc nghiệm' : 
-                         row.question?.questionType === 'essay' ? 'Tự luận' : row.question?.questionType}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={row.question?.difficulty || 'N/A'}
-                          color={
-                            row.question?.difficulty === 'Alpha' ? 'info' :
-                            row.question?.difficulty === 'Beta' ? 'warning' :
-                            row.question?.difficulty === 'Gold' ? 'success' : 'default'
-                          }
-                          size="small"
-                        />
-                      </TableCell>
+                      {!isMobile && (
+                        <>
+                          <TableCell>
+                            {row.question?.questionType === 'multiple_choice' ? 'Trắc nghiệm' : 
+                             row.question?.questionType === 'essay' ? 'Tự luận' : row.question?.questionType}
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={row.question?.difficulty || 'N/A'}
+                              color={
+                                row.question?.difficulty === 'Alpha' ? 'info' :
+                                row.question?.difficulty === 'Beta' ? 'warning' :
+                                row.question?.difficulty === 'Gold' ? 'success' : 'default'
+                              }
+                              size="small"
+                            />
+                          </TableCell>
+                        </>
+                      )}
                       <TableCell width={120} align="center">
                         <Typography
                           variant="subtitle2"
@@ -371,7 +413,7 @@ const QuestionDetailListPage: React.FC = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Stack direction="row" spacing={1}>
+                        <Stack direction="row" spacing={1} justifyContent="center">
                           <Tooltip title="Xem chi tiết">
                             <IconButton color="primary" size="small" onClick={() => handleEdit(row)}>
                               <VisibilityIcon />
@@ -395,8 +437,15 @@ const QuestionDetailListPage: React.FC = () => {
               </Table>
             </TableContainer>
 
-            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
+            <Box sx={{ 
+              mt: 2, 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              gap: 2
+            }}>
+              <FormControl variant="outlined" size="small" sx={{ width: { xs: '100%', sm: 'auto' } }}>
                 <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
                 <Select
                   labelId="page-size-select-label"
@@ -424,6 +473,8 @@ const QuestionDetailListPage: React.FC = () => {
                   showFirstButton 
                   showLastButton  
                   color="primary"
+                  size={isMobile ? "small" : "medium"}
+                  siblingCount={isMobile ? 0 : 1}
                 />
               </Box>
             )}

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import type { School, SchoolFilter } from '../../types/school';
 import { Visibility as VisibilityIcon, Edit as EditIcon } from '@mui/icons-material';
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton, Tooltip, useTheme, useMediaQuery } from '@mui/material';
 import SchoolStatusSwitch from '../../components/SchoolStatusSwitch';
 
 export const useSchoolList = (
@@ -14,6 +14,8 @@ export const useSchoolList = (
   onRefresh?: () => void
 ) => {
   const [showActiveOnly, setShowActiveOnly] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleActiveFilterChange = (checked: boolean) => {
     setShowActiveOnly(checked);
@@ -34,7 +36,7 @@ export const useSchoolList = (
     }
   };
 
-  const columns: GridColDef[] = [
+  const baseColumns: GridColDef[] = [
     {
       field: 'stt',
       headerName: 'STT',
@@ -46,7 +48,10 @@ export const useSchoolList = (
       headerName: 'Tên trường',
       flex: 1,
       minWidth: 200
-    },
+    }
+  ];
+
+  const desktopColumns: GridColDef[] = [
     {
       field: 'email',
       headerName: 'Email',
@@ -58,7 +63,10 @@ export const useSchoolList = (
       headerName: 'Điện thoại',
       flex: 1,
       minWidth: 150
-    },
+    }
+  ];
+
+  const commonColumns: GridColDef[] = [
     {
       field: 'isActive',
       headerName: 'Trạng thái',
@@ -110,11 +118,14 @@ export const useSchoolList = (
               <EditIcon />
             </IconButton>
           </Tooltip>
-          
         </div>
       )
     }
   ];
+
+  const columns = isMobile 
+    ? [...baseColumns, ...commonColumns]
+    : [...baseColumns, ...desktopColumns, ...commonColumns];
 
   return {
     showActiveOnly,
