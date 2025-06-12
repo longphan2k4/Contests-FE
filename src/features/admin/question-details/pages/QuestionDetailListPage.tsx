@@ -42,6 +42,7 @@ import { useQuestionDetails } from '../hooks/useQuestionDetails';
 import { QuestionDetailDialog } from '../components/QuestionDetailDialog';
 import { ReorderQuestionsDialog } from '../components/ReorderQuestionsDialog';
 import type { QuestionDetail } from '../types';
+import ConfirmDeleteDialog from '../../../../components/ConfirmDeleteDialog';
 // import { useNotification } from '../../../../contexts/NotificationContext';
 
 const QuestionDetailListPage: React.FC = () => {
@@ -50,6 +51,8 @@ const QuestionDetailListPage: React.FC = () => {
   const [reorderDialogOpen, setReorderDialogOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<QuestionDetail | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<QuestionDetail | null>(null);
 
   const {
     questionDetails,
@@ -65,7 +68,8 @@ const QuestionDetailListPage: React.FC = () => {
     handleCreateOrUpdate,
     fetchQuestionDetails,
     filterStats,
-    packageName
+    packageName,
+    handleDelete
   } = useQuestionDetails();
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
@@ -135,6 +139,19 @@ const QuestionDetailListPage: React.FC = () => {
 
   const handleCloseReorderDialog = () => {
     setReorderDialogOpen(false);
+  };
+
+  const handleOpenDelete = (record: QuestionDetail) => {
+    setDeleteTarget(record);
+    setOpenConfirmDelete(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteTarget) {
+      await handleDelete(deleteTarget);
+      setOpenConfirmDelete(false);
+      setDeleteTarget(null);
+    }
   };
 
   return (
@@ -365,6 +382,11 @@ const QuestionDetailListPage: React.FC = () => {
                               <EditIcon />
                             </IconButton>
                           </Tooltip>
+                          <Tooltip title="Xóa">
+                            <IconButton color="error" size="small" onClick={() => handleOpenDelete(row)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
                         </Stack>
                       </TableCell>
                     </TableRow>
@@ -424,6 +446,13 @@ const QuestionDetailListPage: React.FC = () => {
           refreshQuestions={fetchQuestionDetails}
         />
       )}
+
+      <ConfirmDeleteDialog
+        open={openConfirmDelete}
+        onClose={() => setOpenConfirmDelete(false)}
+        onConfirm={handleConfirmDelete}
+        content={`Bạn có chắc chắn muốn xóa câu hỏi số ${deleteTarget?.questionOrder}?`}
+      />
     </Box>
   );
 };

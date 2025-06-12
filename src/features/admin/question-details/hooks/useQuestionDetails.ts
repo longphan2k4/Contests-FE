@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { questionDetailService } from '../services';
 import type { QuestionDetail } from '../types';
-import { useNotification } from '../../../../contexts/NotificationContext';
+import { useToast } from '../../../../contexts/toastContext';
 import axios from 'axios';
 
 interface Filter {
@@ -52,13 +52,13 @@ export const useQuestionDetails = () => {
   });
   const [packageName, setPackageName] = useState<string | null>(null);
 
-  const { showSuccessNotification, showErrorNotification } = useNotification();
+  const { showToast } = useToast();
 
   const updateFilter = useCallback((newFilter: Partial<Filter>) => {
     setFilter(prevFilter => ({ ...prevFilter, ...newFilter }));
   }, []);
 
-  const fetchQuestionDetails = useCallback(async () => {
+  const fetchQuestionDetails = async () => {
     if (!packageId) {
       setError('Không tìm thấy ID gói câu hỏi');
       return;
@@ -84,7 +84,6 @@ export const useQuestionDetails = () => {
         const questionData = response.data.questions || [];
         setQuestionDetails(questionData);
         setPackageName(response.data.packageInfo?.name || null);
-        
         if (response.pagination) {
           setTotal(response.pagination.totalItems || response.pagination.total || 0);
           setTotalPages(response.pagination.totalPages || Math.ceil((response.pagination.total || 0) / filter.limit));
@@ -92,7 +91,6 @@ export const useQuestionDetails = () => {
           setTotal(questionData.length);
           setTotalPages(1);
         }
-        
         if (response.filters) {
           setFilterStats({
             totalQuestions: response.filters.totalQuestions,
@@ -110,13 +108,12 @@ export const useQuestionDetails = () => {
         setFilterStats(null);
       }
     } catch (error) {
-      console.error('Error fetching question details:', error);
       if (axios.isAxiosError(error) && error.response?.data?.message) {
         setError(error.response.data.message);
-        showErrorNotification(error.response.data.message);
+        showToast(error.response.data.message, 'error');
       } else {
         setError('Có lỗi xảy ra khi tải danh sách câu hỏi');
-        showErrorNotification('Có lỗi xảy ra khi tải danh sách câu hỏi');
+        showToast('Có lỗi xảy ra khi tải danh sách câu hỏi', 'error');
       }
       setQuestionDetails([]);
       setTotal(0);
@@ -125,25 +122,24 @@ export const useQuestionDetails = () => {
     } finally {
       setLoading(false);
     }
-  }, [packageId, filter, showErrorNotification]);
+  };
 
   useEffect(() => {
     if (packageId) {
       fetchQuestionDetails();
     }
-  }, [packageId, fetchQuestionDetails]);
+  }, [packageId, filter]);
 
   const handleDelete = async (record: QuestionDetail) => {
     try {
-      await questionDetailService.deleteQuestionDetail(record.questionId, record.questionPackageId);
-      showSuccessNotification('Xóa câu hỏi thành công');
+      await questionDetailService.hardDeleteQuestionDetail(record.questionId, record.questionPackageId);
+      showToast('Xóa câu hỏi thành công', 'success');
       fetchQuestionDetails();
     } catch (error) {
-      console.error('Error deleting question:', error);
       if (axios.isAxiosError(error) && error.response?.data?.message) {
-        showErrorNotification(error.response.data.message);
+        showToast(error.response.data.message, 'error');
       } else {
-        showErrorNotification('Có lỗi xảy ra khi xóa câu hỏi');
+        showToast('Có lỗi xảy ra khi xóa câu hỏi', 'error');
       }
     }
   };
@@ -151,7 +147,7 @@ export const useQuestionDetails = () => {
   const handleDeleteSelected = async () => {
     try {
       if (selectedIds.size === 0) {
-        showErrorNotification('Vui lòng chọn ít nhất một câu hỏi để xóa');
+        showToast('Vui lòng chọn ít nhất một câu hỏi để xóa', 'error');
         return;
       }
 
@@ -167,33 +163,32 @@ export const useQuestionDetails = () => {
       });
 
       await questionDetailService.batchDelete({ items });
-      showSuccessNotification(`Đã xóa ${selectedIds.size} câu hỏi thành công`);
+      showToast(`Đã xóa ${selectedIds.size} câu hỏi thành công`, 'success');
       setSelectedIds(new Set());
       fetchQuestionDetails();
     } catch (error) {
-      console.error('Error deleting selected questions:', error);
       if (axios.isAxiosError(error)) {
         const errorData = error.response?.data;
-        console.log('errorData',errorData);
         if (errorData?.data?.failedItems && Array.isArray(errorData.data.failedItems)) {
-          const first = errorData.data.failedItems[0];
-          const found = questionDetails.find(
-            q => q.questionId === first.questionId && q.questionPackageId === first.questionPackageId
-          );
-          showErrorNotification(`Câu hỏi số ${found?.questionOrder ?? '-'}: ${first.reason}`);
+          errorData.data.failedItems.forEach((item: { questionId: number; questionPackageId: number; reason: string }) => {
+            const found = questionDetails.find(
+              q => q.questionId === item.questionId && q.questionPackageId === item.questionPackageId
+            );
+            showToast(`Câu hỏi số ${found?.questionOrder ?? '-'}: ${item.reason}`, 'error');
+          });
         } else if (errorData?.message) {
-          showErrorNotification(errorData.message);
+          showToast(errorData.message, 'error');
         } else if (errorData?.errors) {
           // Xử lý trường hợp có nhiều lỗi
           const errorMessages = errorData.errors.map((err: { message: string }) => err.message).join('\n');
-          showErrorNotification(errorMessages);
+          showToast(errorMessages, 'error');
         } else {
-          showErrorNotification('Có lỗi xảy ra khi xóa các câu hỏi đã chọn');
+          showToast('Có lỗi xảy ra khi xóa các câu hỏi đã chọn', 'error');
         }
       } else if (error instanceof Error) {
-        showErrorNotification(error.message);
+        showToast(error.message, 'error');
       } else {
-        showErrorNotification('Có lỗi xảy ra khi xóa các câu hỏi đã chọn');
+        showToast('Có lỗi xảy ra khi xóa các câu hỏi đã chọn', 'error');
       }
     }
   };
@@ -209,7 +204,7 @@ export const useQuestionDetails = () => {
             isActive: values.isActive
           }
         );
-        showSuccessNotification('Cập nhật câu hỏi thành công');
+        showToast(`Cập nhật câu hỏi thành công`, 'success');
       } else if (values.questionId) {
         await questionDetailService.createQuestionDetail({
           questionId: values.questionId,
@@ -217,18 +212,17 @@ export const useQuestionDetails = () => {
           questionOrder: values.questionOrder,
           isActive: values.isActive
         });
-        showSuccessNotification('Thêm câu hỏi thành công');
+        showToast('Thêm câu hỏi thành công', 'success');
       } else {
         throw new Error('Thiếu thông tin câu hỏi');
       }
       fetchQuestionDetails();
       return true;
     } catch (error) {
-      console.error('Error saving question:', error);
       if (axios.isAxiosError(error) && error.response?.data?.message) {
-        showErrorNotification(error.response.data.message);
+        showToast(error.response.data.message, 'error');
       } else {
-        showErrorNotification('Có lỗi xảy ra khi lưu câu hỏi');
+        showToast('Có lỗi xảy ra khi lưu câu hỏi', 'error');
       }
       return false;
     }
