@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, TextField, InputAdornment, Typography } from "@mui/material";
-import { Person } from "@mui/icons-material";
+import { Person, Email, Badge, CheckCircle, Cancel } from "@mui/icons-material"; // Thêm các biểu tượng mới
 import { CAO_THANG_COLORS } from "../../../common/theme";
 import type { User } from "../types/auth.types";
 
@@ -35,7 +35,7 @@ const AccountInfo: React.FC<AccountInfoProps> = ({ user }) => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <Person sx={{ color: CAO_THANG_COLORS.secondary }} />
+                <Email sx={{ color: CAO_THANG_COLORS.secondary }} /> {/* Thay bằng Email */}
               </InputAdornment>
             ),
             readOnly: true,
@@ -49,7 +49,7 @@ const AccountInfo: React.FC<AccountInfoProps> = ({ user }) => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <Person sx={{ color: CAO_THANG_COLORS.secondary }} />
+                <Badge sx={{ color: CAO_THANG_COLORS.secondary }} /> {/* Thay bằng Badge */}
               </InputAdornment>
             ),
             readOnly: true,
@@ -63,7 +63,11 @@ const AccountInfo: React.FC<AccountInfoProps> = ({ user }) => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <Person sx={{ color: CAO_THANG_COLORS.secondary }} />
+                {user.isActive ? (
+                  <CheckCircle sx={{ color: CAO_THANG_COLORS.secondary }} /> // Hoạt động
+                ) : (
+                  <Cancel sx={{ color: CAO_THANG_COLORS.secondary }} /> // Không hoạt động
+                )}
               </InputAdornment>
             ),
             readOnly: true,
