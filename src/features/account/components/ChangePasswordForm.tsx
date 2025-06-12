@@ -8,8 +8,12 @@ import {
   Alert,
   FormHelperText,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
-import { Visibility, VisibilityOff, Lock } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Lock, VpnKey } from "@mui/icons-material";
 import { CAO_THANG_COLORS } from "../../../common/theme";
 import type { ChangePasswordData } from "../types/ChangePasswordForm.types";
 
@@ -24,6 +28,7 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
   error,
   changePasswordStatus,
 }) => {
+  const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<ChangePasswordData>({
     currentPassword: "",
     newPassword: "",
@@ -33,6 +38,30 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+  const handleClickOpen = () => {
+    setOpen(true);
+    // Reset form khi mở popup
+    setFormData({
+      currentPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
+    });
+    setPasswordError("");
+    setConfirmPasswordError("");
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    // Reset form khi đóng popup
+    setFormData({
+      currentPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
+    });
+    setPasswordError("");
+    setConfirmPasswordError("");
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -77,142 +106,203 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
     }
     if (validatePassword()) {
       onSubmit(formData);
+      // Đóng popup sau khi submit thành công
+      if (changePasswordStatus !== "pending") {
+        handleClose();
+      }
     }
   };
 
   return (
     <>
-      <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+      {/* Nút đổi mật khẩu */}
+      <Button
+        variant="outlined"
+        startIcon={<VpnKey />}
+        onClick={handleClickOpen}
+        sx={{
+          borderRadius: "10px",
+          px: 3,
+          py: 1.5,
+          fontWeight: 600,
+          borderColor: CAO_THANG_COLORS.secondary,
+          color: CAO_THANG_COLORS.secondary,
+          "&:hover": {
+            borderColor: CAO_THANG_COLORS.primary,
+            backgroundColor: `${CAO_THANG_COLORS.primary}10`,
+          },
+        }}
+      >
         Đổi mật khẩu
-      </Typography>
-      {error && (
-        <Alert
-          severity="error"
-          sx={{
-            mb: 3,
-            borderRadius: "8px",
-            border: "1px solid",
-            borderColor: "error.light",
-          }}
-        >
-          {error}
-        </Alert>
-      )}
-      <form onSubmit={handleSubmit}>
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            required
-            fullWidth
-            name="currentPassword"
-            label="Mật khẩu hiện tại"
-            type={showPassword ? "text" : "password"}
-            value={formData.currentPassword}
-            onChange={handleChange}
-            sx={{ mb: 3 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock sx={{ color: CAO_THANG_COLORS.secondary }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={handleClickShowPassword}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-          <TextField
-            required
-            fullWidth
-            name="newPassword"
-            label="Mật khẩu mới"
-            type={showPassword ? "text" : "password"}
-            value={formData.newPassword}
-            onChange={handleChange}
-            error={!!passwordError}
-            sx={{ mb: passwordError ? 0 : 3 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock sx={{ color: CAO_THANG_COLORS.secondary }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={handleClickShowPassword}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-          {passwordError && (
-            <FormHelperText error sx={{ mb: 2, ml: 2 }}>
-              {passwordError}
-            </FormHelperText>
+      </Button>
+
+      {/* Dialog/Popup chứa form đổi mật khẩu */}
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "16px",
+            p: 2,
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}>
+            <VpnKey sx={{ color: CAO_THANG_COLORS.secondary }} />
+            Đổi mật khẩu
+          </Typography>
+        </DialogTitle>
+
+        <DialogContent sx={{ pb: 1 }}>
+          {error && (
+            <Alert
+              severity="error"
+              sx={{
+                mb: 3,
+                borderRadius: "8px",
+                border: "1px solid",
+                borderColor: "error.light",
+              }}
+            >
+              {error}
+            </Alert>
           )}
-          <TextField
-            required
-            fullWidth
-            name="confirmNewPassword"
-            label="Xác nhận mật khẩu mới"
-            type={showConfirmPassword ? "text" : "password"}
-            value={formData.confirmNewPassword}
-            onChange={handleChange}
-            error={!!confirmPasswordError}
-            sx={{ mb: confirmPasswordError ? 0 : 3 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock sx={{ color: CAO_THANG_COLORS.secondary }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle confirm password visibility"
-                    onClick={handleClickShowConfirmPassword}
-                    edge="end"
-                  >
-                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
+
+          <form onSubmit={handleSubmit} id="change-password-form">
+            <Box sx={{ mb: 2 }}>
+              <TextField
+                required
+                fullWidth
+                name="currentPassword"
+                label="Mật khẩu hiện tại"
+                type={showPassword ? "text" : "password"}
+                value={formData.currentPassword}
+                onChange={handleChange}
+                sx={{ mb: 3 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock sx={{ color: CAO_THANG_COLORS.secondary }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowPassword}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField
+                required
+                fullWidth
+                name="newPassword"
+                label="Mật khẩu mới"
+                type={showPassword ? "text" : "password"}
+                value={formData.newPassword}
+                onChange={handleChange}
+                error={!!passwordError}
+                sx={{ mb: passwordError ? 0 : 3 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock sx={{ color: CAO_THANG_COLORS.secondary }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowPassword}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              {passwordError && (
+                <FormHelperText error sx={{ mb: 2, ml: 2 }}>
+                  {passwordError}
+                </FormHelperText>
+              )}
+
+              <TextField
+                required
+                fullWidth
+                name="confirmNewPassword"
+                label="Xác nhận mật khẩu mới"
+                type={showConfirmPassword ? "text" : "password"}
+                value={formData.confirmNewPassword}
+                onChange={handleChange}
+                error={!!confirmPasswordError}
+                sx={{ mb: confirmPasswordError ? 0 : 2 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock sx={{ color: CAO_THANG_COLORS.secondary }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle confirm password visibility"
+                        onClick={handleClickShowConfirmPassword}
+                        edge="end"
+                      >
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              {confirmPasswordError && (
+                <FormHelperText error sx={{ mb: 2, ml: 2 }}>
+                  {confirmPasswordError}
+                </FormHelperText>
+              )}
+            </Box>
+          </form>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2, gap: 2 }}>
+          <Button
+            onClick={handleClose}
+            variant="outlined"
+            sx={{
+              borderRadius: "10px",
+              px: 3,
+              fontWeight: 600,
             }}
-          />
-          {confirmPasswordError && (
-            <FormHelperText error sx={{ mb: 2, ml: 2 }}>
-              {confirmPasswordError}
-            </FormHelperText>
-          )}
-        </Box>
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
-          size="large"
-          disabled={changePasswordStatus === "pending"}
-          sx={{
-            py: 1.5,
-            borderRadius: "10px",
-            fontSize: "16px",
-            fontWeight: 600,
-          }}
-        >
-          {changePasswordStatus === "pending" ? "Đang xử lý..." : "Đổi mật khẩu"}
-        </Button>
-      </form>
+          >
+            Hủy
+          </Button>
+          <Button
+            type="submit"
+            form="change-password-form"
+            variant="contained"
+            disabled={changePasswordStatus === "pending"}
+            sx={{
+              borderRadius: "10px",
+              px: 3,
+              fontWeight: 600,
+              minWidth: "140px",
+            }}
+          >
+            {changePasswordStatus === "pending" ? "Đang xử lý..." : "Đổi mật khẩu"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
