@@ -39,7 +39,7 @@ const ProfilePage: React.FC = () => {
       {
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword,
-        confirmNewPassword: formData.currentPassword,
+        confirmNewPassword: formData.confirmNewPassword,
       },
       {
         onSuccess: () => {

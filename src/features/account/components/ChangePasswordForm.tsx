@@ -77,26 +77,46 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
   const handleClickShowConfirmPassword = () => setShowConfirmPassword((show) => !show);
 
   const validatePassword = (): boolean => {
-    let isValid = true;
-    if (formData.newPassword.length < 8) {
-      setPasswordError("Mật khẩu phải có ít nhất 8 ký tự");
-      isValid = false;
-    } else if (
-      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(
-        formData.newPassword
-      )
-    ) {
-      setPasswordError(
-        "Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt"
-      );
-      isValid = false;
-    }
-    if (formData.newPassword !== formData.confirmNewPassword) {
-      setConfirmPasswordError("Xác nhận mật khẩu không khớp");
-      isValid = false;
-    }
-    return isValid;
-  };
+  let isValid = true;
+
+  // Validate newPassword
+  if (formData.newPassword.length < 8) {
+    setPasswordError("Mật khẩu phải có ít nhất 8 ký tự");
+    isValid = false;
+  } else if (
+    !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(
+      formData.newPassword
+    )
+  ) {
+    setPasswordError(
+      "Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt"
+    );
+    isValid = false;
+  }
+
+  // Validate confirmNewPassword
+  if (formData.confirmNewPassword.length < 8) {
+    setConfirmPasswordError("Xác nhận mật khẩu phải có ít nhất 8 ký tự");
+    isValid = false;
+  } else if (
+    !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(
+      formData.confirmNewPassword
+    )
+  ) {
+    setConfirmPasswordError(
+      "Xác nhận mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt"
+    );
+    isValid = false;
+  }
+
+  // Check if passwords match
+  if (formData.newPassword !== formData.confirmNewPassword) {
+    setConfirmPasswordError("Xác nhận mật khẩu không khớp");
+    isValid = false;
+  }
+
+  return isValid;
+};
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
