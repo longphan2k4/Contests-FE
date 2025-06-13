@@ -96,11 +96,14 @@ export const toggleContestActive = async (id: number): Promise<ContestResponse> 
 export const deleteContest = async (id: number): Promise<ContestMessageResponse> => {
   try {
     const response = await axiosInstance.delete<ContestMessageResponse>(`/contest/${id}`);
+    console.log('response delete', response);
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
+      console.error('Lỗi khi xóa contest:', error.response?.data?.message);
       throw new Error(error.response?.data?.message || 'Lỗi khi xóa contest');
     }
+    console.error('Lỗi khi xóa contest:', error);
     throw error;
   }
 };

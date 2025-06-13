@@ -11,12 +11,12 @@ import type { Contest } from '../types';
 
 interface ContestCardProps {
     contestId: number;
-    onShare?: () => void;
     onView?: (contestId: number) => void;
     onEdit?: (contestId: number) => void;
+    onDelete?: (contestId: number) => void;
 }
 
-const ContestCard: React.FC<ContestCardProps> = ({ contestId, onView, onEdit }) => {
+const ContestCard: React.FC<ContestCardProps> = ({ contestId, onView, onEdit, onDelete }) => {
     const [contest, setContest] = useState<Contest | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -27,8 +27,6 @@ const ContestCard: React.FC<ContestCardProps> = ({ contestId, onView, onEdit }) 
                 setLoading(true);
                 setError(null);
                 const response = await getContestById(contestId);
-                console.log('response5', response);
-                console.log('response6', response.data);
                 if (response.success && response.data) {
                     setContest(response.data);
                 } else {
@@ -73,7 +71,7 @@ const ContestCard: React.FC<ContestCardProps> = ({ contestId, onView, onEdit }) 
             }}>
                 <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}>
                     <Tooltip title="Xoá">
-                        <IconButton onClick={() => onView?.(contest.id)} size="small" color="primary">
+                        <IconButton onClick={() => onDelete?.(contest.id)} size="small" color="primary">
                             <GridDeleteIcon style={{ color: 'red' }} />
                         </IconButton>
                     </Tooltip>

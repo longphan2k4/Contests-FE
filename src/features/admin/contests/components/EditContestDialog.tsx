@@ -56,10 +56,8 @@ const EditContestDialog: React.FC<EditContestDialogProps> = ({
       };
       
       const result = await updateContest(contest.id, contestData);
-      console.log(result);
       if (result.success ) {
         const updatedContest = result.data;
-        showToast('Cập nhật cuộc thi thành công', 'success');
         onUpdated(updatedContest);
         onClose();
       } else {

@@ -108,6 +108,7 @@ export const useContests = (): UseContestsReturn => {
                 if (currentContest?.id === id) {
                     setCurrentContest(updatedContest);
                 }
+
             } else {
                 throw new Error('Dữ liệu trả về không đúng định dạng');
             }
@@ -145,13 +146,17 @@ export const useContests = (): UseContestsReturn => {
         try {
             setLoading(true);
             setError(null);
-            await deleteContest(id);
+            const response = await deleteContest(id);
+            console.log('remove', response);
             setContests(prev => prev.filter(contest => contest.id !== id));
             if (currentContest?.id === id) {
                 setCurrentContest(null);
             }
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi xóa cuộc thi');
+            return response;    
+        } catch (error) {
+            console.log('hook lỗi nè', error);
+            setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi xóa cuộc thi');
+            throw error;
         } finally {
             setLoading(false);
         }

@@ -19,11 +19,13 @@ export interface ContestResponse {
   data: {
     Contest: Contest[];
     pagination?: {
-      currentPage: number;
+      page: number;
+      limit: number;
+      total: number;
       totalPages: number;
-      totalItems: number;
-      itemsPerPage: number;
-    };
+      hasNext: boolean;
+      hasPrev: boolean;
+        };
   };
   message?: string;
 }

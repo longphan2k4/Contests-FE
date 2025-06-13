@@ -1,7 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import ContestCard from '../components/contestsCard';
 import { getContests } from '../services/contestsService';
-import { Box, Typography, CircularProgress, Alert, Stack, TextField, InputAdornment, Button } from '@mui/material';
+import { 
+  Box, 
+  Typography, 
+  CircularProgress, 
+  Alert, 
+  Stack, 
+  TextField, 
+  InputAdornment, 
+  Button,
+  Pagination,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
+} from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material';
 import type { Contest } from '../types';
 import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +24,8 @@ import AddIcon from '@mui/icons-material/Add';
 import CreateContestDialog from '../components/CreateContestDialog';
 import { useToast } from '../../../../contexts/toastContext';
 import EditContestDialog from '../components/EditContestDialog';
+import Confirm from '../../../../components/Confirm';
+import { useContests } from '../hooks/useContests';
 
 const ContestPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,14 +36,26 @@ const ContestPage: React.FC = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedContest, setSelectedContest] = useState<Contest | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [total, setTotal] = useState(0);
   const { showToast } = useToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
+  const { removeContest } = useContests();
   const fetchContests = async () => {
     try {
       setLoading(true);
-      const response = await getContests();
+      const response = await getContests({
+        page,
+        limit,
+        search: searchTerm
+      });
       if (response.success && response.data?.Contest) {
         setContests(response.data.Contest);
+        setTotal(response.data.pagination?.total || 0);
       } else {
         throw new Error('Dữ liệu trả về không đúng định dạng');
       }
@@ -40,10 +69,20 @@ const ContestPage: React.FC = () => {
 
   useEffect(() => {
     fetchContests();
-  }, []);
+  }, [page, limit, searchTerm]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+    setPage(1); // Reset về trang 1 khi tìm kiếm
+  };
+
+  const handlePageChange = (_: React.ChangeEvent<unknown>, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleLimitChange = (event: SelectChangeEvent) => {
+    setLimit(Number(event.target.value));
+    setPage(1); // Reset về trang 1 khi thay đổi số lượng hiển thị
   };
   
   const handleAddContest = () => {
@@ -69,6 +108,29 @@ const ContestPage: React.FC = () => {
       setSelectedContest(contest);
       setEditDialogOpen(true);
     }
+
+  };
+  const handleDeleteContest = (contestId: number) => {
+    setDeletingId(contestId);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingId) return;
+    setDeleteLoading(true);
+    try {
+     const response = await removeContest(deletingId); // Nếu lỗi sẽ nhảy vào catch
+      console.log('page ', response);
+      showToast('Xoá cuộc thi thành công', 'success');
+       fetchContests();
+    } catch (error) {
+      console.log('page lỗi ', error);
+      showToast(error instanceof Error ? error.message : 'Xoá thất bại', 'error');
+    } finally {
+      setDeleteLoading(false);
+      setConfirmOpen(false);
+      setDeletingId(null);
+    }
   };
 
   const handleCloseEditDialog = () => {
@@ -82,8 +144,11 @@ const ContestPage: React.FC = () => {
         contest.id === updatedContest.id ? updatedContest : contest
       )
     );
+    fetchContests();
     showToast('Cập nhật cuộc thi thành công', 'success');
   };
+
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   if (loading) {
     return (
@@ -133,18 +198,60 @@ const ContestPage: React.FC = () => {
           }}
         />
       </Stack>
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
-        {contests.map((contest) => (
-          <Box key={contest.id} >
-            <ContestCard 
-              contestId={contest.id} 
-              onShare={() => console.log('Share contest:', contest.id)}
-              onView={handleViewContest}
-              onEdit={handleEditContest}
-            />
+
+      {contests.length === 0 ? (
+        <Typography sx={{ mt: 2, textAlign: 'center' }}>
+          Không có dữ liệu
+        </Typography>
+      ) : (
+        <>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
+            {contests.map((contest) => (
+              <Box key={contest.id}>
+                <ContestCard 
+                  contestId={contest.id} 
+                  onView={handleViewContest}
+                  onEdit={handleEditContest}
+                  onDelete={handleDeleteContest}
+                />
+              </Box>
+            ))}
           </Box>
-        ))}
-      </Box>
+
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
+              <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
+              <Select
+                labelId="page-size-select-label"
+                value={String(limit)}
+                onChange={handleLimitChange}
+                label="Hiển thị"
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={25}>25</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+              </Select>
+            </FormControl>
+            <Typography>
+              Trang {page} / {totalPages}
+            </Typography>
+          </Box>
+
+          {totalPages > 0 && (
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+                showFirstButton 
+                showLastButton  
+                color="primary"
+              />
+            </Box>
+          )}
+        </>
+      )}
       
       {/* Dialog thêm cuộc thi mới */}
       <CreateContestDialog
@@ -162,6 +269,15 @@ const ContestPage: React.FC = () => {
           onUpdated={handleContestUpdated}
         />
       )}
+      {/* Dialog xác nhận xoá */}
+      <Confirm
+        open={confirmOpen}
+        title="Xác nhận xoá cuộc thi"
+        description="Bạn có chắc chắn muốn xoá cuộc thi này không?"
+        loading={deleteLoading}
+        onClose={() => { setConfirmOpen(false); setDeletingId(null); }}
+        onConfirm={handleConfirmDelete}
+      />
     </Box>
   );
 };
