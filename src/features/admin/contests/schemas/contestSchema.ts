@@ -1,12 +1,15 @@
 import { z } from "zod";
 
-// Định nghĩa enum ContestStatus
-export enum ContestStatus {
-  UPCOMING = 'upcoming',
-  ONGOING = 'ongoing',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
-}
+// Định nghĩa ContestStatus dưới dạng object thay vì enum
+export const ContestStatus = {
+  UPCOMING: 'upcoming',
+  ONGOING: 'ongoing',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled'
+} as const;
+
+// Tạo type từ object
+export type ContestStatus = typeof ContestStatus[keyof typeof ContestStatus];
 
 export const ContestIdSchema = z.object({
   id: z
@@ -27,7 +30,7 @@ export const CreateContestSchema = z.object({
     (val) => !isNaN(new Date(val).getTime()),
     "Ngày kết thúc không hợp lệ"
   ),
-  status: z.nativeEnum(ContestStatus).optional(),
+  status: z.string().optional(),
   slogan: z.string().optional(),
   isActive: z.boolean().optional(),
 }).refine(
@@ -58,7 +61,7 @@ export const UpdateContestSchema = z.object({
       "Ngày kết thúc không hợp lệ"
     )
     .optional(),
-  status: z.nativeEnum(ContestStatus).optional(),
+  status: z.string().optional(),
   slogan: z.string().optional(),
   isActive: z.boolean().optional(),
 }).refine(
@@ -90,7 +93,7 @@ export const ContestQuerySchema = z.object({
     .optional()
     .default("10"),
   search: z.string().max(100, "Từ khóa tìm kiếm tối đa 100 ký tự").optional(),
-  status: z.nativeEnum(ContestStatus).optional(),
+  status: z.string().optional(),
 });
 
 export const DeleteContestsSchema = z.object({

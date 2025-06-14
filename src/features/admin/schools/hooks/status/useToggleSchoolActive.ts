@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { toggleSchoolActive } from '../services/schoolService';
-import type { School, ApiErrorResponse } from '../types/school';
 import { AxiosError } from 'axios';
+import { toggleSchoolActive } from '../../services';
+import type { ApiErrorResponse, School } from '../../types';
 
 export const useToggleSchoolActive = () => {
   const [loading, setLoading] = useState<boolean>(false);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSchools } from '../../services/schoolService';
-import type { School, SchoolFilter } from '../../types/school';
+import type { School, SchoolFilter, SchoolsResponse } from '../../types/school';
 
 export const useSchools = (initialFilter?: SchoolFilter) => {
   const [schools, setSchools] = useState<School[]>([]);
@@ -17,11 +17,10 @@ export const useSchools = (initialFilter?: SchoolFilter) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getSchools(filter);
+      const response: SchoolsResponse = await getSchools(filter);
       setSchools(response.school);
       setTotal(response.pagination.total);
       setTotalPages(response.pagination.totalPages);
-
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Lỗi khi tải danh sách trường học');
       setSchools([]);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import ContestCard from '../components/contestsCard';
 import { getContests } from '../services/contestsService';
 import { 
@@ -48,7 +48,7 @@ const ContestPage: React.FC = () => {
   const [deleteManyLoading, setDeleteManyLoading] = useState(false);
 
   const { removeContest, removeManyContests } = useContests();
-  const fetchContests = async () => {
+  const fetchContests = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getContests({
@@ -68,11 +68,11 @@ const ContestPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, limit, searchTerm]);
 
   useEffect(() => {
     fetchContests();
-  }, [page, limit, searchTerm]);
+  }, [fetchContests]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -146,7 +146,6 @@ const ContestPage: React.FC = () => {
       )
     );
     fetchContests();
-    showToast('Cập nhật cuộc thi thành công', 'success');
   };
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
@@ -168,6 +167,12 @@ const ContestPage: React.FC = () => {
     }
   };
 
+  interface DeleteInfo {
+    id: number;
+    status: string;
+    msg: string;
+  }
+
   const handleDeleteMany = async () => {
     if (selectedContests.length === 0) return;
     setDeleteManyLoading(true);
@@ -180,7 +185,7 @@ const ContestPage: React.FC = () => {
             }
             
             // Hiển thị thông báo cho các cuộc thi không thể xóa
-            response.failedDeletes.forEach(deleteInfo => {
+            response.failedDeletes.forEach((deleteInfo: DeleteInfo) => {
                 showToast(deleteInfo.msg, 'error');
             });
 
@@ -404,7 +409,7 @@ const ContestPage: React.FC = () => {
       {/* Dialog chỉnh sửa cuộc thi */}
       {selectedContest && (
         <EditContestDialog
-          contest={selectedContest}
+          contestUpdate={selectedContest}
           open={editDialogOpen}
           onClose={handleCloseEditDialog}
           onUpdated={handleContestUpdated}

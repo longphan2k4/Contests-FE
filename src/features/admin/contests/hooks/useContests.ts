@@ -8,7 +8,20 @@ import {
     deleteContest,
     deleteManyContests
 } from '../services/contestsService';
-import type { Contest } from '../types';
+import type { 
+    Contest, 
+    CreateContestData
+} from '../types';
+
+// Interface cho response của API deleteManyContests
+interface DeleteManyResponse {
+    success: boolean;
+    messages: Array<{
+        id: number;
+        status: 'success' | 'error';
+        msg: string;
+    }>;
+}
 
 interface UseContestsReturn {
     // State
@@ -17,22 +30,24 @@ interface UseContestsReturn {
     loading: boolean;
     error: string | null;
     pagination: {
-        page: number;
-        limit: number;
-        total: number;
+        currentPage: number;
         totalPages: number;
-        hasNext: boolean;
-        hasPrev: boolean;
+        totalItems: number;
+        itemsPerPage: number;
     } | null;
 
     // Actions
     fetchContests: (params?: { page?: number; limit?: number; search?: string }) => Promise<void>;
     fetchContestById: (id: number) => Promise<void>;
-    createNewContest: (data: { name: string; description: string; isActive: boolean }) => Promise<void>;
-    updateExistingContest: (id: number, data: { name?: string; description?: string; isActive?: boolean }) => Promise<void>;
+    createNewContest: (data: CreateContestData) => Promise<void>;
+    updateExistingContest: (id: number, data: Partial<Contest>) => Promise<void>;
     toggleContestStatus: (id: number) => Promise<void>;
-    removeContest: (id: number) => Promise<void>;
-    removeManyContests: (ids: number[]) => Promise<void>;
+    removeContest: (id: number) => Promise<{success: boolean, message: string}>;
+    removeManyContests: (ids: number[]) => Promise<{
+        success: boolean;
+        successfulDeletes: Array<{id: number; status: string; msg: string}>;
+        failedDeletes: Array<{id: number; status: string; msg: string}>;
+    }>;
 }
 
 export const useContests = (): UseContestsReturn => {
@@ -50,7 +65,14 @@ export const useContests = (): UseContestsReturn => {
             console.log('response3', response);
             if (response.success && Array.isArray(response.data.Contest)) {
                 setContests(response.data.Contest);
-                setPagination(response.data.pagination);
+                if (response.data.pagination) {
+                    setPagination({
+                        currentPage: response.data.pagination.currentPage,
+                        totalPages: response.data.pagination.totalPages,
+                        totalItems: response.data.pagination.total,
+                        itemsPerPage: response.data.pagination.itemsPerPage
+                    });
+                }
             } else {
                 throw new Error('Dữ liệu trả về không đúng định dạng');
             }
@@ -66,8 +88,10 @@ export const useContests = (): UseContestsReturn => {
             setLoading(true);
             setError(null);
             const response = await getContestById(id);
-            if (response) {
-                setCurrentContest(response);
+            if (response.success && response.data) {
+                // Chuyển đổi kiểu dữ liệu từ response.data sang Contest
+                const contestData = response.data as unknown as Contest;
+                setCurrentContest(contestData);
             } else {
                 throw new Error('Dữ liệu trả về không đúng định dạng');
             }
@@ -78,13 +102,15 @@ export const useContests = (): UseContestsReturn => {
         }
     }, []);
 
-    const createNewContest = useCallback(async (data: { name: string; description: string; isActive: boolean }) => {
+    const createNewContest = useCallback(async (data: CreateContestData) => {
         try {
             setLoading(true);
             setError(null);
             const response = await createContest(data);
             if (response.success && response.data.Contest) {
-                setContests(prev => [...prev, response.data.Contest]);
+                // Thêm mảng Contest từ response vào danh sách hiện tại
+                const newContests = [...response.data.Contest];
+                setContests(prev => [...prev, ...newContests]);
             } else {
                 throw new Error('Dữ liệu trả về không đúng định dạng');
             }
@@ -95,12 +121,12 @@ export const useContests = (): UseContestsReturn => {
         }
     }, []);
 
-    const updateExistingContest = useCallback(async (id: number, data: { name?: string; description?: string; isActive?: boolean }) => {
+    const updateExistingContest = useCallback(async (id: number, data: Partial<Contest>) => {
         try {
             setLoading(true);
             setError(null);
             const response = await updateContest(id, data);
-            if (response.success && response.data.Contest ) {
+            if (response.success) {
                 const updatedContest = response.data;
                 setContests(prev => prev.map(contest => 
                     contest.id === id ? updatedContest : contest
@@ -108,7 +134,6 @@ export const useContests = (): UseContestsReturn => {
                 if (currentContest?.id === id) {
                     setCurrentContest(updatedContest);
                 }
-
             } else {
                 throw new Error('Dữ liệu trả về không đúng định dạng');
             }
@@ -142,7 +167,7 @@ export const useContests = (): UseContestsReturn => {
         }
     }, [currentContest]);
 
-    const removeContest = useCallback(async (id: number) => {
+    const removeContest = useCallback(async (id: number): Promise<{success: boolean, message: string}> => {
         try {
             setLoading(true);
             setError(null);
@@ -164,12 +189,14 @@ export const useContests = (): UseContestsReturn => {
         try {
             setLoading(true);
             setError(null);
-            const response = await deleteManyContests(ids);
+            // Cần xác định rõ kiểu dữ liệu trả về của deleteManyContests
+            const response = await deleteManyContests(ids) as unknown as DeleteManyResponse;
             console.log('removeManyContests', response);
             
             if (response.success) {
                 // Lọc ra các cuộc thi có thể xóa thành công
                 const successfulDeletes = response.messages.filter(msg => msg.status === 'success');
+                
                 // Lọc ra các cuộc thi không thể xóa
                 const failedDeletes = response.messages.filter(msg => msg.status === 'error');
                 

@@ -9,7 +9,7 @@ import { QuestionDetailListPage } from "./question-details/pages";
 import StudentsPage from "./students/page/StudentsPage";
 import QuestionsPackagesPage from "./questionpackages/page/QuestionsPackagesPage";
 import ClassesPage from "./class/page/ClassPage";
-import { ContestDetailPage, ContestPage } from "./contests/pages";
+import { ContestPage } from "./contests/pages";
 
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
@@ -37,7 +37,6 @@ const AdminRoutes = () => {
       <Route path="questions" element={<QuestionsPage />} />
       <Route path="question-packages" element={<QuestionsPackagesPage />} />
       <Route path="contests" element={<ContestPage />} />
-      <Route path="contests/:contestId" element={<ContestDetailPage />} />
       <Route path="contestants" element={<ContestantsPage />} />
       <Route path="results" element={<ResultsPage />} />
       <Route path="awards" element={<AwardsPage />} />
