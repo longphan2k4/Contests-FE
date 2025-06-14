@@ -18,11 +18,11 @@ import { useLogout } from "../../features/auth/hooks/useLogout";
 import { useAuth } from "../../features/auth/hooks/authContext";
 import { useNotification } from "../../contexts/NotificationContext";
 
-interface AdminHeaderProps {
+interface ContestHeaderProps {
   onToggle: () => void;
 }
 
-const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggle }) => {
+const ContestHeader: React.FC<ContestHeaderProps> = ({ onToggle }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [schoolInfo] = useState({
@@ -106,20 +106,16 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggle }) => {
             aria-controls="user-menu"
             aria-haspopup="true"
             onClick={handleMenuOpen}
-            sx={{ p: isMobile ? 0.5 : 1, borderRadius: 0 }} // Remove rounding from IconButton
+            sx={{ p: isMobile ? 0.5 : 1 }}
           >
             <Avatar
-              sx={{
-                width: isMobile ? 28 : 32,
-                height: isMobile ? 28 : 32,
-                borderRadius: 0,
-              }} // Remove rounding from Avatar
+              sx={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32 }}
             >
               <AccountCircle />
             </Avatar>
             {!isMobile && (
-              <Typography variant="body2" sx={{ borderRadius: "20px" }}>
-                Admin
+              <Typography variant="body2" sx={{ ml: 1 }}>
+                Contest
               </Typography>
             )}
           </IconButton>
@@ -134,7 +130,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggle }) => {
           >
             <MenuItem
               component={Link}
-              to="/admin/profile"
+              to="/Contest/profile"
               onClick={handleMenuClose}
             >
               <AccountCircle fontSize="small" sx={{ mr: 1 }} />
@@ -152,4 +148,4 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggle }) => {
   );
 };
 
-export default AdminHeader;
+export default ContestHeader;
