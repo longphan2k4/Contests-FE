@@ -3,7 +3,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CardActionArea from '@mui/material/CardActionArea';
-import { Box, CircularProgress, Alert, Chip, IconButton, Tooltip, Button } from '@mui/material';
+import { Box, CircularProgress, Alert, Chip, IconButton, Tooltip, Button, Checkbox } from '@mui/material';
 import { getContestById } from '../services/contestsService';
 import { format } from 'date-fns';
 import { GridDeleteIcon } from '@mui/x-data-grid';
@@ -14,9 +14,18 @@ interface ContestCardProps {
     onView?: (contestId: number) => void;
     onEdit?: (contestId: number) => void;
     onDelete?: (contestId: number) => void;
+    selected?: boolean;
+    onSelect?: () => void;
 }
 
-const ContestCard: React.FC<ContestCardProps> = ({ contestId, onView, onEdit, onDelete }) => {
+const ContestCard: React.FC<ContestCardProps> = ({ 
+    contestId, 
+    onView, 
+    onEdit, 
+    onDelete,
+    selected = false,
+    onSelect 
+}) => {
     const [contest, setContest] = useState<Contest | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -59,7 +68,7 @@ const ContestCard: React.FC<ContestCardProps> = ({ contestId, onView, onEdit, on
     }
 
     return (
-        <Box >
+        <Box>
             <Card sx={{ 
                 width: '100%',
                 position: 'relative',
@@ -68,8 +77,40 @@ const ContestCard: React.FC<ContestCardProps> = ({ contestId, onView, onEdit, on
                     transform: 'translateY(-4px)',
                     boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
                 },
+                border: selected ? '2px solid #1976d2' : 'none'
             }}>
-                <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}>
+                {/* Checkbox chọn nhiều - trái trên mobile, phải trên desktop */}
+                {onSelect && (
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: 8,
+                            left: 8,
+                            right: 'auto',
+                            zIndex: 2
+                        }}
+                    >
+                        <Checkbox
+                            checked={selected}
+                            onChange={onSelect}
+                            onClick={e => e.stopPropagation()}
+                            sx={{
+                                color: 'primary.main',
+                                '&.Mui-checked': { color: 'primary.main' },
+                                p: 0.5
+                            }}
+                        />
+                    </Box>
+                )}
+                {/* Icon xoá luôn ở góc phải */}
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        zIndex: 2
+                    }}
+                >
                     <Tooltip title="Xoá">
                         <IconButton onClick={() => onDelete?.(contest.id)} size="small" color="primary">
                             <GridDeleteIcon style={{ color: 'red' }} />
@@ -84,11 +125,12 @@ const ContestCard: React.FC<ContestCardProps> = ({ contestId, onView, onEdit, on
                         alt={contest.name}
                         sx={{ objectFit: 'cover' }}
                     /> */}
-                    <CardContent>
+                    <CardContent sx={{pt:5}}>
                         <Typography gutterBottom variant="h5" component="div" sx={{ 
                             fontWeight: 'bold',
                             color: 'primary.main',
                             maxWidth: 270,
+                            pl: { xs: onSelect ? 4 : 0, sm: onSelect ? 4 : 0, md: 0 }
                         }}>
                             {contest.name || 'Chưa có tên'}
                         </Typography>

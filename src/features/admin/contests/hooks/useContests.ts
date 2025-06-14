@@ -147,14 +147,12 @@ export const useContests = (): UseContestsReturn => {
             setLoading(true);
             setError(null);
             const response = await deleteContest(id);
-            console.log('remove', response);
             setContests(prev => prev.filter(contest => contest.id !== id));
             if (currentContest?.id === id) {
                 setCurrentContest(null);
             }
             return response;    
         } catch (error) {
-            console.log('hook lỗi nè', error);
             setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi xóa cuộc thi');
             throw error;
         } finally {
@@ -166,13 +164,35 @@ export const useContests = (): UseContestsReturn => {
         try {
             setLoading(true);
             setError(null);
-            await deleteManyContests(ids);
-            setContests(prev => prev.filter(contest => !ids.includes(contest.id)));
-            if (currentContest && ids.includes(currentContest.id)) {
-                setCurrentContest(null);
+            const response = await deleteManyContests(ids);
+            console.log('removeManyContests', response);
+            
+            if (response.success) {
+                // Lọc ra các cuộc thi có thể xóa thành công
+                const successfulDeletes = response.messages.filter(msg => msg.status === 'success');
+                // Lọc ra các cuộc thi không thể xóa
+                const failedDeletes = response.messages.filter(msg => msg.status === 'error');
+                
+                // Cập nhật state với các cuộc thi đã xóa thành công
+                if (successfulDeletes.length > 0) {
+                    setContests(prev => prev.filter(contest => !ids.includes(contest.id)));
+                    if (currentContest && ids.includes(currentContest.id)) {
+                        setCurrentContest(null);
+                    }
+                }
+
+                // Trả về object chứa thông tin về các cuộc thi xóa thành công và thất bại
+                return {
+                    success: true,
+                    successfulDeletes,
+                    failedDeletes
+                };
+            } else {
+                throw new Error('Có lỗi xảy ra khi xóa nhiều cuộc thi');
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi xóa nhiều cuộc thi');
+            throw err;
         } finally {
             setLoading(false);
         }
