@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   Drawer,
   Box,
@@ -28,9 +29,11 @@ import {
 } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
 
-interface AdminSidebarProps {
+interface ContestSidebarProps {
   collapsed: boolean;
   onToggle?: () => void; // Optional callback for external toggle control
+  mobileOpen?: boolean;
+  setMobileOpen?: (open: boolean) => void;
 }
 
 interface MenuItem {
@@ -41,19 +44,25 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
-const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onToggle }) => {
+const ContestSidebar: React.FC<ContestSidebarProps> = ({
+  collapsed,
+  onToggle,
+  mobileOpen = false,
+  setMobileOpen,
+}) => {
   const location = useLocation();
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Detect mobile screens
-  const [mobileOpen, setMobileOpen] = useState(false); // State for mobile drawer
 
   const handleClick = (key: string) => {
     setOpenSubMenu(openSubMenu === key ? null : key);
   };
-
+  const { slug } = useParams();
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    if (setMobileOpen) {
+      setMobileOpen(!mobileOpen);
+    }
     if (onToggle) {
       onToggle();
     }
@@ -64,67 +73,86 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onToggle }) => {
       key: "dashboard",
       icon: <DashboardIcon />,
       label: "Bảng điều khiển",
-      path: "/admin/dashboard",
-    },
-    {
-      key: "schools",
-      icon: <BankIcon />,
-      label: "Trường học",
-      path: "/admin/schools",
+      path: "/Contest/dashboard",
     },
     {
       key: "classes",
       icon: <SchoolIcon />,
-      label: "Lớp học",
-      path: "/admin/classes",
+      label: "Vòng đấu",
+      path: "/Contest/classes",
     },
+    {
+      key: "schools",
+      icon: <BankIcon />,
+      label: "Trận đấu",
+      path: "/Contest/school",
+    },
+
     {
       key: "users",
       icon: <GroupIcon />,
-      label: "Quản lý người dùng",
-      path: "/admin/users",
+      label: "Nhóm",
+      path: "/Contest/users",
     },
     {
       key: "topics",
       icon: <QuestionIcon fontSize="small" />,
-      label: "Chủ đề câu hỏi",
-      path: "/admin/question-topics",
+      label: "Vieo lớp",
+      path: "/Contest/question-topics",
     },
     {
       key: "questions",
       icon: <QuestionIcon fontSize="small" />,
-      label: "Câu hỏi",
-      path: "/admin/questions",
+      label: "Nhà tài trợ",
+      path: "/Contest/questions",
     },
     {
       key: "packages",
       icon: <QuestionIcon fontSize="small" />,
-      label: "Gói câu hỏi",
-      path: "/admin/question-packages",
+      label: "Thí sinh ",
+      path: "/Contest/question-packages",
     },
     {
       key: "question-packages",
       icon: <QuestionIcon fontSize="small" />,
-      label: "Chi tiết câu hỏi",
-      path: "/admin/question-packages/1",
+      label: "Kết quả ",
+      path: "/Contest/question-packages/1",
     },
     {
       key: "contests",
       icon: <TrophyIcon />,
-      label: "Cuộc thi",
-      path: "/admin/contests",
+      label: "Cứu trợ ",
+      path: "/Contest/contests",
     },
     {
       key: "students",
       icon: <GroupIcon />,
-      label: "Quản lý sinh viên",
-      path: "/admin/students",
+      label: "Thí sinh và trận đấu",
+      path: "/Contest/students",
     },
     {
-      key: "about",
+      key: "1",
       icon: <FileIcon />,
-      label: "Thông tin website",
-      path: "/admin/about",
+      label: "Thông tin cuộc thi",
+      path: "/Contest/about",
+    },
+    {
+      key: "2",
+      icon: <FileIcon />,
+      label: "Thí sinh và trận đấu",
+      path: "/Contest/about",
+    },
+    {
+      key: "3",
+      icon: <FileIcon />,
+      label: "Media",
+      path: "/Contest/about",
+    },
+    {
+      key: "4",
+      icon: <FileIcon />,
+      label: "Giải thưởng",
+      path: "/Contest/about",
     },
   ];
 
@@ -152,7 +180,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onToggle }) => {
                       to={child.path || ""}
                       sx={{ pl: 4 }}
                       selected={location.pathname === child.path}
-                      onClick={() => isMobile && setMobileOpen(false)}
+                      onClick={() =>
+                        isMobile && setMobileOpen && setMobileOpen(false)
+                      }
                     >
                       <ListItemIcon>{child.icon}</ListItemIcon>
                       <ListItemText primary={child.label} />
@@ -171,7 +201,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onToggle }) => {
             component={Link}
             to={item.path || ""}
             selected={isSelected}
-            onClick={() => isMobile && setMobileOpen(false)}
+            onClick={() => isMobile && setMobileOpen && setMobileOpen(false)}
           >
             <ListItemIcon>{item.icon}</ListItemIcon>
             <ListItemText primary={item.label} />
@@ -181,7 +211,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onToggle }) => {
     });
   };
 
-  // Set drawerWidth to 240px by default on large screens, collapse to 64px when toggled
+  // Adjust drawerWidth based on mobile and open state
   const drawerWidth = isMobile ? (mobileOpen ? 240 : 0) : collapsed ? 64 : 240;
 
   return (
@@ -198,7 +228,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onToggle }) => {
             left: 16,
             zIndex: theme.zIndex.drawer + 1,
           }}
-        ></IconButton>
+        >
+          <MenuIcon />
+        </IconButton>
       )}
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}
@@ -253,4 +285,4 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onToggle }) => {
   );
 };
 
-export default AdminSidebar;
+export default ContestSidebar;

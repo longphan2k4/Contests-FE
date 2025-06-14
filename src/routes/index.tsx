@@ -1,7 +1,9 @@
 import React from "react";
-import { Routes, Route} from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 // import PrivateRoute from './PrivateRoute';
 import AdminRoutes from "../features/admin/AdminRoutes";
+import ContestRoutes from "../features/Contest/ContestRouter";
+
 import AuthRoutes from "../features/auth/routes";
 import PublicRoutes from "./PublicRoutes";
 // import MatchRoutes from '../features/match';
@@ -23,6 +25,8 @@ const AppRoutes: React.FC = () => {
       <Route element={<PrivateRoute roles={["Admin"]} />}>
         {AdminRoutes()}
       </Route>
+      {ContestRoutes()}
+
       {/* Protected Routes */}
       <Route element={<PrivateRoute />}>
         <Route path="/account/profile" element={<ProfilePage />} />

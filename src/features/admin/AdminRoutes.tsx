@@ -10,17 +10,9 @@ import StudentsPage from "./students/page/StudentsPage";
 import QuestionsPackagesPage from "./questionpackages/page/QuestionsPackagesPage";
 import ClassesPage from "./class/page/ClassPage";
 import { ContestPage } from "./contests/pages";
-
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
 const QuestionsPage = () => <div>Trang Quản lý câu hỏi</div>;
-// const ContestsPage = () => <div>Trang Quản lý cuộc thi</div>;
-//const ContestantsPage = () => <div>Trang Quản lý thí sinh</div>;
-const ResultsPage = () => <div>Trang Kết quả</div>;
-const AwardsPage = () => <div>Trang Giải thưởng</div>;
-const SponsorsPage = () => <div>Trang Nhà tài trợ</div>;
-const ClassVideosPage = () => <div>Trang Videos lớp học</div>;
-const SettingsPage = () => <div>Trang Cài đặt</div>;
 
 const AdminRoutes = () => {
   return (
@@ -38,14 +30,9 @@ const AdminRoutes = () => {
       <Route path="question-packages" element={<QuestionsPackagesPage />} />
       <Route path="contests" element={<ContestPage />} />
       <Route path="contestants" element={<ContestantsPage />} />
-      <Route path="results" element={<ResultsPage />} />
-      <Route path="awards" element={<AwardsPage />} />
-      <Route path="sponsors" element={<SponsorsPage />} />
-      <Route path="class-videos" element={<ClassVideosPage />} />
       <Route path="about" element={<AboutAdminPage />} />
-      <Route path="settings" element={<SettingsPage />} />
       <Route path="users" element={<UsersPage />} />
-      {/* Chuyển hướng về dashboard nếu không có route nào khớp */}
+
       <Route index element={<Navigate to="/admin/dashboard" replace />} />
     </Route>
   );
