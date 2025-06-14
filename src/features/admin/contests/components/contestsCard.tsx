@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -20,12 +21,12 @@ interface ContestCardProps {
 
 const ContestCard: React.FC<ContestCardProps> = ({ 
     contestId, 
-    onView, 
     onEdit, 
     onDelete,
     selected = false,
     onSelect 
 }) => {
+    const navigate = useNavigate();
     const [contest, setContest] = useState<Contest | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -51,6 +52,13 @@ const ContestCard: React.FC<ContestCardProps> = ({
         };
         fetchContest();
     }, [contestId]);
+
+    const handleCardClick = () => {
+        console.log(contest?.slug);
+        if (contest) {
+            navigate(`/admin/cuoc-thi/${contest.slug}`);
+        }
+    };
 
     if (loading) {
         return (
@@ -118,7 +126,7 @@ const ContestCard: React.FC<ContestCardProps> = ({
                         </IconButton>
                     </Tooltip>
                 </Box>
-                <CardActionArea onClick={() => onView?.(contest.id)}>
+                <CardActionArea onClick={handleCardClick}>
                     {/* <CardMedia
                         component="img"
                         height="140"
