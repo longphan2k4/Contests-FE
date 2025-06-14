@@ -24,6 +24,13 @@ interface FailedItem {
   reason: string;
 }
 
+// Định nghĩa interface Message cho response xóa nhiều
+interface Message {
+  id: number;
+  status: "success" | "error";
+  msg: string;
+}
+
 const QuestionTopicsPage: React.FC = () => {
   const { loading, error, refresh } = useQuestionTopicList();
   const [selectedQuestionTopic, setSelectedQuestionTopic] = useState<QuestionTopic | null>(null);

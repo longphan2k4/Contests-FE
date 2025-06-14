@@ -227,7 +227,7 @@ const ContestForm: React.FC<ContestFormProps> = ({
                   }}
                   disabled={isSubmitting}
                   onEditorChange={(content) => {
-                    handleChange({ target: { name: 'rule', value: content } } as any);
+                    handleChange({ target: { name: 'rule', value: content } } as React.ChangeEvent<HTMLInputElement>);
                   }}
                 />
 

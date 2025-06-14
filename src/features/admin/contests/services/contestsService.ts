@@ -1,5 +1,5 @@
 import axiosInstance from '../../../../config/axiosInstance';
-import type { ContestResponse, ContestMessageResponse } from '../types';
+import type { ContestResponse, ContestMessageResponse, ContestUpdateResponse } from '../types';
 import { AxiosError } from 'axios';
 
 export interface CreateContestData {
@@ -69,9 +69,10 @@ export const createContest = async (data: CreateContestData): Promise<ContestRes
 export const updateContest = async (
   id: number,
   data: UpdateContestData
-): Promise<ContestResponse> => {
+): Promise<ContestUpdateResponse> => {
   try {
-    const response = await axiosInstance.patch<ContestResponse>(`/contest/${id}`, data);
+    const response = await axiosInstance.patch<ContestUpdateResponse>(`/contest/${id}`, data);
+    console.log('response update', response);
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
