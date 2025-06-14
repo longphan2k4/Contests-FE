@@ -17,7 +17,9 @@ import { vi } from 'date-fns/locale';
 import type { Contest } from '../types';
 import { CreateContestSchema, UpdateContestSchema } from '../schemas/contestSchema';
 import { ZodError } from 'zod';
+import { Fullscreen, FullscreenExit } from '@mui/icons-material';
 
+import { Editor } from '@tinymce/tinymce-react';
 interface ValidationError {
   field: string;
   message: string;
@@ -51,6 +53,7 @@ const ContestForm: React.FC<ContestFormProps> = ({
   });
 
   const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
 
   React.useEffect(() => {
     // Xử lý validation errors từ API
@@ -128,7 +131,38 @@ const ContestForm: React.FC<ContestFormProps> = ({
         </Alert>
       )}
 
-      <Paper component="form" onSubmit={handleSubmit} sx={{ p: 3 }}>
+      <Paper
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{
+          p: 3,
+          maxWidth: isFullscreen ? '100vw' : '1000px',
+          width: isFullscreen ? '100vw' : '100%',
+          height: isFullscreen ? '100vh' : 'auto',
+          position: isFullscreen ? 'fixed' : 'relative',
+          top: isFullscreen ? 0 : 'auto',
+          left: isFullscreen ? 0 : 'auto',
+          zIndex: isFullscreen ? 1300 : 'auto',
+          overflow: isFullscreen ? 'auto' : 'unset',
+          margin: isFullscreen ? 0 : '0 auto',
+          borderRadius: isFullscreen ? 0 : 2,
+          background: 'white',
+          transition: 'all 0.3s',
+        }}
+      >
+        {/* Nút phóng to/thu nhỏ */}
+        <Box sx={{ position: 'absolute', top: 16, right: 16, zIndex: 1400 }}>
+          <Button
+            variant="outlined"
+            color="primary"
+            size="small"
+            onClick={() => setIsFullscreen((prev) => !prev)}
+            sx={{ minWidth: 36, minHeight: 36, borderRadius: '50%' }}
+          >
+            {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+          </Button>
+        </Box>
+
         <Stack spacing={3}>
           {/* Thông tin cơ bản */}
           <Box>
@@ -162,6 +196,42 @@ const ContestForm: React.FC<ContestFormProps> = ({
                 multiline
                 rows={4}
               />
+            <Box sx={{ mt: 2 }}>
+                <Editor
+                  apiKey="27tx6fph0lki6eefz8gfsu5jz74x6clpth0dnq0k02a9wz4b"
+                  value={formData.rule || ''}
+                  init={{
+                    height: 400,
+                    menubar: true,
+                    plugins: [
+                      'advlist autolink lists link image charmap preview anchor',
+                      'searchreplace visualblocks code fullscreen',
+                      'insertdatetime media table paste code help wordcount emoticons',
+                    ],
+                    toolbar: [
+                      'undo redo | formatselect |',
+                      'bold italic underline strikethrough | forecolor backcolor |',
+                      'alignleft aligncenter alignright alignjustify |',
+                      'bullist numlist |',
+                      'outdent indent |',
+                      'blockquote subscript superscript |',
+                      'link image media table |',
+                      'removeformat | emoticons |',
+                      'code preview help'
+                    ].join(' '),
+                    auto_list: true,
+                    advlist_bullet_styles: 'default',
+                    advlist_number_styles: 'default',
+                    content_style:
+                      'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                  }}
+                  disabled={isSubmitting}
+                  onEditorChange={(content) => {
+                    handleChange({ target: { name: 'rule', value: content } } as any);
+                  }}
+                />
+
+              </Box>
 
               <TextField
                 fullWidth
