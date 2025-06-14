@@ -9,9 +9,7 @@ import { QuestionDetailListPage } from "./question-details/pages";
 import StudentsPage from "./students/page/StudentsPage";
 import QuestionsPackagesPage from "./questionpackages/page/QuestionsPackagesPage";
 import ClassesPage from "./class/page/ClassPage";
-import { ContestDetailPage, ContestPage } from "./contests/pages";
-import ContestRoutes from "../Contest/ContestRouter";
-
+import { ContestPage } from "./contests/pages";
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
 const QuestionsPage = () => <div>Trang Quản lý câu hỏi</div>;
@@ -31,7 +29,6 @@ const AdminRoutes = () => {
       <Route path="questions" element={<QuestionsPage />} />
       <Route path="question-packages" element={<QuestionsPackagesPage />} />
       <Route path="contests" element={<ContestPage />} />
-      <Route path="contests/:contestId" element={<ContestDetailPage />} />
       <Route path="contestants" element={<ContestantsPage />} />
       <Route path="about" element={<AboutAdminPage />} />
       <Route path="users" element={<UsersPage />} />

@@ -1,39 +1,27 @@
-import type { School, SchoolFilter, SchoolsResponse, ApiResponse } from '../types/school';
 import axiosInstance from '../../../../config/axiosInstance';
-
-
+import type { School, SchoolFilter, ApiResponse, SchoolsResponse } from '../types/school';
 
 /**
  * Lấy danh sách trường học từ API
  */
 export const getSchools = async (filter?: SchoolFilter): Promise<SchoolsResponse> => {
-  try {
-    // Xây dựng các tham số query
-    const params = new URLSearchParams();
-    if (filter?.page) params.append('page', String(filter.page));
-    if (filter?.limit) params.append('limit', String(filter.limit));
-    if (filter?.search) params.append('search', filter.search.trim());
-    if (filter?.isActive !== undefined) params.append('isActive', String(filter.isActive));
+  // Xây dựng các tham số query
+  const params = new URLSearchParams();
+  if (filter?.page) params.append('page', String(filter.page));
+  if (filter?.limit) params.append('limit', String(filter.limit));
+  if (filter?.search) params.append('search', filter.search.trim());
+  if (filter?.isActive !== undefined) params.append('isActive', String(filter.isActive));
 
-    const response = await axiosInstance.get<ApiResponse<SchoolsResponse>>('/school', { params });
-    return response.data.data;
-  } catch (error) {
-    console.error('Error fetching schools:', error);
-    throw error;
-  }
+  const response = await axiosInstance.get<ApiResponse<SchoolsResponse>>('/school', { params });
+  return response.data.data;
 };
 
 /**
  * Lấy chi tiết một trường học
  */
 export const getSchoolById = async (id: number): Promise<School> => {
-  try {
-    const response = await axiosInstance.get<ApiResponse<School>>(`/school/${id}`);
-    return response.data.data;
-  } catch (error) {
-    console.error(`Error fetching school with id ${id}:`, error);
-    throw error;
-  }
+  const response = await axiosInstance.get<ApiResponse<School>>(`/school/${id}`);
+  return response.data.data;
 };
 
 /**
@@ -50,16 +38,11 @@ export const createSchool = async (schoolData: Partial<School>): Promise<School>
 };
 
 /**
- * Cập nhật trường học
+ * Cập nhật thông tin trường học
  */
-export const updateSchool = async (id: number, schoolData: Partial<School>): Promise<School> => {
-  try {
-    const response = await axiosInstance.patch<ApiResponse<School>>(`/school/${id}`, schoolData);
-    return response.data.data;
-  } catch (error) {
-    console.error(`Error updating school with id ${id}:`, error);
-    throw error;
-  }
+export const updateSchool = async (id: number, data: Partial<School>): Promise<School> => {
+  const response = await axiosInstance.put<ApiResponse<School>>(`/school/${id}`, data);
+  return response.data.data;
 };
 
 /**
@@ -78,11 +61,6 @@ export const deleteSchool = async (ids: number[]): Promise<void> => {
  * Chuyển đổi trạng thái hoạt động của trường học
  */
 export const toggleSchoolActive = async (id: number): Promise<School> => {
-  try {
-    const school = await getSchoolById(id);
-    return updateSchool(id, { isActive: !school.isActive });
-  } catch (error) {
-    console.error(`Error toggling active state for school with id ${id}:`, error);
-    throw error;
-  }
+  const school = await getSchoolById(id);
+  return updateSchool(id, { isActive: !school.isActive });
 };

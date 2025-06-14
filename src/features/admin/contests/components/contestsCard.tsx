@@ -37,7 +37,8 @@ const ContestCard: React.FC<ContestCardProps> = ({
                 setError(null);
                 const response = await getContestById(contestId);
                 if (response.success && response.data) {
-                    setContest(response.data);
+                    const contestData = response.data as unknown as Contest;
+                    setContest(contestData);
                 } else {
                     throw new Error('Dữ liệu trả về không đúng định dạng');
                 }

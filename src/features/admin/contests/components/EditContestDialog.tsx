@@ -12,7 +12,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ContestForm from './ContestForm';
 import { updateContest } from '../services/contestsService';
 import { useToast } from '../../../../contexts/toastContext';
-import type { Contest } from '../types';
+import type { ContestUpdate, ContestUpdateResponse } from '../types';
 import { AxiosError } from 'axios';
 
 interface ValidationError {
@@ -21,14 +21,14 @@ interface ValidationError {
 }
 
 interface EditContestDialogProps {
-  contest: Contest;
+  contestUpdate: ContestUpdate;
   open: boolean;
   onClose: () => void;
-  onUpdated: (updatedContest: Contest) => void;
+  onUpdated: (updatedContest: ContestUpdate) => void;
 }
 
 const EditContestDialog: React.FC<EditContestDialogProps> = ({ 
-  contest, 
+  contestUpdate, 
   open, 
   onClose, 
   onUpdated 
@@ -37,8 +37,8 @@ const EditContestDialog: React.FC<EditContestDialogProps> = ({
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const { showToast } = useToast();
 
-  const handleSubmit = async (data: Partial<Contest>) => {
-    if (!contest.id) return;
+  const handleSubmit = async (data: Partial<ContestUpdate>) => {
+    if (!contestUpdate.id) return;
     
     setIsSubmitting(true);
     setValidationErrors([]);
@@ -55,13 +55,14 @@ const EditContestDialog: React.FC<EditContestDialogProps> = ({
         rule: data.rule
       };
       
-      const result = await updateContest(contest.id, contestData);
-      if (result.success ) {
+      const result: ContestUpdateResponse = await updateContest(contestUpdate.id, contestData);
+      if (result.success) {
         const updatedContest = result.data;
         onUpdated(updatedContest);
         onClose();
+        showToast(result.message || 'page Cập nhật cuộc thi thành công', 'success');
       } else {
-        showToast(result.message || 'Có lỗi xảy ra khi cập nhật cuộc thi', 'error');
+        showToast(result.message || 'page Có lỗi xảy ra khi cập nhật cuộc thi', 'error');
       }
     } catch (error) {
       console.error('Error updating contest:', error);
@@ -123,7 +124,7 @@ const EditContestDialog: React.FC<EditContestDialogProps> = ({
         )}
         
         <ContestForm
-          initialData={contest}
+          initialData={contestUpdate}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           submitButtonText="Cập nhật"
