@@ -34,7 +34,7 @@ const ContestPage = () => {
   const sections: Section[] = [
     { 
       id: 'hero', 
-      label: 'Trang chủ', 
+      label: '', 
       ref: heroRef,
       color: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600',
       icon: (
@@ -45,7 +45,7 @@ const ContestPage = () => {
     },
     { 
       id: 'stats', 
-      label: 'Thống kê', 
+      label: '', 
       ref: statsRef,
       color: 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600',
       icon: (
@@ -56,7 +56,7 @@ const ContestPage = () => {
     },
     { 
       id: 'features', 
-      label: 'Tính năng', 
+      label: '', 
       ref: featuresRef,
       color: 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600',
       icon: (
@@ -67,7 +67,7 @@ const ContestPage = () => {
     },
     { 
       id: 'timeline', 
-      label: 'Lịch trình', 
+      label: '', 
       ref: timelineRef,
       color: 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600',
       icon: (
@@ -78,7 +78,7 @@ const ContestPage = () => {
     },
     { 
       id: 'cta', 
-      label: 'Hành động', 
+      label: '', 
       ref: ctaRef,
       color: 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600',
       icon: (
