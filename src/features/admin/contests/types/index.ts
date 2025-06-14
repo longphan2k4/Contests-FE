@@ -1,6 +1,7 @@
 export interface Contest {
   id: number;
   name: string;
+  slug: string;
   description: string;
   rule: string;
   plainText?: string;
