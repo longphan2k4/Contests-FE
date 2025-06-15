@@ -10,6 +10,7 @@ const ContestRoutes = () => {
       <Route path="dashboard" element={<Dashboard />} />
       <Route path="round" element={<RoundPage />} />
       <Route index element={<Navigate to="dashboard" replace />} />
+      {/* <Route path="results" element={<ResultsPage />} /> */}
     </Route>
   );
 };
