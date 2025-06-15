@@ -1,4 +1,4 @@
-import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getUserById } from "../service/api";
 // useUserById.ts
 export const useUserById = (id: number | null) => {

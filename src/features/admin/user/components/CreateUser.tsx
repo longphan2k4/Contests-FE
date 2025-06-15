@@ -29,7 +29,7 @@ export default function CreateSchoolDialog({
     register,
     handleSubmit,
     formState: { errors },
-    watch,
+
     control,
     reset,
   } = useForm<CreateUserInput>({

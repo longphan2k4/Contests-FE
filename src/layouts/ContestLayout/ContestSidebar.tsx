@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Drawer,
@@ -152,6 +152,12 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       key: "4",
       icon: <FileIcon />,
       label: "Giải thưởng",
+      path: "/Contest/about",
+    },
+    {
+      key: "4",
+      icon: <FileIcon />,
+      label: `${slug}`,
       path: "/Contest/about",
     },
   ];

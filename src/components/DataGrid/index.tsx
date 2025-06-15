@@ -1,4 +1,3 @@
-import React from "react";
 import {
   DataGrid,
   type GridColDef,
@@ -19,7 +18,6 @@ const CommonDataGrid = <T,>({
   rows,
   columns,
   getRowId,
-  selectedIds,
   onSelectChange,
   responsiveColumns = {},
 }: CommonDataGridProps<T>) => {

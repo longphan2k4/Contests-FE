@@ -8,7 +8,7 @@ interface CommonSwitchProps {
   onChange: (newValue: boolean) => void;
 }
 
-const IsSwitch: React.FC<CommonSwitchProps> = ({ label, value, onChange }) => {
+const IsSwitch: React.FC<CommonSwitchProps> = ({ value, onChange }) => {
   return (
     <FormControlLabel
       control={

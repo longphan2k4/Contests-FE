@@ -115,7 +115,7 @@ const ClassesPage: React.FC = () => {
   const handeDeletes = (ids: deleteClasssType) => {
     mutateDeleteMany(ids, {
       onSuccess: data => {
-        data.messages.forEach((item: any, index: number) => {
+        data.messages.forEach((item: any) => {
           if (item.status === "error") {
             showToast(item.msg, "error");
           } else {
@@ -124,7 +124,7 @@ const ClassesPage: React.FC = () => {
         });
         refetchClasss();
       },
-      onError: err => {
+      onError: () => {
         showToast("Xóa lớp học thất bại");
       },
     });

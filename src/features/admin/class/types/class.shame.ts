@@ -1,4 +1,4 @@
-import { boolean, number, z } from "zod";
+import { boolean, z } from "zod";
 export const CreateClassSchema = z.object({
   name: z
     .string({

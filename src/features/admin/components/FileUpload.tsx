@@ -1,13 +1,10 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState } from "react";
+import { Box, Button, Typography, IconButton, Alert } from "@mui/material";
 import {
-  Box,
-  Button,
-  Typography,
-  IconButton,
-  Alert
-} from '@mui/material';
-import { CloudUpload as CloudUploadIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import { getMediaUrl } from '../../../config/env';
+  CloudUpload as CloudUploadIcon,
+  Delete as DeleteIcon,
+} from "@mui/icons-material";
+import { getMediaUrl } from "../../../config/env";
 
 interface FileUploadProps {
   currentFile?: string | null;
@@ -21,10 +18,10 @@ interface FileUploadProps {
 const FileUpload: React.FC<FileUploadProps> = ({
   currentFile,
   onFileSelected,
-  acceptTypes = 'image/*',
+  acceptTypes = "image/*",
   maxSize = 5, // 5MB mặc định
-  label = 'Tải lên tệp',
-  previewWidth = 300
+  label = "Tải lên tệp",
+  previewWidth = 300,
 }) => {
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -63,25 +60,25 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   return (
     <Box>
-      <Box 
+      <Box
         sx={{
-          border: '1px dashed #ccc',
+          border: "1px dashed #ccc",
           borderRadius: 1,
           p: 2,
           mb: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
           minHeight: 100,
-          bgcolor: 'background.paper'
+          bgcolor: "background.paper",
         }}
       >
         {!preview && (
           <>
             <input
               accept={acceptTypes}
-              style={{ display: 'none' }}
+              style={{ display: "none" }}
               id={`upload-file-${label}`}
               type="file"
               onChange={handleFileChange}
@@ -97,39 +94,39 @@ const FileUpload: React.FC<FileUploadProps> = ({
               </Button>
             </label>
             <Typography variant="caption" color="text.secondary">
-              Chấp nhận {acceptTypes.replace('*', 'tất cả')}, tối đa {maxSize}MB
+              Chấp nhận {acceptTypes.replace("*", "tất cả")}, tối đa {maxSize}MB
             </Typography>
           </>
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mt: 1, width: '100%' }}>
+          <Alert severity="error" sx={{ mt: 1, width: "100%" }}>
             {error}
           </Alert>
         )}
 
         {preview && (
-          <Box sx={{ position: 'relative', maxWidth: previewWidth }}>
-            <img 
-              src={preview} 
-              alt="Preview" 
-              style={{ 
-                maxWidth: '100%', 
-                borderRadius: 4
-              }} 
+          <Box sx={{ position: "relative", maxWidth: previewWidth }}>
+            <img
+              src={preview}
+              alt="Preview"
+              style={{
+                maxWidth: "100%",
+                borderRadius: 4,
+              }}
             />
             <IconButton
               size="small"
               onClick={handleClear}
               sx={{
-                position: 'absolute',
+                position: "absolute",
                 top: 8,
                 right: 8,
-                bgcolor: 'background.paper',
-                '&:hover': {
-                  bgcolor: 'error.light',
-                  color: 'white'
-                }
+                bgcolor: "background.paper",
+                "&:hover": {
+                  bgcolor: "error.light",
+                  color: "white",
+                },
               }}
             >
               <DeleteIcon fontSize="small" />
@@ -141,4 +138,4 @@ const FileUpload: React.FC<FileUploadProps> = ({
   );
 };
 
-export default FileUpload; 
+export default FileUpload;

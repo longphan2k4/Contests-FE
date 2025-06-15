@@ -18,13 +18,9 @@ import {
 import useForgotPassword from "../hooks/useFogotPassWord";
 import useVerifyOtp from "../hooks/useVerifyOtp";
 import useResetPassword from "../hooks/useResetPassword";
-import {
-  ForgotPasswordSchema,
-  type ForgotPasswordSchemaType,
-} from "../types/auth.shema";
-import { zodResolver } from "@hookform/resolvers/zod";
+
 import { useNotification } from "../../../contexts/NotificationContext";
-import { useForm } from "react-hook-form";
+
 const ForgotPasswordStep = {
   EMAIL: 0,
   OTP: 1,
@@ -44,10 +40,6 @@ const ForgotPasswordPage = () => {
   const [otp, setOtp] = useState("");
   const resetPasswordMutation = useResetPassword();
 
-  const form = useForm<ForgotPasswordSchemaType>({
-    resolver: zodResolver(ForgotPasswordSchema),
-    mode: "onTouched",
-  });
   const { mutate } = useForgotPassword();
   const verifyOtpMutation = useVerifyOtp();
   const { showSuccessNotification, showErrorNotification } = useNotification();
