@@ -55,7 +55,6 @@ const [filter, setFilter] = useState<Filter>({
   if (studentsQuery?.data.students) {
     setStudents(studentsQuery?.data.students);
   }
-  console.log(studentsQuery?.data?.pagination.total)
 }, [studentsQuery]);
 
 

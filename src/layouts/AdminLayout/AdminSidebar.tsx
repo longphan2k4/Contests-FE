@@ -131,6 +131,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
       path: "/admin/results",
     },
     {
+      key: "rescues",
+      icon: <BarChartIcon />,
+      label: "Cứu trợ",
+      path: "/admin/rescues",
+    },
+    {
       key: "awards",
       icon: <TrophyIcon />,
       label: "Giải thưởng",

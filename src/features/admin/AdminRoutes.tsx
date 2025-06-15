@@ -9,15 +9,14 @@ import { QuestionDetailListPage } from "./question-details/pages";
 import StudentsPage from "./students/page/StudentsPage";
 import QuestionsPackagesPage from "./questionpackages/page/QuestionsPackagesPage";
 import ClassesPage from "./class/page/ClassPage";
-
+import RescuesPage from "./rescues/page/RescuesPage";
+import SponsorsPage from "./sponsors/page/SponsorsPage";
+import AwardsPage from "./awards/page/AwardsPage";
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
 const QuestionsPage = () => <div>Trang Quản lý câu hỏi</div>;
 const ContestsPage = () => <div>Trang Quản lý cuộc thi</div>;
-//const ContestantsPage = () => <div>Trang Quản lý thí sinh</div>;
 const ResultsPage = () => <div>Trang Kết quả</div>;
-const AwardsPage = () => <div>Trang Giải thưởng</div>;
-const SponsorsPage = () => <div>Trang Nhà tài trợ</div>;
 const ClassVideosPage = () => <div>Trang Videos lớp học</div>;
 const SettingsPage = () => <div>Trang Cài đặt</div>;
 
@@ -44,6 +43,7 @@ const AdminRoutes = () => {
       <Route path="about" element={<AboutAdminPage />} />
       <Route path="settings" element={<SettingsPage />} />
       <Route path="users" element={<UsersPage />} />
+      <Route path="rescues" element={<RescuesPage />} />
       {/* Chuyển hướng về dashboard nếu không có route nào khớp */}
       <Route index element={<Navigate to="/admin/dashboard" replace />} />
     </Route>

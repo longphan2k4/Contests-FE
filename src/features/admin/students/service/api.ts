@@ -14,7 +14,6 @@ export type StudentQuery = {
 };
 
 export const getAllStudents = async (params: StudentQuery = {}) => {
-  console.log(params)
   const cleanedParams = { ...params };
   if (!cleanedParams.search) delete cleanedParams.search;
   const res = await axiosInstance.get("/student", { params: cleanedParams });
