@@ -177,7 +177,7 @@ const QuestionsPage: React.FC = () => {
     }
     } catch (error: unknown) {
       console.error('Lỗi khi xóa câu hỏi:', error);
-      if (error.response.data) {
+      if (error instanceof Error ) {
         showToast(error.response.data.message as string, 'error');
       } else {
         showToast('Có lỗi xảy ra khi xóa câu hỏi', 'error');
