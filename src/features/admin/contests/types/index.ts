@@ -17,6 +17,7 @@ export interface Contest {
 export interface ContestUpdate {
   id: number;
   name: string;
+  slug: string;
   description: string;
   rule: string;
   plainText?: string;
@@ -60,6 +61,7 @@ export interface ContestUpdateResponse {
   data: {
     id: number;
     name: string;
+    slug: string;
     description: string;
     rule: string;
     plainText?: string;
