@@ -113,10 +113,10 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: "/Contest/question-packages",
     },
     {
-      key: "question-packages",
+      key: "results",
       icon: <QuestionIcon fontSize="small" />,
       label: "Kết quả ",
-      path: "/Contest/question-packages/1",
+      path: "/admin/cuoc-thi/:slug/results",
     },
     {
       key: "contests",

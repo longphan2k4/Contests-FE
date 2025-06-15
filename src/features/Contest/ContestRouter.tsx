@@ -1,6 +1,7 @@
 // file: features/Contest/ContestRouter.tsx
 import { Route, Navigate } from "react-router-dom";
 import ContestLayout from "../../layouts/ContestLayout";
+import ResultsPage from "../admin/result/pages/ResultsPage";
 
 const Dashboard = () => <div>Trang Dashboard Cuộc Thi</div>;
 
@@ -9,7 +10,7 @@ const ContestRoutes = () => {
     <Route path="/admin/cuoc-thi/:slug" element={<ContestLayout />}>
       <Route path="dashboard" element={<Dashboard />} />
       <Route index element={<Navigate to="dashboard" replace />} />
-      {/* <Route path="results" element={<ResultsPage />} /> */}
+      <Route path="results" element={<ResultsPage />} />
     </Route>
   );
 };
