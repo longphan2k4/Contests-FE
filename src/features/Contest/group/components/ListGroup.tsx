@@ -36,7 +36,7 @@ export default function ListGroup({
       renderCell: params =>
         params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
-    { field: "name", headerName: "Tên lớp", flex: 1 },
+    { field: "name", headerName: "Tên nhóm", flex: 1 },
     { field: "matchName", headerName: "Tên trận đấu", flex: 1 },
     { field: "userName", headerName: "Trọng tài", flex: 1 },
     {
