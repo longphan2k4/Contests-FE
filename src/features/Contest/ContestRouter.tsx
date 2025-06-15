@@ -12,6 +12,7 @@ const ContestRoutes = () => {
       <Route path="vong-dau" element={<RoundPage />} />
       <Route path="nhom" element={<GroupPage />} />
       <Route index element={<Navigate to="dashboard" replace />} />
+      {/* <Route path="results" element={<ResultsPage />} /> */}
     </Route>
   );
 };
