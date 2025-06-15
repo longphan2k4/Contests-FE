@@ -2,13 +2,15 @@
 import { Route, Navigate } from "react-router-dom";
 import ContestLayout from "../../layouts/ContestLayout";
 import RoundPage from "./round/page/RoundPage";
+import GroupPage from "./group/page/GroupPage";
 const Dashboard = () => <div>Trang Dashboard Cuộc Thi</div>;
 
 const ContestRoutes = () => {
   return (
     <Route path="/admin/cuoc-thi/:slug" element={<ContestLayout />}>
       <Route path="dashboard" element={<Dashboard />} />
-      <Route path="round" element={<RoundPage />} />
+      <Route path="vong-dau" element={<RoundPage />} />
+      <Route path="nhom" element={<GroupPage />} />
       <Route index element={<Navigate to="dashboard" replace />} />
     </Route>
   );

@@ -1,35 +1,34 @@
 import React from "react";
 import { Box, IconButton } from "@mui/material";
 import DataGrid from "../../../../components/DataGrid";
-import IsSwitch from "../../../../components/IsSwitch";
 import type { GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { type Rounds } from "../types/round.shame";
 
-interface ClassListProps {
-  rounds: Rounds[];
+import { type Group } from "../types/group.shame";
+
+interface ListGroupProps {
+  groups: Group[];
   selectedIds: number[];
   setSelectedIds: React.Dispatch<React.SetStateAction<number[]>>;
   onView: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
-  onToggle: (id: number) => void;
+  onToggle?: (id: number) => void;
 }
 
-export default function ListRound({
+export default function ListGroup({
   selectedIds,
   setSelectedIds,
-  rounds,
+  groups,
   onView,
   onEdit,
   onDelete,
-  onToggle,
-}: ClassListProps): React.ReactElement {
+}: ListGroupProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
-      field: "indexs",
+      field: "index",
       headerName: "STT",
       width: 70,
       sortable: false,
@@ -37,19 +36,9 @@ export default function ListRound({
       renderCell: params =>
         params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
-    { field: "name", headerName: "Tên vòng đấu", flex: 1 },
-    { field: "index", headerName: "Thứ tự vòng đấu", flex: 1 },
-    {
-      field: "isActive",
-      headerName: "Trạng thái",
-      flex: 1,
-      renderCell: params => (
-        <IsSwitch
-          value={params.row.isActive}
-          onChange={() => onToggle(params.row.id)}
-        />
-      ),
-    },
+    { field: "name", headerName: "Tên lớp", flex: 1 },
+    { field: "matchName", headerName: "Tên trận đấu", flex: 1 },
+    { field: "userName", headerName: "Trọng tài", flex: 1 },
     {
       field: "actions",
       headerName: "Thao tác",
@@ -72,7 +61,7 @@ export default function ListRound({
   return (
     <Box>
       <DataGrid
-        rows={rounds}
+        rows={groups}
         columns={columns}
         getRowId={row => row.id}
         selectedIds={selectedIds}

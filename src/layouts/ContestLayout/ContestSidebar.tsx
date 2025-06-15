@@ -76,10 +76,10 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: "/Contest/dashboard",
     },
     {
-      key: "classes",
+      key: "round",
       icon: <SchoolIcon />,
       label: "Vòng đấu",
-      path: `/admin/cuoc-thi/${slug}/round`,
+      path: `/admin/cuoc-thi/${slug}/vong-dau`,
     },
     {
       key: "schools",
@@ -89,10 +89,10 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
     },
 
     {
-      key: "users",
+      key: "group",
       icon: <GroupIcon />,
       label: "Nhóm",
-      path: "/Contest/users",
+      path: `/admin/cuoc-thi/${slug}/nhom`,
     },
     {
       key: "topics",
