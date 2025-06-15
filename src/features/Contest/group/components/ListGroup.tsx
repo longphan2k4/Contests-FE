@@ -1,33 +1,31 @@
 import React from "react";
 import { Box, IconButton } from "@mui/material";
 import DataGrid from "../../../../components/DataGrid";
-import IsSwitch from "../../../../components/IsSwitch";
 import type { GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
-import { type Classes } from "../types/class.shame";
+import { type Group } from "../types/group.shame";
 
-interface ClassListProps {
-  Classes: Classes[];
-  selectedClassIds: number[];
-  setSelectedClassIds: React.Dispatch<React.SetStateAction<number[]>>;
+interface ListGroupProps {
+  groups: Group[];
+  selectedIds: number[];
+  setSelectedIds: React.Dispatch<React.SetStateAction<number[]>>;
   onView: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
-  onToggle: (id: number) => void;
+  onToggle?: (id: number) => void;
 }
 
-export default function ClassList({
-  selectedClassIds,
-  setSelectedClassIds,
-  Classes,
+export default function ListGroup({
+  selectedIds,
+  setSelectedIds,
+  groups,
   onView,
   onEdit,
   onDelete,
-  onToggle,
-}: ClassListProps): React.ReactElement {
+}: ListGroupProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
       field: "index",
@@ -38,19 +36,9 @@ export default function ClassList({
       renderCell: params =>
         params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
-    { field: "name", headerName: "Tên lớp", flex: 1 },
-    { field: "shoolName", headerName: "Tên trường", flex: 1 },
-    {
-      field: "isActive",
-      headerName: "Trạng thái",
-      flex: 1,
-      renderCell: params => (
-        <IsSwitch
-          value={params.row.isActive}
-          onChange={() => onToggle(params.row.id)}
-        />
-      ),
-    },
+    { field: "name", headerName: "Tên nhóm", flex: 1 },
+    { field: "matchName", headerName: "Tên trận đấu", flex: 1 },
+    { field: "userName", headerName: "Trọng tài", flex: 1 },
     {
       field: "actions",
       headerName: "Thao tác",
@@ -73,15 +61,15 @@ export default function ClassList({
   return (
     <Box>
       <DataGrid
-        rows={Classes}
+        rows={groups}
         columns={columns}
         getRowId={row => row.id}
-        selectedIds={selectedClassIds}
+        selectedIds={selectedIds}
         onSelectChange={selection => {
           const idsArray = Array.isArray(selection)
             ? selection
             : Array.from((selection as any).ids || []);
-          setSelectedClassIds(idsArray.map(id => Number(id)));
+          setSelectedIds(idsArray.map(id => Number(id)));
         }}
       />
     </Box>

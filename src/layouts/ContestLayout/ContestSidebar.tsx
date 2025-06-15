@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Drawer,
@@ -76,10 +76,10 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: "/Contest/dashboard",
     },
     {
-      key: "classes",
+      key: "round",
       icon: <SchoolIcon />,
       label: "Vòng đấu",
-      path: "/Contest/classes",
+      path: `/admin/cuoc-thi/${slug}/vong-dau`,
     },
     {
       key: "schools",
@@ -89,10 +89,10 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
     },
 
     {
-      key: "users",
+      key: "group",
       icon: <GroupIcon />,
       label: "Nhóm",
-      path: "/Contest/users",
+      path: `/admin/cuoc-thi/${slug}/nhom`,
     },
     {
       key: "topics",
@@ -152,6 +152,12 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       key: "4",
       icon: <FileIcon />,
       label: "Giải thưởng",
+      path: "/Contest/about",
+    },
+    {
+      key: "4",
+      icon: <FileIcon />,
+      label: `${slug}`,
       path: "/Contest/about",
     },
   ];

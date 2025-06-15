@@ -1,4 +1,4 @@
-import { boolean, number, z } from "zod";
+import { boolean, z } from "zod";
 export const CreateUserSchema = z.object({
   username: z
     .string()

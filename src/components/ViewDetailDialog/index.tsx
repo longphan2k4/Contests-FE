@@ -13,13 +13,7 @@ type Props<T> = {
   fields?: FieldConfig<T>[];
 };
 
-function ViewDetailDialog<T>({
-  open,
-  onClose,
-  record,
-  title,
-  fields,
-}: Props<T>) {
+function ViewDetailDialog<T>({ open, onClose, record, title }: Props<T>) {
   if (!record) return null;
 
   return (

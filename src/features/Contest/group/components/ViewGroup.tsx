@@ -1,37 +1,32 @@
-import React from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import { Box } from "@mui/material";
 
-import { useUserById } from "../hook/userUserById";
+import { useGetById } from "../hook/useGroup";
 
-interface ViewUserProps {
+interface ViewClassProps {
   id: number | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function ViewUser({
+export default function ViewClass({
   id,
   isOpen,
   onClose,
-}: ViewUserProps): React.ReactElement {
-  const { data: user } = useUserById(id);
+}: ViewClassProps): React.ReactElement {
+  const { data: group } = useGetById(id);
   const fields = [
-    { label: "ID", value: user?.id },
-    { label: "Tên tài khoản", value: user?.username },
-    { label: "Email", value: user?.email },
-    { label: "Vai trò", value: user?.role },
-    {
-      label: "Trạng thái",
-      value: user?.isActive ? "Đang hoạt động" : "Đã bị vô hiệu hóa",
-    },
+    { label: "ID", value: group?.id },
+    { label: "Tên nhóm", value: group?.name },
+    { label: "Trận đấu", value: group?.match.name },
+    { label: "Trọng tài", value: group?.user.username },
   ];
   return (
     <Box>
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Cập nhật ${user?.username}`}
+        title={`Cập nhật ${group?.name}`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>

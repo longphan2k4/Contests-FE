@@ -1,29 +1,29 @@
-import React from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import { Box } from "@mui/material";
 
-import { useUserById } from "../hook/userUserById";
+import { useGetById } from "../hook/useRound";
 
-interface ViewUserProps {
+interface ViewClassProps {
   id: number | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function ViewUser({
+export default function ViewClass({
   id,
   isOpen,
   onClose,
-}: ViewUserProps): React.ReactElement {
-  const { data: user } = useUserById(id);
+}: ViewClassProps): React.ReactElement {
+  const { data: round } = useGetById(id);
   const fields = [
-    { label: "ID", value: user?.id },
-    { label: "Tên tài khoản", value: user?.username },
-    { label: "Email", value: user?.email },
-    { label: "Vai trò", value: user?.role },
+    { label: "ID", value: round?.id },
+    { label: "Tên vòng", value: round?.name },
+    { label: "Thứ tự", value: round?.index },
+    { label: "Ngày bắt đầu ", value: round?.startTime },
+    { label: "Ngày kết thúc ", value: round?.endTime },
     {
       label: "Trạng thái",
-      value: user?.isActive ? "Đang hoạt động" : "Đã bị vô hiệu hóa",
+      value: round?.isActive ? "Đang hoạt động" : "Đã bị vô hiệu hóa",
     },
   ];
   return (
@@ -31,7 +31,7 @@ export default function ViewUser({
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Cập nhật ${user?.username}`}
+        title={`Cập nhật ${round?.name}`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>

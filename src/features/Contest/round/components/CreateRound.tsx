@@ -1,61 +1,46 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { Button } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
-import FormSelect from "../../../../components/FormSelect";
+
 import FormSwitch from "../../../../components/FormSwitch";
 
-import { CreateClassSchema, type CreateClassInput } from "../types/class.shame";
-import { useListSChool } from "../hook/useListSchool";
+import { CreateRoundSchema, type CreateRoundInput } from "../types/round.shame";
 
-interface CreateClassProps {
+interface CreateRoundProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateClassInput) => void;
+  onSubmit: (data: CreateRoundInput) => void;
 }
 
-export default function CreateClass({
+export default function CreateRound({
   isOpen,
   onClose,
   onSubmit,
-}: CreateClassProps): React.ReactElement {
+}: CreateRoundProps): React.ReactElement {
   const {
     register,
     handleSubmit,
     formState: { errors },
     control,
     reset,
-  } = useForm<CreateClassInput>({
-    resolver: zodResolver(CreateClassSchema),
+  } = useForm<CreateRoundInput>({
+    resolver: zodResolver(CreateRoundSchema),
     defaultValues: {
       isActive: true,
     },
   });
 
-  const { data } = useListSChool();
-
-  // Memo hóa danh sách trường học để tránh re-render thừa
-  const schoolOptions = useMemo(() => {
-    if (data?.success) {
-      return data.data.map((item: any) => ({
-        label: item.name,
-        value: item.id,
-      }));
-    }
-    return [];
-  }, [data]);
-
-  // Reset khi mở lại form
   useEffect(() => {
     if (isOpen) {
       reset();
     }
   }, [isOpen, reset]);
 
-  const handleFormSubmit = (formData: CreateClassInput) => {
+  const handleFormSubmit = (formData: CreateRoundInput) => {
     onSubmit(formData);
     onClose();
   };
@@ -64,25 +49,43 @@ export default function CreateClass({
     <AppFormDialog
       open={isOpen}
       onClose={onClose}
-      title="Thêm lớp học mới"
+      title="Thêm vòng đấu mới"
       maxWidth="sm"
     >
-      <form id="create-class-form" onSubmit={handleSubmit(handleFormSubmit)}>
+      <form id="create-Round-form" onSubmit={handleSubmit(handleFormSubmit)}>
         <FormInput
           id="name"
-          label="Tên lớp"
-          placeholder="Nhập tên lớp"
+          label="Tên vòng đấu"
+          placeholder="Nhập tên vòng đấu"
           error={errors.name}
           register={register("name")}
         />
 
-        <FormSelect
-          id="schoolId"
-          name="schoolId"
-          label="Chọn trường học"
-          options={schoolOptions}
-          control={control}
-          error={errors.schoolId}
+        <FormInput
+          id="index"
+          label="Thứ tự "
+          placeholder="Nhập thứ tự vòng đấu"
+          error={errors.index}
+          register={register("index")}
+          type={`number`}
+        />
+
+        <FormInput
+          id="startTime"
+          label="Thời gian bắt đầu"
+          placeholder="Nhập thời gian bắt đầu"
+          error={errors.startTime}
+          register={register("startTime")}
+          type="datetime-local"
+        />
+
+        <FormInput
+          id="endTime"
+          label="Thứ tự vòng đấu"
+          placeholder="Nhập thứ tự"
+          error={errors.endTime}
+          register={register("endTime")}
+          type="datetime-local"
         />
 
         <Controller
