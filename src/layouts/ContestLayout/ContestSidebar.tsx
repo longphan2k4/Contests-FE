@@ -79,7 +79,7 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       key: "classes",
       icon: <SchoolIcon />,
       label: "Vòng đấu",
-      path: "/Contest/classes",
+      path: `/admin/cuoc-thi/${slug}/round`,
     },
     {
       key: "schools",
