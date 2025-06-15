@@ -10,9 +10,9 @@ import StudentsPage from "./students/page/StudentsPage";
 import QuestionsPackagesPage from "./questionpackages/page/QuestionsPackagesPage";
 import ClassesPage from "./class/page/ClassPage";
 import { ContestPage } from "./contests/pages";
+import { QuestionsPage } from "./question/pages";
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
-const QuestionsPage = () => <div>Trang Quản lý câu hỏi</div>;
 
 const AdminRoutes = () => {
   return (
