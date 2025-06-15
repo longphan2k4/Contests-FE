@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import type { Question } from '../types';
+import type { Question, BatchDeleteResponseData } from '../types';
 import { questionService } from '../services/questionService';
 import { useSnackbar } from 'notistack';
 
@@ -27,20 +27,7 @@ export const useQuestionCrud = () => {
 
   const createMutation = useMutation({
     mutationFn: (formData: FormData) => {
-      const questionData: QuestionFormData = {
-        intro: formData.get('intro') as string,
-        defaultTime: Number(formData.get('defaultTime')),
-        questionType: formData.get('questionType') as 'multiple_choice' | 'essay',
-        content: formData.get('content') as string,
-        options: formData.get('options') ? JSON.parse(formData.get('options') as string) : null,
-        correctAnswer: formData.get('correctAnswer') as string,
-        score: Number(formData.get('score')),
-        difficulty: formData.get('difficulty') as 'Alpha' | 'Beta' | 'Rc' | 'Gold',
-        explanation: formData.get('explanation') as string,
-        questionTopicId: Number(formData.get('questionTopicId')),
-        isActive: formData.get('isActive') === 'true'
-      };
-      return questionService.createQuestion(questionData);
+      return questionService.createQuestion(formData);
     },
     onSuccess: (data) => {
       enqueueSnackbar(data.message, { variant: 'success' });
@@ -86,9 +73,30 @@ export const useQuestionCrud = () => {
     mutationFn: (ids: number[]) => {
       return questionService.batchDelete(ids);
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['questions'] });
+    }
+  });
+
+  const uploadMediaMutation = useMutation({
+    mutationFn: ({ 
+      questionId, 
+      mediaType, 
+      files 
+    }: { 
+      questionId: number; 
+      mediaType: 'questionMedia' | 'mediaAnswer'; 
+      files: File[] 
+    }) => {
+      return questionService.uploadMedia(questionId, mediaType, files);
+    },
     onSuccess: (data) => {
       enqueueSnackbar(data.message, { variant: 'success' });
       queryClient.invalidateQueries({ queryKey: ['questions'] });
+    },
+    onError: (error: unknown) => {
+      console.error('Lỗi khi upload media:', error);
+      enqueueSnackbar('Có lỗi xảy ra khi tải lên media', { variant: 'error' });
     }
   });
 
@@ -126,21 +134,34 @@ export const useQuestionCrud = () => {
     return await deleteMutation.mutateAsync(id);
   };
 
-  const handleBatchDelete = async (ids: number[]) => {
-    await batchDeleteMutation.mutateAsync(ids);
+  const handleBatchDelete = async (ids: number[]): Promise<BatchDeleteResponseData> => {
+    return await batchDeleteMutation.mutateAsync(ids);
+  };
+
+  const handleUploadMedia = async (
+    questionId: number,
+    mediaType: 'questionMedia' | 'mediaAnswer',
+    files: File[]
+  ) => {
+    return await uploadMediaMutation.mutateAsync({ questionId, mediaType, files });
   };
 
   return {
     selectedQuestion,
     dialogOpen,
     dialogMode,
-    isLoading: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending || batchDeleteMutation.isPending,
+    isLoading: createMutation.isPending || 
+               updateMutation.isPending || 
+               deleteMutation.isPending || 
+               batchDeleteMutation.isPending ||
+               uploadMediaMutation.isPending,
     openCreateDialog,
     openEditDialog,
     openViewDialog,
     closeDialog,
     handleSubmit,
     handleDelete,
-    handleBatchDelete
+    handleBatchDelete,
+    handleUploadMedia
   };
 }; 

@@ -293,7 +293,7 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
               </Button>
             )}
             
-            {/* Display uploaded files */}
+            {/* Hiển thị file đã chọn */}
             <Box display="flex" flexWrap="wrap" gap={1}>
               {questionMediaFiles.map((file, index) => (
                 <Chip
@@ -303,7 +303,7 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
                 />
               ))}
               
-              {/* Display existing media from question */}
+              {/* Hiển thị media đã có từ câu hỏi (nếu có) */}
               {question?.questionMedia && question.questionMedia.map((media, index) => (
                 <Chip
                   key={`existing-${index}`}
@@ -413,7 +413,7 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
               </Button>
             )}
             
-            {/* Display uploaded files */}
+            {/* Hiển thị file đã chọn */}
             <Box display="flex" flexWrap="wrap" gap={1}>
               {mediaAnswerFiles.map((file, index) => (
                 <Chip
@@ -423,7 +423,7 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
                 />
               ))}
               
-              {/* Display existing media from question */}
+              {/* Hiển thị media đã có từ câu hỏi (nếu có) */}
               {question?.mediaAnswer && question.mediaAnswer.map((media, index) => (
                 <Chip
                   key={`existing-${index}`}
@@ -432,6 +432,9 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
                 />
               ))}
             </Box>
+            <Typography variant="caption" color="textSecondary">
+              Giới hạn: Ảnh (5MB), Video (100MB), Audio (20MB). Tối đa 5 file.
+            </Typography>
           </Box>
         </Box>
         

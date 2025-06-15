@@ -208,27 +208,28 @@ export const useQuestionForm = ({ question, mode, topics }: UseQuestionFormProps
 
   const prepareFormData = (): FormData => {
     const submitFormData = new FormData();
-    
-    // Add all form fields
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        if (key === 'options' && Array.isArray(value)) {
-          submitFormData.append('options', JSON.stringify(value));
-        } else {
-          submitFormData.append(key, value.toString());
-        }
-      }
-    });
-    
-    // Add media files
+    submitFormData.append('intro', formData.intro || '');
+    submitFormData.append('defaultTime', formData.defaultTime.toString());
+    submitFormData.append('questionType', formData.questionType);
+    submitFormData.append('content', formData.content);
+    submitFormData.append('score', formData.score.toString());
+    submitFormData.append('difficulty', formData.difficulty);
+    submitFormData.append('questionTopicId', formData.questionTopicId.toString());
+    if (formData.options) {
+      submitFormData.append('options', JSON.stringify(formData.options));
+    }
+    if (formData.correctAnswer) {
+      submitFormData.append('correctAnswer', formData.correctAnswer);
+    }
+    if (formData.explanation) {
+      submitFormData.append('explanation', formData.explanation);
+    }
     questionMediaFiles.forEach(file => {
       submitFormData.append('questionMedia', file);
     });
-    
     mediaAnswerFiles.forEach(file => {
       submitFormData.append('mediaAnswer', file);
     });
-
     return submitFormData;
   };
 

@@ -74,14 +74,16 @@ export const LIMITS = {
   audio: 20 * 1024 * 1024    // 20MB
 };
 
-// Base URL
-export const API_BASE_URL = "http://localhost:3000/api";
+// Định nghĩa cho từng lỗi chi tiết khi xóa nhiều câu hỏi
+export interface BatchDeleteError {
+  id: number;
+  error: string;
+}
 
-// Các endpoints
-export const ENDPOINTS = {
-  questions: `${API_BASE_URL}/questions`,
-  questionById: (id: number) => `${API_BASE_URL}/questions/${id}`,
-  hardDelete: (id: number) => `${API_BASE_URL}/questions/${id}/hard`,
-  batchDelete: `${API_BASE_URL}/questions/batch`,
-  uploadMedia: (id: number) => `${API_BASE_URL}/questions/${id}/media`
-}; 
+// Định nghĩa cho data trả về của batch delete
+export interface BatchDeleteResponseData {
+  successIds: number[];
+  failedIds: number[];
+  errors: BatchDeleteError[];
+}
+

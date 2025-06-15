@@ -2,6 +2,7 @@ import type {
   Question, 
   QuestionsListResponse,
   SearchParams,
+  BatchDeleteResponseData
 } from '../types';
 import axiosInstance from '../../../../config/axiosInstance';
 
@@ -11,6 +12,14 @@ interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
+  timestamp: string;
+}
+
+// Định nghĩa cho response tổng thể từ API khi batch delete
+interface BatchDeleteApiResponse {
+  success: boolean;
+  message: string;
+  data: BatchDeleteResponseData;
   timestamp: string;
 }
 
@@ -65,10 +74,17 @@ export const questionService = {
    * Tạo câu hỏi mới
    * POST /api/questions
    */
-  createQuestion: async (data: Omit<Question, 'id' | 'createdAt' | 'updatedAt'>): Promise<{ question: Question; message: string }> => {
+  createQuestion: async (formData: FormData): Promise<{ question: Question; message: string }> => {
     try {
-      const response = await axiosInstance.post<ApiResponse<Question>>(BASE_URL, data);
-      console.log('respone create',response)
+      // Log toàn bộ entries của formData để debug
+      for (const [key, value] of formData.entries()) {
+        console.log('FormData field:', key, value);
+      }
+      const response = await axiosInstance.post<ApiResponse<Question>>(BASE_URL, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return {
         question: response.data.data,
         message: response.data.message
@@ -137,19 +153,16 @@ export const questionService = {
    * Xóa nhiều câu hỏi cùng lúc
    * POST /api/questions/batch
    */
-  batchDelete: async (ids: number[]): Promise<{ message: string }> => {
+  batchDelete: async (ids: number[]): Promise<BatchDeleteResponseData> => {
     console.log('ids delete',ids)
     try {
         console.log('ids delete2',ids)
-      const response = await axiosInstance.delete<ApiResponse<null>>(`${BASE_URL}/batch`,
+      const response = await axiosInstance.delete<BatchDeleteApiResponse>(`${BASE_URL}/batch`,
         {data: { ids, hardDelete: true} }
-
       );
       console.log('respone batch delete',response)
       console.log('message batch delete',response.data.message)
-      return {
-        message: response.data.message
-      };
+      return response.data.data;
     } catch (error) {
       console.error('Lỗi khi xóa nhiều câu hỏi:', error);
       throw error;
@@ -160,13 +173,26 @@ export const questionService = {
    * Upload media cho câu hỏi
    * POST /api/questions/{id}/media
    */
-  uploadMedia: async (id: number, formData: FormData): Promise<{ question: Question; message: string }> => {
+  uploadMedia: async (id: number, mediaType: 'questionMedia' | 'mediaAnswer', files: File[]): Promise<{ question: Question; message: string }> => {
     try {
-      const response = await axiosInstance.post<ApiResponse<Question>>(`${BASE_URL}/${id}/media`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const formData = new FormData();
+      formData.append('mediaType', mediaType);
+      
+      // Thêm các file vào formData
+      files.forEach(file => {
+        formData.append('media', file);
       });
+      
+      const response = await axiosInstance.post<ApiResponse<Question>>(
+        `${BASE_URL}/${id}/media`, 
+        formData, 
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      
       return {
         question: response.data.data,
         message: response.data.message
