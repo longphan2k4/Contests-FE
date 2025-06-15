@@ -73,7 +73,7 @@ export interface ContestUpdateResponse {
     slogan?: string;
     createdAt: string; // ISO date string
     updatedAt: string; // ISO date string
-  }
+  };
 }
 export interface SingleContestResponse {
   success: boolean;
@@ -104,7 +104,7 @@ export interface DeleteManyResponse {
   success: boolean;
   messages: Array<{
     id: number;
-    status: 'success' | 'error';
+    status: "success" | "error";
     msg: string;
   }>;
 }

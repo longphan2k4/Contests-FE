@@ -1,7 +1,5 @@
-import axios from "axios";
 import axiosInstance from "../../../../config/axiosInstance";
 import {
-  type UserIdParam,
   type CreateUserInput,
   type UpdateUserInput,
   type UserQuery,

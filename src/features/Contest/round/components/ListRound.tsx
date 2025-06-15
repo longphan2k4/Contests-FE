@@ -6,23 +6,22 @@ import type { GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-
-import { type Classes } from "../types/class.shame";
+import { type Rounds } from "../types/round.shame";
 
 interface ClassListProps {
-  Classes: Classes[];
-  selectedClassIds: number[];
-  setSelectedClassIds: React.Dispatch<React.SetStateAction<number[]>>;
+  rounds: Rounds[];
+  selectedIds: number[];
+  setSelectedIds: React.Dispatch<React.SetStateAction<number[]>>;
   onView: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
   onToggle: (id: number) => void;
 }
 
-export default function ClassList({
-  selectedClassIds,
-  setSelectedClassIds,
-  Classes,
+export default function ListRound({
+  selectedIds,
+  setSelectedIds,
+  rounds,
   onView,
   onEdit,
   onDelete,
@@ -30,16 +29,16 @@ export default function ClassList({
 }: ClassListProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
-      field: "index",
+      field: "indexs",
       headerName: "STT",
-      width: 70,
+      width: 50,
       sortable: false,
       filterable: false,
       renderCell: params =>
         params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
-    { field: "name", headerName: "Tên lớp", flex: 1 },
-    { field: "shoolName", headerName: "Tên trường", flex: 1 },
+    { field: "name", headerName: "Tên vòng đấu", flex: 1 },
+    { field: "index", headerName: "Thứ tự vòng đấu", flex: 1 },
     {
       field: "isActive",
       headerName: "Trạng thái",
@@ -73,15 +72,15 @@ export default function ClassList({
   return (
     <Box>
       <DataGrid
-        rows={Classes}
+        rows={rounds}
         columns={columns}
         getRowId={row => row.id}
-        selectedIds={selectedClassIds}
+        selectedIds={selectedIds}
         onSelectChange={selection => {
           const idsArray = Array.isArray(selection)
             ? selection
             : Array.from((selection as any).ids || []);
-          setSelectedClassIds(idsArray.map(id => Number(id)));
+          setSelectedIds(idsArray.map(id => Number(id)));
         }}
       />
     </Box>

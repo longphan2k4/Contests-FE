@@ -10,7 +10,6 @@ import {
   Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import type { ReactNode } from "react";
 
 interface ConfirmProps {
   open: boolean;

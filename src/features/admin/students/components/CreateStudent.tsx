@@ -4,7 +4,10 @@ import FormInput from "../../../../components/FormInput";
 import { Box, Button } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreateStudentSchema, type CreateStudentInput } from "../types/student.shame";
+import {
+  CreateStudentSchema,
+  type CreateStudentInput,
+} from "../types/student.shame";
 import FormSelect from "../../../../components/FormSelect";
 import FormSwitch from "../../../../components/FormSwitch";
 
@@ -58,7 +61,10 @@ export default function CreateStudentDialog({
         title="Thêm học sinh mới"
         maxWidth="sm"
       >
-        <form id="create-student-form" onSubmit={handleSubmit(handleFormSubmit)}>
+        <form
+          id="create-student-form"
+          onSubmit={handleSubmit(handleFormSubmit)}
+        >
           <FormInput
             label="Họ và tên"
             id="fullName"
@@ -75,13 +81,14 @@ export default function CreateStudentDialog({
           />
           <FormSelect
             id="classId"
+            name="classId"
             label="Lớp"
-            register={register("classId", {
-  setValueAs: (v) => (v === "" ? undefined : Number(v)),
-})}
+            control={control}
             options={classOptions}
             error={errors.classId}
+            defaultValue="" // hoặc giá trị mặc định tương ứng
           />
+
           <Controller
             name="isActive"
             control={control}

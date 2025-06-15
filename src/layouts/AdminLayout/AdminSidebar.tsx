@@ -24,7 +24,6 @@ import {
   AccountBalance as BankIcon,
   ExpandLess,
   ExpandMore,
-  Menu as MenuIcon,
 } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
 
