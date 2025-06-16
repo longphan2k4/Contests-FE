@@ -23,7 +23,7 @@ import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDeleteMany from "../../../../components/Confirm";
 import ConfirmDelete from "../../../../components/Confirm";
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
-
+import { useParams } from "react-router-dom";
 import { useAwards } from "../hook/useAwards";
 import { useCreateAward } from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
@@ -55,7 +55,8 @@ const AwardsPage: React.FC = () => {
 
   const [filter, setFilter] = useState<AwardQuery>({});
   const [selectedAwardIds, setSelectedAwardIds] = useState<number[]>([]);
-
+  const { slug } = useParams<{ slug: string }>();
+  if (!slug) return null; 
   const { showToast } = useToast();
 
   const {
@@ -63,9 +64,9 @@ const AwardsPage: React.FC = () => {
     isLoading: isAwardsLoading,
     isError: isAwardsError,
     refetch: refetchAwards,
-  } = useAwards(filter);
+  } = useAwards(slug as string,filter);
 
-  const { mutate: mutateCreate } = useCreateAward();
+  const { mutate: mutateCreate } = useCreateAward(slug);
 
   const { mutate: mutateUpdate } = useUpdate();
 
@@ -77,8 +78,8 @@ const AwardsPage: React.FC = () => {
 
   useEffect(() => {
     if (awardsQuery) {
-      setAwards(awardsQuery.data.awards);
-      setPagination(awardsQuery.data.pagination);
+      setAwards(awardsQuery?.data);
+      setPagination(awardsQuery?.data.pagination);
     }
   }, [awardsQuery]);
 
@@ -298,7 +299,7 @@ const AwardsPage: React.FC = () => {
                 color="text.secondary"
                 alignSelf={{ xs: "flex-start", sm: "center" }}
               >
-                Tổng số: {pagination.total} giải thưởng
+                Tổng số: {pagination?.total} giải thưởng
               </Typography>
             </Box>
           </Stack>
@@ -344,15 +345,15 @@ const AwardsPage: React.FC = () => {
               </Select>
             </FormControl>
             <Typography>
-              Trang {filter.page || 1} / {pagination.totalPages}
+              Trang {filter?.page || 1} / {pagination?.totalPages}
             </Typography>
           </Box>
         </Box>
         <Box className="flex flex-col items-center">
           {" "}
           <Pagination
-            count={pagination.totalPages}
-            page={filter.page ?? 1}
+            count={pagination?.totalPages}
+            page={filter?.page ?? 1}
             color="primary"
             onChange={(event, value) =>
               setFilter(prev => ({

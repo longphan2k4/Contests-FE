@@ -20,8 +20,8 @@ export default function ViewAward({
   const fields = [
     { label: "ID", value: award?.id },
     { label: "Tên giải thưởng", value: award?.name },
-    { label: "ID Cuộc thi", value: award?.contest_id },
-    { label: "ID Thí sinh", value: award?.contestant_id },
+    { label: "ID Cuộc thi", value: award?.contestId },
+    { label: "ID Thí sinh", value: award?.contestantId },
     { label: "Loại giải", value: award?.type },
     { label: "Ngày tạo", value: award?.createdAt },
     { label: "Cập nhật gần nhất", value: award?.updatedAt },

@@ -10,11 +10,14 @@ export const useDeleteQuestionTopic = () => {
     try {
       setIsDeleting(true);
       const response = await deleteMultipleQuestionTopics([id]);
-      if (response.data.successful > 0) {
+      if (typeof response !== 'boolean' && response.data.successful > 0) {
         showSuccessNotification(response.message);
         return true;
-      } else {
+      } else if (typeof response !== 'boolean') {
         showErrorNotification(response.message);
+        return false;
+      } else {
+        showErrorNotification('Xóa chủ đề thất bại');
         return false;
       }
     } catch (error) {
@@ -28,17 +31,12 @@ export const useDeleteQuestionTopic = () => {
 
   const handleDeleteSelected = useCallback(async (ids: number[]) => {
     try {
-
       setIsDeleting(true);
       const response = await deleteMultipleQuestionTopics(ids);
-      console.log(response);
-      if (response.success) {
-        showSuccessNotification(response.message);
-        return true;
-      } else {
-        showErrorNotification(response.message);
-        return false;
-      }
+      console.log("response",response);
+
+        return response;
+
     } catch (error) {
       console.log(error);
       showErrorNotification('Có lỗi xảy ra khi xóa các chủ đề đã chọn');

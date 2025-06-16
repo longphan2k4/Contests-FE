@@ -90,7 +90,7 @@ const UsersPage: React.FC = () => {
     mutateActive(
       { id: id },
       {
-        onSuccess: data => {
+        onSuccess: () => {
           showToast(`Cập nhật trạng thái thành công`, "success");
 
           refetchUsers();
@@ -106,7 +106,7 @@ const UsersPage: React.FC = () => {
   const handeDeletes = (ids: deleteUsersType) => {
     mutateDeleteMany(ids, {
       onSuccess: data => {
-        data.messages.forEach((item: any, index: number) => {
+        data.messages.forEach((item: any) => {
           if (item.status === "error") {
             showToast(item.msg, "error");
           } else {
@@ -403,7 +403,7 @@ const UsersPage: React.FC = () => {
             count={pagination.totalPages}
             page={filter.page ?? 1}
             color="primary"
-            onChange={(event, value) =>
+            onChange={(_event, value) =>
               setFilter(prev => ({
                 ...prev,
                 page: value,

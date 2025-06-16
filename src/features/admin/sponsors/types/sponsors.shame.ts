@@ -1,78 +1,81 @@
 import { boolean, number, z } from "zod";
-export const CreateSponsorSchema = z.object({
-  username: z
-    .string()
-    .min(3, "Tên tài khoản ít nhất 3 kí tự")
-    .max(20, "Tên tài tối đa 20 kí tự"),
-  email: z
-    .string()
-    .min(1, "Vui lòng nhập email")
-    .email("Vui lòng nhập đúng định dạng email"),
-  password: z
-    .string()
-    .min(8, "Mật khẩu mới là bắt buộc và phải có ít nhất 8 ký tự")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
-      "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa và chữ thường"
-    ),
-  role: z.enum(["Admin", "Judge"]),
-  isActive: z.boolean(),
-});
 
+const imageMimeTypes = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+];
+
+export const CreateSponsorSchema = z.object({
+  name: z.string().min(1, "Tên không được để trống"),
+  logo: z
+    .any()
+    .refine((files) => files?.[0], { message: "Logo là bắt buộc" })
+    .refine((files) => imageMimeTypes.includes(files?.[0]?.type), {
+      message: "Logo phải là ảnh (jpg, png, webp, gif...)",
+    }),
+  images: z
+    .any()
+    .optional()
+    .refine(
+      (files) =>
+        !files?.[0] || imageMimeTypes.includes(files?.[0]?.type),
+      {
+        message: "Ảnh phải đúng định dạng (jpg, png, webp, gif...)",
+      }
+    ),
+  videos: z.any().optional(),
+  contestId: z.any().nullable().optional(),
+});
 export const SponsorIdShema = z.object({
   id: z.number().nullable(),
 });
 
+
+// export type CreateSponsorInput = {
+//   name: string;
+//   videos?: string;
+//   logo: File;
+//   slug: string;
+// };
+
 export const SponsorShema = z.object({
   id: z.number(),
-  username: z.string(),
-  email: z.string(),
-  role: z.enum(["Admin", "Judge"]),
-  isActive: boolean(),
+  name: z.string(),
+  logo: z.any().nullable().optional(),
+  images: z.any().nullable().optional(),
+  videos: z.any().nullable().optional(),
+  contestId: z.any().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  contest: z.any().nullable().optional(), // hoặc bạn có thể tạo `ContestSchema` riêng nếu cần
 });
+
+export type UploadSponsorMediaInput = {
+  id: number; // sponsor ID
+  logo?: File;
+  videos?: File;
+  images?: File;
+};
 
 export const UpdateSponsorSchema = z.object({
-  email: z
+   name: z
     .string()
-    .min(1, "Vui lòng nhập email")
-    .email("Vui lòng nhập đúng định dạng email")
-    .optional(),
-  password: z
-    .string()
-    .min(8, "Mật khẩu mới là bắt buộc và phải có ít nhất 8 ký tự")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
-      "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa và chữ thường"
-    )
-    .optional()
-    .or(z.literal("")),
-  role: z.enum(["Admin", "Judge"]).optional(),
-  isActive: z.boolean().optional(),
+    .min(2, "Tên nhà tài trợ phải có ít nhất 2 ký tự")
+    .max(100, "Tên nhà tài trợ không được vượt quá 100 ký tự"),
+  logo: z.any().optional(), 
+  images: z.any().optional(),  
+  videos: z.any().optional(), 
+  contestId: z.any().nullable().optional(),
 });
-export const Role = {
-  Admin: "Admin",
-  Judge: "Judge",
-} as const;
 
-export type Role = (typeof Role)[keyof typeof Role];
 export type SponsorQuery = {
-  page?: number; // trang hiện tại, mặc định 1
-  limit?: number; // số item trên 1 trang, mặc định 10
-  search?: string; // chuỗi tìm kiếm, có thể không truyền
-  isActive?: boolean; // trạng thái active, true hoặc false hoặc undefined
-  role?: Role;
+  page?: number;
+  limit?: number;
+  search?: string;
 };
-
-type ActiveOption = {
-  label: string;
-  value: boolean | ""; // có thể là true, false hoặc ""
-};
-
-export const ActiveOptions: ActiveOption[] = [
-  { label: "Đang hoạt động", value: true },
-  { label: "Tất cả", value: "" },
-  { label: "Không hoạt động", value: false },
-];
 
 export type pagination = {
   page?: number;

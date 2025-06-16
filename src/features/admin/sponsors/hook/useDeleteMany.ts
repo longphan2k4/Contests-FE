@@ -6,4 +6,4 @@ export const useDeleteMany = () => {
   return useMutation({
     mutationFn: (ids: deleteSponsorsType) => DeleteSponsors(ids),
   });
-};
+};  

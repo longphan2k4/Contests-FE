@@ -4,8 +4,7 @@ import FormInput from "../../../../components/FormInput";
 import { Box, Button } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UpdateAwardSchema, type UpdateAwardInput } from "../types/award.shame";
-
+import { UpdateAwardSchema, type UpdateAwardInput,awardTypeOptions } from "../types/award.shame";
 import { useAwardById } from "../hook/useAwardById";
 
 interface EditAwardProps {
@@ -36,8 +35,8 @@ export default function EditeAward({
     if (award) {
       reset({
         name: award.name,
-        contest_id: award.contest_id,
-        contestant_id: award.contestant_id,
+        contestId: award.contestId,
+        contestantId: award.contestantId,
         type: award.type,
       });
     }
@@ -69,24 +68,35 @@ export default function EditeAward({
             id="contest_id"
             placeholder="Nhập contest_id"
             type="number"
-            error={errors.contest_id}
-            register={register("contest_id", { valueAsNumber: true })}
+            error={errors.contestId}
+            register={register("contestId", { valueAsNumber: true })}
           />
           <FormInput
             label="ID Thí sinh"
             id="contestant_id"
             placeholder="Nhập contestant_id"
             type="number"
-            error={errors.contestant_id}
-            register={register("contestant_id", { valueAsNumber: true })}
+            error={errors.contestantId}
+            register={register("contestantId", { valueAsNumber: true })}
           />
-          <FormInput
-            label="Loại giải"
+          <Box sx={{ mt: 2 }}>
+          <label htmlFor="type">Loại giải</label>
+          <select
             id="type"
-            placeholder="Nhập loại giải (VD: Gold, Silver, Bronze)"
-            error={errors.type}
-            register={register("type")}
-          />
+            {...register("type")}
+            style={{ width: "100%", padding: "8px", marginTop: "4px" }}
+          >
+            <option value="">Chọn loại giải</option>
+            {awardTypeOptions.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+          {errors.type && (
+            <p style={{ color: "red", marginTop: "4px" }}>{errors.type.message}</p>
+          )}
+        </Box>
 
           <Button
             type="submit"

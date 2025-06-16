@@ -270,54 +270,7 @@ const RescuesPage: React.FC = () => {
               }}
             />
 
-            <FormAutocompleteFilter
-              label="Trạng thái"
-              options={[
-                { label: "Tất cả", value: "all" },
-                { label: "Hoạt động", value: "active" },
-                { label: "Không hoạt động", value: "inactive" },
-              ]}
-              value={
-                filter.isActive === undefined
-                  ? "all"
-                  : filter.isActive
-                  ? "active"
-                  : "inactive"
-              }
-              onChange={val => {
-                setFilter(prev => ({
-                  ...prev,
-                  isActive:
-                    val === "all"
-                      ? undefined
-                      : val === "active"
-                      ? true
-                      : val === "inactive"
-                      ? false
-                      : undefined, // fallback nếu Autocomplete trả undefined
-                }));
-              }}
-              sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
-            />
-
-            {/* Vai trò */}
-            <FormAutocompleteFilter
-              label="Vai trò"
-              options={[
-                { label: "Tất cả", value: "all" },
-                { label: "Admin", value: "Admin" },
-                { label: "Trọng tài", value: "Judge" },
-              ]}
-              value={filter.role ?? "all"}
-              onChange={(val: string | number | undefined) =>
-                setFilter(prev => ({
-                  ...prev,
-                  role: val === "all" ? undefined : (val as Role),
-                }))
-              }
-              sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
-            />
-
+          
             {/* Nút xoá người */}
             {selectedRescueIds.length > 0 && (
               <Button

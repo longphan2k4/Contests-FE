@@ -15,23 +15,24 @@ import {
 import { Button } from "@mui/material";
 import { Pagination } from "@mui/material";
 
-import CreateUser from "../components/CreateSponsor";
-import ViewUser from "../components/ViewSponsor";
-import EditUser from "../components/EditSponsor";
-import UserList from "../components/SponsorList";
+import CreateSponsor from "../components/CreateSponsor";
+import ViewSponsor from "../components/ViewSponsor";
+import EditSponsor from "../components/EditSponsor";
+import SponsorList from "../components/SponsorList";
 import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDeleteMany from "../../../../components/Confirm";
 import ConfirmDelete from "../../../../components/Confirm";
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 
 import { useSponsors } from "../hook/useSponsors";
-import { useCreateSponsor } from "../hook/useCreate";
+import { useCreateSponsorForContest } from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
 import { useActive } from "../hook/useActive";
 import { useDeleteMany } from "../hook/useDeleteMany";
 import { useDelete } from "../hook/useDelete";
+import { useStatistics } from "../hook/useStatistics";
 import AddIcon from "@mui/icons-material/Add";
-
+import { useParams } from "react-router-dom";
 import {
   type Sponsor,
   type CreateSponsorInput,
@@ -39,13 +40,12 @@ import {
   type SponsorQuery,
   type pagination,
   type deleteSponsorsType,
-  Role,
 } from "../types/sponsors.shame";
 import SearchIcon from "@mui/icons-material/Search";
 
 const SponsorsPage: React.FC = () => {
-  const [users, setUsers] = useState<Sponsor[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [selectedSponsorId, setSelectedSponsorId] = useState<number | null>(null);
   const [pagination, setPagination] = useState<pagination>({});
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -55,33 +55,32 @@ const SponsorsPage: React.FC = () => {
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
 
   const [filter, setFilter] = useState<SponsorQuery>({});
-  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
+  const [selectedSponsorIds, setSelectedSponsorIds] = useState<number[]>([]);
 
   const { showToast } = useToast();
-
+  const { slug } = useParams<{ slug: string }>();
+  if (!slug) return null; 
   const {
-    data: usersQuery,
-    isLoading: isUsersLoading,
-    isError: isUsersError,
-    refetch: refetchUsers,
-  } = useSponsors(filter);
+    data: sponsorsQuery,
+    isLoading: isSponsorsLoading,
+    isError: isSponsorsError,
+    refetch: refetchSponsors,
+  } = useSponsors(slug as string, filter);
 
-  const { mutate: mutateCreate } = useCreateSponsor();
-
+  const { mutate: mutateCreateSponsor  } = useCreateSponsorForContest(slug);
   const { mutate: mutateUpdate } = useUpdate();
-
   const { mutate: mutateActive } = useActive();
-
   const { mutate: mutateDeleteMany } = useDeleteMany();
-
   const { mutate: mutateDelete } = useDelete();
 
+  const { data: statisticsData } = useStatistics();
+
   useEffect(() => {
-    if (usersQuery) {
-      setUsers(usersQuery.data.sponsors);
-      setPagination(usersQuery.data.pagination);
+    if (sponsorsQuery) {
+      setSponsors(sponsorsQuery);
+      setPagination(statisticsData?.data?.totalSponsors);
     }
-  }, [usersQuery]);
+  }, [sponsorsQuery]);
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
@@ -92,9 +91,8 @@ const SponsorsPage: React.FC = () => {
       {
         onSuccess: data => {
           showToast(`Cập nhật trạng thái thành công`, "success");
-
-          refetchUsers();
-          setSelectedUserId(null);
+          refetchSponsors();
+          setSelectedSponsorId(null);
         },
         onError: (err: any) => {
           showToast(err.response?.data?.message, "error");
@@ -106,14 +104,14 @@ const SponsorsPage: React.FC = () => {
   const handeDeletes = (ids: deleteSponsorsType) => {
     mutateDeleteMany(ids, {
       onSuccess: data => {
-        data.messages.forEach((item: any, index: number) => {
+        data.messages.forEach((item: any) => {
           if (item.status === "error") {
             showToast(item.msg, "error");
           } else {
             showToast(item.msg, "success");
           }
         });
-        refetchUsers();
+        refetchSponsors();
       },
       onError: err => {
         console.log(err);
@@ -122,27 +120,28 @@ const SponsorsPage: React.FC = () => {
   };
 
   const handleCreate = (payload: CreateSponsorInput) => {
-    mutateCreate(payload, {
-      onSuccess: data => {
-        if (data) showToast(`Tạo tài khoản thành công`, "success");
-        refetchUsers();
-      },
-      onError: (err: any) => {
-        if (err.response?.data?.message) {
-          showToast(err.response?.data?.message, "success");
-        }
-      },
-    });
-  };
+  mutateCreateSponsor(payload, {
+    onSuccess: () => {
+      showToast("Tạo nhà tài trợ thành công", "success");
+      refetchSponsors?.(); // Optional chaining an toàn
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      const message = err.response?.data?.message ?? "Đã xảy ra lỗi khi tạo nhà tài trợ";
+      showToast(message, "error");
+    },
+  });
+};
+
 
   const handleUpdate = (payload: UpdateSponsorInput) => {
-    if (selectedUserId) {
+    if (selectedSponsorId) {
       mutateUpdate(
-        { id: selectedUserId, payload },
+        { id: selectedSponsorId, payload },
         {
           onSuccess: () => {
-            showToast(`Cập nhật tài khoản thành công`, "success");
-            refetchUsers();
+            showToast(`Cập nhật nhà tài trợ thành công`, "success");
+            refetchSponsors();
           },
           onError: (err: any) => {
             if (err.response?.data?.message)
@@ -157,18 +156,18 @@ const SponsorsPage: React.FC = () => {
     if (!id) return;
     mutateDelete(id, {
       onSuccess: () => {
-        showToast(`Xóa người dùng thành công`, "success");
-        refetchUsers();
+        showToast(`Xóa nhà tài trợ thành công`, "success");
+        refetchSponsors();
       },
       onError: (error: any) => {
-        showToast(error.response?.data?.message, "success");
+        showToast(error.response?.data?.message, "error");
       },
     });
   }, []);
 
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
-      setSelectedUserId(id);
+      setSelectedSponsorId(id);
 
       if (type === "delete") {
         setIsConfirmDelete(true);
@@ -180,25 +179,25 @@ const SponsorsPage: React.FC = () => {
     []
   );
 
-  const hanldConfirmDeleteManyDeletes = () => {
+  const handleConfirmDeleteMany = () => {
     setIsConfirmDeleteMany(true);
   };
 
-  if (isUsersLoading) {
+  if (isSponsorsLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
-  if (isUsersError) {
+  if (isSponsorsError) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchUsers}>Thử lại</Button>}
+          action={<Button onClick={() => refetchSponsors()}>Thử lại</Button>}
         >
-          Không thể tải danh sách người dùng.
+          Không thể tải danh sách nhà tài trợ.
         </Alert>
       </Box>
     );
@@ -213,11 +212,11 @@ const SponsorsPage: React.FC = () => {
           startIcon={<AddIcon />}
           onClick={openCreate}
         >
-          Thêm người dùng
+          Thêm nhà tài trợ
         </Button>
       </Box>
 
-      {/* User list card */}
+      {/* Sponsor list card */}
       <Box
         sx={{
           background: "#FFFFFF",
@@ -270,23 +269,21 @@ const SponsorsPage: React.FC = () => {
               }}
             />
 
-            {/* Nút xoá người */}
-            {selectedUserIds.length > 0 && (
+            {selectedSponsorIds.length > 0 && (
               <Button
                 variant="contained"
                 color="error"
-                onClick={hanldConfirmDeleteManyDeletes}
+                onClick={handleConfirmDeleteMany}
                 sx={{
                   flex: { sm: 1 },
                   width: { xs: "100%", sm: "auto" },
                   whiteSpace: "nowrap",
                 }}
               >
-                Xoá người ({selectedUserIds.length})
+                Xoá ({selectedSponsorIds.length}) nhà tài trợ
               </Button>
             )}
 
-            {/* Tổng số người dùng */}
             <Box
               sx={{
                 ml: { xs: 0, sm: "auto" },
@@ -299,15 +296,15 @@ const SponsorsPage: React.FC = () => {
                 color="text.secondary"
                 alignSelf={{ xs: "flex-start", sm: "center" }}
               >
-                Tổng số: {pagination.total} người dùng
+                Tổng số: {statisticsData?.data?.totalSponsors} nhà tài trợ
               </Typography>
             </Box>
           </Stack>
 
-          <UserList
-            users={users}
-            selectedUserIds={selectedUserIds}
-            setSelectedUserIds={setSelectedUserIds}
+          <SponsorList
+            sponsors={sponsors}
+            selectedSponsorIds={selectedSponsorIds}
+            setSelectedSponsorIds={setSelectedSponsorIds}
             onView={id => handleAction("view", id)}
             onEdit={id => handleAction("edit", id)}
             onDelete={id => handleAction("delete", id)}
@@ -333,8 +330,8 @@ const SponsorsPage: React.FC = () => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1,
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >
@@ -345,14 +342,14 @@ const SponsorsPage: React.FC = () => {
               </Select>
             </FormControl>
             <Typography>
-              Trang {filter.page || 1} / {pagination.totalPages}
+              Trang {filter?.page || 1} / {pagination?.totalPages}
             </Typography>
           </Box>
         </Box>
+
         <Box className="flex flex-col items-center">
-          {" "}
           <Pagination
-            count={pagination.totalPages}
+            count={pagination?.totalPages}
             page={filter.page ?? 1}
             color="primary"
             onChange={(event, value) =>
@@ -365,39 +362,41 @@ const SponsorsPage: React.FC = () => {
             showLastButton
           />
         </Box>
-        <CreateUser
+
+        <CreateSponsor
           isOpen={isCreateOpen}
           onClose={closeCreate}
           onSubmit={handleCreate}
         />
 
-        <ViewUser
+        <ViewSponsor
           isOpen={isViewOpen}
           onClose={() => setIsViewOpen(false)}
-          id={selectedUserId}
+          id={selectedSponsorId}
         />
 
-        <EditUser
+        <EditSponsor
           isOpen={isEditOpen}
           onClose={() => setIsEditOpen(false)}
-          id={selectedUserId}
+          id={selectedSponsorId}
           onSubmit={handleUpdate}
         />
       </Box>
+
       <ConfirmDeleteMany
         open={isConfirmDeleteMany}
         onClose={() => setIsConfirmDeleteMany(false)}
-        title="Xác nhận xóa người dùng "
-        description={`Bạn có chắc xóa ${selectedUserIds.length} tài khoản này không`}
-        onConfirm={() => handeDeletes({ ids: selectedUserIds })}
+        title="Xác nhận xóa nhà tài trợ"
+        description={`Bạn có chắc xóa ${selectedSponsorIds.length} nhà tài trợ này không?`}
+        onConfirm={() => handeDeletes({ ids: selectedSponsorIds })}
       />
 
       <ConfirmDelete
         open={isConfirmDelete}
         onClose={() => setIsConfirmDelete(false)}
-        title="Xác nhận xóa người dùng "
-        description={`Bạn có chắc chắn xóa tài khoản này không`}
-        onConfirm={() => handleDelete(selectedUserId)}
+        title="Xác nhận xóa nhà tài trợ"
+        description={`Bạn có chắc chắn xóa nhà tài trợ này không?`}
+        onConfirm={() => handleDelete(selectedSponsorId)}
       />
     </Box>
   );

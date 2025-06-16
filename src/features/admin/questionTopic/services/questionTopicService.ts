@@ -5,7 +5,21 @@ import type {
   QuestionTopicsResponse
 } from '../types/questionTopic';
 
-
+export interface BatchDeleteResponse {
+  success: boolean;
+  message: string;
+  data: {
+    totalRequested: number;
+    successful: number;
+    failed: number;
+    successfulIds: number[];
+    failedIds: Array<{
+      id: number;
+      reason: string;
+    }>;
+  };
+  timestamp: string;
+}
 
 /**
  * Lấy danh sách chủ đề câu hỏi từ API
@@ -96,33 +110,28 @@ export const deleteQuestionTopic = async (ids: number[]): Promise<void> => {
   }
 };
 
-interface BatchDeleteResponse {
-  success: boolean;
-  message: string;
-  data: {
-    totalRequested: number;
-    successful: number;
-    failed: number;
-    successfulIds: number[];
-    failedIds: number[];
-  };
-  timestamp: string;
-}
-
 /**
  * Xóa nhiều chủ đề câu hỏi
  */
-export const deleteMultipleQuestionTopics = async (ids: number[]): Promise<BatchDeleteResponse> => {
+export const deleteMultipleQuestionTopics = async (ids: number[]): Promise<BatchDeleteResponse | boolean> => {
   try {
-    const response = await axiosInstance.post<BatchDeleteResponse>(`/question-topics/batch-delete`, { ids });
-    console.log(response);
+    const response = await axiosInstance.delete<BatchDeleteResponse>(`/question-topics/batch-delete`, { data: { ids } });
     return response.data;
-  } catch (error) {
-    console.error(`Error deleting question topics with ids ${ids}:`, error);
-    throw error;
+  } catch (error: any) {
+    // Nếu lỗi có response và data đúng định dạng BatchDeleteResponse thì trả về luôn object đó
+    if (
+      error.response &&
+      error.response.data &&
+      typeof error.response.data === 'object' &&
+      'success' in error.response.data &&
+      'data' in error.response.data
+    ) {
+      return error.response.data as BatchDeleteResponse;
+    }
+    // Nếu không có data chi tiết thì mới trả về false
+    return false;
   }
 };
-
 
 /**
  * Kích hoạt/vô hiệu hóa chủ đề câu hỏi

@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { type User } from "../types/user.shame";
 import { Box } from "@mui/material";
 
 import { useUserById } from "../hook/userUserById";

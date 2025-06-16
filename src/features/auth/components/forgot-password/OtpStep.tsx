@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Box, Typography, Button, Alert, TextField, Link } from "@mui/material";
 import { CAO_THANG_COLORS } from "../../../../common/theme";
 import useForgotPassword from "../../hooks/useFogotPassWord";
@@ -12,13 +12,12 @@ interface OtpStepProps {
 
 const OTP_LENGTH = 6;
 
-const OtpStep = ({ email, onSubmit, onBack, onResend }: OtpStepProps) => {
+const OtpStep = ({ email, onSubmit, onBack }: OtpStepProps) => {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [resending, setResending] = useState(false);
+  const [resending, _setResending] = useState(false);
   const [countdown, setCountdown] = useState(120);
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const { mutate } = useForgotPassword();
   const { showErrorNotification, showSuccessNotification } = useNotification();
   const sendOtpSubmit = (email: string) => {
@@ -50,16 +49,6 @@ const OtpStep = ({ email, onSubmit, onBack, onResend }: OtpStepProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH);
     setOtp(value);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace") {
-      setOtp(prev => prev.slice(0, -1));
-    } else if (e.key === "ArrowLeft") {
-      inputRef.current?.focus();
-    } else if (e.key === "ArrowRight") {
-      inputRef.current?.focus();
-    }
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {

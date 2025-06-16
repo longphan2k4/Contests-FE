@@ -32,7 +32,7 @@ export default function EditeUser({
     register,
     handleSubmit,
     formState: { errors },
-    watch,
+
     control,
     reset,
   } = useForm<UpdateUserInput>({

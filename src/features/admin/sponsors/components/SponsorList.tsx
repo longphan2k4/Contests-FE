@@ -10,9 +10,9 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import { type Sponsor } from "../types/sponsors.shame";
 
 interface SponsorListProps {
-  users: Sponsor[];
-  selectedUserIds: number[];
-  setSelectedUserIds: React.Dispatch<React.SetStateAction<number[]>>;
+  sponsors: Sponsor[];
+  selectedSponsorIds: number[];
+  setSelectedSponsorIds: React.Dispatch<React.SetStateAction<number[]>>;
   onView: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
@@ -20,9 +20,9 @@ interface SponsorListProps {
 }
 
 export default function SponsorList({
-  selectedUserIds,
-  setSelectedUserIds,
-  users,
+  selectedSponsorIds,
+  setSelectedSponsorIds,
+  sponsors,
   onView,
   onEdit,
   onDelete,
@@ -72,15 +72,15 @@ export default function SponsorList({
   return (
     <Box>
       <DataGrid
-        rows={users}
+        rows={sponsors}
         columns={columns}
         getRowId={row => row.id}
-        selectedIds={selectedUserIds}
+        selectedIds={selectedSponsorIds}
         onSelectChange={selection => {
           const idsArray = Array.isArray(selection)
             ? selection
             : Array.from((selection as any).ids || []);
-          setSelectedUserIds(idsArray.map(id => Number(id)));
+          setSelectedSponsorIds(idsArray.map(id => Number(id)));
         }}
       />
     </Box>
