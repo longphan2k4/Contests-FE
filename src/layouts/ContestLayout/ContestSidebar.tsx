@@ -82,10 +82,10 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: `/admin/cuoc-thi/${slug}/vong-dau`,
     },
     {
-      key: "schools",
+      key: "match",
       icon: <BankIcon />,
       label: "Trận đấu",
-      path: "/Contest/school",
+      path: `/admin/cuoc-thi/${slug}/tran-dau`,
     },
 
     {
@@ -152,12 +152,6 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       key: "4",
       icon: <FileIcon />,
       label: "Giải thưởng",
-      path: "/Contest/about",
-    },
-    {
-      key: "4",
-      icon: <FileIcon />,
-      label: `${slug}`,
       path: "/Contest/about",
     },
   ];
