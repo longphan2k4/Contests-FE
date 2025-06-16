@@ -12,7 +12,7 @@ import TechBanner from "../features/match/components/MediaPopup/BackGround";
 import PrivateRoute from "./PrivateRoute";
 import Forbidden403 from "../components/403";
 import ProfilePage from "../features/account/pages/ProfilePage";
-import JudgeHomePage from "../features/judge/components/JudgeHomePage";
+import JudgeHomePage from "../features/judge/pages/JudgeHomePage";
 import MatchSelectionPage from "../features/judge/pages/MatchSelectionPage";
 const AppRoutes: React.FC = () => {
   return (
