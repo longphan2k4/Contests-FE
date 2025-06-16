@@ -3,7 +3,10 @@ import { Route, Navigate } from "react-router-dom";
 import ContestLayout from "../../layouts/ContestLayout";
 import RoundPage from "./round/page/RoundPage";
 import GroupPage from "./group/page/GroupPage";
+
 import MatchPage from "./match/page/MatchPage";
+
+import ResultsPage from "../admin/result/pages/ResultsPage";
 
 const Dashboard = () => <div>Trang Dashboard Cuộc Thi</div>;
 
@@ -15,7 +18,7 @@ const ContestRoutes = () => {
       <Route path="nhom" element={<GroupPage />} />
       <Route path="tran-dau" element={<MatchPage />} />
       <Route index element={<Navigate to="dashboard" replace />} />
-      {/* <Route path="results" element={<ResultsPage />} /> */}
+      <Route path="results" element={<ResultsPage />} />
     </Route>
   );
 };
