@@ -34,18 +34,18 @@ const FormSelect = ({
   placeholder,
   multiple = false,
 }: FormSelectProps) => {
+  // Chuẩn hóa defaultValue cho Autocomplete
+  const calculatedDefaultValue = multiple
+    ? options.filter(
+        opt => Array.isArray(defaultValue) && defaultValue.includes(opt.value)
+      )
+    : options.find(opt => opt.value === defaultValue) ?? null;
+
   return (
     <Controller
       name={name}
       control={control}
-      defaultValue={
-        multiple
-          ? options.filter(
-              opt =>
-                Array.isArray(defaultValue) && defaultValue.includes(opt.value)
-            )
-          : options.find(opt => opt.value === defaultValue) ?? null
-      }
+      defaultValue={calculatedDefaultValue}
       render={({ field }) => {
         const currentValue = field.value;
 
@@ -74,13 +74,12 @@ const FormSelect = ({
             onChange={(_, newValue) => {
               if (multiple) {
                 const selectedValues = Array.isArray(newValue)
-                  ? newValue.map(item => item.value)
+                  ? newValue.map((item: OptionType) => item.value)
                   : [];
                 field.onChange(selectedValues);
               } else {
-                field.onChange(
-                  newValue && !Array.isArray(newValue) ? newValue.value : ""
-                );
+                const single = newValue as OptionType | null;
+                field.onChange(single ? single.value : "");
               }
             }}
             filterOptions={(opts, state) => filter(opts, state)}

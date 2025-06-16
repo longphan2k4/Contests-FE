@@ -10,6 +10,9 @@ import {
   Collapse,
   Divider,
   Typography,
+  IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import {
   Dashboard as DashboardIcon,
@@ -17,12 +20,8 @@ import {
   Group as GroupIcon,
   QuestionMark as QuestionIcon,
   EmojiEvents as TrophyIcon,
-  BarChart as BarChartIcon,
   Description as FileIcon,
-  Settings as SettingsIcon,
   AccountBalance as BankIcon,
-  Videocam as VideoIcon,
-  MenuBook as BookIcon,
   ExpandLess,
   ExpandMore,
 } from "@mui/icons-material";
@@ -30,6 +29,7 @@ import { Link, useLocation } from "react-router-dom";
 
 interface AdminSidebarProps {
   collapsed: boolean;
+  onToggle?: () => void; // Optional callback for external toggle control
 }
 
 interface MenuItem {
@@ -40,12 +40,22 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
-const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
+const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onToggle }) => {
   const location = useLocation();
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Detect mobile screens
+  const [mobileOpen, setMobileOpen] = useState(false); // State for mobile drawer
 
   const handleClick = (key: string) => {
     setOpenSubMenu(openSubMenu === key ? null : key);
+  };
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+    if (onToggle) {
+      onToggle();
+    }
   };
 
   const menuItems: MenuItem[] = [
@@ -67,44 +77,35 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
       label: "Lớp học",
       path: "/admin/classes",
     },
-    // Ky long: quản lý người dùng
     {
-      key: 'users',
+      key: "users",
       icon: <GroupIcon />,
       label: "Quản lý người dùng",
       path: "/admin/users",
     },
     {
-      key: "question-management",
-      icon: <QuestionIcon />,
-      label: "Quản lý câu hỏi",
-      children: [
-        {
-          key: "topics",
-          icon: <QuestionIcon fontSize="small" />,
-          label: "Chủ đề",
-          path: "/admin/question-topics",
-        },
-        {
-          key: "questions",
-          icon: <QuestionIcon fontSize="small" />,
-          label: "Câu hỏi",
-          path: "/admin/questions",
-        },
-        {
-          key: "packages",
-          icon: <QuestionIcon fontSize="small" />,
-          label: "Gói câu hỏi",
-          path: "/admin/question-packages",
-        },
-        // giả lập chi tiết câu hỏi
-        {
-          key: "question-packages",
-          icon: <QuestionIcon fontSize="small" />,
-          label: "Chi tiết câu hỏi",
-          path: "/admin/question-packages/1",
-        },
-      ],
+      key: "topics",
+      icon: <QuestionIcon fontSize="small" />,
+      label: "Chủ đề câu hỏi",
+      path: "/admin/question-topics",
+    },
+    {
+      key: "questions",
+      icon: <QuestionIcon fontSize="small" />,
+      label: "Câu hỏi",
+      path: "/admin/questions",
+    },
+    {
+      key: "packages",
+      icon: <QuestionIcon fontSize="small" />,
+      label: "Gói câu hỏi",
+      path: "/admin/question-packages",
+    },
+    {
+      key: "question-packages",
+      icon: <QuestionIcon fontSize="small" />,
+      label: "Chi tiết câu hỏi",
+      path: "/admin/question-packages/1",
     },
     {
       key: "contests",
@@ -113,52 +114,16 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
       path: "/admin/contests",
     },
     {
-      key: 'contestants',
+      key: "students",
       icon: <GroupIcon />,
-      label: 'Thí sinh',
-      path: '/admin/contestants',
-    },
-    {
-      key: 'students',
-      icon: <GroupIcon />,
-      label: 'Quản lý sinh viên',
-      path: '/admin/students',
-    },
-    {
-      key: "results",
-      icon: <BarChartIcon />,
-      label: "Kết quả",
-      path: "/admin/results",
-    },
-    {
-      key: "awards",
-      icon: <TrophyIcon />,
-      label: "Giải thưởng",
-      path: "/admin/awards",
-    },
-    {
-      key: "sponsors",
-      icon: <BookIcon />,
-      label: "Nhà tài trợ",
-      path: "/admin/sponsors",
-    },
-    {
-      key: "videos",
-      icon: <VideoIcon />,
-      label: "Videos",
-      path: "/admin/class-videos",
+      label: "Quản lý sinh viên",
+      path: "/admin/students",
     },
     {
       key: "about",
       icon: <FileIcon />,
       label: "Thông tin website",
       path: "/admin/about",
-    },
-    {
-      key: "settings",
-      icon: <SettingsIcon />,
-      label: "Cài đặt",
-      path: "/admin/settings",
     },
   ];
 
@@ -186,6 +151,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
                       to={child.path || ""}
                       sx={{ pl: 4 }}
                       selected={location.pathname === child.path}
+                      onClick={() => isMobile && setMobileOpen(false)}
                     >
                       <ListItemIcon>{child.icon}</ListItemIcon>
                       <ListItemText primary={child.label} />
@@ -204,6 +170,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
             component={Link}
             to={item.path || ""}
             selected={isSelected}
+            onClick={() => isMobile && setMobileOpen(false)}
           >
             <ListItemIcon>{item.icon}</ListItemIcon>
             <ListItemText primary={item.label} />
@@ -213,56 +180,75 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed }) => {
     });
   };
 
-  const drawerWidth = collapsed ? 64 : 240;
+  // Set drawerWidth to 240px by default on large screens, collapse to 64px when toggled
+  const drawerWidth = isMobile ? (mobileOpen ? 240 : 0) : collapsed ? 64 : 240;
 
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        [`& .MuiDrawer-paper`]: {
+    <>
+      {isMobile && (
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={handleDrawerToggle}
+          sx={{
+            position: "fixed",
+            top: 16,
+            left: 16,
+            zIndex: theme.zIndex.drawer + 1,
+          }}
+        ></IconButton>
+      )}
+      <Drawer
+        variant={isMobile ? "temporary" : "permanent"}
+        open={isMobile ? mobileOpen : true}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+        sx={{
           width: drawerWidth,
-          boxSizing: "border-box",
-          whiteSpace: collapsed ? "nowrap" : "normal",
-          overflowX: "hidden",
-          transition: theme =>
-            theme.transitions.create("width", {
+          flexShrink: 0,
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            whiteSpace: collapsed && !isMobile ? "nowrap" : "normal",
+            overflowX: "hidden",
+            transition: theme.transitions.create("width", {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.enteringScreen,
             }),
-        },
-      }}
-    >
-      <Box
-        sx={{
-          height: 64,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          p: 2,
+          },
         }}
       >
-        <Typography
-          variant="h6"
-          noWrap
-          component="div"
+        <Box
           sx={{
-            fontWeight: "bold",
-            display: collapsed ? "none" : "block",
+            height: 64,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            p: 2,
           }}
         >
-          Quản lý cuộc thi
-        </Typography>
-        {collapsed && (
-          <Typography variant="h6" fontWeight="bold">
-            QCT
+          <Typography
+            variant="h6"
+            noWrap
+            component="div"
+            sx={{
+              fontWeight: "bold",
+              display: collapsed && !isMobile ? "none" : "block",
+            }}
+          >
+            Quản lý cuộc thi
           </Typography>
-        )}
-      </Box>
-      <Divider />
-      <List>{renderMenuItems(menuItems)}</List>
-    </Drawer>
+          {collapsed && !isMobile && (
+            <Typography variant="h6" fontWeight="bold">
+              QCT
+            </Typography>
+          )}
+        </Box>
+        <Divider />
+        <List>{renderMenuItems(menuItems)}</List>
+      </Drawer>
+    </>
   );
 };
 

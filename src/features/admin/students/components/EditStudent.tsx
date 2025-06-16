@@ -46,7 +46,6 @@ const classOptions = [
   { label: "12A1", value: "23" },
   { label: "11A2", value: "24" },
   { label: "11A1", value: "25" },
-
 ];
 
 export default function EditStudent({
@@ -115,15 +114,16 @@ export default function EditStudent({
             error={errors.studentCode}
             register={register("studentCode")}
           />
-         <FormSelect
+          <FormSelect
             id="classId"
+            name="classId"
             label="Lớp"
+            control={control}
             options={classOptions}
-            {...register("classId", {
-              setValueAs: (v) => (v === "" ? undefined : Number(v)),
-            })}
             error={errors.classId}
+            defaultValue="" // hoặc 1 giá trị mặc định
           />
+
           <Controller
             name="isActive"
             control={control}

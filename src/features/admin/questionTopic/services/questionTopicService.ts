@@ -117,10 +117,15 @@ export const deleteMultipleQuestionTopics = async (ids: number[]): Promise<Batch
   try {
     const response = await axiosInstance.delete<BatchDeleteResponse>(`/question-topics/batch-delete`, { data: { ids } });
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Nếu lỗi có response và data đúng định dạng BatchDeleteResponse thì trả về luôn object đó
     if (
+      error && 
+      typeof error === 'object' &&
+      'response' in error &&
       error.response &&
+      typeof error.response === 'object' &&
+      'data' in error.response &&
       error.response.data &&
       typeof error.response.data === 'object' &&
       'success' in error.response.data &&

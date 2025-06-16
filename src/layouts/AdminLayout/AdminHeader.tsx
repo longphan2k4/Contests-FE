@@ -9,44 +9,47 @@ import {
   MenuItem,
   Box,
   Divider,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Menu as MenuIcon, AccountCircle, Logout } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import { useLogout } from "../../features/auth/hooks/useLogout";
 import { useAuth } from "../../features/auth/hooks/authContext";
 import { useNotification } from "../../contexts/NotificationContext";
+
 interface AdminHeaderProps {
-  toggle: () => void;
+  onToggle: () => void;
 }
 
-const AdminHeader: React.FC<AdminHeaderProps> = ({ toggle }) => {
+const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggle }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [schoolInfo] = useState({
     schoolName: "Trường Cao Đẳng Kỹ Thuật Cao Thắng",
     departmentName: "Khoa Công nghệ thông tin",
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
   const { setUser } = useAuth();
   const { showSuccessNotification, showErrorNotification } = useNotification();
   const { mutate } = useLogout();
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   const handleLogout = () => {
     mutate(undefined, {
       onSuccess: () => {
-        handleClose();
+        handleMenuClose();
         document.cookie =
           "feAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         showSuccessNotification("Đăng xuất thành công", "Thông báo");
-        setTimeout(() => {
-          setUser(null); // Reset user context sau khi đã show notification
-          // Nếu muốn chuyển route, chuyển ở đây
-          // navigate("/auth/login");
-        }, 500); // 500ms để Notification kịp hiển thị
+        setTimeout(() => setUser(null), 500);
       },
       onError: error => {
         console.error("Logout failed:", error);
@@ -54,75 +57,85 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ toggle }) => {
       },
     });
   };
+
   return (
     <AppBar
       position="fixed"
       color="default"
       elevation={1}
-      sx={{
-        zIndex: theme => theme.zIndex.drawer + 1,
-        backgroundColor: "white",
-      }}
+      sx={{ zIndex: theme.zIndex.drawer + 1, backgroundColor: "white" }}
     >
-      <Toolbar>
+      <Toolbar sx={{ px: isMobile ? 1 : 2, minHeight: isMobile ? 56 : 64 }}>
         <IconButton
           color="inherit"
-          aria-label="open drawer"
-          onClick={toggle}
+          aria-label="toggle drawer"
           edge="start"
-          sx={{ mr: 2 }}
+          onClick={onToggle}
+          sx={{ mr: isMobile ? 1 : 2 }}
         >
           <MenuIcon />
         </IconButton>
-
-        <Box sx={{ flexGrow: 1 }}>
+        <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
           <Typography
-            variant="subtitle1"
-            component="div"
-            sx={{ fontWeight: "bold" }}
+            variant={isMobile ? "subtitle2" : "subtitle1"}
+            sx={{
+              fontWeight: "bold",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              maxWidth: isMobile ? "40vw" : "none",
+            }}
           >
             {schoolInfo.schoolName}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             {schoolInfo.departmentName}
           </Typography>
         </Box>
-
         <Box>
           <IconButton
-            size="large"
-            aria-label="account of current user"
-            aria-controls="menu-appbar"
+            aria-label="user menu"
+            aria-controls="user-menu"
             aria-haspopup="true"
-            onClick={handleMenu}
-            color="inherit"
+            onClick={handleMenuOpen}
+            sx={{ p: isMobile ? 0.5 : 1, borderRadius: 0 }} // Remove rounding from IconButton
           >
-            <Avatar sx={{ width: 32, height: 32 }}>
+            <Avatar
+              sx={{
+                width: isMobile ? 28 : 32,
+                height: isMobile ? 28 : 32,
+                borderRadius: 0,
+              }} // Remove rounding from Avatar
+            >
               <AccountCircle />
             </Avatar>
-            <Typography variant="body2" sx={{ ml: 1 }}>
-              Admin
-            </Typography>
+            {!isMobile && (
+              <Typography variant="body2" sx={{ borderRadius: "20px" }}>
+                Admin
+              </Typography>
+            )}
           </IconButton>
           <Menu
-            id="menu-appbar"
+            id="user-menu"
             anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
             open={Boolean(anchorEl)}
-            onClose={handleClose}
+            onClose={handleMenuClose}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
+            PaperProps={{ sx: { minWidth: isMobile ? 120 : 160 } }}
           >
             <MenuItem
               component={Link}
               to="/admin/profile"
-              onClick={handleClose}
+              onClick={handleMenuClose}
             >
               <AccountCircle fontSize="small" sx={{ mr: 1 }} />
               Hồ sơ
