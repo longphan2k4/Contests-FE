@@ -4,20 +4,6 @@ import type { Question, BatchDeleteResponseData } from '../types';
 import { questionService } from '../services/questionService';
 import { useSnackbar } from 'notistack';
 
-interface QuestionFormData {
-  intro?: string;
-  defaultTime: number;
-  questionType: 'multiple_choice' | 'essay';
-  content: string;
-  options?: string[] | null;
-  correctAnswer: string;
-  score: number;
-  difficulty: 'Alpha' | 'Beta' | 'Rc' | 'Gold';
-  explanation?: string;
-  questionTopicId: number;
-  isActive: boolean;
-}
-
 export const useQuestionCrud = () => {
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -37,21 +23,33 @@ export const useQuestionCrud = () => {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, formData }: { id: number; formData: FormData }) => {
-      const questionData: QuestionFormData = {
-        intro: formData.get('intro') as string,
-        defaultTime: Number(formData.get('defaultTime')),
-        questionType: formData.get('questionType') as 'multiple_choice' | 'essay',
-        content: formData.get('content') as string,
-        options: formData.get('options') ? JSON.parse(formData.get('options') as string) : null,
-        correctAnswer: formData.get('correctAnswer') as string,
-        score: Number(formData.get('score')),
-        difficulty: formData.get('difficulty') as 'Alpha' | 'Beta' | 'Rc' | 'Gold',
-        explanation: formData.get('explanation') as string,
-        questionTopicId: Number(formData.get('questionTopicId')),
-        isActive: formData.get('isActive') === 'true'
-      };
-      console.log('questionUpdate',questionData)
-      return questionService.updateQuestion(id, questionData);
+      // Log FormData để debug
+      console.log('FormData trước khi gửi:');
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      
+      // Tạo FormData mới để tránh thay đổi FormData gốc
+      const newFormData = new FormData();
+      
+      // Copy tất cả các trường từ FormData cũ sang
+      for (const [key, value] of formData.entries()) {
+        if (key === 'isActive') {
+          // Xử lý đặc biệt cho isActive
+          const isActiveValue = value === 'true' ? 'true' : 'fasle';
+          newFormData.append(key, isActiveValue);
+        } else {
+          newFormData.append(key, value);
+        }
+      }
+      
+      // Log FormData mới để debug
+      console.log('FormData sau khi xử lý:');
+      for (const [key, value] of newFormData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      
+      return questionService.updateQuestion(id, newFormData);
     },
     onSuccess: (data) => {
       enqueueSnackbar(data.message, { variant: 'success' });

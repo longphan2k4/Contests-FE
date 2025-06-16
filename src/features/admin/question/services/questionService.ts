@@ -97,19 +97,40 @@ export const questionService = {
 
   /**
    * Cập nhật câu hỏi
-   * PUT /api/questions/{id}
+   * PATCH /api/questions/{id}
    */
-  updateQuestion: async (id: number, data: Partial<Question>): Promise<{ question: Question; message: string }> => {
-    console.log('data update',data)
+  updateQuestion: async (id: number, formData: FormData): Promise<{ question: Question; message: string }> => {
     try {
-      const response = await axiosInstance.patch<ApiResponse<Question>>(`${BASE_URL}/${id}`, data);
-      console.log('respone update',response)
+      // Log toàn bộ entries của formData để debug
+      console.log('FormData entries:');
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      const response = await axiosInstance.patch<ApiResponse<Question>>(
+        `${BASE_URL}/${id}`, 
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      
+      console.log('Response update:', response.data);
       return {
         question: response.data.data,
         message: response.data.message
       };
-    } catch (error) {
-      console.error('Lỗi khi cập nhật câu hỏi:', error);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string; error?: Record<string, unknown> } } };
+        console.error('Lỗi chi tiết:', axiosError.response?.data);
+        if (axiosError.response?.data?.error) {
+          console.error('Chi tiết lỗi validation:', axiosError.response.data.error);
+        }
+        throw new Error(axiosError.response?.data?.message || 'Lỗi khi cập nhật câu hỏi');
+      }
       throw error;
     }
   },

@@ -72,7 +72,7 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
     }
 
     try {
-      const formDataToSubmit = prepareFormData();
+      const formDataToSubmit = prepareFormData(formData);
       await onSubmit(formDataToSubmit);
       onClose();
     } catch (error) {

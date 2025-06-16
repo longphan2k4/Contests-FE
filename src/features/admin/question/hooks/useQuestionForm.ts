@@ -206,31 +206,41 @@ export const useQuestionForm = ({ question, mode, topics }: UseQuestionFormProps
     return Object.keys(newErrors).length === 0;
   };
 
-  const prepareFormData = (): FormData => {
-    const submitFormData = new FormData();
-    submitFormData.append('intro', formData.intro || '');
-    submitFormData.append('defaultTime', formData.defaultTime.toString());
-    submitFormData.append('questionType', formData.questionType);
-    submitFormData.append('content', formData.content);
-    submitFormData.append('score', formData.score.toString());
-    submitFormData.append('difficulty', formData.difficulty);
-    submitFormData.append('questionTopicId', formData.questionTopicId.toString());
-    if (formData.options) {
-      submitFormData.append('options', JSON.stringify(formData.options));
+  const prepareFormData = (values: QuestionFormValues): FormData => {
+    const formData = new FormData();
+
+    // Thêm các trường cơ bản
+    if (values.intro) formData.append('intro', values.intro);
+    if (values.defaultTime) formData.append('defaultTime', values.defaultTime.toString());
+    if (values.questionType) formData.append('questionType', values.questionType);
+    if (values.content) formData.append('content', values.content);
+    if (values.score) formData.append('score', values.score.toString());
+    if (values.difficulty) formData.append('difficulty', values.difficulty);
+    if (values.questionTopicId) formData.append('questionTopicId', values.questionTopicId.toString());
+    if (values.explanation) formData.append('explanation', values.explanation);
+    // Thêm isActive
+    formData.append('isActive', values.isActive ? 'true' : 'false');
+
+    // Xử lý options và correctAnswer cho câu hỏi trắc nghiệm
+    if (values.questionType === 'multiple_choice') {
+      if (values.options) {
+        formData.append('options', JSON.stringify(values.options));
+      }
+      if (values.correctAnswer) {
+        formData.append('correctAnswer', values.correctAnswer.toString());
+      }
     }
-    if (formData.correctAnswer) {
-      submitFormData.append('correctAnswer', formData.correctAnswer);
-    }
-    if (formData.explanation) {
-      submitFormData.append('explanation', formData.explanation);
-    }
-    questionMediaFiles.forEach(file => {
-      submitFormData.append('questionMedia', file);
+
+    // Xử lý media từ state
+    questionMediaFiles.forEach((file: File) => {
+      formData.append('questionMedia', file);
     });
-    mediaAnswerFiles.forEach(file => {
-      submitFormData.append('mediaAnswer', file);
+
+    mediaAnswerFiles.forEach((file: File) => {
+      formData.append('mediaAnswer', file);
     });
-    return submitFormData;
+
+    return formData;
   };
 
   return {
