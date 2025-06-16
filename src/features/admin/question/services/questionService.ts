@@ -5,6 +5,7 @@ import type {
   BatchDeleteResponseData
 } from '../types';
 import axiosInstance from '../../../../config/axiosInstance';
+import axios from 'axios';
 
 const BASE_URL = '/questions';
 
@@ -101,35 +102,70 @@ export const questionService = {
    */
   updateQuestion: async (id: number, formData: FormData): Promise<{ question: Question; message: string }> => {
     try {
-      // Log toàn bộ entries của formData để debug
-      console.log('FormData entries:');
+      // Tạo FormData mới
+      const newFormData = new FormData();
+      
+      // Xử lý các trường text
       for (const [key, value] of formData.entries()) {
+        if (key !== 'questionMedia' && key !== 'mediaAnswer') {
+          newFormData.append(key, value);
+        }
+      }
+
+      // Xử lý files riêng biệt
+      const questionMediaFiles = formData.getAll('questionMedia');
+      const mediaAnswerFiles = formData.getAll('mediaAnswer');
+
+      // Kiểm tra và thêm files
+      if (questionMediaFiles.length > 0) {
+        questionMediaFiles.forEach((file) => {
+          if (file instanceof File && file.size > 0) {
+            newFormData.append('questionMedia', file);
+          }
+        });
+      }
+
+      if (mediaAnswerFiles.length > 0) {
+        mediaAnswerFiles.forEach((file) => {
+          if (file instanceof File && file.size > 0) {
+            newFormData.append('mediaAnswer', file);
+          }
+        });
+      }
+
+      // Log để debug
+      console.log('FormData trước khi gửi:');
+      for (const [key, value] of newFormData.entries()) {
         console.log(`${key}:`, value);
       }
 
       const response = await axiosInstance.patch<ApiResponse<Question>>(
         `${BASE_URL}/${id}`, 
-        formData,
+        newFormData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
+          timeout: 60000, // 60 giây
+          maxContentLength: 50 * 1024 * 1024, // 50MB
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total!);
+            console.log(`Upload progress: ${percentCompleted}%`);
+          },
         }
       );
       
-      console.log('Response update:', response.data);
       return {
         question: response.data.data,
         message: response.data.message
       };
-    } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { data?: { message?: string; error?: Record<string, unknown> } } };
-        console.error('Lỗi chi tiết:', axiosError.response?.data);
-        if (axiosError.response?.data?.error) {
-          console.error('Chi tiết lỗi validation:', axiosError.response.data.error);
-        }
-        throw new Error(axiosError.response?.data?.message || 'Lỗi khi cập nhật câu hỏi');
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Chi tiết lỗi:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message
+        });
       }
       throw error;
     }

@@ -2,58 +2,45 @@ import { useState } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import type { Question, BatchDeleteResponseData } from '../types';
 import { questionService } from '../services/questionService';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../../../contexts/toastContext';
+import { AxiosError } from 'axios';
+
+interface ApiErrorResponse {
+  success: false;
+  message: string;
+  code: string;
+}
 
 export const useQuestionCrud = () => {
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showToast } = useToast();
 
   const createMutation = useMutation({
     mutationFn: (formData: FormData) => {
       return questionService.createQuestion(formData);
     },
     onSuccess: (data) => {
-      enqueueSnackbar(data.message, { variant: 'success' });
+      showToast(data.message, 'success');
       queryClient.invalidateQueries({ queryKey: ['questions'] });
+    },
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      showToast(error.response?.data?.message || 'Có lỗi xảy ra khi tạo câu hỏi', 'error');
     }
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, formData }: { id: number; formData: FormData }) => {
-      // Log FormData để debug
-      console.log('FormData trước khi gửi:');
-      for (const [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-      }
-      
-      // Tạo FormData mới để tránh thay đổi FormData gốc
-      const newFormData = new FormData();
-      
-      // Copy tất cả các trường từ FormData cũ sang
-      for (const [key, value] of formData.entries()) {
-        if (key === 'isActive') {
-          // Xử lý đặc biệt cho isActive
-          const isActiveValue = value === 'true' ? 'true' : 'fasle';
-          newFormData.append(key, isActiveValue);
-        } else {
-          newFormData.append(key, value);
-        }
-      }
-      
-      // Log FormData mới để debug
-      console.log('FormData sau khi xử lý:');
-      for (const [key, value] of newFormData.entries()) {
-        console.log(`${key}:`, value);
-      }
-      
-      return questionService.updateQuestion(id, newFormData);
+      return questionService.updateQuestion(id, formData);
     },
     onSuccess: (data) => {
-      enqueueSnackbar(data.message, { variant: 'success' });
+      showToast(data.message, 'success');
       queryClient.invalidateQueries({ queryKey: ['questions'] });
+    },
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      showToast(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật câu hỏi', 'error');
     }
   });
 
@@ -62,8 +49,11 @@ export const useQuestionCrud = () => {
       return questionService.deleteQuestion(id);
     },
     onSuccess: (data) => {
-      enqueueSnackbar(data.message, { variant: 'success' });
+      showToast(data.message, 'success');
       queryClient.invalidateQueries({ queryKey: ['questions'] });
+    },
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      showToast(error.response?.data?.message || 'Có lỗi xảy ra khi xóa câu hỏi', 'error');
     }
   });
 
@@ -73,6 +63,9 @@ export const useQuestionCrud = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['questions'] });
+    },
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      showToast(error.response?.data?.message || 'Có lỗi xảy ra khi xóa các câu hỏi đã chọn', 'error');
     }
   });
 
@@ -89,12 +82,11 @@ export const useQuestionCrud = () => {
       return questionService.uploadMedia(questionId, mediaType, files);
     },
     onSuccess: (data) => {
-      enqueueSnackbar(data.message, { variant: 'success' });
+      showToast(data.message, 'success');
       queryClient.invalidateQueries({ queryKey: ['questions'] });
     },
-    onError: (error: unknown) => {
-      console.error('Lỗi khi upload media:', error);
-      enqueueSnackbar('Có lỗi xảy ra khi tải lên media', { variant: 'error' });
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      showToast(error.response?.data?.message || 'Có lỗi xảy ra khi tải lên media', 'error');
     }
   });
 
