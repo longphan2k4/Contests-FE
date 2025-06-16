@@ -2,20 +2,13 @@ import { useState } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import type { Question, BatchDeleteResponseData } from '../types';
 import { questionService } from '../services/questionService';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../../../contexts/toastContext';
+import { AxiosError } from 'axios';
 
-interface QuestionFormData {
-  intro?: string;
-  defaultTime: number;
-  questionType: 'multiple_choice' | 'essay';
-  content: string;
-  options?: string[] | null;
-  correctAnswer: string;
-  score: number;
-  difficulty: 'Alpha' | 'Beta' | 'Rc' | 'Gold';
-  explanation?: string;
-  questionTopicId: number;
-  isActive: boolean;
+interface ApiErrorResponse {
+  success: false;
+  message: string;
+  code: string;
 }
 
 export const useQuestionCrud = () => {
@@ -23,39 +16,31 @@ export const useQuestionCrud = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showToast } = useToast();
 
   const createMutation = useMutation({
     mutationFn: (formData: FormData) => {
       return questionService.createQuestion(formData);
     },
     onSuccess: (data) => {
-      enqueueSnackbar(data.message, { variant: 'success' });
+      showToast(data.message, 'success');
       queryClient.invalidateQueries({ queryKey: ['questions'] });
+    },
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      showToast(error.response?.data?.message || 'Có lỗi xảy ra khi tạo câu hỏi', 'error');
     }
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, formData }: { id: number; formData: FormData }) => {
-      const questionData: QuestionFormData = {
-        intro: formData.get('intro') as string,
-        defaultTime: Number(formData.get('defaultTime')),
-        questionType: formData.get('questionType') as 'multiple_choice' | 'essay',
-        content: formData.get('content') as string,
-        options: formData.get('options') ? JSON.parse(formData.get('options') as string) : null,
-        correctAnswer: formData.get('correctAnswer') as string,
-        score: Number(formData.get('score')),
-        difficulty: formData.get('difficulty') as 'Alpha' | 'Beta' | 'Rc' | 'Gold',
-        explanation: formData.get('explanation') as string,
-        questionTopicId: Number(formData.get('questionTopicId')),
-        isActive: formData.get('isActive') === 'true'
-      };
-      console.log('questionUpdate',questionData)
-      return questionService.updateQuestion(id, questionData);
+      return questionService.updateQuestion(id, formData);
     },
     onSuccess: (data) => {
-      enqueueSnackbar(data.message, { variant: 'success' });
+      showToast(data.message, 'success');
       queryClient.invalidateQueries({ queryKey: ['questions'] });
+    },
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      showToast(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật câu hỏi', 'error');
     }
   });
 
@@ -64,8 +49,11 @@ export const useQuestionCrud = () => {
       return questionService.deleteQuestion(id);
     },
     onSuccess: (data) => {
-      enqueueSnackbar(data.message, { variant: 'success' });
+      showToast(data.message, 'success');
       queryClient.invalidateQueries({ queryKey: ['questions'] });
+    },
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      showToast(error.response?.data?.message || 'Có lỗi xảy ra khi xóa câu hỏi', 'error');
     }
   });
 
@@ -75,6 +63,9 @@ export const useQuestionCrud = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['questions'] });
+    },
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      showToast(error.response?.data?.message || 'Có lỗi xảy ra khi xóa các câu hỏi đã chọn', 'error');
     }
   });
 
@@ -91,12 +82,11 @@ export const useQuestionCrud = () => {
       return questionService.uploadMedia(questionId, mediaType, files);
     },
     onSuccess: (data) => {
-      enqueueSnackbar(data.message, { variant: 'success' });
+      showToast(data.message, 'success');
       queryClient.invalidateQueries({ queryKey: ['questions'] });
     },
-    onError: (error: unknown) => {
-      console.error('Lỗi khi upload media:', error);
-      enqueueSnackbar('Có lỗi xảy ra khi tải lên media', { variant: 'error' });
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      showToast(error.response?.data?.message || 'Có lỗi xảy ra khi tải lên media', 'error');
     }
   });
 
