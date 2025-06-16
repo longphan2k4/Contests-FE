@@ -13,7 +13,7 @@ import PrivateRoute from "./PrivateRoute";
 import Forbidden403 from "../components/403";
 import ProfilePage from "../features/account/pages/ProfilePage";
 import JudgeHomePage from "../features/judge/components/JudgeHomePage";
-import SelectedMatch from "../features/judge/components/SelectedMatch";
+import MatchSelectionPage from "../features/judge/pages/MatchSelectionPage";
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
@@ -33,7 +33,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/account/profile" element={<ProfilePage />} />
       </Route>
       <Route path="/judge/home" element={<JudgeHomePage />} />
-      <Route path="/judge/selected-match" element={<SelectedMatch />} />
+      <Route path="/judge/selected-match" element={<MatchSelectionPage />} />
       <Route path="/match" element={<MatchPage />} />
       <Route path="/banner" element={<TechBanner />} />
       <Route path="/403" element={<Forbidden403 />} />
