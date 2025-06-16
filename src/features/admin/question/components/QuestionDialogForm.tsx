@@ -8,7 +8,6 @@ import {
   FormHelperText,
   Typography,
   Box,
-  Chip,
   IconButton,
   Switch,
   FormControlLabel,
@@ -19,14 +18,23 @@ import {
 import type { SelectChangeEvent } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import type { Question } from '../types';
 import { Editor } from '@tinymce/tinymce-react';
+import MediaPreview from './MediaPreview';
+import ExistingMediaPreview from './ExistingMediaPreview';
 
 interface QuestionTopic {
   id: number;
   name: string;
   description?: string;
   isActive: boolean;
+}
+
+interface MediaFilePreview {
+  id: string;
+  url: string;
+  name: string;
+  type: string;
+  size: number;
 }
 
 export interface QuestionFormValues {
@@ -41,6 +49,8 @@ export interface QuestionFormValues {
   explanation: string;
   questionTopicId: number;
   isActive: boolean;
+  deleteQuestionMedia?: string[];
+  deleteMediaAnswer?: string[];
 }
 
 export interface QuestionFormErrors {
@@ -53,8 +63,9 @@ interface QuestionDialogFormProps {
   topics: QuestionTopic[];
   questionMediaFiles: File[];
   mediaAnswerFiles: File[];
+  questionMediaPreviews: MediaFilePreview[];
+  mediaAnswerPreviews: MediaFilePreview[];
   isReadOnly: boolean;
-  question?: Question | null;
   onFormChange: (name: string, value: string | number | boolean) => void;
   onContentChange: (content: string) => void;
   onExplanationChange: (explanation: string) => void;
@@ -65,6 +76,8 @@ interface QuestionDialogFormProps {
   onMediaAnswerChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeQuestionMedia: (index: number) => void;
   removeMediaAnswer: (index: number) => void;
+  removeQuestionMediaPreview: (index: number) => void;
+  removeMediaAnswerPreview: (index: number) => void;
   handleSubmit: (e: React.FormEvent) => void;
 }
 
@@ -74,8 +87,9 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
   topics,
   questionMediaFiles,
   mediaAnswerFiles,
+  questionMediaPreviews,
+  mediaAnswerPreviews,
   isReadOnly,
-  question,
   onFormChange,
   onContentChange,
   onExplanationChange,
@@ -86,6 +100,8 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
   onMediaAnswerChange,
   removeQuestionMedia,
   removeMediaAnswer,
+  removeQuestionMediaPreview,
+  removeMediaAnswerPreview,
   handleSubmit,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -102,6 +118,80 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
     const { name, checked } = e.target;
     onFormChange(name, checked);
   };
+
+  const renderMediaSection = (
+    title: string,
+    files: File[],
+    existingFiles: MediaFilePreview[],
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+    onRemove: (index: number) => void,
+    onRemoveExisting: (index: number) => void
+  ) => (
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="subtitle1" gutterBottom>
+        {title}
+      </Typography>
+      <Box sx={{ mb: 2 }}>
+        <input
+          type="file"
+          multiple
+          onChange={onChange}
+          style={{ display: 'none' }}
+          id={`${title.toLowerCase().replace(/\s+/g, '-')}-input`}
+          accept="image/*,video/*,audio/*"
+        />
+        <label htmlFor={`${title.toLowerCase().replace(/\s+/g, '-')}-input`}>
+          <Button
+            variant="outlined"
+            component="span"
+            startIcon={<CloudUploadIcon />}
+            disabled={isReadOnly || files.length + existingFiles.length >= 5}
+          >
+            Tải lên {title.toLowerCase()}
+          </Button>
+        </label>
+        <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
+          Giới hạn: Ảnh (5MB), Video (100MB), Audio (20MB). Tối đa 5 file.
+        </Typography>
+      </Box>
+      
+      {/* Hiển thị media đã tồn tại */}
+      {existingFiles.length > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 1 }}>
+            Media hiện tại:
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            {existingFiles.map((file, index) => (
+              <ExistingMediaPreview
+                key={file.id}
+                media={file}
+                onRemove={() => onRemoveExisting(index)}
+              />
+            ))}
+          </Box>
+        </Box>
+      )}
+      
+      {/* Hiển thị media mới thêm */}
+      {files.length > 0 && (
+        <Box>
+          <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 1 }}>
+            Media mới thêm:
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            {files.map((file, index) => (
+              <MediaPreview
+                key={`${file.name}-${index}`}
+                file={file}
+                onRemove={() => onRemove(index)}
+              />
+            ))}
+          </Box>
+        </Box>
+      )}
+    </Box>
+  );
 
   return (
     <form onSubmit={handleSubmit}>
@@ -269,54 +359,14 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
           </FormControl>
         </Box>
         
-        <Box>
-          <Box mb={2}>
-            <Typography variant="body2" gutterBottom>
-              Media câu hỏi (tùy chọn)
-            </Typography>
-            {!isReadOnly && (
-              <Button
-                component="label"
-                variant="outlined"
-                startIcon={<CloudUploadIcon />}
-                sx={{ mb: 2 }}
-              >
-                Tải lên media
-                <input
-                  type="file"
-                  hidden
-                  multiple
-                  accept="image/*,video/*,audio/*"
-                  onChange={onQuestionMediaChange}
-                  disabled={questionMediaFiles.length >= 5}
-                />
-              </Button>
-            )}
-            
-            {/* Hiển thị file đã chọn */}
-            <Box display="flex" flexWrap="wrap" gap={1}>
-              {questionMediaFiles.map((file, index) => (
-                <Chip
-                  key={index}
-                  label={file.name}
-                  onDelete={isReadOnly ? undefined : () => removeQuestionMedia(index)}
-                />
-              ))}
-              
-              {/* Hiển thị media đã có từ câu hỏi (nếu có) */}
-              {question?.questionMedia && question.questionMedia.map((media, index) => (
-                <Chip
-                  key={`existing-${index}`}
-                  label={media.filename}
-                  color="primary"
-                />
-              ))}
-            </Box>
-            <Typography variant="caption" color="textSecondary">
-              Giới hạn: Ảnh (5MB), Video (100MB), Audio (20MB). Tối đa 5 file.
-            </Typography>
-          </Box>
-        </Box>
+        {renderMediaSection(
+          'Media câu hỏi',
+          questionMediaFiles,
+          questionMediaPreviews,
+          onQuestionMediaChange,
+          removeQuestionMedia,
+          removeQuestionMediaPreview
+        )}
         
         {/* Câu trả lời */}
         <Box>
@@ -389,54 +439,14 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
           </FormControl>
         </Box>
         
-        <Box>
-          <Box mb={2}>
-            <Typography variant="body2" gutterBottom>
-              Media đáp án (tùy chọn)
-            </Typography>
-            {!isReadOnly && (
-              <Button
-                component="label"
-                variant="outlined"
-                startIcon={<CloudUploadIcon />}
-                sx={{ mb: 2 }}
-              >
-                Tải lên media
-                <input
-                  type="file"
-                  hidden
-                  multiple
-                  accept="image/*,video/*,audio/*"
-                  onChange={onMediaAnswerChange}
-                  disabled={mediaAnswerFiles.length >= 5}
-                />
-              </Button>
-            )}
-            
-            {/* Hiển thị file đã chọn */}
-            <Box display="flex" flexWrap="wrap" gap={1}>
-              {mediaAnswerFiles.map((file, index) => (
-                <Chip
-                  key={index}
-                  label={file.name}
-                  onDelete={isReadOnly ? undefined : () => removeMediaAnswer(index)}
-                />
-              ))}
-              
-              {/* Hiển thị media đã có từ câu hỏi (nếu có) */}
-              {question?.mediaAnswer && question.mediaAnswer.map((media, index) => (
-                <Chip
-                  key={`existing-${index}`}
-                  label={media.filename}
-                  color="primary"
-                />
-              ))}
-            </Box>
-            <Typography variant="caption" color="textSecondary">
-              Giới hạn: Ảnh (5MB), Video (100MB), Audio (20MB). Tối đa 5 file.
-            </Typography>
-          </Box>
-        </Box>
+        {renderMediaSection(
+          'Media đáp án',
+          mediaAnswerFiles,
+          mediaAnswerPreviews,
+          onMediaAnswerChange,
+          removeMediaAnswer,
+          removeMediaAnswerPreview
+        )}
         
         <Box>
           <FormControl fullWidth>

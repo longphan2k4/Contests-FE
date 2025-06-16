@@ -32,13 +32,12 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
   Visibility as VisibilityIcon,
-  CloudUpload as CloudUploadIcon,
 } from '@mui/icons-material';
 import type { SelectChangeEvent } from '@mui/material';
 import type { AxiosError } from 'axios';
 import type { Question, QuestionType, BatchDeleteResponseData, BatchDeleteError } from '../types';
 import { useGetQuestions } from '../hooks/crud/useGetQuestions';
-import { QuestionDialog, MediaUploaderDialog } from '../components';
+import { QuestionDialog } from '../components';
 import { useQuestionCrud } from '../hooks/useQuestionCrud';
 import { useQuestionTopics } from '../hooks/useQuestionTopics';
 import ConfirmDeleteDialog from '../../../../components/ConfirmDeleteDialog';
@@ -57,8 +56,6 @@ const QuestionsPage: React.FC = () => {
   const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const [openConfirmBatchDelete, setOpenConfirmBatchDelete] = useState(false);
-  const [openMediaUploader, setOpenMediaUploader] = useState(false);
-  const [mediaUploadTarget, setMediaUploadTarget] = useState<number | null>(null);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -86,7 +83,6 @@ const QuestionsPage: React.FC = () => {
     handleSubmit,
     handleDelete,
     handleBatchDelete,
-    handleUploadMedia
   } = useQuestionCrud();
 
   const { data: topics = [] } = useQuestionTopics();
@@ -168,14 +164,9 @@ const QuestionsPage: React.FC = () => {
     setOpenConfirmDelete(true);
   };
 
-  const handleOpenMediaUploader = (id: number) => {
-    setMediaUploadTarget(id);
-    setOpenMediaUploader(true);
-  };
 
-  const handleCloseMediaUploader = () => {
-    setOpenMediaUploader(false);
-  };
+
+
 
   const handleConfirmDelete = async () => {
     try {
@@ -511,11 +502,6 @@ const QuestionsPage: React.FC = () => {
                               <EditIcon />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Tải lên media">
-                            <IconButton color="primary" size="small" onClick={() => handleOpenMediaUploader(question.id)}>
-                              <CloudUploadIcon />
-                            </IconButton>
-                          </Tooltip>
                           <Tooltip title="Xóa">
                             <IconButton color="error" size="small" onClick={() => handleOpenDelete(question.id)}>
                               <DeleteIcon />
@@ -598,13 +584,6 @@ const QuestionsPage: React.FC = () => {
         content={`Bạn có chắc chắn muốn xóa ${selectedIds.size} câu hỏi đã chọn không?`}
       />
 
-      <MediaUploaderDialog
-        open={openMediaUploader}
-        onClose={handleCloseMediaUploader}
-        questionId={mediaUploadTarget || 0}
-        onUpload={handleUploadMedia}
-        isLoading={isCrudLoading}
-      />
     </Box>
   );
 };
