@@ -1,7 +1,6 @@
-import axios from "axios";
 import axiosInstance from "../../../../config/axiosInstance";
 import {
-  type RescueIdParam,
+  //type RescueIdParam,
   type CreateRescueInput,
   type UpdateRescueInput,
   type RescueQuery,

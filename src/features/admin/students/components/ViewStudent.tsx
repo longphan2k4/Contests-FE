@@ -1,27 +1,37 @@
 import React from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { type Student } from "../types/student.shame";
 import { Box } from "@mui/material";
-
+import { useStudentById } from "../hook/useStudentById";
+import { useClasses } from "../hook/useGetClass";
+import { type ClassItem } from "../types/student.shame";
 interface ViewStudentProps {
-  student: Student | null;
+  id: number | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export default function ViewStudent({
-  student,
+  id,
   isOpen,
   onClose,
 }: ViewStudentProps): React.ReactElement {
+  const { data: student } = useStudentById(id);
+  const { data: classData } = useClasses({});
+  const classOptions = (classData?.data?.classes || []) as ClassItem[];
+  const classLabel = classOptions.find(cls => cls.id === student?.classId);
   const fields = [
     { label: "ID", value: student?.id },
     { label: "Họ và tên", value: student?.fullName },
     { label: "Mã học sinh", value: student?.studentCode },
-    { label: "Lớp", value: student?.className },
+    {
+    label: "Lớp",
+    value: classLabel
+      ? `${classLabel.name} - ${classLabel.shoolName}`
+      : "-",
+    },
     {
       label: "Trạng thái",
-      value: student?.isActive ? "Đang hoạt động" : "Đã bị vô hiệu hóa",
+      value: student?.isActive ? "Đang hoạt động" : "Không hoạt động",
     },
   ];
 
@@ -30,7 +40,7 @@ export default function ViewStudent({
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Chi tiết học sinh`}
+        title={`Thông tin chi tiết: ${student?.fullName || "Học sinh"}`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -48,7 +58,7 @@ export default function ViewStudent({
                   {label}
                 </td>
                 <td style={{ padding: "8px", verticalAlign: "top" }}>
-                  {String(value)}
+                  {value !== undefined && value !== null ? String(value) : "-"}
                 </td>
               </tr>
             ))}

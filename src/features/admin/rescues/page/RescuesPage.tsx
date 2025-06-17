@@ -22,12 +22,12 @@ import RescueList from "../components/RescueList";
 import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDeleteMany from "../../../../components/Confirm";
 import ConfirmDelete from "../../../../components/Confirm";
-import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
+//import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 
 import { useRescue } from "../hook/useRescue";
 import { useCreateRescue } from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
-import { useActive } from "../hook/useActive";
+//import { useActive } from "../hook/useActive";
 import { useDeleteMany } from "../hook/useDeleteMany";
 import { useDelete } from "../hook/useDelete";
 import AddIcon from "@mui/icons-material/Add";
@@ -39,7 +39,6 @@ import {
   type RescueQuery,
   type pagination,
   type deleteRescueType,
-  Role,
 } from "../types/rescues.shame";
 import SearchIcon from "@mui/icons-material/Search";
 
@@ -70,7 +69,7 @@ const RescuesPage: React.FC = () => {
 
   const { mutate: mutateUpdate } = useUpdate();
 
-  const { mutate: mutateActive } = useActive();
+  //const { mutate: mutateActive } = useActive();
 
   const { mutate: mutateDeleteMany } = useDeleteMany();
 
@@ -86,22 +85,22 @@ const RescuesPage: React.FC = () => {
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
 
-  const toggleActive = useCallback((id: number) => {
-    mutateActive(
-      { id: id },
-      {
-        onSuccess: data => {
-          showToast(`Cập nhật trạng thái thành công`, "success");
+  // const toggleActive = useCallback((id: number) => {
+  //   mutateActive(
+  //     { id: id },
+  //     {
+  //       onSuccess: data => {
+  //         showToast(`Cập nhật trạng thái thành công`, "success");
 
-          refetchRescue();
-          setSelectedRescueId(null);
-        },
-        onError: (err: any) => {
-          showToast(err.response?.data?.message, "error");
-        },
-      }
-    );
-  }, []);
+  //         refetchRescue();
+  //         setSelectedRescueId(null);
+  //       },
+  //       onError: (err: any) => {
+  //         showToast(err.response?.data?.message, "error");
+  //       },
+  //     }
+  //   );
+  // }, []);
 
   const handeDeletes = (ids: deleteRescueType) => {
     mutateDeleteMany(ids, {
@@ -312,7 +311,7 @@ const RescuesPage: React.FC = () => {
             onView={id => handleAction("view", id)}
             onEdit={id => handleAction("edit", id)}
             onDelete={id => handleAction("delete", id)}
-            onToggle={toggleActive}
+            
           />
         </Box>
 

@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const CreateAwardSchema = z.object({
   name: z.string().min(1, "Tên giải thưởng không được để trống"),
-  contestId: z.number().nullable(),
   contestantId: z.number().nullable(),
   type: z.enum([
     "firstPrize",
@@ -31,7 +30,6 @@ export const AwardShema = z.object({
 
 export const UpdateAwardSchema = z.object({
   name: z.string().min(1, "Tên giải thưởng không được để trống").optional(),
-  contestId: z.number().nullable(),
   contestantId: z.number().nullable(),
   type: z
     .enum([

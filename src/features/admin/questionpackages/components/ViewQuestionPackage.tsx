@@ -1,38 +1,49 @@
 import React from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import { Box } from "@mui/material";
-import { type QuestionPackage } from "../types/questionpackages.shame";
+
+import { useQuestionPackageById } from "../hook/useQuestionPackageById";
 
 interface ViewQuestionPackageProps {
-  questionPackage: QuestionPackage | null;
+  id: number | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function ViewQuestionPackages({
-  questionPackage,
+export default function ViewQuestionPackage({
+  id,
   isOpen,
   onClose,
 }: ViewQuestionPackageProps): React.ReactElement {
+  const { data: questionPackage } = useQuestionPackageById(id);
   const fields = [
-    { label: "ID", value: questionPackage?.id },
+     { label: "ID", value: questionPackage?.id },
     { label: "Tên gói câu hỏi", value: questionPackage?.name },
     { label: "Số câu hỏi", value: questionPackage?.questionDetailsCount },
-    { label: "Số kỳ thi sử dụng", value: questionPackage?.matchesCount },
-    { label: "Ngày tạo", value: questionPackage?.createdAt },
-    { label: "Ngày cập nhật", value: questionPackage?.updatedAt },
+    { label: "Số trận sử dụng", value: questionPackage?.matchesCount },
+    {
+      label: "Ngày tạo",
+      value: questionPackage?.createdAt
+        ? new Date(questionPackage.createdAt).toLocaleString()
+        : "",
+    },
+    {
+      label: "Ngày cập nhật",
+      value: questionPackage?.updatedAt
+        ? new Date(questionPackage.updatedAt).toLocaleString()
+        : "",
+    },
     {
       label: "Trạng thái",
-      value: questionPackage?.isActive ? "Đang hoạt động" : "Vô hiệu hóa",
+      value: questionPackage?.isActive ? "Đang hoạt động" : "Đã vô hiệu hoá",
     },
   ];
-
   return (
     <Box>
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Chi tiết gói: ${questionPackage?.name ?? ""}`}
+        title={`Cập nhật ${questionPackage?.name}`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -50,7 +61,7 @@ export default function ViewQuestionPackages({
                   {label}
                 </td>
                 <td style={{ padding: "8px", verticalAlign: "top" }}>
-                  {String(value ?? "")}
+                  {String(value)}
                 </td>
               </tr>
             ))}

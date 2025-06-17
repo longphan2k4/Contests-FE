@@ -1,4 +1,4 @@
-import { boolean, number, z } from "zod";
+import { z } from "zod";
 
 const imageMimeTypes = [
   "image/jpeg",

@@ -1,6 +1,6 @@
 import React from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { type Rescue } from "../types/rescues.shame";
+//import { type Rescue } from "../types/rescues.shame";
 import { Box } from "@mui/material";
 
 import { useRescueById } from "../hook/useRescueById";

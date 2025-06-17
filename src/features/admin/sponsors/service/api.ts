@@ -1,8 +1,8 @@
 import axiosInstance from "../../../../config/axiosInstance";
 import {
-  type SponsorIdParam,
+  //type SponsorIdParam,
   type CreateSponsorInput,
-  type UpdateSponsorInput,
+  //type UpdateSponsorInput,
   type SponsorQuery,
   type deleteSponsorsType,
   type UploadSponsorMediaInput

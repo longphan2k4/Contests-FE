@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllStudents } from "../service/api";
+import { getAllClasses } from "../service/api";
 import { type StudentQuery } from "../types/student.shame";
 
-export const useStudents = (filter: StudentQuery) => {
+export const useClasses = (filter: StudentQuery) => {
   return useQuery({
-    queryKey: ["student", filter],
-    queryFn: () => getAllStudents(filter),
+    queryKey: ["class", filter],
+    queryFn: () => getAllClasses(filter),
     placeholderData: prevData => prevData, // ✅ Giữ lại data cũ
   });
 };

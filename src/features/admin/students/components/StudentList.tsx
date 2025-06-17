@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, IconButton } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import DataGrid from "../../../../components/DataGrid";
 import IsSwitch from "../../../../components/IsSwitch";
 import type { GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
@@ -9,15 +9,10 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 
 import { type Student } from "../types/student.shame";
 
-export interface Filter {
-  page: number;
-  limit: number;
-  keyword: string;
-  searchText: string;
-}
-
 interface StudentListProps {
   students: Student[];
+  selectedStudentIds: number[];
+  setSelectedStudentIds: React.Dispatch<React.SetStateAction<number[]>>;
   onView: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
@@ -25,14 +20,14 @@ interface StudentListProps {
 }
 
 export default function StudentList({
+  selectedStudentIds,
+  setSelectedStudentIds,
   students,
   onView,
   onEdit,
   onDelete,
   onToggle,
 }: StudentListProps): React.ReactElement {
-  // Quản lý page và pageSize trong paginationModel
-
   const columns: GridColDef[] = [
     {
       field: "index",
@@ -40,17 +35,15 @@ export default function StudentList({
       width: 70,
       sortable: false,
       filterable: false,
-      renderCell: (params) =>
+      renderCell: params =>
         params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
-    { field: "fullName", headerName: "Họ và tên", flex: 1 },
-    { field: "studentCode", headerName: "Mã học sinh", flex: 1 },
-    { field: "className", headerName: "Lớp", flex: 1 },
+    { field: "fullName", headerName: "Tên", flex: 1 },
     {
       field: "isActive",
       headerName: "Trạng thái",
       flex: 1,
-      renderCell: (params) => (
+      renderCell: params => (
         <IsSwitch
           value={params.row.isActive}
           onChange={() => onToggle(params.row.id)}
@@ -61,7 +54,7 @@ export default function StudentList({
       field: "actions",
       headerName: "Thao tác",
       flex: 1,
-      renderCell: (params) => (
+      renderCell: params => (
         <>
           <IconButton color="primary" onClick={() => onView(params.row.id)}>
             <VisibilityIcon />
@@ -76,14 +69,19 @@ export default function StudentList({
       ),
     },
   ];
-
   return (
-    <Box sx={{ height: "500", width: "100%" }}>
+    <Box>
       <DataGrid
         rows={students}
         columns={columns}
-        getRowId={(row) => row.id}
-        hideFooterPagination
+        getRowId={row => row.id}
+        selectedIds={selectedStudentIds}
+        onSelectChange={selection => {
+          const idsArray = Array.isArray(selection)
+            ? selection
+            : Array.from((selection as any).ids || []);
+          setSelectedStudentIds(idsArray.map(id => Number(id)));
+        }}
       />
     </Box>
   );
