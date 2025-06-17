@@ -106,12 +106,7 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       label: "Nhà tài trợ",
       path: "/Contest/questions",
     },
-    {
-      key: "packages",
-      icon: <QuestionIcon fontSize="small" />,
-      label: "Thí sinh ",
-      path: "/Contest/question-packages",
-    },
+
     {
       key: "results",
       icon: <QuestionIcon fontSize="small" />,
@@ -125,10 +120,10 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: "/Contest/contests",
     },
     {
-      key: "students",
-      icon: <GroupIcon />,
-      label: "Thí sinh và trận đấu",
-      path: "/Contest/students",
+      key: "contestant",
+      icon: <SchoolIcon />,
+      label: "Thí sinh",
+      path: `/admin/cuoc-thi/${slug}/thi-sinh`,
     },
     {
       key: "1",

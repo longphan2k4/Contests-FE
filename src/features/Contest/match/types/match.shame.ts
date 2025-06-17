@@ -133,7 +133,7 @@ export const UpdateMatchSchema = z.object({
     .int("ID sinh viên phải là số nguyên")
     .optional(),
 
-  status: z.enum(["upcoming", "ongoing", "finished"]),
+  status: z.enum(["upcoming", " ", "finished"]),
 
   isActive: z.boolean().optional(),
 });
