@@ -1,45 +1,62 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
-import { Box, Typography, CircularProgress, Alert, Button,TextField,InputAdornment } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import SearchIcon from "@mui/icons-material/Search";
-import CreateStudent from "../components/CreateStudent";
+import {
+  Box,
+  Typography,
+  CircularProgress,
+  Alert,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Stack,
+  InputAdornment,
+} from "@mui/material";
+import { Button } from "@mui/material";
+import { Pagination } from "@mui/material";
+
+import CreateStudentDialog from "../components/CreateStudent";
 import ViewStudent from "../components/ViewStudent";
 import EditStudent from "../components/EditStudent";
 import StudentList from "../components/StudentList";
-import PaginationControl from "../components/PaginationControl";
-import { useNotification } from "../../../../contexts/NotificationContext";
+import { useToast } from "../../../../contexts/toastContext";
+import ConfirmDeleteMany from "../../../../components/Confirm";
+import ConfirmDelete from "../../../../components/Confirm";
+import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
+
 import { useStudents } from "../hook/useStudents";
-import { useStudentById } from "../hook/useStudentById";
 import { useCreateStudent } from "../hook/useCreate";
-import {type Filter } from "../components/StudentList";
-import { useDeleteStudent } from "../hook/useDelete";
-import { useToggleStudentActive } from "../hook/useToggleStudentActive";
-import { useUpdateStudent } from "../hook/useEdit";
+import { useUpdate } from "../hook/useUpdate";
+import { useActive } from "../hook/useActive";
+import { useDeleteMany } from "../hook/useDeleteMany";
+import { useDelete } from "../hook/useDelete";
+import AddIcon from "@mui/icons-material/Add";
+
 import {
   type Student,
   type CreateStudentInput,
   type UpdateStudentInput,
+  type StudentQuery,
+  type pagination,
+  type deleteStudentsType,
 } from "../types/student.shame";
+import SearchIcon from "@mui/icons-material/Search";
 
 const StudentsPage: React.FC = () => {
-  const [, setStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [searchValue, setSearchValue] = useState("");
+  const [pagination, setPagination] = useState<pagination>({});
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<"view" | "edit" | null>(null);
-  const { mutate: deleteStudent } = useDeleteStudent();
-  const { showSuccessNotification, showErrorNotification } = useNotification();
-  const { mutate: toggleActive } = useToggleStudentActive();
-  const { mutate: updateStudentMutate } = useUpdateStudent();
-const [filter, setFilter] = useState<Filter>({
-  page: 1,
-  limit: 10,
-  keyword: "",
-  searchText: "",
-});
+  const [isConfirmDeleteMany, setIsConfirmDeleteMany] = useState(false);
+  const [isConfirmDelete, setIsConfirmDelete] = useState(false);
+
+  const [filter, setFilter] = useState<StudentQuery>({});
+  const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
+
+  const { showToast } = useToast();
 
   const {
     data: studentsQuery,
@@ -48,111 +65,123 @@ const [filter, setFilter] = useState<Filter>({
     refetch: refetchStudents,
   } = useStudents(filter);
 
-  const { data: selectedStudentData } = useStudentById(selectedStudentId);
   const { mutate: mutateCreate } = useCreateStudent();
 
+  const { mutate: mutateUpdate } = useUpdate();
+
+  const { mutate: mutateActive } = useActive();
+
+  const { mutate: mutateDeleteMany } = useDeleteMany();
+
+  const { mutate: mutateDelete } = useDelete();
+
   useEffect(() => {
-  if (studentsQuery?.data.students) {
-    setStudents(studentsQuery?.data.students);
-  }
-  console.log(studentsQuery?.data?.pagination.total)
-}, [studentsQuery]);
-
-
-
-  useEffect(() => {
-    if (!selectedStudentData || !pendingAction) return;
-
-    setSelectedStudent(selectedStudentData);
-
-    if (pendingAction === "view") setIsViewOpen(true);
-    if (pendingAction === "edit") setIsEditOpen(true);
-
-    setPendingAction(null);
-  }, [selectedStudentData, pendingAction]);
+    if (studentsQuery) {
+      setStudents(studentsQuery.data.students);
+      setPagination(studentsQuery.data.pagination);
+    }
+  }, [studentsQuery]);
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
 
+  const toggleActive = useCallback((id: number) => {
+    mutateActive(
+      { id: id },
+      {
+        onSuccess: () => {
+          showToast(`Cập nhật trạng thái thành công`, "success");
 
-const handleToggle = useCallback((id: number) => {
-  toggleActive(id);
-}, [toggleActive]);
-
-  const handleDelete = useCallback((id: number) => {
-    if (window.confirm("Bạn có chắc muốn xoá học sinh này không?")) {
-    deleteStudent(id, {
-      onSuccess: () => {
-        // Nếu bạn đang dùng local state students, thì cần cập nhật:
-        setStudents(prev => prev.filter(s => s.id !== id));
-      },
-      onError: () => {
-        alert("Xoá học sinh thất bại");
+          refetchStudents();
+          setSelectedStudentId(null);
+        },
+        onError: (err: any) => {
+          showToast(err.response?.data?.message, "error");
+        },
       }
-      
+    );
+  }, []);
+
+  const handeDeletes = (ids: deleteStudentsType) => {
+    mutateDeleteMany(ids, {
+      onSuccess: data => {
+        data.messages.forEach((item: any) => {
+          if (item.status === "error") {
+            showToast(item.msg, "error");
+          } else {
+            showToast(item.msg, "success");
+          }
+        });
+        refetchStudents();
+      },
+      onError: err => {
+        console.log(err);
+      },
     });
-  }
-}, [deleteStudent]);
+  };
 
   const handleCreate = (payload: CreateStudentInput) => {
     mutateCreate(payload, {
       onSuccess: data => {
-        if (data)
-          showSuccessNotification(
-            `Tạo học sinh ${payload.fullName} thành công`
-          );
+        if (data) showToast(`Tạo sinh viên thành công`, "success");
         refetchStudents();
       },
       onError: (err: any) => {
         if (err.response?.data?.message) {
-          showErrorNotification(err.response?.data?.message);
+          showToast(err.response?.data?.message, "success");
         }
       },
     });
   };
- const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value);
+
+  const handleUpdate = (payload: UpdateStudentInput) => {
+    if (selectedStudentId) {
+      mutateUpdate(
+        { id: selectedStudentId, payload },
+        {
+          onSuccess: () => {
+            showToast(`Cập nhật sinh viên thành công`, "success");
+            refetchStudents();
+          },
+          onError: (err: any) => {
+            if (err.response?.data?.message)
+              showToast(err.response?.data?.message, "error");
+          },
+        }
+      );
+    }
   };
 
-  const filteredStudents = studentsQuery?.data.students || [];
-  
-  const total = studentsQuery?.data?.pagination?.total || 0;
+  const handleDelete = useCallback((id: number | null) => {
+    if (!id) return;
+    mutateDelete(id, {
+      onSuccess: () => {
+        showToast(`Xóa sinh viên thành công`, "success");
+        refetchStudents();
+      },
+      onError: (error: any) => {
+        showToast(error.response?.data?.message, "success");
+      },
+    });
+  }, []);
 
-
-  const handleUpdate = async (payload: UpdateStudentInput) => {
-  if (selectedStudent?.id) {
-    try {
-      await new Promise((resolve, reject) => {
-        updateStudentMutate(
-          {
-            id: selectedStudent.id,
-            data: payload,
-          },
-          {
-            onSuccess: () => resolve(undefined),
-            onError: (err) => reject(err),
-          }
-        );
-      });
-      showSuccessNotification(`Cập nhật học sinh ${selectedStudent.fullName} thành công`);
-      refetchStudents();
-      setIsEditOpen(false);
-    } catch (err) {
-      showErrorNotification("Cập nhật học sinh thất bại");
-    }
-  }
-};
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
-      if (type === "delete") {
-        handleDelete(id);
-        return;
-      }
       setSelectedStudentId(id);
-      setPendingAction(type);
+
+      if (type === "delete") {
+        setIsConfirmDelete(true);
+      }
+
+      if (type === "view") setIsViewOpen(true);
+      if (type === "edit") setIsEditOpen(true);
     },
-    [handleDelete]
+    []
   );
+
+  const hanldConfirmDeleteManyDeletes = () => {
+    setIsConfirmDeleteMany(true);
+  };
 
   if (isStudentsLoading) {
     return (
@@ -161,35 +190,33 @@ const handleToggle = useCallback((id: number) => {
       </Box>
     );
   }
-
   if (isStudentsError) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchStudents()}>Thử lại</Button>}
+          action={<Button onClick={() => refetchStudents}>Thử lại</Button>}
         >
-          Không thể tải danh sách học sinh.
+          Không thể tải danh sách sinh viên.
         </Alert>
       </Box>
     );
   }
-
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h5">Quản lý học sinh</Typography>
+        <Typography variant="h5">Quản lý Sinh viên</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={openCreate}
         >
-          Thêm học sinh
+          Thêm Sinh viên
         </Button>
       </Box>
 
-      {/* Student list */}
+      {/* Student list card */}
       <Box
         sx={{
           background: "#FFFFFF",
@@ -201,82 +228,206 @@ const handleToggle = useCallback((id: number) => {
             "0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12)",
         }}
       >
-
         <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={2}
-                flexWrap="wrap"
-                gap={2}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            sx={{
+              flexWrap: "wrap",
+              alignItems: { sm: "center" },
+              mb: 2,
+            }}
+          >
+            {/* Ô tìm kiếm */}
+            <TextField
+              label="Tìm kiếm"
+              variant="outlined"
+              size="small"
+              value={filter.search || ""}
+              onChange={e =>
+                setFilter(prev => ({
+                  ...prev,
+                  search: e.target.value,
+                }))
+              }
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                flex: { sm: 1 },
+                minWidth: { xs: "100%", sm: 200 },
+              }}
+            />
+
+            <FormAutocompleteFilter
+              label="Trạng thái"
+              options={[
+                { label: "Tất cả", value: "all" },
+                { label: "Hoạt động", value: "active" },
+                { label: "Không hoạt động", value: "inactive" },
+              ]}
+              value={
+                filter.isActive === undefined
+                  ? "all"
+                  : filter.isActive
+                  ? "active"
+                  : "inactive"
+              }
+              onChange={val => {
+                setFilter(prev => ({
+                  ...prev,
+                  isActive:
+                    val === "all"
+                      ? undefined
+                      : val === "active"
+                      ? true
+                      : val === "inactive"
+                      ? false
+                      : undefined, // fallback nếu Autocomplete trả undefined
+                }));
+              }}
+              sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
+            />
+          
+
+            {/* Nút xoá người */}
+            {selectedStudentIds.length > 0 && (
+              <Button
+                variant="contained"
+                color="error"
+                onClick={hanldConfirmDeleteManyDeletes}
+                sx={{
+                  flex: { sm: 1 },
+                  width: { xs: "100%", sm: "auto" },
+                  whiteSpace: "nowrap",
+                }}
               >
-                <TextField
-                  size="small"
-                  placeholder="Tìm kiếm gói câu hỏi"
-                  value={searchValue}
-                  onChange={handleSearchChange}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    minWidth: { xs: "100%", sm: 300 },
-                    maxWidth: { xs: "100%", sm: 300 },
-                  }}
-                />
-        
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  flexShrink={0}
-                  textAlign={{ xs: "right", sm: "right" }}
-                  sx={{ minWidth: 120 }}
-                >
-                  Tổng số: {total} gói câu hỏi
-                </Typography>
-              </Box>
+                Xoá người ({selectedStudentIds.length})
+              </Button>
+            )}
 
-        <StudentList
-          students={filteredStudents}
-          onView={id => handleAction("view", id)}
-          onEdit={id => handleAction("edit", id)}
-          onDelete={handleDelete}
-          onToggle={handleToggle}
+            {/* Tổng số người dùng */}
+            <Box
+              sx={{
+                ml: { xs: 0, sm: "auto" },
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                alignSelf={{ xs: "flex-start", sm: "center" }}
+              >
+                Tổng số: {pagination.total} người dùng
+              </Typography>
+            </Box>
+          </Stack>
+
+          <StudentList
+            students={students}
+            selectedStudentIds={selectedStudentIds}
+            setSelectedStudentIds={setSelectedStudentIds}
+            onView={id => handleAction("view", id)}
+            onEdit={id => handleAction("edit", id)}
+            onDelete={id => handleAction("delete", id)}
+            onToggle={toggleActive}
+          />
+        </Box>
+
+        <Box>
+          <Box
+            sx={{
+              mt: 2,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
+              <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
+              <Select
+                labelId="page-size-select-label"
+                value={String(filter.limit || 10)}
+                onChange={e => {
+                  setFilter(prev => ({
+                    ...prev,
+                    limit: Number(e.target.value),
+                  }));
+                  filter.page = 1;
+                }}
+                label="Hiển thị"
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={25}>25</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+              </Select>
+            </FormControl>
+            <Typography>
+              Trang {filter.page || 1} / {pagination.totalPages}
+            </Typography>
+          </Box>
+        </Box>
+        <Box className="flex flex-col items-center">
+          {" "}
+          <Pagination
+            count={pagination.totalPages}
+            page={filter.page ?? 1}
+            color="primary"
+            onChange={(_event, value) =>
+              setFilter(prev => ({
+                ...prev,
+                page: value,
+              }))
+            }
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+        <CreateStudentDialog
+          isOpen={isCreateOpen}
+          onClose={closeCreate}
+          onSubmit={handleCreate}
         />
-         <PaginationControl
-                  totalPages={Math.ceil(total / filter.limit)}
-                  currentPage={filter.page}
-                  pageSize={filter.limit}
-                  onPageChange={(page) =>
-                    setFilter((prev) => ({ ...prev, page }))
-                  }
-                  onPageSizeChange={(newSize) =>
-                    setFilter((prev) => ({ ...prev, limit: newSize, page: 1 }))
-                  }
-                />
+
+        <ViewStudent
+          isOpen={isViewOpen}
+          onClose={() => setIsViewOpen(false)}
+          id={selectedStudentId}
+        />
+
+        <EditStudent
+          isOpen={isEditOpen}
+          onClose={() => setIsEditOpen(false)}
+          id={selectedStudentId}
+          onSubmit={handleUpdate}
+        />
       </Box>
-
-      {/* Dialogs */}
-      <CreateStudent
-        isOpen={isCreateOpen}
-        onClose={closeCreate}
-        onSubmit={handleCreate}
+      <ConfirmDeleteMany
+        open={isConfirmDeleteMany}
+        onClose={() => setIsConfirmDeleteMany(false)}
+        title="Xác nhận xóa người dùng "
+        description={`Bạn có chắc xóa ${selectedStudentIds.length} tài khoản này không`}
+        onConfirm={() => handeDeletes({ ids: selectedStudentIds })}
       />
 
-      <ViewStudent
-        isOpen={isViewOpen}
-        onClose={() => setIsViewOpen(false)}
-        student={selectedStudent}
-      />
-
-      <EditStudent
-        isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        student={selectedStudent}
-        onSubmit={handleUpdate}
+      <ConfirmDelete
+        open={isConfirmDelete}
+        onClose={() => setIsConfirmDelete(false)}
+        title="Xác nhận xóa người dùng "
+        description={`Bạn có chắc chắn xóa tài khoản này không`}
+        onConfirm={() => handleDelete(selectedStudentId)}
       />
     </Box>
   );

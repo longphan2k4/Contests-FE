@@ -1,14 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { DeleteStudent } from "../service/api";
 
-export const useDeleteStudent = () => {
-  const queryClient = useQueryClient();
-
+export const useDelete = () => {
   return useMutation({
     mutationFn: (id: number) => DeleteStudent(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["students"] });
-    },
-    
   });
 };
