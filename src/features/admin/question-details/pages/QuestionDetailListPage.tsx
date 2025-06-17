@@ -445,8 +445,8 @@ const QuestionDetailListPage: React.FC = () => {
               alignItems: 'center',
               gap: 2
             }}>
-              <FormControl variant="outlined" size="small" sx={{ width: { xs: '100%', sm: 'auto' } }}>
-                <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
+            <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
+            <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
                 <Select
                   labelId="page-size-select-label"
                   value={String(filter.limit)}

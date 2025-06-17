@@ -24,7 +24,7 @@ export const Create = async (
 };
 
 export const Update = async (id: number, payload: UpdateRoundInput) => {
-  const res = await axiosInstance.patch(`/round/${id}`, payload);
+  const res = await axiosInstance.patch(`/group/${id}`, payload);
   return res.data;
 };
 

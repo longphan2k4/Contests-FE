@@ -31,7 +31,7 @@ export default function ListRound({
     {
       field: "indexs",
       headerName: "STT",
-      width: 50,
+      width: 70,
       sortable: false,
       filterable: false,
       renderCell: params =>

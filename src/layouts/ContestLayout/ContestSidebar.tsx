@@ -76,10 +76,10 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: `/admin/cuoc-thi/${slug}/dashboard`,
     },
     {
-      key: "classes",
+      key: "round",
       icon: <SchoolIcon />,
       label: "Vòng đấu",
-      path: `/admin/cuoc-thi/${slug}/round`,
+      path: `/admin/cuoc-thi/${slug}/vong-dau`,
     },
     {
       key: "schools",
@@ -89,10 +89,10 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
     },
 
     {
-      key: "users",
+      key: "group",
       icon: <GroupIcon />,
       label: "Nhóm",
-      path: "/Contest/users",
+      path: `/admin/cuoc-thi/${slug}/nhom`,
     },
     {
       key: "class-videos",
@@ -113,10 +113,10 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: "/Contest/question-packages",
     },
     {
-      key: "question-packages",
+      key: "results",
       icon: <QuestionIcon fontSize="small" />,
       label: "Kết quả ",
-      path: "/Contest/question-packages/1",
+      path: "/admin/cuoc-thi/:slug/results",
     },
     {
       key: "rescues",
