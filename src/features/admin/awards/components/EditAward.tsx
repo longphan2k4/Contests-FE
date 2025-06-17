@@ -35,7 +35,6 @@ export default function EditeAward({
     if (award) {
       reset({
         name: award.name,
-        contestId: award.contestId,
         contestantId: award.contestantId,
         type: award.type,
       });
@@ -62,14 +61,6 @@ export default function EditeAward({
             placeholder="Nhập tên giải thưởng"
             error={errors.name}
             register={register("name")}
-          />
-          <FormInput
-            label="ID Cuộc thi"
-            id="contest_id"
-            placeholder="Nhập contest_id"
-            type="number"
-            error={errors.contestId}
-            register={register("contestId", { valueAsNumber: true })}
           />
           <FormInput
             label="ID Thí sinh"
