@@ -43,6 +43,8 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { useQuestionDetails } from '../hooks/useQuestionDetails';
 import { QuestionDetailDialog } from '../components/QuestionDetailDialog';
 import { ReorderQuestionsDialog } from '../components/ReorderQuestionsDialog';
+import QuestionDetailViewDialog from '../components/QuestionDetailViewDialog';
+import QuestionDetailEditDialog from '../components/QuestionDetailEditDialog';
 import type { QuestionDetail } from '../types';
 import ConfirmDeleteDialog from '../../../../components/ConfirmDeleteDialog';
 // import { useNotification } from '../../../../contexts/NotificationContext';
@@ -50,11 +52,15 @@ import ConfirmDeleteDialog from '../../../../components/ConfirmDeleteDialog';
 const QuestionDetailListPage: React.FC = () => {
   const { packageId } = useParams<{ packageId: string }>();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [reorderDialogOpen, setReorderDialogOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<QuestionDetail | null>(null);
+  const [viewingQuestion, setViewingQuestion] = useState<QuestionDetail | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<QuestionDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const {
     questionDetails,
@@ -110,11 +116,28 @@ const QuestionDetailListPage: React.FC = () => {
 
   const handleEdit = (record: QuestionDetail) => {
     setEditingQuestion(record);
-    setDialogOpen(true);
+    setEditDialogOpen(true);
+  };
+
+  const handleView = async (record: QuestionDetail) => {
+    setDetailLoading(true);
+    setViewingQuestion(record);
+    setViewDialogOpen(true);
+    setDetailLoading(false);
   };
 
   const handleDialogClose = () => {
     setDialogOpen(false);
+    setEditingQuestion(null);
+  };
+
+  const handleViewDialogClose = () => {
+    setViewDialogOpen(false);
+    setViewingQuestion(null);
+  };
+
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
     setEditingQuestion(null);
   };
 
@@ -423,7 +446,7 @@ const QuestionDetailListPage: React.FC = () => {
                       <TableCell>
                         <Stack direction="row" spacing={1} justifyContent="center">
                           <Tooltip title="Xem chi tiết">
-                            <IconButton color="primary" size="small" onClick={() => handleEdit(row)}>
+                            <IconButton color="primary" size="small" onClick={() => handleView(row)}>
                               <VisibilityIcon />
                             </IconButton>
                           </Tooltip>
@@ -497,6 +520,21 @@ const QuestionDetailListPage: React.FC = () => {
         onSubmit={handleDialogSubmit}
         editingQuestion={editingQuestion}
         totalQuestions={total}
+        onSuccess={fetchQuestionDetails}
+      />
+
+      <QuestionDetailViewDialog
+        open={viewDialogOpen}
+        onClose={handleViewDialogClose}
+        questionDetail={viewingQuestion}
+        loading={detailLoading}
+      />
+
+      <QuestionDetailEditDialog
+        open={editDialogOpen}
+        onClose={handleEditDialogClose}
+        questionDetail={editingQuestion}
+        onSuccess={fetchQuestionDetails}
       />
 
       {packageId && (

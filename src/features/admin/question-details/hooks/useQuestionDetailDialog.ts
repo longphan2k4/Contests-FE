@@ -1,74 +1,81 @@
-import { useState, useEffect } from 'react';
-import type { Question, Topic, Filters, QuestionDetail } from '../types';
-import { questionService } from '../services/questionService';
+import { useState, useEffect, useCallback } from 'react';
+import type { AvailableQuestion } from '../types';
 import { questionDetailService } from '../services/questionDetailService';
-import { useQuestionDetailStore } from '../stores/questionDetailStore';
 
 export const useQuestionDetailDialog = (open: boolean, questionPackageId: number) => {
-  console.debug('🔄 [useQuestionDetailDialog] Hook được gọi lại với:', { open, questionPackageId });
-  
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [questions, setQuestions] = useState<AvailableQuestion[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
+  const [selectedQuestions, setSelectedQuestions] = useState<AvailableQuestion[]>([]);
+  const [selectedQuestion, setSelectedQuestion] = useState<AvailableQuestion | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState<Filters>({
-    difficulty: '',
-    topic: '',
-  });
+  const [filters, setFilters] = useState({ difficulty: '', topic: '' });
   const [showFilters, setShowFilters] = useState(false);
-  const [topics, setTopics] = useState<Topic[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  // Lấy danh sách ID từ store
-  const { getExistingQuestionIds, setExistingQuestionIds } = useQuestionDetailStore();
-  const existingQuestionIds = getExistingQuestionIds(questionPackageId);
-  console.debug('📦 [useQuestionDetailDialog] ID câu hỏi từ store:', {
-    packageId: questionPackageId,
-    existingIds: Array.from(existingQuestionIds)
-  });
+  const fetchAvailableQuestions = useCallback(async () => {
+    if (!questionPackageId) return;
+    
+    setIsLoading(true);
+    try {
+      console.debug('🔍 [useQuestionDetailDialog] Fetching available questions', {
+        packageId: questionPackageId,
+        filters,
+        searchTerm,
+        page: currentPage,
+        limit: pageSize
+      });
+      
+      const response = await questionDetailService.getAvailableQuestions(questionPackageId, {
+        page: currentPage,
+        limit: pageSize,
+        isActive: true,
+        difficulty: filters.difficulty || undefined,
+        questionType: filters.topic || undefined,
+        search: searchTerm || undefined
+      });
+      
+      if (response.data?.questions) {
+        console.debug('✅ [useQuestionDetailDialog] Available questions fetched:', {
+          count: response.data.questions.length,
+          total: response.pagination?.total
+        });
+        
+        setQuestions(response.data.questions);
+        
+        if (response.pagination) {
+          setTotal(response.pagination.total || 0);
+        }
+      } else {
+        console.debug('⚠️ [useQuestionDetailDialog] No available questions found');
+        setQuestions([]);
+        setTotal(0);
+      }
+    } catch (error) {
+      console.error('❌ [useQuestionDetailDialog] Error fetching available questions:', error);
+      setQuestions([]);
+      setTotal(0);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [questionPackageId, filters, searchTerm, currentPage, pageSize]);
 
   // Reset state khi dialog mở/đóng
   useEffect(() => {
-    console.debug('🔄 [useQuestionDetailDialog] Dialog state changed:', { open });
     if (!open) {
-      console.debug('🧹 [useQuestionDetailDialog] Resetting state');
+      // Reset state khi dialog đóng
+      setQuestions([]);
       setSelectedIds(new Set());
       setSelectedQuestions([]);
       setSearchTerm('');
       setFilters({ difficulty: '', topic: '' });
+    } else if (questionPackageId) {
+      // Nếu dialog mở và có packageId, fetch dữ liệu
+      fetchAvailableQuestions();
     }
-  }, [open]);
-
-  // Fetch dữ liệu khi dialog mở
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      if (open && questionPackageId) {
-        console.debug('🚀 [useQuestionDetailDialog] Starting initial data fetch', {
-          packageId: questionPackageId,
-          existingIdsCount: existingQuestionIds.size
-        });
-        
-        setLoading(true);
-        try {
-          // Nếu chưa có dữ liệu trong store thì fetch mới
-          if (existingQuestionIds.size === 0) {
-            await fetchExistingQuestions();
-          } else {
-            console.debug('💾 [useQuestionDetailDialog] Using cached data:', Array.from(existingQuestionIds));
-          }
-          // Fetch danh sách câu hỏi và chủ đề
-          await Promise.all([fetchQuestions(), fetchTopics()]);
-        } catch (error) {
-          console.error('❌ [useQuestionDetailDialog] Error fetching data:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchInitialData();
-  }, [open, questionPackageId, existingQuestionIds.size]);
+  }, [open, questionPackageId, fetchAvailableQuestions]);
 
   // Cập nhật danh sách câu hỏi đã chọn khi selectedIds thay đổi
   useEffect(() => {
@@ -82,136 +89,14 @@ export const useQuestionDetailDialog = (open: boolean, questionPackageId: number
 
   // Fetch lại câu hỏi khi filters hoặc searchTerm thay đổi
   useEffect(() => {
-    const fetchFilteredData = async () => {
-      if (open && questionPackageId) {
-        console.debug('🔄 [useQuestionDetailDialog] Filters changed, fetching new data:', {
-          searchTerm,
-          filters
-        });
-        await fetchQuestions();
-      }
-    };
-
-    fetchFilteredData();
-  }, [filters, searchTerm, open, questionPackageId]);
-
-  const fetchExistingQuestions = async () => {
-    try {
-      console.log('🔍 Đang fetch danh sách câu hỏi hiện có trong gói:', questionPackageId);
-      
-      let allQuestions: QuestionDetail[] = [];
-      let currentPage = 1;
-      let hasNextPage = true;
-      const limit = 10;
-
-      while (hasNextPage) {
-        console.log(`📄 Đang fetch trang ${currentPage}...`);
-        
-        const response = await questionDetailService.getQuestionsByPackage(questionPackageId, {
-          isActive: true,
-          page: currentPage,
-          limit
-        });
-        
-        if (response.data?.questions) {
-          allQuestions = [...allQuestions, ...response.data.questions];
-          console.log(`✅ Đã fetch trang ${currentPage}:`, {
-            pageQuestions: response.data.questions.length,
-            totalSoFar: allQuestions.length
-          });
-
-          // Kiểm tra xem còn trang tiếp theo không
-          hasNextPage = response.data.questions.length === limit;
-          currentPage++;
-        } else {
-          hasNextPage = false;
-        }
-      }
-
-      if (allQuestions.length > 0) {
-        const questionIds = allQuestions.map(q => q.questionId);
-        console.log('📦 Kết quả fetch toàn bộ câu hỏi:', {
-          totalPages: currentPage - 1,
-          totalQuestions: questionIds.length,
-          questions: allQuestions.map(q => ({
-            id: q.questionId,
-            order: q.questionOrder
-          }))
-        });
-        
-        setExistingQuestionIds(questionPackageId, questionIds);
-        return new Set(questionIds);
-      }
-      
-      console.log('⚠️ Không tìm thấy câu hỏi nào trong gói');
-      return new Set<number>();
-    } catch (error) {
-      console.error('❌ Lỗi khi fetch câu hỏi:', error);
-      return new Set<number>();
-    }
-  };
-
-  const fetchQuestions = async () => {
-    try {
-      console.debug('🔍 [useQuestionDetailDialog] Fetching all questions', {
-        filters,
-        searchTerm
+    if (open && questionPackageId) {
+      console.debug('🔄 [useQuestionDetailDialog] Filters changed, fetching new data:', {
+        searchTerm,
+        filters
       });
-      
-      const response = await questionService.getQuestions({
-        page: 1,
-        limit: 100,
-        difficulty: filters.difficulty || undefined,
-        topicId: filters.topic ? Number(filters.topic) : undefined,
-        search: searchTerm || undefined
-      });
-      
-      if (response.data?.questions) {
-        const allQuestions = response.data.questions;
-        console.debug('📊 [useQuestionDetailDialog] Questions fetched:', {
-          total: allQuestions.length,
-          existingIds: Array.from(existingQuestionIds)
-        });
-        
-        const filteredQuestions = allQuestions.filter(
-          question => !existingQuestionIds.has(question.id)
-        );
-        
-        console.debug('✅ [useQuestionDetailDialog] Questions filtered:', {
-          before: allQuestions.length,
-          after: filteredQuestions.length,
-          removed: allQuestions.length - filteredQuestions.length
-        });
-        
-        setQuestions(filteredQuestions);
-      } else {
-        console.debug('⚠️ [useQuestionDetailDialog] No questions found');
-        setQuestions([]);
-      }
-    } catch (error) {
-      console.error('❌ [useQuestionDetailDialog] Error fetching questions:', error);
-      setQuestions([]);
+      fetchAvailableQuestions();
     }
-  };
-
-  const fetchTopics = async () => {
-    try {
-      console.debug('🔍 [useQuestionDetailDialog] Fetching topics');
-      const response = await questionService.getTopics();
-      if (response.data) {
-        console.debug('✅ [useQuestionDetailDialog] Topics fetched:', {
-          count: response.data.length
-        });
-        setTopics(response.data);
-      } else {
-        console.debug('⚠️ [useQuestionDetailDialog] No topics found');
-        setTopics([]);
-      }
-    } catch (error) {
-      console.error('❌ [useQuestionDetailDialog] Error fetching topics:', error);
-      setTopics([]);
-    }
-  };
+  }, [filters, searchTerm, open, questionPackageId, currentPage, pageSize, fetchAvailableQuestions]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.debug('🔍 [useQuestionDetailDialog] Search term changed:', e.target.value);
@@ -220,15 +105,17 @@ export const useQuestionDetailDialog = (open: boolean, questionPackageId: number
 
   const handleSearch = () => {
     console.debug('🔍 [useQuestionDetailDialog] Search triggered:', searchTerm);
-    fetchQuestions();
+    setCurrentPage(1); // Reset về trang 1 khi tìm kiếm
+    fetchAvailableQuestions();
   };
 
   const handleFilterChange = (name: string, value: string) => {
     console.debug('🔄 [useQuestionDetailDialog] Filter changed:', { name, value });
     setFilters(prev => ({ ...prev, [name]: value }));
+    setCurrentPage(1); // Reset về trang 1 khi thay đổi bộ lọc
   };
 
-  const handleSelectQuestion = (question: Question) => {
+  const handleSelectQuestion = (question: AvailableQuestion) => {
     console.debug('✅ [useQuestionDetailDialog] Question selected:', question);
     setSelectedQuestion(question);
   };
@@ -276,16 +163,30 @@ export const useQuestionDetailDialog = (open: boolean, questionPackageId: number
     setShowFilters(prev => !prev);
   };
 
+  const handlePageChange = (page: number) => {
+    console.debug('🔄 [useQuestionDetailDialog] Page changed:', page);
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    console.debug('🔄 [useQuestionDetailDialog] Page size changed:', size);
+    setPageSize(size);
+    setCurrentPage(1); // Reset về trang 1 khi thay đổi kích thước trang
+  };
+
   return {
     questions,
-    loading,
+    loading: isLoading,
     selectedQuestion,
     selectedIds,
     selectedQuestions,
     searchTerm,
     filters,
     showFilters,
-    topics,
+    topics: [], // Trả về mảng rỗng vì không còn sử dụng topics
+    total,
+    currentPage,
+    pageSize,
     handleSearchChange,
     handleSearch,
     handleFilterChange,
@@ -294,6 +195,8 @@ export const useQuestionDetailDialog = (open: boolean, questionPackageId: number
     handleSelectOne,
     handleRemoveSelected,
     handleKeyPress,
-    toggleFilters
+    toggleFilters,
+    handlePageChange,
+    handlePageSizeChange
   };
 }; 

@@ -173,4 +173,24 @@ export interface QuestionDetailDialogProps {
   questionPackageId: number;
   totalQuestions: number;
   onSuccess?: () => void;
+}
+
+export interface AvailableQuestion {
+  id: number;
+  content: string;
+  questionType: 'multiple_choice' | 'essay' | string;
+  difficulty: 'Alpha' | 'Beta' | 'Gold' | string;
+  defaultTime: number;
+  score: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AvailableQuestionsResponse {
+  packageInfo: {
+    id: number;
+    name: string;
+  };
+  questions: AvailableQuestion[];
 } 
