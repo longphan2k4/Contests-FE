@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Box, IconButton } from "@mui/material";
 import DataGrid from "../../../../components/DataGrid";
-import IsSwitch from "../../../../components/IsSwitch";
+//import IsSwitch from "../../../../components/IsSwitch";
 import type { GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -16,7 +16,6 @@ interface SponsorListProps {
   onView: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
-  onToggle: (id: number) => void;
 }
 
 export default function SponsorList({
@@ -26,7 +25,6 @@ export default function SponsorList({
   onView,
   onEdit,
   onDelete,
-  onToggle,
 }: SponsorListProps): React.ReactElement {
   const columns: GridColDef[] = [
     {

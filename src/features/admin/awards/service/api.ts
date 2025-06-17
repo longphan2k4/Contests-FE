@@ -1,6 +1,6 @@
 import axiosInstance from "../../../../config/axiosInstance";
 import {
-  type AwardIdParam,
+  //type AwardIdParam,
   type CreateAwardInput,
   type UpdateAwardInput,
   type AwardQuery,

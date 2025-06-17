@@ -2,17 +2,17 @@ import React, { useEffect } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
 import { Box, Button } from "@mui/material";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CreateRescueSchema,
   type CreateRescueInput,
-  RescueSchema,
-  Role,
+  //RescueSchema,
+  //Role,
 } from "../types/rescues.shame";
 
 import FormSelect from "../../../../components/FormSelect";
-import FormSwitch from "../../../../components/FormSwitch";
+//import FormSwitch from "../../../../components/FormSwitch";
 
 // Các lựa chọn cho rescueType và status
 const rescueTypeOptions = [

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
 import { Box, Button } from "@mui/material";
@@ -8,17 +8,16 @@ import {
   CreateStudentSchema,
   type CreateStudentInput,
 } from "../types/student.shame";
-import FormSelect from "../../../../components/FormSelect";
+import { useClasses } from "../hook/useGetClass";
+import { type ClassItem } from "../types/student.shame";
 import FormSwitch from "../../../../components/FormSwitch";
-
-// Danh sách lớp mẫu (bạn có thể thay bằng dữ liệu API)
-const classOptions = [
-  { label: "10A1", value: "1" },
-  { label: "10A2", value: "2" },
-  { label: "11A1", value: "3" },
-  { label: "12A1", value: "4" },
-  { label: "12A2", value: "5" },
-];
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
+} from "@mui/material";
 
 interface CreateStudentDialogProps {
   isOpen: boolean;
@@ -31,6 +30,10 @@ export default function CreateStudentDialog({
   onClose,
   onSubmit,
 }: CreateStudentDialogProps): React.ReactElement {
+
+const { data } = useClasses({});
+const classOptions = (data?.data?.classes || []) as ClassItem[];
+
   const {
     register,
     handleSubmit,
@@ -42,14 +45,17 @@ export default function CreateStudentDialog({
     defaultValues: {
       isActive: true,
       classId: undefined,
-      fullName: "",
-      studentCode: "",
     },
   });
 
+  useEffect(() => {
+    if (isOpen) {
+      reset();
+    }
+  }, [isOpen, reset]);
+
   const handleFormSubmit = (data: CreateStudentInput) => {
     onSubmit(data);
-    reset();
     onClose();
   };
 
@@ -61,10 +67,7 @@ export default function CreateStudentDialog({
         title="Thêm học sinh mới"
         maxWidth="sm"
       >
-        <form
-          id="create-student-form"
-          onSubmit={handleSubmit(handleFormSubmit)}
-        >
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
           <FormInput
             label="Họ và tên"
             id="fullName"
@@ -79,23 +82,39 @@ export default function CreateStudentDialog({
             error={errors.studentCode}
             register={register("studentCode")}
           />
-          <FormSelect
-            id="classId"
-            name="classId"
-            label="Lớp"
-            control={control}
-            options={classOptions}
-            error={errors.classId}
-            defaultValue="" // hoặc giá trị mặc định tương ứng
-          />
-
+        <Controller
+          name="classId"
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth margin="normal" error={!!errors.classId}>
+              <InputLabel id="class-select-label">Lớp học</InputLabel>
+              <Select
+                {...field}
+                labelId="class-select-label"
+                id="classId"
+                label="Lớp học"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              >
+                {classOptions.map((cls: ClassItem) => (
+                  <MenuItem key={cls.id} value={cls.id}>
+                    {`${cls.name} - ${cls.shoolName}`}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.classId && (
+                <FormHelperText>{errors.classId.message}</FormHelperText>
+              )}
+            </FormControl>
+          )}
+        />
           <Controller
             name="isActive"
             control={control}
             defaultValue={true}
             render={({ field }) => (
               <FormSwitch
-                label="Đang hoạt động"
+                label="Kích hoạt tài khoản"
                 value={field.value}
                 onChange={field.onChange}
               />
@@ -104,9 +123,9 @@ export default function CreateStudentDialog({
           <Button
             type="submit"
             variant="contained"
-            sx={{ mt: 2, display: "block" }}
+            sx={{ mt: 2, float: "right" }}
           >
-            Thêm học sinh
+            Thêm
           </Button>
         </form>
       </AppFormDialog>

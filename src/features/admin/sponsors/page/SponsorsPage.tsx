@@ -13,7 +13,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { Button } from "@mui/material";
-import { Pagination } from "@mui/material";
+//import { Pagination } from "@mui/material";
 
 import CreateSponsor from "../components/CreateSponsor";
 import ViewSponsor from "../components/ViewSponsor";
@@ -22,12 +22,11 @@ import SponsorList from "../components/SponsorList";
 import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDeleteMany from "../../../../components/Confirm";
 import ConfirmDelete from "../../../../components/Confirm";
-import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 
 import { useSponsors } from "../hook/useSponsors";
 import { useCreateSponsorForContest } from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
-import { useActive } from "../hook/useActive";
+//import { useActive } from "../hook/useActive";
 import { useDeleteMany } from "../hook/useDeleteMany";
 import { useDelete } from "../hook/useDelete";
 import { useStatistics } from "../hook/useStatistics";
@@ -69,7 +68,7 @@ const SponsorsPage: React.FC = () => {
 
   const { mutate: mutateCreateSponsor  } = useCreateSponsorForContest(slug);
   const { mutate: mutateUpdate } = useUpdate();
-  const { mutate: mutateActive } = useActive();
+  //const { mutate: mutateActive } = useActive();
   const { mutate: mutateDeleteMany } = useDeleteMany();
   const { mutate: mutateDelete } = useDelete();
 
@@ -85,21 +84,21 @@ const SponsorsPage: React.FC = () => {
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
 
-  const toggleActive = useCallback((id: number) => {
-    mutateActive(
-      { id: id },
-      {
-        onSuccess: data => {
-          showToast(`Cập nhật trạng thái thành công`, "success");
-          refetchSponsors();
-          setSelectedSponsorId(null);
-        },
-        onError: (err: any) => {
-          showToast(err.response?.data?.message, "error");
-        },
-      }
-    );
-  }, []);
+  // const toggleActive = useCallback((id: number) => {
+  //   mutateActive(
+  //     { id: id },
+  //     {
+  //       onSuccess: data => {
+  //         showToast(`Cập nhật trạng thái thành công`, "success");
+  //         refetchSponsors();
+  //         setSelectedSponsorId(null);
+  //       },
+  //       onError: (err: any) => {
+  //         showToast(err.response?.data?.message, "error");
+  //       },
+  //     }
+  //   );
+  // }, []);
 
   const handeDeletes = (ids: deleteSponsorsType) => {
     mutateDeleteMany(ids, {
@@ -308,7 +307,6 @@ const SponsorsPage: React.FC = () => {
             onView={id => handleAction("view", id)}
             onEdit={id => handleAction("edit", id)}
             onDelete={id => handleAction("delete", id)}
-            onToggle={toggleActive}
           />
         </Box>
 
@@ -347,7 +345,7 @@ const SponsorsPage: React.FC = () => {
           </Box>
         </Box>
 
-        <Box className="flex flex-col items-center">
+        {/* <Box className="flex flex-col items-center">
           <Pagination
             count={pagination?.totalPages}
             page={filter.page ?? 1}
@@ -361,7 +359,7 @@ const SponsorsPage: React.FC = () => {
             showFirstButton
             showLastButton
           />
-        </Box>
+        </Box> */}
 
         <CreateSponsor
           isOpen={isCreateOpen}

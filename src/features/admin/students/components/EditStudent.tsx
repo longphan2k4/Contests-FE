@@ -1,55 +1,27 @@
 import React, { useEffect } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
-import { Box, Button } from "@mui/material";
+import { Box, Button, FormControl, InputLabel, Select, MenuItem, FormHelperText } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useClasses } from "../hook/useGetClass";
 import {
   UpdateStudentSchema,
   type UpdateStudentInput,
-  type Student,
+  type ClassItem,
 } from "../types/student.shame";
 import FormSwitch from "../../../../components/FormSwitch";
-import FormSelect from "../../../../components/FormSelect";
+import { useStudentById } from "../hook/useStudentById";
 
 interface EditStudentProp {
-  student: Student | null;
+  id: number | null;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: UpdateStudentInput) => void;
 }
 
-// options classId kiểu string để khớp với FormSelect
-const classOptions = [
-  { label: "10A1", value: "1" },
-  { label: "10A2", value: "2" },
-  { label: "12A1", value: "3" },
-  { label: "11A2", value: "4" },
-  { label: "11A1", value: "5" },
-  { label: "12A2", value: "6" },
-  { label: "10A2", value: "7" },
-  { label: "11A2", value: "8" },
-  { label: "10A1", value: "9" },
-  { label: "10A2", value: "10" },
-  { label: "11A2", value: "11" },
-  { label: "12A2", value: "12" },
-  { label: "12A1", value: "13" },
-  { label: "11A1", value: "14" },
-  { label: "11A1", value: "15" },
-  { label: "10A2", value: "16" },
-  { label: "11A1", value: "17" },
-  { label: "12A2", value: "18" },
-  { label: "10A1", value: "19" },
-  { label: "12A2", value: "20" },
-  { label: "12A1", value: "21" },
-  { label: "10A1", value: "22" },
-  { label: "12A1", value: "23" },
-  { label: "11A2", value: "24" },
-  { label: "11A1", value: "25" },
-];
-
 export default function EditStudent({
-  student,
+  id,
   isOpen,
   onClose,
   onSubmit,
@@ -62,32 +34,25 @@ export default function EditStudent({
     reset,
   } = useForm<UpdateStudentInput>({
     resolver: zodResolver(UpdateStudentSchema),
-    defaultValues: {
-      fullName: student?.fullName ?? "",
-      studentCode: student?.studentCode ?? "",
-      classId: student?.classId, // số hoặc undefined
-      isActive: student?.isActive ?? true,
-    },
   });
+
+  const { data: student } = useStudentById(id);
+  const { data: classData } = useClasses({});
+  const classOptions = (classData?.data?.classes || []) as ClassItem[];
 
   useEffect(() => {
     if (student) {
       reset({
         fullName: student.fullName,
         studentCode: student.studentCode,
-        classId: student?.classId, // số hoặc undefined
+        classId: student.classId,
         isActive: student.isActive,
       });
     }
-  }, [student, reset]);
+  }, [student, reset, isOpen]);
 
   const handleFormSubmit = (data: UpdateStudentInput) => {
-    // Chuyển classId từ string sang number (nếu có)
-    const payload: UpdateStudentInput = {
-      ...data,
-      classId: data.classId !== undefined ? Number(data.classId) : undefined,
-    };
-    onSubmit(payload);
+    onSubmit(data);
     onClose();
   };
 
@@ -96,14 +61,14 @@ export default function EditStudent({
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Cập nhật ${student?.fullName}`}
+        title={`Cập nhật ${student?.fullName || "học sinh"}`}
         maxWidth="sm"
       >
         <form onSubmit={handleSubmit(handleFormSubmit)}>
           <FormInput
             label="Họ và tên"
             id="fullName"
-            placeholder="Nhập họ tên"
+            placeholder="Nhập họ tên học sinh"
             error={errors.fullName}
             register={register("fullName")}
           />
@@ -114,22 +79,41 @@ export default function EditStudent({
             error={errors.studentCode}
             register={register("studentCode")}
           />
-          <FormSelect
-            id="classId"
+
+          <Controller
             name="classId"
-            label="Lớp"
             control={control}
-            options={classOptions}
-            error={errors.classId}
-            defaultValue="" // hoặc 1 giá trị mặc định
+            render={({ field }) => (
+              <FormControl fullWidth margin="normal" error={!!errors.classId}>
+                <InputLabel id="classId-label">Lớp học</InputLabel>
+                <Select
+                  {...field}
+                  labelId="classId-label"
+                  id="classId"
+                  label="Lớp học"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                >
+                  {classOptions.map((cls) => (
+                    <MenuItem key={cls.id} value={cls.id}>
+                      {`${cls.name} - ${cls.shoolName}`}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {errors.classId && (
+                  <FormHelperText>{errors.classId.message}</FormHelperText>
+                )}
+              </FormControl>
+            )}
           />
 
           <Controller
             name="isActive"
             control={control}
+            defaultValue={true}
             render={({ field }) => (
               <FormSwitch
-                label="Đang hoạt động"
+                label="Kích hoạt tài khoản"
                 value={field.value ?? false}
                 onChange={field.onChange}
               />
@@ -138,7 +122,7 @@ export default function EditStudent({
           <Button
             type="submit"
             variant="contained"
-            sx={{ mt: 2, display: "block" }}
+            sx={{ mt: 2, float: "right" }}
           >
             Cập nhật
           </Button>

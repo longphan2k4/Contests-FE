@@ -1,4 +1,4 @@
-import { boolean, number, string, z } from "zod";
+import { z } from "zod";
 
 export const CreateRescueSchema = z.object({
   name: z.string().min(1, "Vui lòng nhập tên cuộc giải cứu"),

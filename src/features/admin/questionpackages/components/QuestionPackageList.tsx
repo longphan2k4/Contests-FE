@@ -1,25 +1,18 @@
 import React from "react";
 import { Box, IconButton } from "@mui/material";
-import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import DataGrid from "../../../../components/DataGrid";
+import IsSwitch from "../../../../components/IsSwitch";
+import type { GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
-import IsSwitch from "../../../../components/IsSwitch";
-import type { QuestionPackage } from "../types/questionpackages.shame";
+import { type QuestionPackage } from "../types/questionpackages.shame";
 
-export interface Filter {
-  page: number;
-  limit: number;
-  keyword: string;
-  searchText: string;
-}
-
-interface QuestionPackagesListProps {
+interface QuestionPackageListProps {
   questionPackages: QuestionPackage[];
-  totalItems: number;
-  filter: Filter;
-  onFilterChange: (filter: Filter) => void;
+  selectedQuestionPackageIds: number[];
+  setSelectedQuestionPackageIds: React.Dispatch<React.SetStateAction<number[]>>;
   onView: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
@@ -27,16 +20,16 @@ interface QuestionPackagesListProps {
   onViewQuestions: (id: number) => void;
 }
 
-export default function QuestionPackagesList({
+export default function QuestionPackageList({
+  selectedQuestionPackageIds,
+  setSelectedQuestionPackageIds,
   questionPackages,
-  filter,
   onView,
   onEdit,
   onDelete,
   onToggle,
   onViewQuestions,
-}: QuestionPackagesListProps): React.ReactElement {
-
+}: QuestionPackageListProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
       field: "index",
@@ -44,25 +37,26 @@ export default function QuestionPackagesList({
       width: 70,
       sortable: false,
       filterable: false,
-      renderCell: (params) =>
-        (filter.page - 1) * filter.limit + params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      renderCell: params =>
+        params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
-    { field: "name", headerName: "Tên gói câu hỏi", flex: 1 },
-    { field: "questionDetailsCount", headerName: "Số câu hỏi", flex: 1 },
-    { field: "matchesCount", headerName: "Số kỳ thi", flex: 1 },
+    { field: "name", headerName: "Tên tài khoản", flex: 1 },
     {
       field: "isActive",
       headerName: "Trạng thái",
       flex: 1,
-      renderCell: (params) => (
-        <IsSwitch value={params.row.isActive} onChange={() => onToggle(params.row.id)} />
+      renderCell: params => (
+        <IsSwitch
+          value={params.row.isActive}
+          onChange={() => onToggle(params.row.id)}
+        />
       ),
     },
     {
       field: "actions",
       headerName: "Thao tác",
       flex: 1,
-      renderCell: (params) => (
+      renderCell: params => (
         <>
           <IconButton color="primary" onClick={() => onView(params.row.id)}>
             <VisibilityIcon />
@@ -80,14 +74,19 @@ export default function QuestionPackagesList({
       ),
     },
   ];
-
   return (
-    <Box sx={{ height: 500, width: "100%" }}>
+    <Box>
       <DataGrid
         rows={questionPackages}
         columns={columns}
-        getRowId={(row: QuestionPackage) => row.id}
-        hideFooterPagination
+        getRowId={row => row.id}
+        selectedIds={selectedQuestionPackageIds}
+        onSelectChange={selection => {
+          const idsArray = Array.isArray(selection)
+            ? selection
+            : Array.from((selection as any).ids || []);
+          setSelectedQuestionPackageIds(idsArray.map(id => Number(id)));
+        }}
       />
     </Box>
   );

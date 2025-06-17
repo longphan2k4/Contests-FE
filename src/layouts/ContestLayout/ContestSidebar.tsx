@@ -97,7 +97,7 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
     {
       key: "class-videos",
       icon: <QuestionIcon fontSize="small" />,
-      label: "Vieo lớp",
+      label: "Video lớp",
       path: `/admin/cuoc-thi/${slug}/class-videos`,
     },
     {

@@ -1,10 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
-import { createQuestionPackage } from "../service/api";
-import { type CreateUpdateQuestionPackageInput } from "../types/questionpackages.shame";
-
+import { type CreateQuestionPackageInput } from "../types/questionpackages.shame";
+import { CreateQuestionPackage } from "../service/api";
 
 export const useCreateQuestionPackage = () => {
   return useMutation({
-    mutationFn: (payload: CreateUpdateQuestionPackageInput) => createQuestionPackage(payload),
+    mutationFn: (payload: CreateQuestionPackageInput) => CreateQuestionPackage(payload),
   });
 };

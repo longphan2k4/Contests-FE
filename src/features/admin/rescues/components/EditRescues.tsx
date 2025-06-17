@@ -19,10 +19,10 @@ interface EditRescueProp {
   onSubmit: (data: UpdateRescueInput) => void;
 }
 
-const roleOptions = [
-  { label: "Admin", value: "Admin" },
-  { label: "Trọng tài", value: "Judge" },
-];
+// const roleOptions = [
+//   { label: "Admin", value: "Admin" },
+//   { label: "Trọng tài", value: "Judge" },
+// ];
 
 export default function EditRescue({
   id,
