@@ -10,12 +10,18 @@ import axiosInstance from '../../../../config/axiosInstance';
 const BASE_URL = '/question-details';
 
 interface BulkCreateResponse {
-  created: QuestionDetail[];
-  summary: {
-    totalRequested: number;
-    successful: number;
-    failed: number;
-  };
+  totalRequested: number;
+  successful: number;
+  failed: number;
+  successfulItems: Array<{
+    questionId: number;
+    questionPackageId: number;
+  }>;
+  failedItems: Array<{
+    questionId: number;
+    questionPackageId: number;
+    reason: string;
+  }>;
 }
 
 interface ReorderResponse {
@@ -80,8 +86,10 @@ export const questionDetailService = {
     questionOrder: number;
     isActive: boolean;
   }): Promise<QuestionDetail> => {
+
     try {
       const response = await axiosInstance.post<ApiResponse<QuestionDetail>>(BASE_URL, data);
+      console.log(response)
       return response.data.data;
     } catch (error) {
       console.error('Lỗi khi tạo chi tiết câu hỏi mới:', error);
@@ -147,7 +155,9 @@ export const questionDetailService = {
   }): Promise<BulkCreateResponse> => {
     try {
       const response = await axiosInstance.post<ApiResponse<BulkCreateResponse>>(`${BASE_URL}/bulk`, data);
+      console.log('response', response);
       return response.data.data;
+      
     } catch (error) {
       console.error('Lỗi khi tạo nhiều chi tiết câu hỏi:', error);
       throw error;

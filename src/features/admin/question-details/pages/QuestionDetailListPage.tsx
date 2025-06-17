@@ -159,6 +159,14 @@ const QuestionDetailListPage: React.FC = () => {
     }
   };
 
+  // Thêm hàm chuyển đổi HTML thành text
+  const stripHtml = (html: string | undefined) => {
+    if (!html) return '';
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  };
+
   return (
     <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
       <Breadcrumbs 
@@ -377,7 +385,7 @@ const QuestionDetailListPage: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell>{row.questionOrder}</TableCell>
-                      <TableCell>{row.question?.plainText || 'Không có tiêu đề'}</TableCell>
+                      <TableCell>{stripHtml(row.question?.content) || 'Không có tiêu đề'}</TableCell>
                       {!isMobile && (
                         <>
                           <TableCell>
@@ -483,10 +491,12 @@ const QuestionDetailListPage: React.FC = () => {
       </Paper>
 
       <QuestionDetailDialog
+        questionPackageId={Number(packageId)}
         open={dialogOpen}
         onClose={handleDialogClose}
         onSubmit={handleDialogSubmit}
         editingQuestion={editingQuestion}
+        totalQuestions={total}
       />
 
       {packageId && (

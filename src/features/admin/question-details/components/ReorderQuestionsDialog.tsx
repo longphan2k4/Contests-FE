@@ -57,6 +57,14 @@ const SortableItem = ({ id, question }: SortableItemProps) => {
     transition
   } = useSortable({ id });
 
+  // Thêm hàm chuyển đổi HTML thành text
+  const stripHtml = (html: string | undefined) => {
+    if (!html) return '';
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  };
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition
@@ -93,7 +101,7 @@ const SortableItem = ({ id, question }: SortableItemProps) => {
         </Box>
       </Box>
       <ListItemText
-        primary={question.question?.plainText || question.question?.title || 'Không có tiêu đề'}
+        primary={question.question?.plainText || stripHtml(question.question?.content) || 'Không có tiêu đề'}
         secondary={
           <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>
             <Chip
