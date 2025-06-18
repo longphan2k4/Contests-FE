@@ -4,35 +4,13 @@ import type {
   ApiResponse,
   ReorderRequest,
   QuestionPackageResponse,
-  AvailableQuestionsResponse
+  AvailableQuestionsResponse,
+  BulkCreateResponse,
+  ReorderResponse
 } from '../types';
 import axiosInstance from '../../../../config/axiosInstance';
 
 const BASE_URL = '/question-details';
-
-interface BulkCreateResponse {
-  totalRequested: number;
-  successful: number;
-  failed: number;
-  successfulItems: Array<{
-    questionId: number;
-    questionPackageId: number;
-  }>;
-  failedItems: Array<{
-    questionId: number;
-    questionPackageId: number;
-    reason: string;
-  }>;
-}
-
-interface ReorderResponse {
-  updated: QuestionDetail[];
-  summary: {
-    totalRequested: number;
-    successful: number;
-    failed: number;
-  };
-}
 
 interface BatchDeletePayload {
   items: Array<{

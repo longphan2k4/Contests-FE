@@ -120,7 +120,7 @@ export const ReorderQuestionsDialog: React.FC<ReorderQuestionsDialogProps> = ({
       setSaving(true);
       const reorders = questions.map((q: QuestionDetail, index: number) => ({
         questionId: q.questionId,
-        newOrder: index + 1
+        questionOrder: index + 1
       }));
 
       await questionDetailService.reorderQuestionDetails({

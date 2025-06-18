@@ -76,6 +76,12 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: "/Contest/dashboard",
     },
     {
+      key: "controls",
+      icon: <DashboardIcon />,
+      label: "Điều khiển",
+      path: `/admin/cuoc-thi/${slug}/controls`,
+    },
+    {
       key: "round",
       icon: <SchoolIcon />,
       label: "Vòng đấu",
@@ -116,7 +122,7 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       key: "results",
       icon: <QuestionIcon fontSize="small" />,
       label: "Kết quả ",
-      path: "/admin/cuoc-thi/:slug/results",
+      path: `/admin/cuoc-thi/${slug}/results`,
     },
     {
       key: "contests",

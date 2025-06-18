@@ -87,7 +87,16 @@ export const useQuestionDetails = () => {
         setTotal(response.pagination?.total || 0);
         setTotalPages(response.pagination?.totalPages || 0);
         if (response.filters) {
-          setFilterStats(response.filters);
+          setFilterStats({
+            totalQuestions: response.data.total || 0,
+            filteredQuestions: questionData.length,
+            appliedFilters: response.filters.appliedFilters || {
+              questionType: filter.questionType,
+              difficulty: filter.difficulty,
+              isActive: filter.isActive,
+              search: filter.search
+            }
+          });
         }
       } else {
         setQuestionDetails([]);

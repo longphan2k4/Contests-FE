@@ -69,7 +69,7 @@ export const SortableItem: React.FC<SortableItemProps> = ({ id, question }) => {
         </Box>
       </Box>
       <ListItemText
-        primary={question.question?.plainText || stripHtml(question.question?.content) || 'Không có tiêu đề'}
+        primary={stripHtml(question.question?.content) || 'Không có tiêu đề'}
         secondary={
           <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>
             <Chip

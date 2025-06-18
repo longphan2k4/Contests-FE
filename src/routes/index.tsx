@@ -2,12 +2,13 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 // import PrivateRoute from './PrivateRoute';
 import AdminRoutes from "../features/admin/AdminRoutes";
-import ContestRoutes from "../features/contest/ContestRouter";
+import ContestRoutes from "../features/Contest/ContestRouter";
 
 import AuthRoutes from "../features/auth/routes";
 import PublicRoutes from "./PublicRoutes";
 // import MatchRoutes from '../features/match';
 import MatchPage from "../features/match/pages/MatchPage";
+import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import TechBanner from "../features/match/components/MediaPopup/BackGround";
 import PrivateRoute from "./PrivateRoute";
 import Forbidden403 from "../components/403";
@@ -32,6 +33,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/account/profile" element={<ProfilePage />} />
       </Route>
       <Route path="/match" element={<MatchPage />} />
+      <Route path="/match/controls" element={<ControlsPage />} />
       <Route path="/banner" element={<TechBanner />} />
       <Route path="/403" element={<Forbidden403 />} />
       <Route path="*" element={<div>Trang không tồn tại</div>} />
