@@ -58,7 +58,7 @@ export const useQuestionDetails = () => {
     setFilter(prevFilter => ({ ...prevFilter, ...newFilter }));
   }, []);
 
-  const fetchQuestionDetails = async () => {
+  const fetchQuestionDetails = useCallback(async () => {
     if (!packageId) {
       setError('Không tìm thấy ID gói câu hỏi');
       return;
@@ -68,37 +68,26 @@ export const useQuestionDetails = () => {
       setError(null);
       const response = await questionDetailService.getQuestionDetailsByPackage(
         Number(packageId),
-        { 
-          page: filter.page, 
+        {
+          page: filter.page,
           limit: filter.limit,
           isActive: filter.isActive,
           questionType: filter.questionType,
           difficulty: filter.difficulty,
-          sortBy: filter.sortBy,
-          sortOrder: filter.sortOrder,
           search: filter.search,
-          includeInactive: filter.isActive === undefined ? true : false
+          sortBy: filter.sortBy,
+          sortOrder: filter.sortOrder
         }
       );
-      if (response && response.data) {
+
+      if (response.data) {
         const questionData = response.data.questions || [];
         setQuestionDetails(questionData);
         setPackageName(response.data.packageInfo?.name || null);
-        if (response.pagination) {
-          setTotal(response.pagination.totalItems || response.pagination.total || 0);
-          setTotalPages(response.pagination.totalPages || Math.ceil((response.pagination.total || 0) / filter.limit));
-        } else {
-          setTotal(questionData.length);
-          setTotalPages(1);
-        }
+        setTotal(response.pagination?.total || 0);
+        setTotalPages(response.pagination?.totalPages || 0);
         if (response.filters) {
-          setFilterStats({
-            totalQuestions: response.filters.totalQuestions,
-            filteredQuestions: response.filters.filteredQuestions,
-            appliedFilters: response.filters.appliedFilters
-          });
-        } else {
-          setFilterStats(null);
+          setFilterStats(response.filters);
         }
       } else {
         setQuestionDetails([]);
@@ -122,7 +111,7 @@ export const useQuestionDetails = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [packageId, filter, showToast]);
 
   useEffect(() => {
     if (packageId) {
@@ -134,7 +123,11 @@ export const useQuestionDetails = () => {
     try {
       await questionDetailService.hardDeleteQuestionDetail(record.questionId, record.questionPackageId);
       showToast('Xóa câu hỏi thành công', 'success');
-      fetchQuestionDetails();
+      if (questionDetails.length === 1 && filter.page > 1) {
+        updateFilter({ page: filter.page - 1 });
+      } else {
+        fetchQuestionDetails();
+      }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.message) {
         showToast(error.response.data.message, 'error');
@@ -165,7 +158,13 @@ export const useQuestionDetails = () => {
       await questionDetailService.batchDelete({ items });
       showToast(`Đã xóa ${selectedIds.size} câu hỏi thành công`, 'success');
       setSelectedIds(new Set());
-      fetchQuestionDetails();
+      
+      const remainingItems = questionDetails.length - selectedIds.size;
+      if (remainingItems <= 0 && filter.page > 1) {
+        updateFilter({ page: filter.page - 1 });
+      } else {
+        fetchQuestionDetails();
+      }
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const errorData = error.response?.data;

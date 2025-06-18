@@ -3,19 +3,26 @@ import type {
   QuestionDetailStats,
   ApiResponse,
   ReorderRequest,
-  QuestionPackageResponse
+  QuestionPackageResponse,
+  AvailableQuestionsResponse
 } from '../types';
 import axiosInstance from '../../../../config/axiosInstance';
 
 const BASE_URL = '/question-details';
 
 interface BulkCreateResponse {
-  created: QuestionDetail[];
-  summary: {
-    totalRequested: number;
-    successful: number;
-    failed: number;
-  };
+  totalRequested: number;
+  successful: number;
+  failed: number;
+  successfulItems: Array<{
+    questionId: number;
+    questionPackageId: number;
+  }>;
+  failedItems: Array<{
+    questionId: number;
+    questionPackageId: number;
+    reason: string;
+  }>;
 }
 
 interface ReorderResponse {
@@ -80,8 +87,10 @@ export const questionDetailService = {
     questionOrder: number;
     isActive: boolean;
   }): Promise<QuestionDetail> => {
+
     try {
       const response = await axiosInstance.post<ApiResponse<QuestionDetail>>(BASE_URL, data);
+      console.log(response)
       return response.data.data;
     } catch (error) {
       console.error('Lỗi khi tạo chi tiết câu hỏi mới:', error);
@@ -138,16 +147,18 @@ export const questionDetailService = {
    * POST /api/question-details/bulk
    */
   bulkCreateQuestionDetails: async (data: {
-    questionDetails: Array<{
+    questionPackageId: number;
+    questions: Array<{
       questionId: number;
-      questionPackageId: number;
       questionOrder: number;
-      isActive: boolean;
     }>;
   }): Promise<BulkCreateResponse> => {
+    console.log('data bulk create', data);
     try {
       const response = await axiosInstance.post<ApiResponse<BulkCreateResponse>>(`${BASE_URL}/bulk`, data);
+      console.log('response', response);
       return response.data.data;
+      
     } catch (error) {
       console.error('Lỗi khi tạo nhiều chi tiết câu hỏi:', error);
       throw error;
@@ -263,12 +274,40 @@ export const questionDetailService = {
    * POST /api/question-details/batch-delete
    */
   batchDelete: async (payload: BatchDeletePayload) => {
+    console.log('payload delete batch', payload);
     try {
-      const response = await axiosInstance.post(`${BASE_URL}/batch-delete`, payload);
+      const response = await axiosInstance.delete(`${BASE_URL}/batch-delete`, { data: payload });
       console.log(response);
       return response.data;
     } catch (error) {
       console.error('Lỗi khi xóa nhiều câu hỏi:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lấy danh sách câu hỏi chưa có trong gói
+   * GET /api/question-details/package/{packageId}/available-questions
+   */
+  getAvailableQuestions: async (
+    packageId: number,
+    params: {
+      page?: number;
+      limit?: number;
+      isActive?: boolean;
+      questionType?: string;
+      difficulty?: string;
+      search?: string;
+    }
+  ): Promise<ApiResponse<AvailableQuestionsResponse>> => {
+    try {
+      const response = await axiosInstance.get<ApiResponse<AvailableQuestionsResponse>>(
+        `${BASE_URL}/package/${packageId}/available-questions`, 
+        { params }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách câu hỏi chưa có trong gói:', error);
       throw error;
     }
   }

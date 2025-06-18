@@ -1,6 +1,14 @@
 import axiosInstance from '../../../../config/axiosInstance';
 import type { School, SchoolFilter, ApiResponse, SchoolsResponse } from '../types/school';
 
+export interface DeleteSchoolsResponse {
+  success: boolean;
+  messages: Array<{
+    status: "success" | "error";
+    msg: string;
+  }>;
+}
+
 /**
  * Lấy danh sách trường học từ API
  */
@@ -46,11 +54,16 @@ export const updateSchool = async (id: number, data: Partial<School>): Promise<S
 };
 
 /**
- * Xóa trường học
+ * Xóa nhiều trường học
  */
-export const deleteSchool = async (ids: number[]): Promise<void> => {
+export const deleteSchool = async (ids: number[]): Promise<DeleteSchoolsResponse> => {
   try {
-    await axiosInstance.delete(`/school/${ids}`);
+    console.log('Request xóa trường học:', { ids });
+    const response = await axiosInstance.post<DeleteSchoolsResponse>('/school/delete-many', {
+      ids
+    });
+    console.log('Response xóa trường học:', response.data);
+    return response.data;
   } catch (error) {
     console.error(`Error deleting schools with ids ${ids}:`, error);
     throw error;

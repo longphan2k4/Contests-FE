@@ -1,25 +1,26 @@
 import React, { useState, useCallback } from "react";
 import {
   Box,
-  Pagination,
+  Stack,
   TextField,
   InputAdornment,
-  Typography,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Stack,
+  Typography,
   Button,
   useTheme,
-  useMediaQuery,
+  CircularProgress,
+  Pagination,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import SearchIcon from "@mui/icons-material/Search";
+import DeleteIcon from "@mui/icons-material/Delete";
 import type { School, SchoolFilter } from "../types/school";
 import { useSchoolList } from "../hooks/list/useSchoolList";
-import { useDeleteSchool } from "../hooks";
+import { useDeleteSchool } from "../hooks/crud/useDeleteSchool";
 
 interface SchoolListProps {
   schools: School[];
@@ -41,7 +42,6 @@ const SchoolList: React.FC<SchoolListProps> = ({
   onEdit,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const { columns, handlePageChange } = useSchoolList(
     filter,
@@ -63,11 +63,33 @@ const SchoolList: React.FC<SchoolListProps> = ({
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
-  const [pageSize, setPageSize] = useState(filter?.limit || 10);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
+
+  const { handleDeleteSchools, loading: deleteLoading } = useDeleteSchool();
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+    
+    console.log('Danh sách trường học được chọn để xóa:', selectedIds);
+    const success = await handleDeleteSchools(selectedIds);
+    console.log('Kết quả xóa:', success);
+    
+    if (success) {
+      // Refresh danh sách sau khi xóa thành công
+      if (onFilterChange) {
+        console.log('Refresh danh sách sau khi xóa thành công');
+        onFilterChange({
+          ...filter,
+          page: filter?.page || 1,
+        });
+      }
+      // Reset danh sách đã chọn
+      setSelectedIds([]);
+    }
+  };
 
   const handleSearchChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,20 +119,6 @@ const SchoolList: React.FC<SchoolListProps> = ({
     [filter, onFilterChange, searchTimeout]
   );
 
-  // Xử lý thay đổi số lượng bản ghi trên mỗi trang
-  const handlePageSizeChange = (event: SelectChangeEvent) => {
-    const newPageSize = Number(event.target.value);
-    setPageSize(newPageSize);
-
-    if (onFilterChange) {
-      onFilterChange({
-        ...filter,
-        limit: newPageSize,
-        page: 1, // Reset về trang 1 khi thay đổi số lượng bản ghi
-      });
-    }
-  };
-
   const handleStatusFilterChange = (event: SelectChangeEvent) => {
     const newStatus = event.target.value as "all" | "active" | "inactive";
     setStatusFilter(newStatus);
@@ -131,8 +139,6 @@ const SchoolList: React.FC<SchoolListProps> = ({
       }
     };
   }, [searchTimeout]);
-
-  const { handleDeleteSchools } = useDeleteSchool();
 
   return (
     <>
@@ -187,17 +193,19 @@ const SchoolList: React.FC<SchoolListProps> = ({
               <MenuItem value="inactive">Không hoạt động</MenuItem>
             </Select>
           </FormControl>
-          {/* xoá nhiều */}
+
           {selectedIds.length > 0 && (
             <Button
               variant="contained"
               color="error"
-              onClick={() => handleDeleteSchools(selectedIds)}
+              onClick={handleDeleteSelected}
+              disabled={deleteLoading}
+              startIcon={deleteLoading ? <CircularProgress size={20} color="inherit" /> : <DeleteIcon />}
               sx={{
                 width: { xs: "100%", sm: "auto" },
               }}
             >
-              Xoá trường ({selectedIds.length})
+              Xóa ({selectedIds.length})
             </Button>
           )}
         </Stack>
@@ -235,16 +243,19 @@ const SchoolList: React.FC<SchoolListProps> = ({
           hideFooter
           checkboxSelection
           onRowSelectionModelChange={selectionModel => {
+            console.log('Selection model thay đổi:', selectionModel);
             if (
               selectionModel &&
               typeof selectionModel === "object" &&
               "ids" in selectionModel
             ) {
-              setSelectedIds(
-                Array.from((selectionModel as unknown as { ids: number[] }).ids)
-              );
+              const newSelectedIds = Array.from((selectionModel as unknown as { ids: number[] }).ids);
+              console.log('Danh sách ID mới (từ object):', newSelectedIds);
+              setSelectedIds(newSelectedIds);
             } else {
-              setSelectedIds(selectionModel as number[]);
+              const newSelectedIds = selectionModel as number[];
+              console.log('Danh sách ID mới (từ array):', newSelectedIds);
+              setSelectedIds(newSelectedIds);
             }
           }}
           sx={{
@@ -260,50 +271,15 @@ const SchoolList: React.FC<SchoolListProps> = ({
 
       {/* Hiển thị phân trang chỉ khi có nhiều hơn 1 trang */}
       {totalPages > 1 && (
-        <Box sx={{ mt: 2 }}>
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            justifyContent="space-between"
-            alignItems={{ xs: "center", sm: "center" }}
-          >
-            <FormControl
-              variant="outlined"
-              size="small"
-              sx={{
-                width: { xs: "100%", sm: "auto" },
-                minWidth: { xs: "100%", sm: 100 },
-              }}
-            >
-              <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
-              <Select
-                labelId="page-size-select-label"
-                value={String(pageSize)}
-                onChange={handlePageSizeChange}
-                label="Hiển thị"
-              >
-                <MenuItem value="5">5</MenuItem>
-                <MenuItem value="10">10</MenuItem>
-                <MenuItem value="25">25</MenuItem>
-                <MenuItem value="50">50</MenuItem>
-              </Select>
-            </FormControl>
-
-            <Pagination
-              count={totalPages}
-              page={filter?.page || 1}
-              onChange={handlePageChange}
-              color="primary"
-              showFirstButton
-              showLastButton
-              size={isMobile ? "small" : "medium"}
-              siblingCount={isMobile ? 0 : 1}
-            />
-
-            <Typography variant="body2" color="text.secondary">
-              Trang {filter?.page || 1} / {totalPages}
-            </Typography>
-          </Stack>
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+          <Pagination
+            count={totalPages}
+            page={filter?.page || 1}
+            onChange={handlePageChange}
+            color="primary"
+            showFirstButton
+            showLastButton
+          />
         </Box>
       )}
     </>

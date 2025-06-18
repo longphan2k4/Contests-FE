@@ -15,15 +15,16 @@ export default defineConfig({
     proxy: {
       // Cấu hình proxy cho API
       "/api": {
-        target: "http://localhost:5000",
+        target: "http://localhost:3000",
         changeOrigin: true,
         secure: false,
       },
       // Cấu hình proxy cho uploads
       "/uploads": {
-        target: "http://localhost:5000",
+        target: "http://localhost:3000",
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path,
       },
     },
   },

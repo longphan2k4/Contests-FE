@@ -1,227 +1,226 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
-import { useNavigate } from "react-router-dom";
-import PaginationControl from "../components/PaginationControl";
 import {
   Box,
   Typography,
   CircularProgress,
   Alert,
-  Button,
   TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Stack,
   InputAdornment,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import SearchIcon from "@mui/icons-material/Search";
-
+import { Button } from "@mui/material";
+import { Pagination } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import CreateQuestionPackage from "../components/CreateQuestionPackage";
 import ViewQuestionPackage from "../components/ViewQuestionPackage";
 import EditQuestionPackage from "../components/EditQuestionPackage";
-import QuestionPackageList from "../components/QuestionPackagesList";
+import QuestionPackageList from "../components/QuestionPackageList";
+import { useToast } from "../../../../contexts/toastContext";
+import ConfirmDeleteMany from "../../../../components/Confirm";
+import ConfirmDelete from "../../../../components/Confirm";
+import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 
-import { useNotification } from "../../../../contexts/NotificationContext";
-
-import type { Filter } from "../components/QuestionPackagesList";
 import { useQuestionPackages } from "../hook/useQuestionPackages";
-import { useQuestionPackageById } from "../hook/useQuestionPackageById";
 import { useCreateQuestionPackage } from "../hook/useCreate";
-import { useDeleteQuestionPackage } from "../hook/useDelete";
-import { useEditQuestionPackage } from "../hook/useEdit";
+import { useUpdate } from "../hook/useUpdate";
+import { useActive } from "../hook/useActive";
+import { useDeleteMany } from "../hook/useDeleteMany";
+import { useDelete } from "../hook/useDelete";
+import AddIcon from "@mui/icons-material/Add";
+
 import {
   type QuestionPackage,
-  type CreateUpdateQuestionPackageInput,
+  type CreateQuestionPackageInput,
+  type UpdateQuestionPackageInput,
+  type QuestionPackageQuery,
+  type pagination,
+  type deleteQuestionPackagesType,
 } from "../types/questionpackages.shame";
+import SearchIcon from "@mui/icons-material/Search";
 
-const QuestionPackagesPage: React.FC = () => {
+const QuestionsPackagesPage: React.FC = () => {
   const navigate = useNavigate();
-  const { showSuccessNotification, showErrorNotification } = useNotification();
+  const [questionPackages, setQuestionPackages] = useState<QuestionPackage[]>([]);
+  const [selectedQuestionPackageId, setSelectedQuestionPackageId] = useState<number | null>(null);
+  const [pagination, setPagination] = useState<pagination>({});
 
-  // Filter state
-  const [filter, setFilter] = useState<Filter>({
-    page: 1,
-    limit: 10,
-    keyword: "",
-    searchText: "",
-  });
- 
-  const { mutate: deleteQuestionPackage } = useDeleteQuestionPackage();
-  // Search input state
-  const [searchValue, setSearchValue] = useState("");
-
-  // UI modals
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isConfirmDeleteMany, setIsConfirmDeleteMany] = useState(false);
+  const [isConfirmDelete, setIsConfirmDelete] = useState(false);
 
-  // Selected question package
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [selectedPackage, setSelectedPackage] = useState<QuestionPackage | null>(
-    null
-  );
+  const [filter, setFilter] = useState<QuestionPackageQuery>({});
+  const [selectedQuestionPackageIds, setSelectedQuestionPackageIds] = useState<number[]>([]);
 
-  // Pending action to trigger modal after data fetched
-  const [pendingAction, setPendingAction] = useState<"view" | "edit" | null>(
-    null
-  );
+  const { showToast } = useToast();
 
-  // Fetch question packages list with react query hook
   const {
-    data: questionPackagesResponse,
-    isLoading,
-    isError,
-    refetch,
+    data: questionPackagesQuery,
+    isLoading: isQuestionPackagesLoading,
+    isError: isQuestionPackagesError,
+    refetch: refetchQuestionPackages,
   } = useQuestionPackages(filter);
 
-  // Fetch selected package details
-  const { data: selectedData } = useQuestionPackageById(selectedId);
+  const { mutate: mutateCreate } = useCreateQuestionPackage();
 
-  // Mutation hook to create package
-  const { mutate: createQuestionPackage } = useCreateQuestionPackage();
-  const { mutate: editQuestionPackage } = useEditQuestionPackage();
-  // Local list state synced with fetched data
-  const [, setQuestionPackages] = useState<QuestionPackage[]>([]);
+  const { mutate: mutateUpdate } = useUpdate();
 
-  // Sync fetched question packages into local state
+  const { mutate: mutateActive } = useActive();
+
+  const { mutate: mutateDeleteMany } = useDeleteMany();
+
+  const { mutate: mutateDelete } = useDelete();
+
   useEffect(() => {
-    if (questionPackagesResponse?.data) {
-      setQuestionPackages(questionPackagesResponse.data);
+    if (questionPackagesQuery) {
+      setQuestionPackages(questionPackagesQuery.data);
+      setPagination(questionPackagesQuery.pagination);
     }
-  }, [questionPackagesResponse]);
+  }, [questionPackagesQuery]);
 
-  // When selectedData or pendingAction changes, open corresponding modal
-  useEffect(() => {
-    if (!selectedData || !pendingAction) return;
-
-    setSelectedPackage(selectedData);
-
-    if (pendingAction === "view") setIsViewOpen(true);
-    if (pendingAction === "edit") setIsEditOpen(true);
-
-    setPendingAction(null);
-  }, [selectedData, pendingAction]);
-
-  // Handle search input change with debounced effect
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setSearchValue(value);
-    setFilter((prev) => ({
-      ...prev,
-      keyword: value.trim(),
-      page: 1, // reset to first page when searching
-    }));
-  };
-
-  // Open and close create modal
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
 
-  // Toggle active state locally (simulate API call)
   const toggleActive = useCallback((id: number) => {
-    setQuestionPackages((prev) =>
-      prev.map((pkg) =>
-        pkg.id === id ? { ...pkg, isActive: !pkg.isActive } : pkg
-      )
+    mutateActive(
+      { id: id },
+      {
+        onSuccess: () => {
+          showToast(`Cập nhật trạng thái thành công`, "success");
+
+          refetchQuestionPackages();
+          setSelectedQuestionPackageId(null);
+        },
+        onError: (err: any) => {
+          showToast(err.response?.data?.message, "error");
+        },
+      }
     );
-    // TODO: Call API to toggle active status
   }, []);
 
-  // Delete question package locally (simulate API call)
-  const handleDelete = useCallback((id: number) => {
-    if (window.confirm("Bạn có chắc muốn xoá gói câu hỏi này không?")) {
-      deleteQuestionPackage(id, {
-        onSuccess: () => {
-          // Nếu bạn đang dùng local state students, thì cần cập nhật:
-          setQuestionPackages(prev => prev.filter(s => s.id !== id));
-        },
-        onError: () => {
-          alert("Xoá học sinh thất bại");
-        }
-      });
-    }
-  }, [deleteQuestionPackage]);
+  const handeDeletes = (ids: deleteQuestionPackagesType) => {
+    mutateDeleteMany(ids, {
+      onSuccess: data => {
+        data.messages.forEach((item: any) => {
+          if (item.status === "error") {
+            showToast(item.msg, "error");
+          } else {
+            showToast(item.msg, "success");
+          }
+        });
+        refetchQuestionPackages();
+      },
+      onError: err => {
+        console.log(err);
+      },
+    });
+  };
 
-  // Create new question package
-  const handleCreate = (payload: CreateUpdateQuestionPackageInput) => {
-    createQuestionPackage(payload, {
-      onSuccess: () => {
-        showSuccessNotification(`Tạo gói câu hỏi "${payload.name}" thành công`);
-        refetch();
-        closeCreate();
+  const handleCreate = (payload: CreateQuestionPackageInput) => {
+    mutateCreate(payload, {
+      onSuccess: data => {
+        if (data) showToast(`Tạo gói câu hỏi thành công`, "success");
+        refetchQuestionPackages();
       },
       onError: (err: any) => {
         if (err.response?.data?.message) {
-          showErrorNotification(err.response.data.message);
-        } else {
-          showErrorNotification("Có lỗi xảy ra khi tạo gói câu hỏi");
+          showToast(err.response?.data?.message, "success");
         }
       },
     });
   };
 
-  // Update existing question package
-  const handleUpdate = (payload: CreateUpdateQuestionPackageInput) => {
-    if (selectedId === null) return; // kiểm tra xem đã chọn đúng id chưa
-
-    editQuestionPackage({
-      id: selectedId,
-      data: payload,
-    });
+  const handleUpdate = (payload: UpdateQuestionPackageInput) => {
+    if (selectedQuestionPackageId) {
+      mutateUpdate(
+        { id: selectedQuestionPackageId, payload },
+        {
+          onSuccess: () => {
+            showToast(`Cập nhật gói câu hỏi thành công`, "success");
+            refetchQuestionPackages();
+          },
+          onError: (err: any) => {
+            if (err.response?.data?.message)
+              showToast(err.response?.data?.message, "error");
+          },
+        }
+      );
+    }
   };
 
-  // Handle actions: view, edit, delete
+  const handleDelete = useCallback((id: number | null) => {
+    if (!id) return;
+    mutateDelete(id, {
+      onSuccess: () => {
+        showToast(`Xóa gói câu hỏi thành công`, "success");
+        refetchQuestionPackages();
+      },
+      onError: (error: any) => {
+        showToast(error.response?.data?.message, "success");
+      },
+    });
+  }, []);
+
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
-      if (type === "delete") {
-        handleDelete(id);
-        return;
-      }
-      setSelectedId(id);
-      setPendingAction(type);
-    },
-    [handleDelete]
-  );
+      setSelectedQuestionPackageId(id);
 
-  // Handle view questions
-  const handleViewQuestions = useCallback((id: number) => {
+      if (type === "delete") {
+        setIsConfirmDelete(true);
+      }
+
+      if (type === "view") setIsViewOpen(true);
+      if (type === "edit") setIsEditOpen(true);
+    },
+    []
+  );
+const handleViewQuestions = useCallback((id: number) => {
     navigate(`/admin/question-packages/${id}`);
   }, [navigate]);
 
-  const filteredPackages = questionPackagesResponse?.data || [];
-  
-  const total = questionPackagesResponse?.pagination?.total || 0;
+  const hanldConfirmDeleteManyDeletes = () => {
+    setIsConfirmDeleteMany(true);
+  };
 
-  if (isLoading) {
+  if (isQuestionPackagesLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
-
-  if (isError) {
+  if (isQuestionPackagesError) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetch()}>Thử lại</Button>}
+          action={<Button onClick={() => refetchQuestionPackages}>Thử lại</Button>}
         >
           Không thể tải danh sách gói câu hỏi.
         </Alert>
       </Box>
     );
   }
-
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Typography variant="h5">Quản lý gói câu hỏi</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={openCreate}
+        >
           Thêm gói câu hỏi
         </Button>
       </Box>
 
-     
-      {/* List */}
+      {/* User list card */}
       <Box
         sx={{
           background: "#FFFFFF",
@@ -233,90 +232,210 @@ const QuestionPackagesPage: React.FC = () => {
             "0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12)",
         }}
       >
-
-        {/* Search and total */}
         <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={2}
-          flexWrap="wrap"
-          gap={2}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
         >
-          <TextField
-            size="small"
-            placeholder="Tìm kiếm gói câu hỏi"
-            value={searchValue}
-            onChange={handleSearchChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
             sx={{
-              minWidth: { xs: "100%", sm: 300 },
-              maxWidth: { xs: "100%", sm: 300 },
+              flexWrap: "wrap",
+              alignItems: { sm: "center" },
+              mb: 2,
             }}
-          />
-
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            flexShrink={0}
-            textAlign={{ xs: "right", sm: "right" }}
-            sx={{ minWidth: 120 }}
           >
-            Tổng số: {total} gói câu hỏi
-          </Typography>
+            {/* Ô tìm kiếm */}
+            <TextField
+              label="Tìm kiếm"
+              variant="outlined"
+              size="small"
+              value={filter.search || ""}
+              onChange={e =>
+                setFilter(prev => ({
+                  ...prev,
+                  search: e.target.value,
+                }))
+              }
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                flex: { sm: 1 },
+                minWidth: { xs: "100%", sm: 200 },
+              }}
+            />
+
+            <FormAutocompleteFilter
+              label="Trạng thái"
+              options={[
+                { label: "Tất cả", value: "all" },
+                { label: "Hoạt động", value: "active" },
+                { label: "Không hoạt động", value: "inactive" },
+              ]}
+              value={
+                filter.isActive === undefined
+                  ? "all"
+                  : filter.isActive
+                  ? "active"
+                  : "inactive"
+              }
+              onChange={val => {
+                setFilter(prev => ({
+                  ...prev,
+                  isActive:
+                    val === "all"
+                      ? undefined
+                      : val === "active"
+                      ? true
+                      : val === "inactive"
+                      ? false
+                      : undefined, // fallback nếu Autocomplete trả undefined
+                }));
+              }}
+              sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
+            />
+
+           
+            {/* Nút xoá người */}
+            {selectedQuestionPackageIds.length > 0 && (
+              <Button
+                variant="contained"
+                color="error"
+                onClick={hanldConfirmDeleteManyDeletes}
+                sx={{
+                  flex: { sm: 1 },
+                  width: { xs: "100%", sm: "auto" },
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Xoá người ({selectedQuestionPackageIds.length})
+              </Button>
+            )}
+
+            {/* Tổng số người dùng */}
+            <Box
+              sx={{
+                ml: { xs: 0, sm: "auto" },
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                alignSelf={{ xs: "flex-start", sm: "center" }}
+              >
+                Tổng số: {pagination?.total} gói câu hỏi
+              </Typography>
+            </Box>
+          </Stack>
+
+          <QuestionPackageList
+            questionPackages={questionPackages}
+            selectedQuestionPackageIds={selectedQuestionPackageIds}
+            setSelectedQuestionPackageIds={setSelectedQuestionPackageIds}
+            onViewQuestions={handleViewQuestions}
+            onView={id => handleAction("view", id)}
+            onEdit={id => handleAction("edit", id)}
+            onDelete={id => handleAction("delete", id)}
+            onToggle={toggleActive}
+          />
         </Box>
 
-        <QuestionPackageList
-          questionPackages={filteredPackages}
-          onView={(id) => handleAction("view", id)}
-          onEdit={(id) => handleAction("edit", id)}
-          onDelete={(id) => handleAction("delete", id)}
-          onToggle={toggleActive}
-          onViewQuestions={handleViewQuestions}
-          totalItems={total}
-          filter={filter}
-          onFilterChange={setFilter}
+        <Box>
+          <Box
+            sx={{
+              mt: 2,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
+              <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
+              <Select
+                labelId="page-size-select-label"
+                value={String(filter.limit || 10)}
+                onChange={e => {
+                  setFilter(prev => ({
+                    ...prev,
+                    limit: Number(e.target.value),
+                  }));
+                  filter.page = 1;
+                }}
+                label="Hiển thị"
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={25}>25</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+              </Select>
+            </FormControl>
+            <Typography>
+              Trang {filter.page || 1} / {pagination?.totalPages}
+            </Typography>
+          </Box>
+        </Box>
+        <Box className="flex flex-col items-center">
+          {" "}
+          <Pagination
+            count={pagination?.totalPages}
+            page={filter.page ?? 1}
+            color="primary"
+            onChange={(_event, value) =>
+              setFilter(prev => ({
+                ...prev,
+                page: value,
+              }))
+            }
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+        <CreateQuestionPackage
+          isOpen={isCreateOpen}
+          onClose={closeCreate}
+          onSubmit={handleCreate}
         />
-        <PaginationControl
-          totalPages={Math.ceil(total / filter.limit)}
-          currentPage={filter.page}
-          pageSize={filter.limit}
-          onPageChange={(page) =>
-            setFilter((prev) => ({ ...prev, page }))
-          }
-          onPageSizeChange={(newSize) =>
-            setFilter((prev) => ({ ...prev, limit: newSize, page: 1 }))
-          }
+
+        <ViewQuestionPackage
+          isOpen={isViewOpen}
+          onClose={() => setIsViewOpen(false)}
+          id={selectedQuestionPackageId}
+        />
+
+        <EditQuestionPackage
+          isOpen={isEditOpen}
+          onClose={() => setIsEditOpen(false)}
+          id={selectedQuestionPackageId}
+          onSubmit={handleUpdate}
         />
       </Box>
-
-      {/* Modals */}
-      <CreateQuestionPackage
-        isOpen={isCreateOpen}
-        onClose={closeCreate}
-        onSubmit={handleCreate}
+      <ConfirmDeleteMany
+        open={isConfirmDeleteMany}
+        onClose={() => setIsConfirmDeleteMany(false)}
+        title="Xác nhận xóa gói câu hỏi "
+        description={`Bạn có chắc xóa ${selectedQuestionPackageIds.length} gói câu hỏi này không`}
+        onConfirm={() => handeDeletes({ ids: selectedQuestionPackageIds })}
       />
 
-      <ViewQuestionPackage
-        isOpen={isViewOpen}
-        onClose={() => setIsViewOpen(false)}
-        questionPackage={selectedPackage}
-      />
-
-      <EditQuestionPackage
-        isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        questionPackage={selectedPackage}
-        onSubmit={handleUpdate}
+      <ConfirmDelete
+        open={isConfirmDelete}
+        onClose={() => setIsConfirmDelete(false)}
+        title="Xác nhận xóa gói câu hỏi "
+        description={`Bạn có chắc chắn xóa gói câu hỏi này không`}
+        onConfirm={() => handleDelete(selectedQuestionPackageId)}
       />
     </Box>
   );
 };
 
-export default memo(QuestionPackagesPage);
+export default memo(QuestionsPackagesPage);

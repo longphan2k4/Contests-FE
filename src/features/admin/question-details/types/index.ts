@@ -135,4 +135,62 @@ export interface QuestionPackageResponse {
     description?: string;
   };
   questions: QuestionDetail[];
+}
+
+export interface Question {
+  id: number;
+  content: string;
+  plainText?: string;
+  questionType: 'multiple_choice' | 'essay' | string;
+  difficulty: 'Alpha' | 'Beta' | 'Gold' | string;
+  topicId?: number;
+  questionTopicId?: number;
+}
+
+export interface Topic {
+  id: number;
+  name: string;
+}
+
+export interface SearchParams {
+  page?: number;
+  limit?: number;
+  difficulty?: string;
+  topicId?: number;
+  search?: string;
+}
+
+export interface Filters {
+  difficulty: string;
+  topic: string;
+}
+
+export interface QuestionDetailDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  editingQuestion: QuestionDetail | null;
+  questionPackageId: number;
+  totalQuestions: number;
+  onSuccess?: () => void;
+}
+
+export interface AvailableQuestion {
+  id: number;
+  content: string;
+  questionType: 'multiple_choice' | 'essay' | string;
+  difficulty: 'Alpha' | 'Beta' | 'Gold' | string;
+  defaultTime: number;
+  score: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AvailableQuestionsResponse {
+  packageInfo: {
+    id: number;
+    name: string;
+  };
+  questions: AvailableQuestion[];
 } 
