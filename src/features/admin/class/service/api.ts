@@ -36,7 +36,7 @@ export const DeleteClasses = async (ids: deleteClasssType) => {
 };
 
 export const listSchool = async () => {
-  const res = await axiosInstance.get("/school/list-school");
+  const res = await axiosInstance.get("/school/get-school");
   return res.data;
 };
 

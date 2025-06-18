@@ -1,78 +1,77 @@
 import { z } from "zod";
-
-// Tạo học sinh
 export const CreateStudentSchema = z.object({
   fullName: z
     .string()
-    .min(1, "Vui lòng nhập họ và tên"),
+    .min(3, "Họ và tên ít nhất 3 kí tự")
+    .max(50, "Họ và tên tối đa 50 kí tự"),
   studentCode: z
     .string()
     .min(1, "Vui lòng nhập mã học sinh"),
-  classId: z
-    .string({ invalid_type_error: "Vui lòng chọn lớp" }), // ✅ Thêm dòng này
+  classId: z.number({ required_error: "Vui lòng chọn lớp học" }),
   isActive: z.boolean(),
 });
 
+export type ClassItem = {
+  id: number;
+  name: string;
+  isActive: boolean;
+  shoolName: string;
+};
 
-
-// ID học sinh (dùng để lấy, cập nhật, xóa)
-export const StudentIdSchema = z.object({
+export const StudentIdShema = z.object({
   id: z.number().nullable(),
 });
 
-// Thông tin học sinh đầy đủ
-export const StudentItemSchema = z.object({
+export const StudentShema = z.object({
   id: z.number(),
   fullName: z.string(),
-  studentCode: z.string().optional(),
+  studentCode: z.string(),
   isActive: z.boolean(),
-  classId: z.number(),
   className: z.string(),
 });
 
-// Schema cho phân trang
-export const PaginationSchema = z.object({
-  page: z.number(),
-  limit: z.number(),
-  total: z.number(),
-  totalPages: z.number(),
-  hasNext: z.boolean(),
-  hasPrev: z.boolean(),
-});
-
-// Schema cho phần data
-export const StudentsDataSchema = z.object({
-  students: z.array(StudentItemSchema),
-  pagination: PaginationSchema,
-});
-
-// Schema root cho response
-export const StudentsResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-  data: StudentsDataSchema,
-  timestamp: z.string(),
-});
-// Cập nhật học sinh
 export const UpdateStudentSchema = z.object({
-  fullName: z
-    .string()
-    .min(3, "Họ tên phải có ít nhất 3 ký tự")
-    .max(100, "Họ tên tối đa 100 ký tự")
-    .optional(),
-  studentCode: z
-    .string()
-    .min(3, "Mã học sinh phải có ít nhất 3 ký tự")
-    .max(20, "Mã học sinh tối đa 20 ký tự")
-    .optional(),
-    isActive: z.boolean().optional(),
-  classId: z.number({ invalid_type_error: "Vui lòng chọn lớp" }).optional(),
-  
+  fullName: z.string().min(3).max(50).optional(),
+  studentCode: z.string().optional(),
+  classId: z.number({ required_error: "Vui lòng chọn lớp học" }),
+  isActive: z.boolean().optional(),
 });
 
+export type StudentQuery = {
+  page?: number; // trang hiện tại, mặc định 1
+  limit?: number; // số item trên 1 trang, mặc định 10
+  search?: string; // chuỗi tìm kiếm, có thể không truyền
+  isActive?: boolean; // trạng thái active, true hoặc false hoặc undefined
+};
 
-export type Student = z.infer<typeof StudentItemSchema>;
+type ActiveOption = {
+  label: string;
+  value: boolean | ""; // có thể là true, false hoặc ""
+};
+
+export const ActiveOptions: ActiveOption[] = [
+  { label: "Đang hoạt động", value: true },
+  { label: "Tất cả", value: "" },
+  { label: "Không hoạt động", value: false },
+];
+
+export type pagination = {
+  page?: number;
+  limit?: number;
+  total?: number;
+  totalPages?: number;
+  hasNext?: boolean;
+  hasPrev?: boolean;
+};
+
+export const deleteStudentsSchema = z.object({
+  ids: z
+    .array(z.number().int().positive("ID phải là số nguyên dương"))
+    .min(1, "Phải chọn ít nhất 1 ID để xoá"),
+});
+
+export type Student = z.infer<typeof StudentShema>;
 export type CreateStudentInput = z.infer<typeof CreateStudentSchema>;
 export type UpdateStudentInput = z.infer<typeof UpdateStudentSchema>;
-export type StudentIdParam = z.infer<typeof StudentIdSchema>;
-
+export type StudentIdParam = z.infer<typeof StudentIdShema>;
+export type deleteStudentsType = z.infer<typeof deleteStudentsSchema>;

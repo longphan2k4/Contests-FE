@@ -1,16 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAllQuestionPackages } from "../service/api";
-import type { Filter } from "../components/QuestionPackagesList";
+import { type QuestionPackageQuery } from "../types/questionpackages.shame";
 
-export const useQuestionPackages = (filter: Filter) => {
+export const useQuestionPackages = (filter: QuestionPackageQuery) => {
   return useQuery({
-    queryKey: ["question-packages", filter.page, filter.limit, filter.keyword || ""],
-    queryFn: () =>
-      getAllQuestionPackages({
-        page: filter.page,
-        limit: filter.limit,
-        search: filter.keyword || "",
-      }),
-      placeholderData: prevData => prevData,
+    queryKey: ["question-packages", filter],
+    queryFn: () => getAllQuestionPackages(filter),
+    placeholderData: prevData => prevData, // ✅ Giữ lại data cũ
   });
 };

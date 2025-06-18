@@ -73,7 +73,7 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       key: "dashboard",
       icon: <DashboardIcon />,
       label: "Bảng điều khiển",
-      path: "/Contest/dashboard",
+      path: `/admin/cuoc-thi/${slug}/dashboard`,
     },
     {
       key: "controls",
@@ -88,10 +88,10 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: `/admin/cuoc-thi/${slug}/vong-dau`,
     },
     {
-      key: "schools",
+      key: "match",
       icon: <BankIcon />,
       label: "Trận đấu",
-      path: "/Contest/school",
+      path: `/admin/cuoc-thi/${slug}/tran-dau`,
     },
 
     {
@@ -101,23 +101,18 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: `/admin/cuoc-thi/${slug}/nhom`,
     },
     {
-      key: "topics",
+      key: "class-videos",
       icon: <QuestionIcon fontSize="small" />,
-      label: "Vieo lớp",
-      path: "/Contest/question-topics",
+      label: "Video lớp",
+      path: `/admin/cuoc-thi/${slug}/class-videos`,
     },
     {
-      key: "questions",
+      key: "sponsors",
       icon: <QuestionIcon fontSize="small" />,
       label: "Nhà tài trợ",
-      path: "/Contest/questions",
+      path: `/admin/cuoc-thi/${slug}/sponsors`,
     },
-    {
-      key: "packages",
-      icon: <QuestionIcon fontSize="small" />,
-      label: "Thí sinh ",
-      path: "/Contest/question-packages",
-    },
+
     {
       key: "results",
       icon: <QuestionIcon fontSize="small" />,
@@ -125,16 +120,16 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: `/admin/cuoc-thi/${slug}/results`,
     },
     {
-      key: "contests",
+      key: "rescues",
       icon: <TrophyIcon />,
       label: "Cứu trợ ",
-      path: "/Contest/contests",
+      path: `/admin/cuoc-thi/${slug}/rescues`,
     },
     {
-      key: "students",
-      icon: <GroupIcon />,
-      label: "Thí sinh và trận đấu",
-      path: "/Contest/students",
+      key: "contestant",
+      icon: <SchoolIcon />,
+      label: "Thí sinh",
+      path: `/admin/cuoc-thi/${slug}/thi-sinh`,
     },
     {
       key: "1",
@@ -155,16 +150,10 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: "/Contest/about",
     },
     {
-      key: "4",
+      key: "awards",
       icon: <FileIcon />,
       label: "Giải thưởng",
-      path: "/Contest/about",
-    },
-    {
-      key: "4",
-      icon: <FileIcon />,
-      label: `${slug}`,
-      path: "/Contest/about",
+      path: `/admin/cuoc-thi/${slug}/awards`,
     },
   ];
 

@@ -1,4 +1,9 @@
-import { Autocomplete, TextField, createFilterOptions } from "@mui/material";
+import {
+  Autocomplete,
+  Box,
+  TextField,
+  createFilterOptions,
+} from "@mui/material";
 import { Controller } from "react-hook-form";
 import type { Control, FieldError } from "react-hook-form";
 
@@ -42,60 +47,62 @@ const FormSelect = ({
     : options.find(opt => opt.value === defaultValue) ?? null;
 
   return (
-    <Controller
-      name={name}
-      control={control}
-      defaultValue={calculatedDefaultValue}
-      render={({ field }) => {
-        const currentValue = field.value;
+    <Box sx={{ m: "24px 0 0" }}>
+      <Controller
+        name={name}
+        control={control}
+        defaultValue={calculatedDefaultValue}
+        render={({ field }) => {
+          const currentValue = field.value;
 
-        return (
-          <Autocomplete
-            id={id}
-            multiple={multiple}
-            options={options}
-            fullWidth
-            disabled={disabled}
-            getOptionLabel={option =>
-              typeof option === "string" ? option : option.label
-            }
-            isOptionEqualToValue={(option, value) =>
-              option?.value === value?.value
-            }
-            value={
-              multiple
-                ? options.filter(opt =>
-                    Array.isArray(currentValue)
-                      ? currentValue.includes(opt.value)
-                      : false
-                  )
-                : options.find(opt => opt.value === currentValue) ?? null
-            }
-            onChange={(_, newValue) => {
-              if (multiple) {
-                const selectedValues = Array.isArray(newValue)
-                  ? newValue.map((item: OptionType) => item.value)
-                  : [];
-                field.onChange(selectedValues);
-              } else {
-                const single = newValue as OptionType | null;
-                field.onChange(single ? single.value : "");
+          return (
+            <Autocomplete
+              id={id}
+              multiple={multiple}
+              options={options}
+              fullWidth
+              disabled={disabled}
+              getOptionLabel={option =>
+                typeof option === "string" ? option : option.label
               }
-            }}
-            filterOptions={(opts, state) => filter(opts, state)}
-            renderInput={params => (
-              <TextField
-                {...params}
-                label={label}
-                placeholder={placeholder}
-                error={!!error}
-                helperText={error?.message}
-              />
-            )}
-          />
-        );
-      }}
-    />
+              isOptionEqualToValue={(option, value) =>
+                option?.value === value?.value
+              }
+              value={
+                multiple
+                  ? options.filter(opt =>
+                      Array.isArray(currentValue)
+                        ? currentValue.includes(opt.value)
+                        : false
+                    )
+                  : options.find(opt => opt.value === currentValue) ?? null
+              }
+              onChange={(_, newValue) => {
+                if (multiple) {
+                  const selectedValues = Array.isArray(newValue)
+                    ? newValue.map((item: OptionType) => item.value)
+                    : [];
+                  field.onChange(selectedValues);
+                } else {
+                  const single = newValue as OptionType | null;
+                  field.onChange(single ? single.value : "");
+                }
+              }}
+              filterOptions={(opts, state) => filter(opts, state)}
+              renderInput={params => (
+                <TextField
+                  {...params}
+                  label={label}
+                  placeholder={placeholder}
+                  error={!!error}
+                  helperText={error?.message}
+                />
+              )}
+            />
+          );
+        }}
+      />
+    </Box>
   );
 };
 
