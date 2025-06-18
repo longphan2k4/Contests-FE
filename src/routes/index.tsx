@@ -24,8 +24,11 @@ const AppRoutes: React.FC = () => {
       {AuthRoutes()}
 
       <Route element={<PrivateRoute roles={["Admin"]} />}>
-        {AdminRoutes()}
         {ContestRoutes()}
+      </Route>
+
+      <Route element={<PrivateRoute roles={["Admin"]} />}>
+        {AdminRoutes()}
       </Route>
 
       {/* Protected Routes */}
