@@ -1,299 +1,259 @@
-import React, { useState, useEffect } from 'react';
-
-// Heroicons components (using outline versions)
-const RotateCcwIcon = () => (
-  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0V9a8.002 8.002 0 0115.356 2M15 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m18-4a2 2 0 01-2 2H9a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v4z" />
-  </svg>
-);
-
-const SendIcon = () => (
-  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-  </svg>
-);
-
-const XIcon = () => (
-  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
-
-// Type definitions
-type HelpType = 'revive1' | 'revive2' | 'airplane';
-type HelpStatus = 'disabled' | 'available' | 'used';
-
-interface HelpIconProps {
-  type: HelpType;
-  status: HelpStatus;
+import React, { useEffect, useState } from "react";
+import { QuestionMarkCircleIcon, TrophyIcon } from "@heroicons/react/24/outline";
+import phao1 from "./images/phao1.png"
+import khangia from "./images/khangia.png";
+import khongdung from "./images/delete.png";
+// Định nghĩa interfaces cho mock data
+interface QuestionData {
+  questionNumber: number;
+  phase: string;
+  type: string;
 }
 
-interface HeaderProps {
-  remainingContestants: number;
-  totalContestants: number;
-  helpItems: Array<{ type: HelpType; status: HelpStatus }>;
-}
-
-interface QuestionCounterProps {
-  currentQuestion: number;
-  totalQuestions: number;
-}
-
-interface DisplayScreenProps {
-  timeRemaining: number;
-  setTimeRemaining: React.Dispatch<React.SetStateAction<number>>;
-}
-
-interface MatchHeaderProps {
-  remainingContestants: number;
-  totalContestants: number;
-  currentQuestion?: number;
-  totalQuestions?: number;
-  timeRemaining: number;
-  setTimeRemaining: React.Dispatch<React.SetStateAction<number>>;
-  helpItems?: Array<{ type: HelpType; status: HelpStatus }>;
-}
-
-// Enhanced Help Icon component with responsive design
-const HelpIcon: React.FC<HelpIconProps> = ({ type, status }) => {
-  const getIcon = () => {
-    switch (type) {
-      case 'revive1':
-        return <RotateCcwIcon />;
-      case 'revive2':
-        return <RotateCcwIcon />;
-      case 'airplane':
-        return <SendIcon />;
-      default:
-        return <XIcon />;
-    }
-  };
-
-  const getStatusStyles = (): string => {
-    switch (status) {
-      case 'disabled':
-        return 'opacity-40 grayscale';
-      case 'available':
-        return 'text-green-400 hover:scale-110 transition-transform duration-200 cursor-pointer';
-      case 'used':
-        return 'opacity-40 line-through';
-      default:
-        return '';
-    }
-  };
-
-  const getTooltipText = (): string => {
-    const typeName = type === 'revive1' ? 'Revive 1' : 
-                     type === 'revive2' ? 'Revive 2' : 
-                     type === 'airplane' ? 'Airplane' : type;
-    
-    const statusText = status === 'disabled' ? 'Not Available Yet' :
-                       status === 'available' ? 'Available' :
-                       status === 'used' ? 'Already Used' : status;
-    
-    return `${typeName}: ${statusText}`;
-  };
-
-  return (
-    <div className="relative group mx-0.5 sm:mx-1">
-      <div className={`p-1 sm:p-1.5 rounded-full bg-blue-700 ${getStatusStyles()}`} title={getTooltipText()}>
-        {getIcon()}
-      </div>
-      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-blue-800 text-xs text-white rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
-        {getTooltipText()}
-      </div>
-    </div>
-  );
+type HelpStatusKey = "revive1" | "revive2" | "airplane";
+type HelpStatus = {
+  [key in HelpStatusKey]: "available" | "used" | "unused" | "disabled";
 };
 
-// Responsive Header Component with contestant count and help icons
-const Header: React.FC<HeaderProps> = ({ remainingContestants, totalContestants, helpItems }) => {
-  const contestantPercentage = (remainingContestants / totalContestants) * 100;
-  
-  const getContestantStyles = (): string => {
-    if (remainingContestants <= 5) {
-      return 'text-red-500 animate-pulse font-extrabold';
-    }
-    if (remainingContestants <= 10 || contestantPercentage <= 33.33) {
-      return 'text-red-500 font-bold';
-    }
-    if (contestantPercentage <= 50) {
-      return 'text-yellow-400';
-    }
-    return 'text-black';
-  };
-
-  const [animate, setAnimate] = useState<boolean>(false);
-  
-  useEffect(() => {
-    setAnimate(true);
-    const timer = setTimeout(() => setAnimate(false), 500);
-    return () => clearTimeout(timer);
-  }, [remainingContestants]);
-
-  return (
-    <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between bg-white px-2 sm:px-4 py-2 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg min-w-0">
-      {/* Contestant count - responsive sizing */}
-      <div className={`font-bold transition-all duration-300 ${getContestantStyles()} mb-1 sm:mb-0`}>
-        <span className={`text-lg sm:text-xl ml-1 ${animate ? 'scale-125 inline-block transition-transform' : ''}`}>
-          {remainingContestants}
-        </span>
-        <span className="text-sm sm:text-md text-blue-200">/{totalContestants}</span>
-      </div>
-      
-      {/* Help Icons - responsive spacing and layout */}
-      <div className="flex items-center justify-center sm:ml-3">
-        {helpItems.map((item, index) => (
-          <HelpIcon key={index} type={item.type} status={item.status} />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// Responsive Question Counter Component
-const QuestionCounter: React.FC<QuestionCounterProps> = ({ currentQuestion, totalQuestions }) => {
-  return (
-    <div className="bg-white px-2 sm:px-4 py-2 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg min-w-0">
-      <div className="font-bold text-blue-900 text-center sm:text-left">
-        <span className="text-sm sm:text-base">Câu:</span>
-        <span className="text-lg sm:text-xl ml-1">{currentQuestion}</span>
-        <span className="text-sm sm:text-md text-blue-200">/{totalQuestions}</span>
-      </div>
-    </div>
-  );
-};
-
-// Responsive DisplayScreen with animation countdown
-const DisplayScreen: React.FC<DisplayScreenProps> = ({ timeRemaining, setTimeRemaining }) => {
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeRemaining(prev => {
-        if (prev <= 1) {
-          return 30;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [setTimeRemaining]);
-
-  const getTimerColor = () => {
-    if (timeRemaining <= 5) return 'text-red-500 animate-pulse';
-    if (timeRemaining <= 10) return 'text-orange-500';
-    return 'text-black';
-  };
-
-  return (
-    <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full border-4 transition-all duration-300 bg-white shadow-md border-blue-400 mx-2 sm:mx-4">
-      <div className={`text-sm sm:text-lg font-mono font-bold ${getTimerColor()}`}>
-        {timeRemaining}s
-      </div>
-    </div>
-  );
-};
-
-// Main responsive MatchHeader Component
-const MatchHeaderComponent: React.FC<MatchHeaderProps> = ({ 
-  remainingContestants, 
-  totalContestants, 
-  currentQuestion = 1,
-  totalQuestions = 13,
-  timeRemaining,
-  setTimeRemaining,
-  helpItems = [
-    { type: 'revive1', status: 'available' },
-    { type: 'revive2', status: 'used' },
-    { type: 'airplane', status: 'disabled' }
-  ]
-}) => {
-  return (
-    <div className="mx-auto bg-gradient-to-r from-blue-900 to-blue-800 px-2 sm:px-4 py-2 sm:py-3 rounded-xl shadow-xl border border-blue-700">
-      {/* Mobile Layout (stacked) */}
-      <div className="flex flex-col sm:hidden space-y-2">
-        {/* Top row: Question counter and timer */}
-        <div className="flex justify-center items-center space-x-4">
-          <div className="flex-1 max-w-xs">
-            <QuestionCounter 
-              currentQuestion={currentQuestion}
-              totalQuestions={totalQuestions}
-            />
-          </div>
-          <DisplayScreen timeRemaining={timeRemaining} setTimeRemaining={setTimeRemaining}/>
-        </div>
-        
-        {/* Bottom row: Contestants and help items */}
-        <div className="flex justify-center">
-          <div className="w-full max-w-xs">
-            <Header 
-              remainingContestants={remainingContestants}
-              totalContestants={totalContestants}
-              helpItems={helpItems}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Desktop Layout (horizontal) */}
-      <div className="hidden sm:flex justify-between items-center">
-        <div className="flex-1 flex justify-start min-w-0">
-          <QuestionCounter 
-            currentQuestion={currentQuestion}
-            totalQuestions={totalQuestions}
-          />
-        </div>
-        <div className="flex-shrink-0">
-          <DisplayScreen timeRemaining={timeRemaining} setTimeRemaining={setTimeRemaining}/>
-        </div>
-        <div className="flex-1 flex justify-end min-w-0">
-          <Header 
-            remainingContestants={remainingContestants}
-            totalContestants={totalContestants}
-            helpItems={helpItems}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Demo component with responsive container
 const MatchHeader: React.FC = () => {
-  const [timeRemaining, setTimeRemaining] = useState<number>(25);
-  const [remainingContestants, setRemainingContestants] = useState<number>(45);
-  const [currentQuestion, setCurrentQuestion] = useState<number>(5);
+  // Mock data
+  const [questionData] = useState<QuestionData>({
+    questionNumber: 1,
+    phase: "Phase 1",
+    type: "Multiple Choice",
+  });
 
-  const totalContestants = 100;
-  const totalQuestions = 13;
+  const timer = 30; // Tổng thời gian (giây)
+  const [timeRemaining, setTimeRemaining] = useState<number>(timer);
 
-  // Fake contestant elimination simulation
-  useEffect(() => {
-    const eliminationInterval = setInterval(() => {
-      if (Math.random() < 0.3 && remainingContestants > 1) {
-        setRemainingContestants(prev => Math.max(1, prev - Math.floor(Math.random() * 3) - 1));
-      }
-    }, 5000);
+  const [helpStatus] = useState<HelpStatus>({
+    revive1: "available",
+    revive2: "unused",
+    airplane: "disabled",
+  });
 
-    return () => clearInterval(eliminationInterval);
-  }, [remainingContestants]);
+  const [remainingContestants] = useState<number>(15);
+  const totalContestants = 20;
 
-  // Fake question progression
-  useEffect(() => {
-    if (timeRemaining === 30) {
-      setCurrentQuestion(prev => prev < totalQuestions ? prev + 1 : 1);
+  // Hàm mock cho renderQuestionTypeIcon
+  const renderQuestionTypeIcon = (type: string, className: string): React.ReactElement => {
+    switch (type) {
+      case "Multiple Choice":
+        return <span className={className}>MC</span>;
+      default:
+        return <span className={className}>?</span>;
     }
-  }, [timeRemaining, totalQuestions]);
+  };
+
+  // Giả lập đồng hồ đếm ngược
+  useEffect(() => {
+    if (timeRemaining > 0) {
+      const interval = setInterval(() => {
+        setTimeRemaining((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [timeRemaining]);
+
+  // Giả lập logic âm thanh
+  useEffect(() => {
+    if (timeRemaining === 0) {
+      console.log("Hết giờ! Phát âm thanh kết thúc.");
+    } else if (timeRemaining <= 10 && timeRemaining > 0) {
+      console.log("Còn dưới 10 giây! Phát âm thanh cảnh báo.");
+    }
+  }, [timeRemaining]);
+
+  // Giả lập âm thanh cho trợ giúp
+  const [hasPlayedHelpStatusSound, setHasPlayedHelpStatusSound] = useState(false);
+  useEffect(() => {
+    const availableHelp = Object.values(helpStatus).some((status) => status === "available");
+    if (availableHelp && !hasPlayedHelpStatusSound) {
+      console.log("Phát âm thanh trợ giúp");
+      setHasPlayedHelpStatusSound(true);
+    } else if (!availableHelp && remainingContestants > 10) {
+      setHasPlayedHelpStatusSound(false);
+    }
+  }, [helpStatus, remainingContestants]);
 
   return (
-        <MatchHeaderComponent
-          remainingContestants={remainingContestants}
-          totalContestants={totalContestants}
-          currentQuestion={currentQuestion}
-          totalQuestions={totalQuestions}
-          timeRemaining={timeRemaining}
-          setTimeRemaining={setTimeRemaining}
-        />       
+    <div className="relative w-full bg-gradient-to-r from-blue-900 to-blue-800 px-4 py-3 shadow-lg border-b-2 border-blue-700 z-20">
+      <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+        {/* Số câu hỏi */}
+        <div className="px-6 py-3 bg-white/20 backdrop-blur-lg rounded-xl shadow-2xl border-2 border-blue-300">
+          <div className="font-bold text-white flex items-center space-x-1">
+            <QuestionMarkCircleIcon className="w-8 h-8 text-yellow-400" />
+            <span className="text-3xl font-extrabold">
+              <span className="text-yellow-400 text-outline">
+                {questionData.questionNumber < 10
+                  ? `0${questionData.questionNumber}`
+                  : questionData.questionNumber}
+              </span>
+              <span className="text-blue-200 mx-2 text-outline">/</span>
+              <span className="text-blue-100 text-outline">13</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Thông tin câu hỏi */}
+        <div className="flex flex-wrap gap-4">
+          {/* Phase */}
+          <div className="px-6 py-3 bg-blue-600/90 backdrop-blur-md rounded-full font-bold text-white shadow-xl flex items-center space-x-3 transition-all hover:scale-105 cursor-pointer text-lg">
+            <span className="text-2xl text-outline">{questionData.phase}</span>
+          </div>
+          {/* Loại câu hỏi */}
+          <div className="px-6 py-3 bg-purple-600/90 backdrop-blur-md rounded-full font-bold text-white shadow-xl flex items-center space-x-3 transition-all hover:scale-105 cursor-pointer text-lg">
+            {renderQuestionTypeIcon(questionData.type, "w-7 h-7")}
+            <span className="text-2xl text-outline">{questionData.type}</span>
+          </div>
+        </div>
+
+        {/* Đồng hồ đếm ngược */}
+        <div className="relative">
+          <div
+            className={`w-24 h-24 flex items-center justify-center rounded-full border-4 
+              ${timeRemaining <= 5 ? "border-red-800 animate-pulse" : timeRemaining <= 10 ? "border-yellow-700" : "border-blue-500"} 
+              bg-blue-900 shadow-lg transition-all duration-300`}
+          >
+            <div className="absolute inset-0 rounded-full overflow-hidden">
+              <div
+                className={`absolute bottom-0 w-full bg-gradient-to-t 
+                  ${timeRemaining <= 5 ? "from-red-600 to-red-400" : timeRemaining <= 10 ? "from-yellow-600 to-yellow-400" : "from-blue-600 to-blue-400"}`}
+                style={{
+                  height: `${(timeRemaining / timer) * 100}%`,
+                  transition: "height 1s linear",
+                }}
+              ></div>
+            </div>
+            <div
+              className="relative z-10 text-5xl font-mono font-bold text-white"
+              style={{
+                textShadow:
+                  "2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000",
+              }}
+            >
+              {timeRemaining}
+            </div>
+          </div>
+          <div className="absolute inset-0 rounded-full">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-2 h-2 rounded-full bg-white bg-opacity-60"
+                style={{
+                  transform: `rotate(${i * 30}deg) translateY(-40px)`,
+                  transformOrigin: "center center",
+                  left: "calc(50% - 4px)",
+                  top: "calc(50% - 4px)",
+                  opacity: i * 30 < (timeRemaining / timer) * 360 ? 1 : 0.3,
+                }}
+              ></div>
+            ))}
+          </div>
+        </div>
+
+        {/* Trợ giúp */}
+        <div className="flex gap-4 items-center">
+          {Object.entries(helpStatus).map(([key, status]) => {
+            const isRevive = key === "revive1" || key === "revive2";
+            const isAirplane = key === "airplane";
+            let icon: React.ReactElement;
+
+            if (isRevive) {
+              icon = (
+                <img
+                  src={phao1}
+                  className="w-16 h-16 md:w-24 md:h-24 object-contain"
+                  alt={`Cứu trợ ${key === "revive1" ? "1" : "2"}`}
+                />
+              );
+            } else if (isAirplane) {
+              icon = (
+                <img
+                  src={khangia}
+                  className="w-16 h-16 md:w-24 md:h-24 transform"
+                  alt="Máy bay"
+                />
+              );
+            } else {
+              icon = <></>;
+            }
+
+            let filterClass = "";
+            let animationClass = "";
+
+            switch (status) {
+              case "available":
+                animationClass = "animate-pulse";
+                filterClass = "brightness-110";
+                break;
+              case "used":
+                filterClass = "brightness-100";
+                break;
+              case "unused":
+                filterClass = isAirplane
+                  ? "grayscale contrast-100 brightness-50"
+                  : "grayscale contrast-100 brightness-100";
+                break;
+              case "disabled":
+                filterClass = "brightness-100";
+                break;
+            }
+
+            return (
+              <div key={key} className="relative group">
+                <div
+                  className={`relative w-16 h-16 md:w-24 md:h-24 ${filterClass} rounded-4xl shadow-lg ${animationClass} transition-all duration-300`}
+                >
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {icon}
+                  </div>
+                  {(status === "used" || status === "disabled") && (
+                    <div className="absolute inset-0 flex items-center justify-center text-red-500">
+                      <img
+                        src={khongdung}
+                        className="w-16 h-16 md:w-24 md:h-24 transform"
+                        alt="Sử dụng xong"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3 bg-black text-white text-sm rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  {status === "available"
+                    ? "Sẵn sàng sử dụng"
+                    : status === "used"
+                    ? "Đã sử dụng"
+                    : status === "disabled"
+                    ? "Đã quá thời gian sử dụng"
+                    : "Chưa khả dụng"}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Số thí sinh còn lại */}
+        <div className="px-6 py-3 bg-white/20 backdrop-blur-lg rounded-xl shadow-2xl border-2 border-blue-300">
+          <div
+            className={`font-bold text-black flex items-center space-x-1
+              ${remainingContestants <= 5 ? "animate-pulse text-red-400" : remainingContestants <= 10 ? "text-orange-300" : "text-green-300"}`}
+          >
+            <TrophyIcon className="w-8 h-8 text-400" />
+            <span className="text-3xl font-extrabold">
+              <span className="text-400 text-outline">
+                {remainingContestants < 10
+                  ? `0${remainingContestants}`
+                  : remainingContestants}
+              </span>
+              <span className="text-blue-200 mx-2 text-outline">/</span>
+              <span className="text-blue-100 text-outline">
+                {totalContestants < 10 ? `0${totalContestants}` : totalContestants}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

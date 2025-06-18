@@ -2,8 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 // import PrivateRoute from './PrivateRoute';
 import AdminRoutes from "../features/admin/AdminRoutes";
-import ContestRoutes from "../features/Contest/ContestRouter";
-
+import ContestRoutes from "../features/contest/ContestRouter";
 import AuthRoutes from "../features/auth/routes";
 import PublicRoutes from "./PublicRoutes";
 // import MatchRoutes from '../features/match';
@@ -14,6 +13,7 @@ import Forbidden403 from "../components/403";
 import ProfilePage from "../features/account/pages/ProfilePage";
 import JudgeHomePage from "../features/judge/pages/JudgeHomePage";
 import MatchSelectionPage from "../features/judge/pages/MatchSelectionPage";
+import EliminatePage from "../features/match/pages/EliminatePage";
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
@@ -35,9 +35,11 @@ const AppRoutes: React.FC = () => {
       <Route element={<PrivateRoute />}>
         <Route path="/account/profile" element={<ProfilePage />} />
       </Route>
+      {/* Public Routes */}
       <Route path="/judge/home" element={<JudgeHomePage />} />
       <Route path="/judge/selected-match" element={<MatchSelectionPage />} />
       <Route path="/match" element={<MatchPage />} />
+      <Route path="/match/eliminate" element={<EliminatePage />} />
       <Route path="/banner" element={<TechBanner />} />
       <Route path="/403" element={<Forbidden403 />} />
       <Route path="*" element={<div>Trang không tồn tại</div>} />
