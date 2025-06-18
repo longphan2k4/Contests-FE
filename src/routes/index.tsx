@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 // import PrivateRoute from './PrivateRoute';
 import AdminRoutes from "../features/admin/AdminRoutes";
-import ContestRoutes from "../features/contest/ContestRouter";
+import ContestRoutes from "../features/Contest/ContestRouter";
 
 import AuthRoutes from "../features/auth/routes";
 import PublicRoutes from "./PublicRoutes";
@@ -24,8 +24,11 @@ const AppRoutes: React.FC = () => {
       {AuthRoutes()}
 
       <Route element={<PrivateRoute roles={["Admin"]} />}>
-        {AdminRoutes()}
         {ContestRoutes()}
+      </Route>
+
+      <Route element={<PrivateRoute roles={["Admin"]} />}>
+        {AdminRoutes()}
       </Route>
 
       {/* Protected Routes */}
