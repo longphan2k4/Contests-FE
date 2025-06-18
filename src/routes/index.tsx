@@ -2,12 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 // import PrivateRoute from './PrivateRoute';
 import AdminRoutes from "../features/admin/AdminRoutes";
-<<<<<<< HEAD
-import ContestRoutes from "../features/Contest/ContestRouter";
-
-=======
 import ContestRoutes from "../features/contest/ContestRouter";
->>>>>>> 2d2828ae5735ea44db6fdff1fa58ea04fa37971e
 import AuthRoutes from "../features/auth/routes";
 import PublicRoutes from "./PublicRoutes";
 // import MatchRoutes from '../features/match';
@@ -45,11 +40,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/judge/home" element={<JudgeHomePage />} />
       <Route path="/judge/selected-match" element={<MatchSelectionPage />} />
       <Route path="/match" element={<MatchPage />} />
-<<<<<<< HEAD
-      <Route path="/match/controls" element={<ControlsPage />} />
-=======
       <Route path="/match/eliminate" element={<EliminatePage />} />
->>>>>>> 2d2828ae5735ea44db6fdff1fa58ea04fa37971e
       <Route path="/banner" element={<TechBanner />} />
       <Route path="/403" element={<Forbidden403 />} />
       <Route path="*" element={<div>Trang không tồn tại</div>} />
