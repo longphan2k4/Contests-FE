@@ -1,4 +1,3 @@
-// features/eliminate/types/index.ts
 export interface Contestant {
   registration_number: number;
   fullname: string;

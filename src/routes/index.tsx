@@ -13,7 +13,7 @@ import Forbidden403 from "../components/403";
 import ProfilePage from "../features/account/pages/ProfilePage";
 import JudgeHomePage from "../features/judge/pages/JudgeHomePage";
 import MatchSelectionPage from "../features/judge/pages/MatchSelectionPage";
-import EliminatePage from "../features/match/components/EliminateTab/EliminatePage";
+import EliminatePage from "../features/match/pages/EliminatePage";
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
