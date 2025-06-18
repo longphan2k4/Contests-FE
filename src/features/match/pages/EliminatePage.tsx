@@ -1,4 +1,4 @@
-
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import EliminateGrid from '../components/Eliminate/EliminateGrid';
 import ActionButtons from '../components/Eliminate/ActionButtons';
@@ -20,7 +20,9 @@ export default function EliminatePage() {
   } = useEliminate();
 
   const showSidebar = true;
-
+  useEffect(() => {
+      document.title = 'Thí sinh - kết quả';
+    }, []);
   return (
     <AnimatePresence>
       <div className="flex flex-col min-h-screen">
