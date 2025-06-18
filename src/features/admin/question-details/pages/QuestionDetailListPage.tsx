@@ -32,7 +32,6 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Edit as EditIcon,
   Delete as DeleteIcon,
   Search as SearchIcon,
   DragIndicator as DragIcon
@@ -44,7 +43,6 @@ import { useQuestionDetails } from '../hooks/useQuestionDetails';
 import { QuestionDetailDialog } from '../components/QuestionDetailDialog';
 import { ReorderQuestionsDialog } from '../components/ReorderQuestionsDialog';
 import QuestionDetailViewDialog from '../components/QuestionDetailViewDialog';
-import QuestionDetailEditDialog from '../components/QuestionDetailEditDialog';
 import type { QuestionDetail } from '../types';
 import ConfirmDeleteDialog from '../../../../components/ConfirmDeleteDialog';
 // import { useNotification } from '../../../../contexts/NotificationContext';
@@ -53,14 +51,13 @@ const QuestionDetailListPage: React.FC = () => {
   const { packageId } = useParams<{ packageId: string }>();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [reorderDialogOpen, setReorderDialogOpen] = useState(false);
-  const [editingQuestion, setEditingQuestion] = useState<QuestionDetail | null>(null);
   const [viewingQuestion, setViewingQuestion] = useState<QuestionDetail | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<QuestionDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [editingQuestion] = useState<QuestionDetail | undefined>(undefined);
 
   const {
     questionDetails,
@@ -73,7 +70,6 @@ const QuestionDetailListPage: React.FC = () => {
     filter,
     updateFilter,
     handleDeleteSelected,
-    handleCreateOrUpdate,
     fetchQuestionDetails,
     filterStats,
     packageName,
@@ -110,13 +106,7 @@ const QuestionDetailListPage: React.FC = () => {
   };
 
   const handleAdd = () => {
-    setEditingQuestion(null);
     setDialogOpen(true);
-  };
-
-  const handleEdit = (record: QuestionDetail) => {
-    setEditingQuestion(record);
-    setEditDialogOpen(true);
   };
 
   const handleView = async (record: QuestionDetail) => {
@@ -128,32 +118,11 @@ const QuestionDetailListPage: React.FC = () => {
 
   const handleDialogClose = () => {
     setDialogOpen(false);
-    setEditingQuestion(null);
   };
 
   const handleViewDialogClose = () => {
     setViewDialogOpen(false);
     setViewingQuestion(null);
-  };
-
-  const handleEditDialogClose = () => {
-    setEditDialogOpen(false);
-    setEditingQuestion(null);
-  };
-
-  const handleDialogSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const values = {
-      questionId: Number(formData.get('questionId')),
-      questionOrder: Number(formData.get('questionOrder')),
-      isActive: formData.get('isActive') === 'true'
-    };
-
-    const success = await handleCreateOrUpdate(values);
-    if (success) {
-      handleDialogClose();
-    }
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -360,6 +329,12 @@ const QuestionDetailListPage: React.FC = () => {
               '& .MuiTableCell-root': {
                 whiteSpace: 'nowrap',
                 minWidth: { xs: 'auto', sm: '100px' }
+              },
+              '& .question-title-cell': {
+                whiteSpace: 'normal',
+                minWidth: '300px',
+                maxWidth: '500px',
+                wordBreak: 'break-word'
               }
             }}>
               <Table>
@@ -408,7 +383,7 @@ const QuestionDetailListPage: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell>{row.questionOrder}</TableCell>
-                      <TableCell>{stripHtml(row.question?.content) || 'Không có tiêu đề'}</TableCell>
+                      <TableCell className="question-title-cell">{stripHtml(row.question?.content) || 'Không có tiêu đề'}</TableCell>
                       {!isMobile && (
                         <>
                           <TableCell>
@@ -448,11 +423,6 @@ const QuestionDetailListPage: React.FC = () => {
                           <Tooltip title="Xem chi tiết">
                             <IconButton color="primary" size="small" onClick={() => handleView(row)}>
                               <VisibilityIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Chỉnh sửa">
-                            <IconButton color="primary" size="small" onClick={() => handleEdit(row)}>
-                              <EditIcon />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Xóa">
@@ -514,12 +484,11 @@ const QuestionDetailListPage: React.FC = () => {
       </Paper>
 
       <QuestionDetailDialog
-        questionPackageId={Number(packageId)}
         open={dialogOpen}
         onClose={handleDialogClose}
-        onSubmit={handleDialogSubmit}
         editingQuestion={editingQuestion}
         totalQuestions={total}
+        questionPackageId={Number(packageId)}
         onSuccess={fetchQuestionDetails}
       />
 
@@ -528,13 +497,6 @@ const QuestionDetailListPage: React.FC = () => {
         onClose={handleViewDialogClose}
         questionDetail={viewingQuestion}
         loading={detailLoading}
-      />
-
-      <QuestionDetailEditDialog
-        open={editDialogOpen}
-        onClose={handleEditDialogClose}
-        questionDetail={editingQuestion}
-        onSuccess={fetchQuestionDetails}
       />
 
       {packageId && (

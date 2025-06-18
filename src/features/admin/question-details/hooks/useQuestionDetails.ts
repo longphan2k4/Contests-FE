@@ -117,10 +117,13 @@ export const useQuestionDetails = () => {
     if (packageId) {
       fetchQuestionDetails();
     }
-  }, [packageId, filter]);
+  }, [packageId, filter, fetchQuestionDetails]);
 
   const handleDelete = async (record: QuestionDetail) => {
     try {
+      if (!record.questionPackageId) {
+        throw new Error('Không tìm thấy ID gói câu hỏi');
+      }
       await questionDetailService.hardDeleteQuestionDetail(record.questionId, record.questionPackageId);
       showToast('Xóa câu hỏi thành công', 'success');
       if (questionDetails.length === 1 && filter.page > 1) {
@@ -148,6 +151,9 @@ export const useQuestionDetails = () => {
         const questionDetail = questionDetails.find(q => q.questionId === id);
         if (!questionDetail) {
           throw new Error(`Không tìm thấy câu hỏi có ID: ${id}`);
+        }
+        if (!questionDetail.questionPackageId) {
+          throw new Error(`Không tìm thấy ID gói câu hỏi cho câu hỏi có ID: ${id}`);
         }
         return {
           questionId: questionDetail.questionId,
@@ -215,7 +221,7 @@ export const useQuestionDetails = () => {
       } else {
         throw new Error('Thiếu thông tin câu hỏi');
       }
-      fetchQuestionDetails();
+      // fetchQuestionDetails();
       return true;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.message) {

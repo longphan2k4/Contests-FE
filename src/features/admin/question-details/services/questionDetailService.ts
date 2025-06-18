@@ -310,5 +310,17 @@ export const questionDetailService = {
       console.error('Lỗi khi lấy danh sách câu hỏi chưa có trong gói:', error);
       throw error;
     }
+  },
+
+  syncQuestionDetails: async (packageId: number, questions: { questionId: number; questionOrder: number }[]) => {
+    try {
+      const response = await axiosInstance.put(`${BASE_URL}/package/${packageId}/sync`, {
+        questions
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error syncing question details:', error);
+      throw error;
+    }
   }
 }; 
