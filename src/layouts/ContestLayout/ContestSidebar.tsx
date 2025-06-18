@@ -111,7 +111,7 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       key: "results",
       icon: <QuestionIcon fontSize="small" />,
       label: "Kết quả ",
-      path: "/admin/cuoc-thi/:slug/results",
+      path: `/admin/cuoc-thi/${slug}/results`,
     },
     {
       key: "rescues",
