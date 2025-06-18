@@ -62,7 +62,14 @@ export const useAvailableQuestions = ({
     try {
       const response = await questionDetailService.getAvailableQuestions(packageId, filter);
       setQuestions(response.data.questions);
-      setPackageInfo(response.data.packageInfo);
+      if (response.data.packageInfo) {
+        setPackageInfo({
+          id: response.data.packageInfo.id,
+          name: response.data.packageInfo.name
+        });
+      } else {
+        setPackageInfo(null);
+      }
       
       if (response.pagination) {
         setTotal(response.pagination.total || 0);

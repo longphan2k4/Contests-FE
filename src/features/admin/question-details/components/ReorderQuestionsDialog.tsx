@@ -64,7 +64,7 @@ export const ReorderQuestionsDialog: React.FC<ReorderQuestionsDialogProps> = ({
         sortOrder: 'asc'
       });
       if (response.data.questions) {
-        const questionsWithIds = response.data.questions.map((q, index) => ({
+        const questionsWithIds = response.data.questions.map((q: QuestionDetail, index: number) => ({
           ...q,
           uniqueId: `item-${index}`
         }));
@@ -118,9 +118,9 @@ export const ReorderQuestionsDialog: React.FC<ReorderQuestionsDialogProps> = ({
   const handleSave = useCallback(async () => {
     try {
       setSaving(true);
-      const reorders = questions.map((question, index) => ({
-        questionId: question.questionId,
-        newOrder: index + 1
+      const reorders = questions.map((q: QuestionDetail, index: number) => ({
+        questionId: q.questionId,
+        questionOrder: index + 1
       }));
 
       await questionDetailService.reorderQuestionDetails({

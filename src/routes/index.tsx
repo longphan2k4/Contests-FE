@@ -7,6 +7,7 @@ import AuthRoutes from "../features/auth/routes";
 import PublicRoutes from "./PublicRoutes";
 // import MatchRoutes from '../features/match';
 import MatchPage from "../features/match/pages/MatchPage";
+import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import TechBanner from "../features/match/components/MediaPopup/BackGround";
 import PrivateRoute from "./PrivateRoute";
 import Forbidden403 from "../components/403";

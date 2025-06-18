@@ -218,7 +218,7 @@ const QuestionDetailViewDialog: React.FC<QuestionDetailViewDialogProps> = ({
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 2 }}>
               <Box>
                 <Typography variant="subtitle2" color="text.secondary">ID câu hỏi</Typography>
-                <Typography variant="body1">{question.id || 'N/A'}</Typography>
+                <Typography variant="body1">{questionDetail?.question?.id || 'N/A'}</Typography>
               </Box>
               <Box>
                 <Typography variant="subtitle2" color="text.secondary">Ngày tạo</Typography>
@@ -328,7 +328,7 @@ const QuestionDetailViewDialog: React.FC<QuestionDetailViewDialogProps> = ({
                   </Box>
                   <Box>
                     <Typography variant="subtitle2" color="text.secondary">Gói câu hỏi</Typography>
-                    <Typography variant="body1">{questionDetail?.questionPackage?.name || 'N/A'}</Typography>
+                    <Typography variant="body1">{questionDetail?.questionPackageId || 'N/A'}</Typography>
                   </Box>
                 </Paper>
               </Box>

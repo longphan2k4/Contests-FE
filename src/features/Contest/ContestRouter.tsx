@@ -11,12 +11,15 @@ const Dashboard = () => <div>Trang Dashboard Cuộc Thi</div>;
 import SponsorsPage from "../admin/sponsors/page/SponsorsPage";
 import RescuesPage from "../admin/sponsors/page/SponsorsPage";
 import AwardsPage from "../admin/awards/page/AwardsPage";
+import ControlsPage from "../admin/controls/pages/ControlsPage";
 
 const ClassVideos = () => <div>Trang Videos Lớp</div>;
 const ContestRoutes = () => {
   return (
     <Route path="/admin/cuoc-thi/:slug" element={<ContestLayout />}>
       <Route path="dashboard" element={<Dashboard />} />
+      <Route path="controls" element={<ControlsPage />} />
+
       <Route path="vong-dau" element={<RoundPage />} />
       <Route path="nhom" element={<GroupPage />} />
       <Route path="thi-sinh" element={<ContestantPage />} />

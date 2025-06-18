@@ -76,6 +76,12 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       path: `/admin/cuoc-thi/${slug}/dashboard`,
     },
     {
+      key: "controls",
+      icon: <DashboardIcon />,
+      label: "Điều khiển",
+      path: `/admin/cuoc-thi/${slug}/controls`,
+    },
+    {
       key: "round",
       icon: <SchoolIcon />,
       label: "Vòng đấu",

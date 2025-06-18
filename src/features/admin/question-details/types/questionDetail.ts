@@ -1,24 +1,17 @@
 /**
  * Interface cho đối tượng chi tiết câu hỏi trong gói
  */
+import type { Question } from './common';
+
 export interface QuestionDetail {
   questionId: number;
   questionPackageId: number;
-  questionOrder: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  uniqueId?: string;
   question?: Question;
-  questionPackage?: QuestionPackage;
-}
-
-/**
- * Interface cho đối tượng câu hỏi
- */
-export interface Question {
-  id: number;
-  title: string;
-  content: string;
+  questionOrder?: number;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /**
@@ -58,8 +51,18 @@ export interface Pagination {
  * Interface cho kết quả danh sách có phân trang
  */
 export interface QuestionDetailResponse {
-  questionDetails: QuestionDetail[];
-  pagination: Pagination;
+  success: boolean;
+  message: string;
+  data: QuestionDetail[];
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+    hasNextPage?: boolean;
+    hasPreviousPage?: boolean;
+  };
+  timestamp: string;
 }
 
 /**
@@ -92,27 +95,39 @@ export interface ReorderRequest {
  * Interface cho kết quả thống kê
  */
 export interface QuestionDetailStats {
-  overview: {
+  overview?: {
     totalQuestionDetails: number;
     activeQuestionDetails: number;
     inactiveQuestionDetails: number;
     totalQuestions: number;
     totalPackages: number;
   };
-  packageStats: {
+  packageStats?: Array<{
     questionPackageId: number;
     packageName: string;
     totalQuestions: number;
     activeQuestions: number;
     inactiveQuestions: number;
-  }[];
-  questionStats: {
+  }>;
+  questionStats?: Array<{
     questionId: number;
     questionTitle: string;
     totalPackages: number;
     activeInPackages: number;
     inactiveInPackages: number;
-  }[];
+  }>;
+  totalQuestionDetails?: number;
+  activeQuestionDetails?: number;
+  uniqueQuestions?: number;
+  uniquePackages?: number;
+  averageQuestionsPerPackage?: number;
+}
+
+export interface QuestionDetailStatsResponse {
+  success: boolean;
+  message: string;
+  data: QuestionDetailStats;
+  timestamp: string;
 }
 
 /**
@@ -144,4 +159,14 @@ export interface ApiErrorResponse {
 export interface ValidationError {
   field: string;
   message: string;
+}
+
+export interface QuestionDetailDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  editingQuestion: QuestionDetail | null;
+  questionPackageId: number;
+  totalQuestions: number;
+  onSuccess?: () => void;
 } 
