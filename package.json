@@ -29,6 +29,7 @@
     "axios": "^1.9.0",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
+    "framer-motion": "^12.18.1",
     "jwt-decode": "^4.0.0",
     "notistack": "^3.0.2",
     "react": "^19.1.0",
