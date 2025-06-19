@@ -1,12 +1,44 @@
 import { useState, useEffect } from 'react';
 import type { Question } from '../types';
-import type { QuestionFormValues, QuestionFormErrors } from '../components/QuestionDialogForm';
+import type { QuestionTopic } from '../components/QuestionDialog';
 
-interface QuestionTopic {
-  id: number;
-  name: string;
-  description?: string;
+// Định nghĩa các loại file được phép
+export const ALLOWED_TYPES = {
+  image: {
+    extensions: /jpeg|jpg|png|gif|webp|svg/,
+    mimeTypes: /^image\/(jpeg|jpg|png|gif|webp|svg\+xml)$/,
+    maxSize: 5 * 1024 * 1024, // 5MB
+  },
+  video: {
+    extensions: /mp4|avi|mov|wmv|flv|webm|mkv/,
+    mimeTypes: /^video\/(mp4|avi|quicktime|x-ms-wmv|x-flv|webm|x-matroska)$/,
+    maxSize: 100 * 1024 * 1024, // 100MB
+  },
+  audio: {
+    extensions: /mp3|wav|ogg|aac|flac|m4a/,
+    mimeTypes: /^audio\/(mp3|wav|ogg|aac|flac|mp4|x-m4a)$/,
+    maxSize: 20 * 1024 * 1024, // 20MB
+  }
+};
+
+interface QuestionFormValues {
+  intro: string;
+  defaultTime: number;
+  questionType: 'multiple_choice' | 'essay';
+  content: string;
+  options: string[] | null;
+  correctAnswer: string;
+  score: number;
+  difficulty: 'Alpha' | 'Beta' | 'Rc' | 'Gold';
+  explanation: string;
+  questionTopicId: number;
   isActive: boolean;
+  deleteQuestionMedia?: string[];
+  deleteMediaAnswer?: string[];
+}
+
+interface QuestionFormErrors {
+  [key: string]: string;
 }
 
 interface MediaFilePreview {
@@ -18,23 +50,23 @@ interface MediaFilePreview {
 }
 
 interface UseQuestionFormProps {
-  question?: Question | null;
-  mode: 'create' | 'edit' | 'view';
+  question: Question | null;
+  mode: 'view' | 'edit' | 'create';
   topics: QuestionTopic[];
 }
 
-export const useQuestionForm = ({ question, mode, topics }: UseQuestionFormProps) => {
+export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
   const [formData, setFormData] = useState<QuestionFormValues>({
     intro: '',
-    defaultTime: 60,
+    defaultTime: 30,
     questionType: 'multiple_choice',
     content: '',
-    options: ['', '', '', ''],
+    options: ['', ''],
     correctAnswer: '',
-    score: 10,
+    score: 1,
     difficulty: 'Alpha',
     explanation: '',
-    questionTopicId: topics && topics.length > 0 ? topics[0].id : 0,
+    questionTopicId: 0,
     isActive: true,
     deleteQuestionMedia: [],
     deleteMediaAnswer: [],
@@ -46,136 +78,169 @@ export const useQuestionForm = ({ question, mode, topics }: UseQuestionFormProps
   const [questionMediaPreviews, setQuestionMediaPreviews] = useState<MediaFilePreview[]>([]);
   const [mediaAnswerPreviews, setMediaAnswerPreviews] = useState<MediaFilePreview[]>([]);
 
-  // Helper function to guess media type from URL
-  const getMediaTypeFromUrl = (url: string): string => {
-    const extension = url.split('.').pop()?.toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension || '')) {
-      return 'image/' + extension;
-    } else if (['mp4', 'webm', 'ogg'].includes(extension || '')) {
-      return 'video/' + extension;
-    } else if (['mp3', 'wav'].includes(extension || '')) {
-      return 'audio/' + extension;
+  // Kiểm tra loại file có hợp lệ không
+  const isValidFileType = (file: File): { valid: boolean; type: 'image' | 'video' | 'audio' | null; message?: string } => {
+    // Kiểm tra file là image
+    if (ALLOWED_TYPES.image.mimeTypes.test(file.type)) {
+      if (file.size > ALLOWED_TYPES.image.maxSize) {
+        return { valid: false, type: 'image', message: `Kích thước ảnh không được vượt quá 5MB` };
+      }
+      return { valid: true, type: 'image' };
     }
-    return 'application/octet-stream';
+    
+    // Kiểm tra file là video
+    if (ALLOWED_TYPES.video.mimeTypes.test(file.type)) {
+      if (file.size > ALLOWED_TYPES.video.maxSize) {
+        return { valid: false, type: 'video', message: `Kích thước video không được vượt quá 100MB` };
+      }
+      return { valid: true, type: 'video' };
+    }
+    
+    // Kiểm tra file là audio
+    if (ALLOWED_TYPES.audio.mimeTypes.test(file.type)) {
+      if (file.size > ALLOWED_TYPES.audio.maxSize) {
+        return { valid: false, type: 'audio', message: `Kích thước âm thanh không được vượt quá 20MB` };
+      }
+      return { valid: true, type: 'audio' };
+    }
+    
+    return { valid: false, type: null, message: 'Định dạng file không được hỗ trợ' };
   };
 
-  // Helper function to format media URL
-  const formatMediaUrl = (url: string): string => {
-    if (!url) return '';
-    // Nếu URL đã là đường dẫn đầy đủ (bắt đầu bằng http), trả về nguyên bản
-    if (url.startsWith('http')) return url;
-    // Sử dụng URL tương đối để tránh vấn đề CORS
-    return url;
+  // Kiểm tra xem các file có cùng loại không
+  const areFilesOfSameType = (files: File[]): boolean => {
+    if (files.length <= 1) return true;
+    
+    const firstFileType = files[0].type.split('/')[0]; // 'image', 'video', 'audio'
+    return files.every(file => file.type.split('/')[0] === firstFileType);
+  };
+
+  // Kiểm tra xem file mới có cùng loại với file đã tồn tại không
+  const isCompatibleWithExistingFiles = (
+    file: File, 
+    existingPreviews: MediaFilePreview[],
+    newFiles: File[]
+  ): boolean => {
+    // Kiểm tra với existing files
+    if (existingPreviews.length > 0) {
+      const fileType = file.type.split('/')[0]; // 'image', 'video', 'audio'
+      const existingType = existingPreviews[0].type.split('/')[0];
+      return fileType === existingType;
+    }
+    
+    // Kiểm tra với new files đã có
+    if (newFiles.length > 0) {
+      const fileType = file.type.split('/')[0];
+      const newFileType = newFiles[0].type.split('/')[0];
+      return fileType === newFileType;
+    }
+    
+    return true; // Nếu chưa có file nào thì cho phép
   };
 
   useEffect(() => {
-    if (question && (mode === 'edit' || mode === 'view')) {
-      console.log('Question data:', question);
-      console.log('Question media:', question.questionMedia);
-      console.log('Media answer:', question.mediaAnswer);
-
-      // Reset các state media
-      setQuestionMediaFiles([]);
-      setMediaAnswerFiles([]);
-      setQuestionMediaPreviews([]);
-      setMediaAnswerPreviews([]);
-
-      setFormData({
-        intro: question.intro || '',
-        defaultTime: question.defaultTime,
-        questionType: question.questionType,
-        content: question.content,
-        options: question.options || ['', '', '', ''],
-        correctAnswer: question.correctAnswer,
-        score: question.score,
-        difficulty: question.difficulty,
-        explanation: question.explanation || '',
-        questionTopicId: question.questionTopicId,
-        isActive: question.isActive,
-        deleteQuestionMedia: [],
-        deleteMediaAnswer: [],
-      });
-
-      // Xử lý questionMedia từ câu hỏi đã có
-      if (question.questionMedia && Array.isArray(question.questionMedia)) {
-        console.log('Processing question media:', question.questionMedia);
-        const previews = question.questionMedia
-          .filter(media => media && media.url && media.filename) // Chỉ lấy media có URL và filename
-          .map((media: { url: string; filename: string; mimeType?: string; size?: number }, index: number) => {
-            console.log('Media item:', media);
-            return {
-              id: `existing-question-media-${index}`,
-              url: formatMediaUrl(media.url),
-              name: media.filename,
-              type: media.mimeType || getMediaTypeFromUrl(media.url),
-              size: media.size || 0
-            };
-          });
-        console.log('Created question media previews:', previews);
-        setQuestionMediaPreviews(previews);
-      }
-
-      // Xử lý mediaAnswer từ câu hỏi đã có
-      if (question.mediaAnswer && Array.isArray(question.mediaAnswer)) {
-        console.log('Processing media answer:', question.mediaAnswer);
-        const previews = question.mediaAnswer
-          .filter(media => media && media.url && media.filename) // Chỉ lấy media có URL và filename
-          .map((media: { url: string; filename: string; mimeType?: string; size?: number }, index: number) => {
-            console.log('Media answer item:', media);
-            return {
-              id: `existing-media-answer-${index}`,
-              url: formatMediaUrl(media.url),
-              name: media.filename,
-              type: media.mimeType || getMediaTypeFromUrl(media.url),
-              size: media.size || 0
-            };
-          });
-        console.log('Created media answer previews:', previews);
-        setMediaAnswerPreviews(previews);
-      }
-    } else {
-      // Reset form for create mode
-      setFormData({
-        intro: '',
-        defaultTime: 60,
-        questionType: 'multiple_choice',
-        content: '',
-        options: ['', '', '', ''],
-        correctAnswer: '',
-        score: 10,
-        difficulty: 'Alpha',
-        explanation: '',
-        questionTopicId: topics && topics.length > 0 ? topics[0].id : 0,
-        isActive: true,
-        deleteQuestionMedia: [],
-        deleteMediaAnswer: [],
-      });
-      
-      // Reset files and previews
-      setQuestionMediaFiles([]);
-      setMediaAnswerFiles([]);
-      setQuestionMediaPreviews([]);
-      setMediaAnswerPreviews([]);
-      setErrors({});
-    }
-  }, [question, mode, topics]);
-
-  const handleFormChange = (name: string, value: unknown) => {
-    setFormData((prev) => {
-      const newData = { ...prev, [name]: value };
-      
-      // Special handling for questionType
-      if (name === 'questionType' && value === 'essay') {
-        // Reset options for essay questions
-        newData.options = null;
-      }
-      
-      return newData;
-    });
+    console.log('🔄 useQuestionForm useEffect triggered:', { question, mode });
     
+    if (question && (mode === 'view' || mode === 'edit')) {
+      console.log('📋 Setting form data for question:', question);
+      console.log('🎬 Question media:', question.questionMedia);
+      console.log('🎵 Media answer:', question.mediaAnswer);
+      
+      const initialFormData: QuestionFormValues = {
+        intro: question.intro || '',
+        defaultTime: question.defaultTime || 30,
+        questionType: question.questionType as 'multiple_choice' | 'essay',
+        content: question.content || '',
+        options: question.options || ['', ''],
+        correctAnswer: question.correctAnswer || '',
+        score: question.score || 1,
+        difficulty: question.difficulty as 'Alpha' | 'Beta' | 'Rc' | 'Gold',
+        explanation: question.explanation || '',
+        questionTopicId: question.questionTopicId || 0,
+        isActive: question.isActive || false,
+        deleteQuestionMedia: [],
+        deleteMediaAnswer: [],
+      };
+
+      setFormData(initialFormData);
+
+      // Reset media files khi chuyển sang mode khác hoặc khi question thay đổi
+      setQuestionMediaFiles([]);
+      setMediaAnswerFiles([]);
+      
+      // Clear errors khi có data mới
+      setErrors({});
+
+      // Set media previews if available
+      if (question.questionMedia && question.questionMedia.length > 0) {
+        console.log('🖼️ Processing question media:', question.questionMedia);
+        const previews = question.questionMedia.map((media, index) => ({
+          id: `existing-question-media-${media.filename}-${index}`, // Sử dụng filename và index để tạo unique id
+          url: media.url || '',
+          name: media.filename || `file-${index}`,
+          type: media.mimeType || 'application/octet-stream',
+          size: media.size || 0
+        }));
+        console.log('📸 Question media previews created:', previews);
+        setQuestionMediaPreviews(previews);
+      } else {
+        console.log('❌ No question media found');
+        setQuestionMediaPreviews([]);
+      }
+
+      if (question.mediaAnswer && question.mediaAnswer.length > 0) {
+        console.log('🎯 Processing media answer:', question.mediaAnswer);
+        const previews = question.mediaAnswer.map((media, index) => ({
+          id: `existing-media-answer-${media.filename}-${index}`, // Sử dụng filename và index để tạo unique id
+          url: media.url || '',
+          name: media.filename || `file-${index}`,
+          type: media.mimeType || 'application/octet-stream',
+          size: media.size || 0
+        }));
+        console.log('🎬 Media answer previews created:', previews);
+        setMediaAnswerPreviews(previews);
+      } else {
+        console.log('❌ No media answer found');
+        setMediaAnswerPreviews([]);
+      }
+    } else if (mode === 'create') {
+      console.log('🆕 Create mode - resetting form');
+      // Reset toàn bộ khi tạo mới
+      resetForm();
+    } else {
+      console.log('⚠️ No action taken - question or mode invalid');
+    }
+  }, [question, mode]); // Dependency chính xác để trigger khi question hoặc mode thay đổi
+
+  // Hàm reset form
+  const resetForm = () => {
+    setFormData({
+      intro: '',
+      defaultTime: 30,
+      questionType: 'multiple_choice',
+      content: '',
+      options: ['', ''],
+      correctAnswer: '',
+      score: 1,
+      difficulty: 'Alpha',
+      explanation: '',
+      questionTopicId: 0,
+      isActive: true,
+      deleteQuestionMedia: [],
+      deleteMediaAnswer: [],
+    });
+    setErrors({});
+    setQuestionMediaFiles([]);
+    setMediaAnswerFiles([]);
+    setQuestionMediaPreviews([]);
+    setMediaAnswerPreviews([]);
+  };
+
+  const handleFormChange = (name: string, value: string | number | boolean) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
     // Clear error when field is edited
     if (errors[name]) {
-      setErrors((prev) => {
+      setErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
@@ -184,11 +249,9 @@ export const useQuestionForm = ({ question, mode, topics }: UseQuestionFormProps
   };
 
   const handleContentChange = (content: string) => {
-    setFormData((prev) => ({ ...prev, content }));
-    
-    // Clear error when content is edited
+    setFormData(prev => ({ ...prev, content }));
     if (errors.content) {
-      setErrors((prev) => {
+      setErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors.content;
         return newErrors;
@@ -197,221 +260,246 @@ export const useQuestionForm = ({ question, mode, topics }: UseQuestionFormProps
   };
 
   const handleExplanationChange = (explanation: string) => {
-    setFormData((prev) => ({ ...prev, explanation }));
+    setFormData(prev => ({ ...prev, explanation }));
   };
 
   const handleOptionChange = (index: number, value: string) => {
-    setFormData((prev) => {
-      const newOptions = [...(prev.options || [])];
-      newOptions[index] = value;
-      return { ...prev, options: newOptions };
-    });
+    const newOptions = [...(formData.options || [])];
+    newOptions[index] = value;
+    setFormData(prev => ({ ...prev, options: newOptions }));
+    
+    if (errors.options) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.options;
+        return newErrors;
+      });
+    }
   };
 
   const addOption = () => {
-    setFormData((prev) => {
-      const newOptions = [...(prev.options || []), ''];
-      return { ...prev, options: newOptions };
-    });
+    const newOptions = [...(formData.options || []), ''];
+    setFormData(prev => ({ ...prev, options: newOptions }));
   };
 
   const removeOption = (index: number) => {
-    setFormData((prev) => {
-      const newOptions = [...(prev.options || [])];
-      newOptions.splice(index, 1);
-      return { ...prev, options: newOptions };
-    });
+    const newOptions = [...(formData.options || [])];
+    newOptions.splice(index, 1);
+    setFormData(prev => ({ ...prev, options: newOptions }));
   };
 
   const handleQuestionMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setQuestionMediaFiles((prev) => [...prev, ...newFiles]);
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const files = Array.from(e.target.files);
+    
+    // Kiểm tra kích thước và loại file
+    const invalidFiles = files.filter(file => !isValidFileType(file).valid);
+    if (invalidFiles.length > 0) {
+      const invalidFileNames = invalidFiles.map(f => f.name).join(', ');
+      alert(`Một số file không hợp lệ: ${invalidFileNames}`);
+      return;
     }
+    
+    // Kiểm tra xem các file có cùng loại không
+    if (!areFilesOfSameType(files)) {
+      alert('Tất cả các file phải cùng loại (ảnh, video hoặc âm thanh)');
+      return;
+    }
+    
+    // Kiểm tra xem file mới có tương thích với file đã tồn tại không
+    const incompatibleFiles = files.filter(file => 
+      !isCompatibleWithExistingFiles(file, questionMediaPreviews, questionMediaFiles)
+    );
+    if (incompatibleFiles.length > 0) {
+      const currentType = questionMediaPreviews.length > 0 
+        ? questionMediaPreviews[0].type.split('/')[0]
+        : questionMediaFiles.length > 0 
+        ? questionMediaFiles[0].type.split('/')[0]
+        : null;
+      
+      const typeNames = {
+        'image': 'ảnh',
+        'video': 'video', 
+        'audio': 'âm thanh'
+      };
+      
+      alert(`Không thể thêm file khác loại. Chỉ có thể thêm ${typeNames[currentType as keyof typeof typeNames]} khi đã có file cùng loại.`);
+      return;
+    }
+    
+    // Kiểm tra số lượng file
+    if (files.length + questionMediaFiles.length + questionMediaPreviews.length > 5) {
+      alert('Không thể thêm quá 5 file media');
+      return;
+    }
+    
+    setQuestionMediaFiles(prev => [...prev, ...files]);
   };
 
   const handleMediaAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setMediaAnswerFiles((prev) => [...prev, ...newFiles]);
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const files = Array.from(e.target.files);
+    
+    // Kiểm tra kích thước và loại file
+    const invalidFiles = files.filter(file => !isValidFileType(file).valid);
+    if (invalidFiles.length > 0) {
+      const invalidFileNames = invalidFiles.map(f => f.name).join(', ');
+      alert(`Một số file không hợp lệ: ${invalidFileNames}`);
+      return;
     }
+    
+    // Kiểm tra xem các file có cùng loại không
+    if (!areFilesOfSameType(files)) {
+      alert('Tất cả các file phải cùng loại (ảnh, video hoặc âm thanh)');
+      return;
+    }
+    
+    // Kiểm tra xem file mới có tương thích với file đã tồn tại không
+    const incompatibleFiles = files.filter(file => 
+      !isCompatibleWithExistingFiles(file, mediaAnswerPreviews, mediaAnswerFiles)
+    );
+    if (incompatibleFiles.length > 0) {
+      const currentType = mediaAnswerPreviews.length > 0 
+        ? mediaAnswerPreviews[0].type.split('/')[0]
+        : mediaAnswerFiles.length > 0 
+        ? mediaAnswerFiles[0].type.split('/')[0]
+        : null;
+      
+      const typeNames = {
+        'image': 'ảnh',
+        'video': 'video', 
+        'audio': 'âm thanh'
+      };
+      
+      alert(`Không thể thêm file khác loại. Chỉ có thể thêm ${typeNames[currentType as keyof typeof typeNames]} khi đã có file cùng loại.`);
+      return;
+    }
+    
+    // Kiểm tra số lượng file
+    if (files.length + mediaAnswerFiles.length + mediaAnswerPreviews.length > 5) {
+      alert('Không thể thêm quá 5 file media');
+      return;
+    }
+    
+    setMediaAnswerFiles(prev => [...prev, ...files]);
   };
 
   const removeQuestionMedia = (index: number) => {
-    setQuestionMediaFiles((prev) => {
-      const newFiles = [...prev];
-      newFiles.splice(index, 1);
-      return newFiles;
-    });
+    const newFiles = [...questionMediaFiles];
+    newFiles.splice(index, 1);
+    setQuestionMediaFiles(newFiles);
   };
 
   const removeMediaAnswer = (index: number) => {
-    setMediaAnswerFiles((prev) => {
-      const newFiles = [...prev];
-      newFiles.splice(index, 1);
-      return newFiles;
-    });
+    const newFiles = [...mediaAnswerFiles];
+    newFiles.splice(index, 1);
+    setMediaAnswerFiles(newFiles);
   };
 
   const removeQuestionMediaPreview = (index: number) => {
-    setQuestionMediaPreviews(prev => {
-      const newPreviews = [...prev];
-      const removedPreview = newPreviews.splice(index, 1)[0];
-      
-      console.log('Removing question media preview:', removedPreview);
-      
-      // Thêm filename vào danh sách cần xóa và loại bỏ trùng lặp
-      setFormData(prevData => {
-        const currentDeleteList = prevData.deleteQuestionMedia || [];
-        const newDeleteList = [...new Set([...currentDeleteList, removedPreview.name])];
-        console.log('Updated deleteQuestionMedia list:', newDeleteList);
-        
-        return {
-          ...prevData,
-          deleteQuestionMedia: newDeleteList
-        };
-      });
-      
-      return newPreviews;
-    });
+    const mediaToDelete = questionMediaPreviews[index];
+    setFormData(prev => ({
+      ...prev,
+      deleteQuestionMedia: [...(prev.deleteQuestionMedia || []), mediaToDelete.name]
+    }));
+    const newPreviews = [...questionMediaPreviews];
+    newPreviews.splice(index, 1);
+    setQuestionMediaPreviews(newPreviews);
   };
 
   const removeMediaAnswerPreview = (index: number) => {
-    setMediaAnswerPreviews(prev => {
-      const newPreviews = [...prev];
-      const removedPreview = newPreviews.splice(index, 1)[0];
-      
-      console.log('Removing media answer preview:', removedPreview);
-      
-      // Thêm filename vào danh sách cần xóa và loại bỏ trùng lặp
-      setFormData(prevData => {
-        const currentDeleteList = prevData.deleteMediaAnswer || [];
-        const newDeleteList = [...new Set([...currentDeleteList, removedPreview.name])];
-        console.log('Updated deleteMediaAnswer list:', newDeleteList);
-        
-        return {
-          ...prevData,
-          deleteMediaAnswer: newDeleteList
-        };
-      });
-      
-      return newPreviews;
-    });
+    const mediaToDelete = mediaAnswerPreviews[index];
+    setFormData(prev => ({
+      ...prev,
+      deleteMediaAnswer: [...(prev.deleteMediaAnswer || []), mediaToDelete.name]
+    }));
+    const newPreviews = [...mediaAnswerPreviews];
+    newPreviews.splice(index, 1);
+    setMediaAnswerPreviews(newPreviews);
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.content?.trim()) {
+  const validateForm = () => {
+    const newErrors: QuestionFormErrors = {};
+
+    // Validate required fields
+    if (!formData.content.trim()) {
       newErrors.content = 'Nội dung câu hỏi là bắt buộc';
     }
-    
-    if (!formData.questionTopicId) {
-      newErrors.questionTopicId = 'Chủ đề câu hỏi là bắt buộc';
+
+    if (!formData.correctAnswer.trim()) {
+      newErrors.correctAnswer = 'Đáp án là bắt buộc';
     }
-    
+
+    if (!formData.questionTopicId) {
+      newErrors.questionTopicId = 'Chủ đề là bắt buộc';
+    }
+
+    if (!formData.score || formData.score <= 0) {
+      newErrors.score = 'Điểm số phải lớn hơn 0';
+    }
+
+    if (!formData.defaultTime || formData.defaultTime < 10) {
+      newErrors.defaultTime = 'Thời gian làm bài phải ít nhất 10 giây';
+    }
+
+    // Validate options for multiple choice questions
     if (formData.questionType === 'multiple_choice') {
       if (!formData.options || formData.options.length < 2) {
-        newErrors.options = 'Cần ít nhất 2 lựa chọn';
-      } else if (formData.options.some(opt => !opt.trim())) {
-        newErrors.options = 'Các lựa chọn không được để trống';
-      }
-      
-      if (!formData.correctAnswer) {
-        newErrors.correctAnswer = 'Đáp án đúng là bắt buộc';
-      } else if (formData.options && !formData.options.includes(formData.correctAnswer)) {
-        newErrors.correctAnswer = 'Đáp án đúng phải là một trong các lựa chọn';
-      }
-    } else { // Essay
-      if (!formData.correctAnswer?.trim()) {
-        newErrors.correctAnswer = 'Đáp án mẫu là bắt buộc';
+        newErrors.options = 'Phải có ít nhất 2 lựa chọn';
+      } else {
+        const emptyOptions = formData.options.filter(opt => !opt.trim()).length;
+        if (emptyOptions > 0) {
+          newErrors.options = 'Các lựa chọn không được để trống';
+        }
       }
     }
-    
-    if (!formData.defaultTime || formData.defaultTime < 10 || formData.defaultTime > 1800) {
-      newErrors.defaultTime = 'Thời gian làm bài phải từ 10 đến 1800 giây';
-    }
-    
-    if (!formData.score || formData.score < 1 || formData.score > 100) {
-      newErrors.score = 'Điểm số phải từ 1 đến 100';
-    }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const prepareFormData = (values: QuestionFormValues): FormData => {
-    const formData = new FormData();
-
-    console.log('=== DEBUG MEDIA HANDLING ===');
-    console.log('Form values:', values);
-    console.log('Question media files:', questionMediaFiles);
-    console.log('Media answer files:', mediaAnswerFiles);
-    console.log('Question media previews:', questionMediaPreviews);
-    console.log('Media answer previews:', mediaAnswerPreviews);
-
-    // Thêm các trường text
-    Object.entries(values).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        if (key === 'isActive') {
-          formData.append(key, value ? '1' : '0');
-        } else if (key === 'options') {
-          formData.append(key, JSON.stringify(value));
-        } else if (key === 'deleteQuestionMedia' || key === 'deleteMediaAnswer') {
-          // Xử lý danh sách media cần xóa và loại bỏ trùng lặp
-          if (Array.isArray(value) && value.length > 0) {
-            const uniqueValues = [...new Set(value)];
-            console.log(`Adding ${key} to delete (unique values):`, uniqueValues);
-            formData.append(key, JSON.stringify(uniqueValues));
-          }
-        } else if (key !== 'questionMedia' && key !== 'mediaAnswer') {
-          formData.append(key, value.toString());
-        }
+  const prepareFormData = (data: QuestionFormValues) => {
+    const formDataToSubmit = new FormData();
+    
+    // Append basic fields
+    Object.entries(data).forEach(([key, value]) => {
+      if (key !== 'options' && key !== 'deleteQuestionMedia' && key !== 'deleteMediaAnswer') {
+        formDataToSubmit.append(key, value.toString());
       }
     });
-
-    // Xử lý files mới
-    if (questionMediaFiles.length > 0) {
-      console.log('Adding new question media files:', questionMediaFiles);
-      questionMediaFiles.forEach((file) => {
-        if (file instanceof File && file.size > 0) {
-          formData.append('questionMedia', file);
-        }
-      });
+    
+    // Append options as JSON string
+    if (data.options) {
+      formDataToSubmit.append('options', JSON.stringify(data.options));
     }
-
-    if (mediaAnswerFiles.length > 0) {
-      console.log('Adding new media answer files:', mediaAnswerFiles);
-      mediaAnswerFiles.forEach((file) => {
-        if (file instanceof File && file.size > 0) {
-          formData.append('mediaAnswer', file);
-        }
-      });
+    
+    // Append files to delete - chỉ gửi các mảng có giá trị hợp lệ
+    if (data.deleteQuestionMedia && data.deleteQuestionMedia.length > 0) {
+      const validEntries = data.deleteQuestionMedia.filter(item => item && item.trim() !== '');
+      if (validEntries.length > 0) {
+        formDataToSubmit.append('deleteQuestionMedia', JSON.stringify(validEntries));
+      }
     }
-
-    // Nếu có media hiện tại nhưng không có preview nào (đã xóa hết), gửi mảng rỗng
-    if (question?.questionMedia && Array.isArray(question.questionMedia) && 
-        question.questionMedia.length > 0 && questionMediaPreviews.length === 0) {
-      const filesToDelete = question.questionMedia.map(m => m.filename);
-      console.log('Deleting all question media:', filesToDelete);
-      formData.append('deleteQuestionMedia', JSON.stringify(filesToDelete));
+    
+    if (data.deleteMediaAnswer && data.deleteMediaAnswer.length > 0) {
+      const validEntries = data.deleteMediaAnswer.filter(item => item && item.trim() !== '');
+      if (validEntries.length > 0) {
+        formDataToSubmit.append('deleteMediaAnswer', JSON.stringify(validEntries));
+      }
     }
-
-    if (question?.mediaAnswer && Array.isArray(question.mediaAnswer) && 
-        question.mediaAnswer.length > 0 && mediaAnswerPreviews.length === 0) {
-      const filesToDelete = question.mediaAnswer.map(m => m.filename);
-      console.log('Deleting all media answer:', filesToDelete);
-      formData.append('deleteMediaAnswer', JSON.stringify(filesToDelete));
-    }
-
-    // Log final FormData
-    console.log('Final FormData entries:');
-    for (const [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
-    console.log('=== END DEBUG ===');
-
-    return formData;
+    
+    // Append media files
+    questionMediaFiles.forEach(file => {
+      formDataToSubmit.append('questionMedia', file);
+    });
+    
+    mediaAnswerFiles.forEach(file => {
+      formDataToSubmit.append('mediaAnswer', file);
+    });
+    
+    return formDataToSubmit;
   };
 
   return {
@@ -423,6 +511,7 @@ export const useQuestionForm = ({ question, mode, topics }: UseQuestionFormProps
     mediaAnswerPreviews,
     validateForm,
     prepareFormData,
+    resetForm,
     handleFormChange,
     handleContentChange,
     handleExplanationChange,
@@ -436,4 +525,6 @@ export const useQuestionForm = ({ question, mode, topics }: UseQuestionFormProps
     removeQuestionMediaPreview,
     removeMediaAnswerPreview,
   };
-}; 
+};
+
+export default useQuestionForm; 

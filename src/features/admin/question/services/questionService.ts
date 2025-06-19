@@ -5,7 +5,6 @@ import type {
   BatchDeleteResponseData
 } from '../types';
 import axiosInstance from '../../../../config/axiosInstance';
-import axios from 'axios';
 
 const BASE_URL = '/questions';
 
@@ -100,73 +99,39 @@ export const questionService = {
    * Cập nhật câu hỏi
    * PATCH /api/questions/{id}
    */
-  updateQuestion: async (id: number, formData: FormData): Promise<{ question: Question; message: string }> => {
+  updateQuestion: async (id: number, formData: FormData): Promise<ApiResponse<Question>> => {
     try {
-      // Tạo FormData mới
-      const newFormData = new FormData();
-      
-      // Xử lý các trường text
-      for (const [key, value] of formData.entries()) {
-        if (key !== 'questionMedia' && key !== 'mediaAnswer') {
-          newFormData.append(key, value);
-        }
-      }
-
-      // Xử lý files riêng biệt
-      const questionMediaFiles = formData.getAll('questionMedia');
-      const mediaAnswerFiles = formData.getAll('mediaAnswer');
-
-      // Kiểm tra và thêm files
-      if (questionMediaFiles.length > 0) {
-        questionMediaFiles.forEach((file) => {
-          if (file instanceof File && file.size > 0) {
-            newFormData.append('questionMedia', file);
-          }
-        });
-      }
-
-      if (mediaAnswerFiles.length > 0) {
-        mediaAnswerFiles.forEach((file) => {
-          if (file instanceof File && file.size > 0) {
-            newFormData.append('mediaAnswer', file);
-          }
-        });
-      }
-
-      // Log để debug
-      console.log('FormData trước khi gửi:');
-      for (const [key, value] of newFormData.entries()) {
-        console.log(`${key}:`, value);
+      // Log FormData để kiểm tra
+      console.log('📤 FormData trước khi gửi API:');
+      for (const pair of formData.entries()) {
+        console.log(`${pair[0]}:`, pair[1]);
       }
 
       const response = await axiosInstance.patch<ApiResponse<Question>>(
-        `${BASE_URL}/${id}`, 
-        newFormData,
+        `/questions/${id}`,
+        formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            'Content-Type': 'multipart/form-data'
           },
-          timeout: 60000, // 60 giây
-          maxContentLength: 50 * 1024 * 1024, // 50MB
           onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total!);
-            console.log(`Upload progress: ${percentCompleted}%`);
-          },
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+            console.log(`📊 Upload progress: ${percentCompleted}%`);
+          }
         }
       );
       
-      return {
-        question: response.data.data,
-        message: response.data.message
-      };
+      console.log('📥 API Response received:', response.data);
+      console.log('🎬 Response question media:', response.data.data?.questionMedia);
+      console.log('🎵 Response media answer:', response.data.data?.mediaAnswer);
+      console.log('📊 Media lengths:', {
+        questionMediaLength: response.data.data?.questionMedia?.length || 0,
+        mediaAnswerLength: response.data.data?.mediaAnswer?.length || 0
+      });
+      
+      return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error('Chi tiết lỗi:', {
-          status: error.response?.status,
-          data: error.response?.data,
-          message: error.message
-        });
-      }
+      console.error('❌ Chi tiết lỗi updateQuestion:', error);
       throw error;
     }
   },

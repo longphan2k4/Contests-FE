@@ -12,7 +12,10 @@ export const calculateResultSummary = (results: Result[]): ResultSummary => {
     totalQuestions,
     correctAnswers,
     incorrectAnswers: totalQuestions - correctAnswers,
-    accuracy: totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0
+    accuracy: totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0,
+    byRound: {},
+    byMatch: {},
+    topStudents: []
   };
 };
 

@@ -51,19 +51,115 @@ export const useResults = (initialParams?: ResultFilterParams) => {
         totalQuestions: 0,
         correctAnswers: 0,
         incorrectAnswers: 0,
-        accuracy: 0
+        accuracy: 0,
+        byRound: {},
+        byMatch: {},
+        topStudents: []
       };
     }
 
     const totalQuestions = results.length;
     const correctAnswers = results.filter(result => result.isCorrect).length;
     
+    // Thống kê theo vòng
+    const byRound: Record<string, {roundName: string; total: number; correct: number; accuracy: number}> = {};
+    results.forEach(result => {
+      const roundId = result.match.round.id.toString();
+      if (!byRound[roundId]) {
+        byRound[roundId] = {
+          roundName: result.match.round.name,
+          total: 0,
+          correct: 0,
+          accuracy: 0
+        };
+      }
+      byRound[roundId].total++;
+      if (result.isCorrect) {
+        byRound[roundId].correct++;
+      }
+      byRound[roundId].accuracy = byRound[roundId].total > 0 ? 
+        (byRound[roundId].correct / byRound[roundId].total) * 100 : 0;
+    });
+
+    // Thống kê theo trận
+    const byMatch: Record<string, {matchName: string; total: number; correct: number; accuracy: number}> = {};
+    results.forEach(result => {
+      const matchId = result.match.id.toString();
+      if (!byMatch[matchId]) {
+        byMatch[matchId] = {
+          matchName: result.match.name,
+          total: 0,
+          correct: 0,
+          accuracy: 0
+        };
+      }
+      byMatch[matchId].total++;
+      if (result.isCorrect) {
+        byMatch[matchId].correct++;
+      }
+      byMatch[matchId].accuracy = byMatch[matchId].total > 0 ? 
+        (byMatch[matchId].correct / byMatch[matchId].total) * 100 : 0;
+    });
+
+    // Top thí sinh
+    const studentStats: Record<string, {
+      studentName: string;
+      studentCode: string;
+      correct: number;
+      total: number;
+      accuracy: number;
+    }> = {};
+
+    results.forEach(result => {
+      const studentId = result.contestant.student.id.toString();
+      if (!studentStats[studentId]) {
+        studentStats[studentId] = {
+          studentName: result.contestant.student.fullName,
+          studentCode: result.contestant.student.studentCode,
+          correct: 0,
+          total: 0,
+          accuracy: 0
+        };
+      }
+      studentStats[studentId].total++;
+      if (result.isCorrect) {
+        studentStats[studentId].correct++;
+      }
+      studentStats[studentId].accuracy = studentStats[studentId].total > 0 ? 
+        (studentStats[studentId].correct / studentStats[studentId].total) * 100 : 0;
+    });
+
+    const topStudents = Object.values(studentStats)
+      .sort((a, b) => b.accuracy - a.accuracy)
+      .slice(0, 5);
+    
     return {
       totalQuestions,
       correctAnswers,
       incorrectAnswers: totalQuestions - correctAnswers,
-      accuracy: totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0
+      accuracy: totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0,
+      byRound,
+      byMatch,
+      topStudents
     };
+  };
+
+  // Lấy danh sách các vòng unique để filter
+  const getUniqueRounds = () => {
+    const roundsMap = new Map();
+    results.forEach(result => {
+      roundsMap.set(result.match.round.id, result.match.round.name);
+    });
+    return Array.from(roundsMap.entries()).map(([id, name]) => ({ id: Number(id), name }));
+  };
+
+  // Lấy danh sách các trận unique để filter
+  const getUniqueMatches = () => {
+    const matchesMap = new Map();
+    results.forEach(result => {
+      matchesMap.set(result.match.id, result.match.name);
+    });
+    return Array.from(matchesMap.entries()).map(([id, name]) => ({ id: Number(id), name }));
   };
 
   useEffect(() => {
@@ -77,6 +173,8 @@ export const useResults = (initialParams?: ResultFilterParams) => {
     fetchResults,
     setParams,
     getResultSummary,
+    getUniqueRounds,
+    getUniqueMatches,
     totalPages: pagination.totalPages,
     totalResults: pagination.total
   };
