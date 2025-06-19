@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -81,10 +81,21 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
   mode,
   topics,
 }) => {
+  console.log('🔄 QuestionDialog rendered with props:', { 
+    open, 
+    mode, 
+    questionId: question?.id, 
+    questionMedia: question?.questionMedia,
+    mediaAnswer: question?.mediaAnswer
+  });
+  
   const isReadOnly = mode === 'view';
   const [tabValue, setTabValue] = React.useState(0);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const formRef = useRef<HTMLFormElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formKey, setFormKey] = useState(0);
   
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -99,6 +110,7 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
     mediaAnswerPreviews,
     validateForm,
     prepareFormData,
+    resetForm,
     handleFormChange,
     handleContentChange,
     handleExplanationChange,
@@ -113,6 +125,13 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
     removeMediaAnswerPreview,
   } = useQuestionForm({ question, mode, topics });
 
+  console.log('📋 QuestionDialog form state:', { 
+    questionMediaPreviews: questionMediaPreviews.length,
+    mediaAnswerPreviews: mediaAnswerPreviews.length,
+    questionMediaFiles: questionMediaFiles.length,
+    mediaAnswerFiles: mediaAnswerFiles.length
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isReadOnly) {
@@ -125,11 +144,17 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
     }
 
     try {
+      setIsSubmitting(true);
       const formDataToSubmit = prepareFormData(formData);
       await onSubmit(formDataToSubmit);
-      onClose();
+      console.log('✅ QuestionDialog submit completed successfully');
+      // Đóng dialog sẽ được xử lý trong onClose callback hoặc bởi parent component
     } catch (error) {
-      console.error('Lỗi khi gửi dữ liệu câu hỏi:', error);
+      console.error('❌ Lỗi khi gửi dữ liệu câu hỏi:', error);
+    } finally {
+      // Reset submitting state trong finally để đảm bảo luôn được reset
+      console.log('🔄 Resetting isSubmitting state');
+      setIsSubmitting(false);
     }
   };
 
@@ -137,6 +162,14 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
   React.useEffect(() => {
     if (open) {
       setTabValue(0);
+    }
+  }, [open]);
+
+  // Reset isSubmitting state khi dialog đóng
+  React.useEffect(() => {
+    if (!open) {
+      console.log('🔄 Dialog closed - resetting isSubmitting state');
+      setIsSubmitting(false);
     }
   }, [open]);
 
@@ -390,10 +423,29 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
     );
   };
 
+  // Xử lý đóng dialog
+  const handleClose = () => {
+    // Đóng dialog trước
+    if (onClose) {
+      onClose();
+    }
+    
+    // Delay nhẹ để animation đóng dialog hoàn tất trước khi reset state
+    setTimeout(() => {
+      // Reset form nếu đang ở mode create
+      if (mode === 'create') {
+        resetForm();
+      }
+      // Reset state cần thiết
+      setIsSubmitting(false);
+      setFormKey(prev => prev + 1); // Thay đổi key để re-render form khi cần
+    }, 150); // Giảm thời gian delay xuống 150ms
+  };
+
   return (
     <Dialog 
       open={open} 
-      onClose={onClose} 
+      onClose={handleClose} 
       maxWidth="lg" 
       fullWidth
       fullScreen={isMobile}
@@ -416,7 +468,7 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
         {mode === 'create' ? 'Tạo câu hỏi' : mode === 'edit' ? 'Chỉnh sửa câu hỏi' : 'Chi tiết câu hỏi'}
         <IconButton 
           aria-label="close" 
-          onClick={onClose} 
+          onClick={handleClose} 
           sx={{ 
             color: (theme) => theme.palette.grey[500],
             '&:hover': {
@@ -458,6 +510,7 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
             
             <TabPanel value={tabValue} index={1}>
               <QuestionDialogForm
+                key={formKey}
                 formData={formData}
                 errors={errors}
                 topics={topics}
@@ -486,6 +539,8 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
       ) : (
         <DialogContent dividers>
           <QuestionDialogForm
+            key={formKey}
+            ref={formRef}
             formData={formData}
             errors={errors}
             topics={topics}
@@ -512,7 +567,7 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
       )}
       
       <DialogActions sx={{ borderTop: '1px solid', borderColor: 'divider', p: 2 }}>
-        <Button onClick={onClose} color="inherit">
+        <Button onClick={handleClose} color="inherit">
           {isReadOnly ? 'Đóng' : 'Hủy'}
         </Button>
         {!isReadOnly && (
@@ -520,9 +575,9 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
             onClick={(e) => handleSubmit(e as React.FormEvent)} 
             color="primary" 
             variant="contained" 
-            disabled={isLoading}
+            disabled={isLoading || isSubmitting}
           >
-            {isLoading ? <CircularProgress size={24} /> : 'Lưu'}
+            {isLoading || isSubmitting ? <CircularProgress size={24} /> : 'Lưu'}
           </Button>
         )}
       </DialogActions>

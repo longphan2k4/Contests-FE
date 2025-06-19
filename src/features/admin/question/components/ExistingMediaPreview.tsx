@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, IconButton, Typography, Dialog, DialogContent } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ImageIcon from '@mui/icons-material/Image';
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
 import AudioFileIcon from '@mui/icons-material/AudioFile';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -22,16 +21,22 @@ interface ExistingMediaPreviewProps {
 }
 
 const ExistingMediaPreview: React.FC<ExistingMediaPreviewProps> = ({ media, onRemove }) => {
+  // Đảm bảo media luôn có một ID hợp lệ và không trống
+  const safeMedia = {
+    ...media,
+    id: media.id || `media-${media.name}-${Date.now()}-${Math.random().toString(36).substring(2, 10)}` // Tạo ID duy nhất nếu ID trống
+  };
+  
   const [openDialog, setOpenDialog] = React.useState(false);
   const [videoThumbnail, setVideoThumbnail] = React.useState<string>('');
 
   // Tạo thumbnail cho video
   React.useEffect(() => {
-    if (media.type.startsWith('video/')) {
+    if (safeMedia.type.startsWith('video/')) {
       const video = document.createElement('video');
       video.crossOrigin = 'anonymous'; // Thêm crossOrigin để tránh lỗi CORS
       video.preload = 'metadata';
-      video.src = media.url;
+      video.src = safeMedia.url;
       video.muted = true;
       
       const handleCanPlay = () => {
@@ -62,21 +67,7 @@ const ExistingMediaPreview: React.FC<ExistingMediaPreviewProps> = ({ media, onRe
         video.src = '';
       };
     }
-  }, [media.url, media.type]);
-
-  console.log('Rendering media preview:', media);
-
-  const getFileIcon = () => {
-    console.log('Getting file icon for type:', media.type);
-    if (media.type.startsWith('image/')) {
-      return <ImageIcon />;
-    } else if (media.type.startsWith('video/')) {
-      return <VideoLibraryIcon />;
-    } else if (media.type.startsWith('audio/')) {
-      return <AudioFileIcon />;
-    }
-    return <DescriptionIcon />;
-  };
+  }, [safeMedia.url, safeMedia.type]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return 'Không xác định';
@@ -87,14 +78,12 @@ const ExistingMediaPreview: React.FC<ExistingMediaPreviewProps> = ({ media, onRe
   };
 
   const renderThumbnail = () => {
-    console.log('Rendering thumbnail for media:', media);
-    if (media.type.startsWith('image/')) {
-      console.log('Rendering image thumbnail with URL:', media.url);
+    if (safeMedia.type.startsWith('image/')) {
       return (
         <Box
           component="img"
-          src={media.url}
-          alt={media.name}
+          src={safeMedia.url}
+          alt={safeMedia.name}
           sx={{
             width: 100,
             height: 100,
@@ -109,11 +98,10 @@ const ExistingMediaPreview: React.FC<ExistingMediaPreviewProps> = ({ media, onRe
           onClick={() => setOpenDialog(true)}
           onError={(e) => {
             console.error('Error loading image:', e);
-            console.log('Failed image URL:', media.url);
           }}
         />
       );
-    } else if (media.type.startsWith('video/')) {
+    } else if (safeMedia.type.startsWith('video/')) {
       return (
         <Box
           sx={{
@@ -133,7 +121,7 @@ const ExistingMediaPreview: React.FC<ExistingMediaPreviewProps> = ({ media, onRe
             <Box
               component="img"
               src={videoThumbnail}
-              alt={media.name}
+              alt={safeMedia.name}
               sx={{
                 width: '100%',
                 height: '100%',
@@ -172,7 +160,7 @@ const ExistingMediaPreview: React.FC<ExistingMediaPreviewProps> = ({ media, onRe
           />
         </Box>
       );
-    } else if (media.type.startsWith('audio/')) {
+    } else if (safeMedia.type.startsWith('audio/')) {
       return (
         <Box
           sx={{
@@ -217,12 +205,12 @@ const ExistingMediaPreview: React.FC<ExistingMediaPreviewProps> = ({ media, onRe
   };
 
   const renderFullPreview = () => {
-    if (media.type.startsWith('image/')) {
+    if (safeMedia.type.startsWith('image/')) {
       return (
         <Box
           component="img"
-          src={media.url}
-          alt={media.name}
+          src={safeMedia.url}
+          alt={safeMedia.name}
           sx={{
             maxWidth: '100%',
             maxHeight: '80vh',
@@ -230,11 +218,11 @@ const ExistingMediaPreview: React.FC<ExistingMediaPreviewProps> = ({ media, onRe
           }}
         />
       );
-    } else if (media.type.startsWith('video/')) {
+    } else if (safeMedia.type.startsWith('video/')) {
       return (
         <Box
           component="video"
-          src={media.url}
+          src={safeMedia.url}
           controls
           sx={{
             maxWidth: '100%',
@@ -242,11 +230,11 @@ const ExistingMediaPreview: React.FC<ExistingMediaPreviewProps> = ({ media, onRe
           }}
         />
       );
-    } else if (media.type.startsWith('audio/')) {
+    } else if (safeMedia.type.startsWith('audio/')) {
       return (
         <Box
           component="audio"
-          src={media.url}
+          src={safeMedia.url}
           controls
           sx={{
             width: '100%',
@@ -255,108 +243,89 @@ const ExistingMediaPreview: React.FC<ExistingMediaPreviewProps> = ({ media, onRe
       );
     }
     return (
-      <Box
-        sx={{
-          p: 3,
-          bgcolor: 'background.paper',
-          borderRadius: 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-        }}
-      >
-        {getFileIcon()}
-        <Typography variant="body1">{media.name}</Typography>
-      </Box>
+      <Typography>
+        Không thể hiển thị nội dung này
+      </Typography>
     );
   };
 
   return (
-    <>
-      <Box
+    <Box
+      sx={{
+        position: 'relative',
+        width: 'fit-content',
+        '&:hover .delete-button': {
+          opacity: 1,
+        },
+      }}
+    >
+      {renderThumbnail()}
+      
+      <IconButton
+        className="delete-button"
+        onClick={onRemove}
         sx={{
-          position: 'relative',
-          width: 100,
-          height: 100,
-          mb: 2,
-          mr: 2,
+          position: 'absolute',
+          top: -8,
+          right: -8,
+          bgcolor: 'error.main',
+          color: 'white',
+          opacity: 0,
+          transition: 'opacity 0.2s',
+          '&:hover': {
+            bgcolor: 'error.dark',
+          },
+          width: 24,
+          height: 24,
+          '& .MuiSvgIcon-root': {
+            fontSize: 16,
+          },
         }}
       >
-        {renderThumbnail()}
-        <IconButton
-          onClick={onRemove}
-          sx={{
-            position: 'absolute',
-            top: -8,
-            right: -8,
-            bgcolor: 'error.main',
-            color: 'white',
-            width: 24,
-            height: 24,
-            '&:hover': {
-              bgcolor: 'error.dark',
-            },
-          }}
-        >
-          <DeleteIcon sx={{ fontSize: 16 }} />
-        </IconButton>
-        <Typography
-          variant="caption"
-          sx={{
-            position: 'absolute',
-            bottom: -20,
-            left: 0,
-            right: 0,
-            textAlign: 'center',
-            color: 'text.secondary',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {media.name}
-          <br />
-          {formatFileSize(media.size)}
-        </Typography>
-      </Box>
-
+        <DeleteIcon />
+      </IconButton>
+      
+      <Typography
+        variant="caption"
+        sx={{
+          display: 'block',
+          maxWidth: 100,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          mt: 0.5,
+        }}
+        title={safeMedia.name}
+      >
+        {safeMedia.name}
+      </Typography>
+      
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{
+          display: 'block',
+        }}
+      >
+        {formatFileSize(safeMedia.size)}
+      </Typography>
+      
       <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         maxWidth="lg"
         fullWidth
-        PaperProps={{
-          sx: {
-            maxHeight: '90vh',
-            display: 'flex',
-            flexDirection: 'column',
-          }
-        }}
       >
-        <DialogContent 
-          sx={{ 
-            position: 'relative', 
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flex: 1,
-            overflow: 'auto'
-          }}
-        >
+        <DialogContent sx={{ position: 'relative', p: 2 }}>
           <IconButton
             onClick={() => setOpenDialog(false)}
             sx={{
               position: 'absolute',
               top: 8,
               right: 8,
-              bgcolor: 'rgba(0, 0, 0, 0.5)',
-              color: 'white',
-              '&:hover': {
-                bgcolor: 'rgba(0, 0, 0, 0.7)',
-              },
-              zIndex: 1
+              bgcolor: 'background.paper',
+              boxShadow: 1,
+              zIndex: 1,
             }}
           >
             <CloseIcon />
@@ -364,29 +333,17 @@ const ExistingMediaPreview: React.FC<ExistingMediaPreviewProps> = ({ media, onRe
           <Box
             sx={{
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
               justifyContent: 'center',
+              alignItems: 'center',
               width: '100%',
-              height: '100%',
-              minHeight: '50vh'
+              py: 2,
             }}
           >
             {renderFullPreview()}
           </Box>
-          <Typography
-            variant="body2"
-            sx={{
-              mt: 2,
-              textAlign: 'center',
-              color: 'text.secondary',
-            }}
-          >
-            {media.name} ({formatFileSize(media.size)})
-          </Typography>
         </DialogContent>
       </Dialog>
-    </>
+    </Box>
   );
 };
 

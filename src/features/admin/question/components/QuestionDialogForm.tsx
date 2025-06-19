@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, forwardRef } from 'react';
 import {
   TextField,
   FormControl,
@@ -14,13 +14,41 @@ import {
   Divider,
   Button,
   Autocomplete,
+  ToggleButtonGroup,
+  ToggleButton,
+  Tooltip
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import ImageIcon from '@mui/icons-material/Image';
+import VideocamIcon from '@mui/icons-material/Videocam';
+import AudiotrackIcon from '@mui/icons-material/Audiotrack';
 import { Editor } from '@tinymce/tinymce-react';
 import MediaPreview from './MediaPreview';
 import ExistingMediaPreview from './ExistingMediaPreview';
+
+// Định nghĩa các loại file được phép
+const ALLOWED_TYPES = {
+  image: {
+    extensions: /jpeg|jpg|png|gif|webp|svg/,
+    mimeTypes: /^image\/(jpeg|jpg|png|gif|webp|svg\+xml)$/,
+    accept: "image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml",
+    maxSize: 5 * 1024 * 1024, // 5MB
+  },
+  video: {
+    extensions: /mp4|avi|mov|wmv|flv|webm|mkv/,
+    mimeTypes: /^video\/(mp4|avi|quicktime|x-ms-wmv|x-flv|webm|x-matroska)$/,
+    accept: "video/mp4,video/avi,video/quicktime,video/x-ms-wmv,video/x-flv,video/webm,video/x-matroska",
+    maxSize: 100 * 1024 * 1024, // 100MB
+  },
+  audio: {
+    extensions: /mp3|wav|ogg|aac|flac|m4a/,
+    mimeTypes: /^audio\/(mp3|wav|ogg|aac|flac|mp4|x-m4a)$/,
+    accept: "audio/mp3,audio/wav,audio/ogg,audio/aac,audio/flac,audio/mp4,audio/x-m4a",
+    maxSize: 20 * 1024 * 1024, // 20MB
+  }
+};
 
 interface QuestionTopic {
   id: number;
@@ -81,7 +109,9 @@ interface QuestionDialogFormProps {
   handleSubmit: (e: React.FormEvent) => void;
 }
 
-const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
+type MediaType = 'image' | 'video' | 'audio';
+
+const QuestionDialogForm = forwardRef<HTMLFormElement, QuestionDialogFormProps>(({
   formData,
   errors,
   topics,
@@ -103,7 +133,11 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
   removeQuestionMediaPreview,
   removeMediaAnswerPreview,
   handleSubmit,
-}) => {
+}, ref) => {
+  // State để lưu loại media đang được chọn
+  const [questionMediaType, setQuestionMediaType] = useState<MediaType>('image');
+  const [answerMediaType, setAnswerMediaType] = useState<MediaType>('image');
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     onFormChange(name, value);
@@ -119,82 +153,194 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
     onFormChange(name, checked);
   };
 
+  // Xác định loại media hiện tại nếu đã có file
+  const getCurrentMediaType = (previews: MediaFilePreview[], files: File[]): MediaType | null => {
+    // Kiểm tra existing files trước
+    if (previews.length > 0) {
+      const firstType = previews[0].type;
+      if (firstType.startsWith('image/')) return 'image';
+      if (firstType.startsWith('video/')) return 'video';
+      if (firstType.startsWith('audio/')) return 'audio';
+    }
+    
+    // Nếu không có existing files, kiểm tra new files
+    if (files.length > 0) {
+      const firstType = files[0].type;
+      if (firstType.startsWith('image/')) return 'image';
+      if (firstType.startsWith('video/')) return 'video';
+      if (firstType.startsWith('audio/')) return 'audio';
+    }
+    
+    return null;
+  };
+
+  // Kiểm tra xem có thể thay đổi loại media không
+  const canChangeMediaType = (previews: MediaFilePreview[], files: File[]): boolean => {
+    return previews.length === 0 && files.length === 0;
+  };
+
   const renderMediaSection = (
     title: string,
     files: File[],
     existingFiles: MediaFilePreview[],
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
     onRemove: (index: number) => void,
-    onRemoveExisting: (index: number) => void
-  ) => (
-    <Box sx={{ mb: 3 }}>
-      <Typography variant="subtitle1" gutterBottom>
-        {title}
-      </Typography>
-      <Box sx={{ mb: 2 }}>
-        <input
-          type="file"
-          multiple
-          onChange={onChange}
-          style={{ display: 'none' }}
-          id={`${title.toLowerCase().replace(/\s+/g, '-')}-input`}
-          accept="image/*,video/*,audio/*"
-        />
-        <label htmlFor={`${title.toLowerCase().replace(/\s+/g, '-')}-input`}>
-          <Button
-            variant="outlined"
-            component="span"
-            startIcon={<CloudUploadIcon />}
-            disabled={isReadOnly || files.length + existingFiles.length >= 5}
-          >
-            Tải lên {title.toLowerCase()}
-          </Button>
-        </label>
-        <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
-          Giới hạn: Ảnh (5MB), Video (100MB), Audio (20MB). Tối đa 5 file.
+    onRemoveExisting: (index: number) => void,
+    mediaType: MediaType,
+    setMediaType: (type: MediaType) => void
+  ) => {
+    // Xác định loại media hiện tại từ file đã tồn tại hoặc file mới
+    const currentMediaType = getCurrentMediaType(existingFiles, files);
+    const canChange = canChangeMediaType(existingFiles, files);
+    
+    // Nếu đã có file và loại media khác với loại hiện tại, cập nhật state
+    if (currentMediaType && mediaType !== currentMediaType) {
+      setMediaType(currentMediaType);
+    }
+    
+    // Lấy accept attribute dựa trên loại media
+    const acceptAttribute = ALLOWED_TYPES[mediaType].accept;
+    
+    // Hiển thị thông báo giới hạn kích thước
+    const sizeLimit = {
+      image: '5MB',
+      video: '100MB',
+      audio: '20MB'
+    }[mediaType];
+
+    return (
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="subtitle1" gutterBottom>
+          {title}
         </Typography>
-      </Box>
-      
-      {/* Hiển thị media đã tồn tại */}
-      {existingFiles.length > 0 && (
+
+        {/* Lựa chọn loại media */}
         <Box sx={{ mb: 2 }}>
-          <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 1 }}>
-            Media hiện tại:
-          </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-            {existingFiles.map((file, index) => (
-              <ExistingMediaPreview
-                key={file.id}
-                media={file}
-                onRemove={() => onRemoveExisting(index)}
-              />
-            ))}
-          </Box>
+          <ToggleButtonGroup
+            value={mediaType}
+            exclusive
+            onChange={(_, newValue) => {
+              if (newValue && canChange) {
+                setMediaType(newValue as MediaType);
+              }
+            }}
+            aria-label="media type"
+            size="small"
+            disabled={isReadOnly}
+          >
+            <ToggleButton 
+              value="image" 
+              aria-label="image"
+              disabled={!canChange && currentMediaType !== 'image'}
+            >
+              <Tooltip title="Hình ảnh (JPEG, PNG, GIF...)">
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <ImageIcon sx={{ mr: 0.5 }} />
+                  <Typography variant="body2">Ảnh</Typography>
+                </Box>
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton 
+              value="video" 
+              aria-label="video"
+              disabled={!canChange && currentMediaType !== 'video'}
+            >
+              <Tooltip title="Video (MP4, WebM...)">
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <VideocamIcon sx={{ mr: 0.5 }} />
+                  <Typography variant="body2">Video</Typography>
+                </Box>
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton 
+              value="audio" 
+              aria-label="audio"
+              disabled={!canChange && currentMediaType !== 'audio'}
+            >
+              <Tooltip title="Âm thanh (MP3, WAV...)">
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <AudiotrackIcon sx={{ mr: 0.5 }} />
+                  <Typography variant="body2">Âm thanh</Typography>
+                </Box>
+              </Tooltip>
+            </ToggleButton>
+          </ToggleButtonGroup>
+          
+          {!canChange && currentMediaType && (
+            <Typography variant="caption" color="warning.main" sx={{ display: 'block', mt: 1 }}>
+              ⚠️ Đã có {currentMediaType === 'image' ? 'ảnh' : currentMediaType === 'video' ? 'video' : 'âm thanh'}. 
+              Chỉ có thể thêm cùng loại media hoặc xóa tất cả để chọn loại khác.
+            </Typography>
+          )}
         </Box>
-      )}
-      
-      {/* Hiển thị media mới thêm */}
-      {files.length > 0 && (
-        <Box>
-          <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 1 }}>
-            Media mới thêm:
+
+        <Box sx={{ mb: 2 }}>
+          <input
+            type="file"
+            multiple
+            onChange={onChange}
+            style={{ display: 'none' }}
+            id={`${title.toLowerCase().replace(/\s+/g, '-')}-input`}
+            accept={acceptAttribute}
+            disabled={isReadOnly}
+          />
+          <label htmlFor={`${title.toLowerCase().replace(/\s+/g, '-')}-input`}>
+            <Button
+              variant="outlined"
+              component="span"
+              startIcon={<CloudUploadIcon />}
+              disabled={isReadOnly || files.length + existingFiles.length >= 5}
+            >
+              Tải lên {mediaType === 'image' ? 'ảnh' : mediaType === 'video' ? 'video' : 'âm thanh'}
+            </Button>
+          </label>
+          <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
+            Giới hạn: {mediaType === 'image' ? 'Ảnh' : mediaType === 'video' ? 'Video' : 'Âm thanh'} ({sizeLimit}). 
+            Tối đa 5 file cùng loại.
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-            {files.map((file, index) => (
-              <MediaPreview
-                key={`${file.name}-${index}`}
-                file={file}
-                onRemove={() => onRemove(index)}
-              />
-            ))}
-          </Box>
         </Box>
-      )}
-    </Box>
-  );
+        
+        {/* Hiển thị media đã tồn tại */}
+        {existingFiles.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" color="primary" sx={{ display: 'block', mb: 1, fontWeight: 'bold' }}>
+              Media đã lưu:
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, p: 1, bgcolor: 'background.default', borderRadius: 1 }}>
+              {existingFiles.map((file, index) => (
+                <ExistingMediaPreview
+                  key={file.id}
+                  media={file}
+                  onRemove={() => onRemoveExisting(index)}
+                />
+              ))}
+            </Box>
+          </Box>
+        )}
+        
+        {/* Hiển thị media mới thêm */}
+        {files.length > 0 && (
+          <Box>
+            <Typography variant="subtitle2" color="secondary" sx={{ display: 'block', mb: 1, fontWeight: 'bold' }}>
+              Media mới thêm:
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, p: 1, bgcolor: 'background.default', borderRadius: 1 }}>
+              {files.map((file, index) => (
+                <MediaPreview
+                  key={`${file.name}-${index}`}
+                  file={file}
+                  onRemove={() => onRemove(index)}
+                />
+              ))}
+            </Box>
+          </Box>
+        )}
+      </Box>
+    );
+  };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} ref={ref}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Thông tin cơ bản */}
         <Box>
@@ -365,7 +511,9 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
           questionMediaPreviews,
           onQuestionMediaChange,
           removeQuestionMedia,
-          removeQuestionMediaPreview
+          removeQuestionMediaPreview,
+          questionMediaType,
+          setQuestionMediaType
         )}
         
         {/* Câu trả lời */}
@@ -445,7 +593,9 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
           mediaAnswerPreviews,
           onMediaAnswerChange,
           removeMediaAnswer,
-          removeMediaAnswerPreview
+          removeMediaAnswerPreview,
+          answerMediaType,
+          setAnswerMediaType
         )}
         
         <Box>
@@ -502,6 +652,8 @@ const QuestionDialogForm: React.FC<QuestionDialogFormProps> = ({
       </Box>
     </form>
   );
-};
+});
+
+QuestionDialogForm.displayName = 'QuestionDialogForm';
 
 export default QuestionDialogForm; 
