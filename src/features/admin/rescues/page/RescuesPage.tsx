@@ -105,7 +105,7 @@ const RescuesPage: React.FC = () => {
   const handeDeletes = (ids: deleteRescueType) => {
     mutateDeleteMany(ids, {
       onSuccess: data => {
-        data.messages.forEach((item: any, index: number) => {
+        data.messages.forEach((item: any) => {
           if (item.status === "error") {
             showToast(item.msg, "error");
           } else {
@@ -269,7 +269,6 @@ const RescuesPage: React.FC = () => {
               }}
             />
 
-          
             {/* Nút xoá người */}
             {selectedRescueIds.length > 0 && (
               <Button
@@ -311,7 +310,6 @@ const RescuesPage: React.FC = () => {
             onView={id => handleAction("view", id)}
             onEdit={id => handleAction("edit", id)}
             onDelete={id => handleAction("delete", id)}
-            
           />
         </Box>
 
@@ -355,7 +353,7 @@ const RescuesPage: React.FC = () => {
             count={pagination.totalPages}
             page={filter.page ?? 1}
             color="primary"
-            onChange={(event, value) =>
+            onChange={(_event, value) =>
               setFilter(prev => ({
                 ...prev,
                 page: value,

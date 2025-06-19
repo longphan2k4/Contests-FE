@@ -11,12 +11,21 @@ import QuestionsPackagesPage from "./questionpackages/page/QuestionsPackagesPage
 import ClassesPage from "./class/page/ClassPage";
 import { ContestPage } from "./contests/pages";
 import { QuestionsPage } from "./question/pages";
+
+import PrivateRoute from "../../routes/PrivateRoute";
 // Các component trang admin
 const Dashboard = () => <div>Trang Dashboard</div>;
 
 const AdminRoutes = () => {
   return (
-    <Route path="/admin" element={<AdminLayout />}>
+    <Route
+      path="/admin"
+      element={
+        <PrivateRoute roles={["Admin"]}>
+          <AdminLayout />
+        </PrivateRoute>
+      }
+    >
       <Route path="dashboard" element={<Dashboard />} />
       <Route path="schools" element={<SchoolsPage />} />
       <Route path="classes" element={<ClassesPage />} />
@@ -32,7 +41,6 @@ const AdminRoutes = () => {
       <Route path="contestants" element={<ContestantsPage />} />
       <Route path="about" element={<AboutAdminPage />} />
       <Route path="users" element={<UsersPage />} />
-
       <Route index element={<Navigate to="/admin/dashboard" replace />} />
     </Route>
   );

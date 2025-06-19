@@ -1,10 +1,13 @@
 import React from "react";
+import { useParams, Link } from "react-router-dom";
+
 import { Box, IconButton } from "@mui/material";
 import DataGrid from "../../../../components/DataGrid";
 import type { GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import ForumIcon from "@mui/icons-material/Forum";
 
 import { type Match } from "../types/match.shame";
 import IsSwitch from "../../../../components/IsSwitch";
@@ -28,6 +31,7 @@ export default function ListMatch({
   onDelete,
   onToggle,
 }: ListMatchProps): React.ReactElement {
+  const { slug } = useParams();
   const columns: GridColDef[] = [
     {
       field: "index",
@@ -64,6 +68,11 @@ export default function ListMatch({
           <IconButton color="primary" onClick={() => onEdit(params.row.id)}>
             <EditIcon />
           </IconButton>
+          <Link
+            to={`/admin/cuoc-thi/${slug}/dieu-kien-tran-dau/${params.row.slug}`}
+          >
+            <ForumIcon />
+          </Link>
           <IconButton color="error" onClick={() => onDelete(params.row.id)}>
             <DeleteIcon />
           </IconButton>

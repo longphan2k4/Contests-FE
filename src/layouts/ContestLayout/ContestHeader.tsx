@@ -121,11 +121,11 @@ const ContestHeader: React.FC<ContestHeaderProps> = ({ onToggle }) => {
           </IconButton>
           <Menu
             id="user-menu"
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            transformOrigin={{ vertical: "top", horizontal: "right" }}
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
             PaperProps={{ sx: { minWidth: isMobile ? 120 : 160 } }}
           >
             <MenuItem

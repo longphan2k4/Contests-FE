@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { QuestionMarkCircleIcon, TrophyIcon } from "@heroicons/react/24/outline";
-import phao1 from "./images/phao1.png"
+import {
+  QuestionMarkCircleIcon,
+  TrophyIcon,
+} from "@heroicons/react/24/outline";
+import phao1 from "./images/phao1.png";
 import khangia from "./images/khangia.png";
 import khongdung from "./images/delete.png";
 // Định nghĩa interfaces cho mock data
@@ -36,7 +39,10 @@ const MatchHeader: React.FC = () => {
   const totalContestants = 20;
 
   // Hàm mock cho renderQuestionTypeIcon
-  const renderQuestionTypeIcon = (type: string, className: string): React.ReactElement => {
+  const renderQuestionTypeIcon = (
+    type: string,
+    className: string
+  ): React.ReactElement => {
     switch (type) {
       case "Multiple Choice":
         return <span className={className}>MC</span>;
@@ -49,7 +55,7 @@ const MatchHeader: React.FC = () => {
   useEffect(() => {
     if (timeRemaining > 0) {
       const interval = setInterval(() => {
-        setTimeRemaining((prev) => prev - 1);
+        setTimeRemaining(prev => prev - 1);
       }, 1000);
       return () => clearInterval(interval);
     }
@@ -64,10 +70,12 @@ const MatchHeader: React.FC = () => {
     }
   }, [timeRemaining]);
 
-  // Giả lập âm thanh cho trợ giúp
-  const [hasPlayedHelpStatusSound, setHasPlayedHelpStatusSound] = useState(false);
+  const [hasPlayedHelpStatusSound, setHasPlayedHelpStatusSound] =
+    useState(false);
   useEffect(() => {
-    const availableHelp = Object.values(helpStatus).some((status) => status === "available");
+    const availableHelp = Object.values(helpStatus).some(
+      status => status === "available"
+    );
     if (availableHelp && !hasPlayedHelpStatusSound) {
       console.log("Phát âm thanh trợ giúp");
       setHasPlayedHelpStatusSound(true);
@@ -112,13 +120,25 @@ const MatchHeader: React.FC = () => {
         <div className="relative">
           <div
             className={`w-24 h-24 flex items-center justify-center rounded-full border-4 
-              ${timeRemaining <= 5 ? "border-red-800 animate-pulse" : timeRemaining <= 10 ? "border-yellow-700" : "border-blue-500"} 
+              ${
+                timeRemaining <= 5
+                  ? "border-red-800 animate-pulse"
+                  : timeRemaining <= 10
+                  ? "border-yellow-700"
+                  : "border-blue-500"
+              } 
               bg-blue-900 shadow-lg transition-all duration-300`}
           >
             <div className="absolute inset-0 rounded-full overflow-hidden">
               <div
                 className={`absolute bottom-0 w-full bg-gradient-to-t 
-                  ${timeRemaining <= 5 ? "from-red-600 to-red-400" : timeRemaining <= 10 ? "from-yellow-600 to-yellow-400" : "from-blue-600 to-blue-400"}`}
+                  ${
+                    timeRemaining <= 5
+                      ? "from-red-600 to-red-400"
+                      : timeRemaining <= 10
+                      ? "from-yellow-600 to-yellow-400"
+                      : "from-blue-600 to-blue-400"
+                  }`}
                 style={{
                   height: `${(timeRemaining / timer) * 100}%`,
                   transition: "height 1s linear",
@@ -236,7 +256,13 @@ const MatchHeader: React.FC = () => {
         <div className="px-6 py-3 bg-white/20 backdrop-blur-lg rounded-xl shadow-2xl border-2 border-blue-300">
           <div
             className={`font-bold text-black flex items-center space-x-1
-              ${remainingContestants <= 5 ? "animate-pulse text-red-400" : remainingContestants <= 10 ? "text-orange-300" : "text-green-300"}`}
+              ${
+                remainingContestants <= 5
+                  ? "animate-pulse text-red-400"
+                  : remainingContestants <= 10
+                  ? "text-orange-300"
+                  : "text-green-300"
+              }`}
           >
             <TrophyIcon className="w-8 h-8 text-400" />
             <span className="text-3xl font-extrabold">
@@ -247,7 +273,9 @@ const MatchHeader: React.FC = () => {
               </span>
               <span className="text-blue-200 mx-2 text-outline">/</span>
               <span className="text-blue-100 text-outline">
-                {totalContestants < 10 ? `0${totalContestants}` : totalContestants}
+                {totalContestants < 10
+                  ? `0${totalContestants}`
+                  : totalContestants}
               </span>
             </span>
           </div>

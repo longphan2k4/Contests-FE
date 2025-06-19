@@ -1,268 +1,254 @@
-import { Button, Paper, Typography, Box, Drawer, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
-import React, { useState } from 'react';
-import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
-
-// Import các component từ thư mục components
+import { Link, useParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import {
   QuestionControl,
   AnswerControl,
   ContestantsControl,
-  GoldControl,
-  RescueControl,
+  QuestionHeader,
   SupplierVideo,
-  ContestantsResult,
-  Chart
-} from '../components';
+} from "../components";
+import QuestionDetails from "../components/QuestionDetails";
+import BackgroundControl from "../components/BackgroundControl";
+import CurrentContestants from "../components/CurrentContestants";
 
-const DRAWER_WIDTH = 240;
+import {
+  useBgContest,
+  useCurrentQuestion,
+  useListQuestion,
+  useMatchInfo,
+  useScreenControl,
+  useCountContestant,
+  useListContestant,
+  useListRescues,
+} from "../hook/useControls";
+
+import {
+  type MatchInfo,
+  type BgContest,
+  type Question,
+  type ListRescue,
+  type ListContestant,
+  type countContestant,
+  type SceenControl,
+  type CurrentQuestion,
+} from "../type/control.type";
+
+import { useSocket } from "../../../../contexts/SocketContext";
+import { Box, CircularProgress } from "@mui/material";
 
 const ControlsPage: React.FC = () => {
-  // Giữ lại state mặc dù chưa sử dụng để sau này có thể cập nhật
-  const [currentQuestion] = useState<number>(1);
-  const [score] = useState<number>(60);
-  
-  // Mock data cho danh sách câu hỏi - sau này có thể lấy từ API
-  const questions = Array.from({ length: 15 }, (_, i) => ({
-    id: i + 1,
-    title: `Câu hỏi ${i + 1}`,
-    status: i < currentQuestion ? 'completed' : i === currentQuestion - 1 ? 'current' : 'pending'
-  }));
+  const { match } = useParams();
+
+  const { socket, isConnected } = useSocket();
+  // 1. State
+  const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
+  const [listContestant, setListContestant] = useState<ListContestant[]>([]);
+  const [listRescue, setListRescue] = useState<ListRescue[]>([]);
+  const [bgContest, setBgContest] = useState<BgContest | null>(null);
+  const [currentQuestion, setCurrentQuestion] =
+    useState<CurrentQuestion | null>(null);
+  const [countContestant, setCountContestant] =
+    useState<countContestant | null>(null);
+  const [listQuestion, setListQuestion] = useState<Question[]>([]);
+  const [screenControl, setScreenControl] = useState<SceenControl | null>(null);
+
+  // 2. Hook với alias
+  const {
+    data: matchInfoRes,
+    isLoading: isLoadingMatch,
+    isSuccess: isSuccessMatch,
+  } = useMatchInfo(match ?? null);
+
+  const {
+    data: bgContestRes,
+    isLoading: isLoadingBg,
+    isSuccess: isSuccessBg,
+  } = useBgContest(match ?? null);
+
+  const {
+    data: currentQuestionRes,
+    isLoading: isLoadingCurrentQuestion,
+    isSuccess: isSuccessCurrentQuestion,
+  } = useCurrentQuestion(match ?? null);
+
+  const {
+    data: listRescueRes,
+    isLoading: isLoadingRescues,
+    isSuccess: isSuccessRescues,
+  } = useListRescues(match ?? null);
+
+  const {
+    data: listContestantRes,
+    isLoading: isLoadingContestants,
+    isSuccess: isSuccessContestants,
+  } = useListContestant(match ?? null);
+
+  const {
+    data: countContestantRes,
+    isLoading: isLoadingCount,
+    isSuccess: isSuccessCount,
+  } = useCountContestant(match ?? null);
+
+  const {
+    data: listQuestionRes,
+    isLoading: isLoadingQuestions,
+    isSuccess: isSuccessQuestions,
+  } = useListQuestion(match ?? null);
+
+  const {
+    data: screenControlRes,
+    isLoading: isLoadingControl,
+    isSuccess: isSuccessControl,
+  } = useScreenControl(match ?? null);
+
+  // 3. useEffect gọn gàng với isSuccess
+  useEffect(() => {
+    if (isSuccessMatch) setMatchInfo(matchInfoRes.data);
+  }, [isSuccessMatch, matchInfoRes]);
+
+  useEffect(() => {
+    if (isSuccessBg) setBgContest(bgContestRes.data);
+  }, [isSuccessBg, bgContestRes]);
+
+  useEffect(() => {
+    if (isSuccessCurrentQuestion) setCurrentQuestion(currentQuestionRes.data);
+  }, [isSuccessCurrentQuestion, currentQuestionRes]);
+
+  useEffect(() => {
+    if (isSuccessRescues) setListRescue(listRescueRes.data);
+  }, [isSuccessRescues, listRescueRes]);
+
+  useEffect(() => {
+    if (isSuccessContestants) setListContestant(listContestantRes.data);
+  }, [isSuccessContestants, listContestantRes]);
+
+  useEffect(() => {
+    if (isSuccessCount) setCountContestant(countContestantRes.data);
+  }, [isSuccessCount, countContestantRes]);
+
+  useEffect(() => {
+    if (isSuccessQuestions) setListQuestion(listQuestionRes.data);
+  }, [isSuccessQuestions, listQuestionRes]);
+
+  useEffect(() => {
+    if (isSuccessControl) setScreenControl(screenControlRes.data);
+  }, [isSuccessControl, screenControlRes]);
+
+  const isLoading =
+    isLoadingMatch ||
+    isLoadingBg ||
+    isLoadingCurrentQuestion ||
+    isLoadingRescues ||
+    isLoadingContestants ||
+    isLoadingCount ||
+    isLoadingQuestions ||
+    isLoadingControl;
+
+  // 5. Hiển thị loading
+  if (isLoading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      {/* Sidebar */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: DRAWER_WIDTH,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: DRAWER_WIDTH,
-            boxSizing: 'border-box',
-            bgcolor: '#f5f5f5',
-            border: 'none',
-            position: 'relative'
-          },
-        }}
-      >
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="subtitle1" sx={{ p: 0.5, borderBottom: '1px solid rgba(0, 0, 0, 0.12)' }}>
-            Danh sách câu hỏi
-          </Typography>
-          <List sx={{ 
-            flex: 1, 
-            overflow: 'auto',
-            py: 0,
-            '& .MuiListItem-root': {
-              py: 0.25
-            }
-          }}>
-            {questions.map((question) => (
-              <ListItem
-                key={question.id}
-                sx={{
-                  bgcolor: question.status === 'current' ? '#e3f2fd' : 'transparent',
-                  '&:hover': { bgcolor: '#f5f5f5' },
-                  borderBottom: '1px solid rgba(0, 0, 0, 0.05)'
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 32 }}>
-                  <QuestionMarkIcon 
-                    fontSize="small"
-                    color={question.status === 'completed' ? 'success' : 
-                           question.status === 'current' ? 'primary' : 'action'}
-                  />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={question.title}
-                  secondary={question.status === 'completed' ? 'Đã hoàn thành' : 
-                            question.status === 'current' ? 'Đang thực hiện' : 'Chưa bắt đầu'}
-                  primaryTypographyProps={{ variant: 'subtitle2' }}
-                  secondaryTypographyProps={{ variant: 'caption' }}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-      </Drawer>
+    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100 font-sans">
+      <div className="flex w-full transition-all duration-300">
+        <QuestionDetails
+          questions={listQuestion}
+          currentQuestion={matchInfo?.currentQuestion}
+        />
 
-      {/* Main content */}
-      <Box component="main" sx={{ 
-        flexGrow: 1, 
-        height: '100vh',
-        overflow: 'auto',
-        bgcolor: '#f5f7fa',
-        p: 1,
-        textAlign: 'center'
-      }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'center' }}>
-          {/* Status Controls */}
-          <Paper elevation={0} sx={{ p: 0.5, width: '100%' }}>
-            <Typography variant="subtitle1" sx={{ mb: 0.5 }} align="center">
+        <div className="w-4/5 p-8 flex flex-col overflow-y-auto max-h-screen">
+          {/* Header Info */}
+
+          <QuestionHeader
+            questionOrder={matchInfo?.currentQuestion}
+            timeRemaining={matchInfo?.remainingTime}
+            totalQuestions={listQuestion.length}
+            totalTime={currentQuestion?.defaultTime}
+            matchNumber={matchInfo?.name}
+          />
+
+          <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+            <h2 className="text-xl font-semibold text-gray-800 tracking-tight mb-4">
               Trạng thái điều khiển
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <Box sx={{ flex: 1 }}>
-                <Paper variant="outlined" sx={{ p: 0.5, bgcolor: '#e8f5e9', textAlign: 'center' }}>
-                  <Typography variant="subtitle2" align="center">Kết nối</Typography>
-                  <Typography variant="caption" align="center" display="block">Đã kết nối máy chiếu</Typography>
-                </Paper>
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Paper variant="outlined" sx={{ p: 0.5, bgcolor: '#e3f2fd', textAlign: 'center' }}>
-                  <Typography variant="subtitle2" align="center">Trạng thái</Typography>
-                  <Typography variant="caption" align="center" display="block">Sẵn sàng hiển thị</Typography>
-                </Paper>
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Paper variant="outlined" sx={{ p: 0.5, bgcolor: '#e8f5e9', textAlign: 'center' }}>
-                  <Typography variant="subtitle2" align="center">Socket.IO</Typography>
-                  <Typography variant="caption" align="center" display="block">Đã kết nối</Typography>
-                </Paper>
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Paper variant="outlined" sx={{ p: 0.5, bgcolor: '#f3e5f5', textAlign: 'center' }}>
-                  <Typography variant="subtitle2" align="center">Đang chiếu</Typography>
-                  <Typography variant="caption" align="center" display="block">Câu hỏi {currentQuestion}</Typography>
-                </Paper>
-              </Box>
-            </Box>
-          </Paper>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="bg-blue-100 p-4 rounded-lg border border-blue-200">
+                <h3 className="text-blue-800 font-medium mb-1">Trạng thái</h3>
+                <p className="text-blue-700 text-sm">Sẵn sàng hiển thị</p>
+              </div>
+              <div className="bg-green-100 p-4 rounded-lg border border-green-200">
+                <h3 className="text-green-800 font-medium mb-1">Socket.IO</h3>
+                <p className="text-green-700 text-sm">
+                  {isConnected === true ? `Đã kết nối ` : "Chưa kết nối"}
+                </p>
+              </div>
+              <div className="bg-indigo-100 p-4 rounded-lg border border-indigo-200">
+                <h3 className="text-indigo-800 font-medium mb-1">Đang chiếu</h3>
+                <p className="text-indigo-700 text-sm font-semibold">
+                  {screenControl?.controlKey}
+                </p>
+              </div>
+            </div>
+          </div>
 
-          {/* Display Controls */}
-          <Paper elevation={0} sx={{ p: 0.5, width: '100%' }}>
-            <Typography variant="subtitle1" sx={{ mb: 0.5 }} align="center">
-              Điều khiển hiển thị
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <Box sx={{ flex: 1 }}>
-                <Button fullWidth variant="contained" color="primary" size="small" sx={{ height: '40px' }}>
-                  Màn hình chờ
-                </Button>
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Button fullWidth variant="contained" color="success" size="small" sx={{ height: '40px' }}>
-                  Sơ đồ trận
-                </Button>
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Button fullWidth variant="contained" color="secondary" size="small" sx={{ height: '40px' }}>
-                  Lấy mã trận đấu
-                </Button>
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Button fullWidth variant="contained" color="error" size="small" sx={{ height: '40px' }}>
-                  Kết thúc
-                </Button>
-              </Box>
-            </Box>
-          </Paper>
+          <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+            <BackgroundControl />
+          </div>
 
-          {/* Question Control and Score */}
-          <Box sx={{ display: 'flex', gap: 0.5, width: '100%' }}>
-            <Box sx={{ flex: 2 }}>
-              <Paper elevation={0} sx={{ p: 0.5 }}>
-                <Typography variant="subtitle1" sx={{ mb: 0.5 }} align="center">
-                  Điều khiển câu hỏi
-                </Typography>
-                <Box sx={{ p: 0.5 }}>
-                  <QuestionControl />
-                </Box>
-              </Paper>
-            </Box>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+              <QuestionControl remainingTime={matchInfo?.remainingTime} />
+            </div>
+            <div className="grid grid-col-1">
+              <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+                <CurrentContestants
+                  countIn_progress={countContestant?.countIn_progress}
+                  total={countContestant?.total}
+                  currentQuestion={matchInfo?.currentQuestion}
+                />
+              </div>
+              <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+                <AnswerControl currentQuestion={currentQuestion} />
+              </div>
+            </div>
+          </div>
 
-            <Box sx={{ flex: 1 }}>
-              <Paper elevation={0} sx={{ p: 0.5 }}>
-                <Typography variant="subtitle1" sx={{ mb: 0.5 }} align="center">
-                  Câu {currentQuestion}
-                </Typography>
-                <Typography variant="h4" align="center" color="error">
-                  {score}/60
-                </Typography>
-              </Paper>
-            </Box>
-          </Box>
-
-          {/* Answer Control and Rescue Control */}
-          <Box sx={{ display: 'flex', gap: 0.5, width: '100%' }}>
-            <Box sx={{ flex: 2 }}>
-              <Paper elevation={0} sx={{ p: 0.5 }}>
-                <Typography variant="subtitle1" sx={{ mb: 0.5 }} align="center">
-                  Điều khiển đáp án
-                </Typography>
-                <AnswerControl />
-              </Paper>
-            </Box>
-
-            <Box sx={{ flex: 1 }}>
-              <Paper elevation={0} sx={{ p: 0.5 }}>
-                <Typography variant="subtitle1" sx={{ mb: 0.5 }} align="center">
-                  Điều khiển trợ giúp
-                </Typography>
-                <RescueControl />
-              </Paper>
-            </Box>
-          </Box>
-
-          {/* Contestants */}
-          <Paper elevation={0} sx={{ p: 0.5, width: '100%' }}>
-            <Typography variant="subtitle1" sx={{ mb: 0.5 }} align="center">
-              Thi sinh trận đấu
-            </Typography>
-            <ContestantsControl />
-          </Paper>
-
-          {/* Gold Question and Results */}
-          <Box sx={{ display: 'flex', gap: 0.5, width: '100%' }}>
-            <Box sx={{ flex: 1 }}>
-              <Paper elevation={0} sx={{ p: 0.5 }}>
-                <Typography variant="subtitle1" sx={{ mb: 0.5 }} align="center">
-                  Câu hỏi Gold
-                </Typography>
-                <GoldControl />
-              </Paper>
-            </Box>
-
-            <Box sx={{ flex: 1 }}>
-              <Paper elevation={0} sx={{ p: 0.5 }}>
-                <Typography variant="subtitle1" sx={{ mb: 0.5 }} align="center">
-                  Danh sách 20 thí sinh qua vòng
-                </Typography>
-                <ContestantsResult />
-              </Paper>
-            </Box>
-          </Box>
-
-          {/* Supplier Video */}
-          <Paper elevation={0} sx={{ p: 0.5, width: '100%' }}>
-            <Typography variant="subtitle1" sx={{ mb: 0.5 }} align="center">
-              Video Nhà Tài Trợ
-            </Typography>
+          <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <SupplierVideo />
-          </Paper>
-
-          {/* Statistics */}
-          <Paper elevation={0} sx={{ p: 0.5, width: '100%' }}>
-            <Typography variant="subtitle1" sx={{ mb: 0.5 }} align="center">
-              Thống kê
-            </Typography>
-            <Chart />
-          </Paper>
-
-          {/* Back to Home */}
-          <Button 
-            fullWidth 
-            variant="contained" 
-            color="error"
-            size="small"
-            sx={{ height: '40px', mt: 0.5 }}
-          >
-            Quay lại trang chủ
-          </Button>
-        </Box>
-      </Box>
-    </Box>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+            <ContestantsControl />
+          </div>
+          {/* <div className="grid grid-cols-3 gap-2">
+            <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+              <GoldControl />
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100 col-span-2">
+              <ContestantsResult />
+            </div>
+          </div> */}
+          <div>
+            <Link
+              className="block text-center w-full btn bg-red-500 hover:bg-red-600 cursor-pointer text-white font-bold p-2 rounded-lg"
+              to={"/admin"}
+            >
+              Quay lại trang chủ
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default ControlsPage; 
+export default ControlsPage;

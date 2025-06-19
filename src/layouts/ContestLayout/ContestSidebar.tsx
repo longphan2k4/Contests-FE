@@ -58,7 +58,8 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
   const handleClick = (key: string) => {
     setOpenSubMenu(openSubMenu === key ? null : key);
   };
-  const { slug } = useParams();
+
+  const { slug, match } = useParams();
   const handleDrawerToggle = () => {
     if (setMobileOpen) {
       setMobileOpen(!mobileOpen);
@@ -79,7 +80,7 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       key: "controls",
       icon: <DashboardIcon />,
       label: "Điều khiển",
-      path: `/admin/cuoc-thi/${slug}/controls`,
+      path: `/admin/cuoc-thi/${slug}/dieu-kien-tran-dau/${match}`,
     },
     {
       key: "round",

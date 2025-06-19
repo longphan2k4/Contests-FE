@@ -1,241 +1,191 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Button, Grid, TextField, Typography } from '@mui/material';
-import { GridItem } from '../../../../components/Grid';
-
-interface QuestionControlProps {
-  className?: string;
+import React, { useState } from "react";
+import { PlayIcon, PauseIcon } from "@heroicons/react/24/outline";
+import { type CurrentQuestion } from "../type/control.type";
+interface QuestionControlProp {
+  currentQuestion?: CurrentQuestion;
+  remainingTime?: number;
 }
 
-const QuestionControl: React.FC<QuestionControlProps> = () => {
-  const [counter, setCounter] = useState<number>(30);
-  const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [inputTime, setInputTime] = useState<string>('30');
+const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
+  const [timerStatus, setTimerStatus] = useState<"running" | "paused">(
+    "paused"
+  );
+  const [timeRemaining, setTimeRemaining] = useState<number>(30);
+  const [inputTime, setInputTime] = useState<number>(30);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (isRunning && counter > 0) {
-      interval = setInterval(() => {
-        setCounter((prevCounter) => prevCounter - 1);
-      }, 1000);
-    } else if (counter === 0) {
-      setIsRunning(false);
-    }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [isRunning, counter]);
-
-  const handleStart = () => {
-    if (counter > 0) {
-      setIsRunning(true);
-    }
-  };
-
-  const handlePause = () => {
-    setIsRunning(false);
-  };
-
-  const handleRestart = () => {
-    setCounter(30);
-    setIsRunning(false);
-  };
-
-  const handleUpdateTime = () => {
-    const newTime = parseInt(inputTime);
-    if (!isNaN(newTime) && newTime >= 0) {
-      setCounter(newTime);
-      setIsRunning(false);
+  const handleClick = (action?: string) => {
+    switch (action) {
+      case "start":
+        setTimerStatus("running");
+        break;
+      case "pause":
+        setTimerStatus("paused");
+        break;
+      case "restart":
+        setTimeRemaining(inputTime);
+        setTimerStatus("paused");
+        break;
+      case "update":
+        setTimeRemaining(inputTime);
+        break;
+      default:
+        // handle other buttons if needed
+        break;
     }
   };
 
   return (
-    <Box sx={{ p: 1 }} >
-      <Grid container spacing={1}>
-        <GridItem xs={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="primary"
-            size="small"
-            sx={{ height: '40px' }}
-          >
-            Intro
-          </Button>
-        </GridItem>
-        <GridItem xs={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="primary"
-            size="small"
-            sx={{ height: '40px' }}
-          >
-            Show
-          </Button>
-        </GridItem>
-        <GridItem xs={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="success"
-            size="small"
-            sx={{ height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            onClick={handleStart}
-            disabled={isRunning}
-          >
-            <Box component="span" sx={{ mr: 0.5 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 5V19L19 12L8 5Z" fill="white" />
-              </svg>
-            </Box>
-            Start
-          </Button>
-        </GridItem>
-      </Grid>
+    <div>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">
+        Điều khiển câu hỏi
+      </h2>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: 2 }}>
-        <Typography variant="h3" component="div" color={counter <= 5 ? "error" : "primary"} sx={{ fontWeight: 'bold' }}>
-          {counter}
-        </Typography>
-      </Box>
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <button
+          className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium"
+          onClick={() => handleClick("intro")}
+        >
+          Intro
+        </button>
+        <button
+          className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium"
+          onClick={() => handleClick("show")}
+        >
+          Show
+        </button>
+        <button
+          className={`px-4 py-3 ${
+            timerStatus === "running"
+              ? "bg-orange-500 hover:bg-orange-600"
+              : "bg-green-500 hover:bg-green-600"
+          } text-white rounded-lg shadow-md font-medium flex items-center justify-center gap-2`}
+          onClick={() =>
+            handleClick(timerStatus === "running" ? "pause" : "start")
+          }
+        >
+          {timerStatus === "running" ? (
+            <>
+              <PauseIcon className="h-5 w-5" />
+              Pause
+            </>
+          ) : (
+            <>
+              <PlayIcon className="h-5 w-5" />
+              Start
+            </>
+          )}
+        </button>
+      </div>
 
-      <Grid container spacing={1}>
-        <GridItem xs={12}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="inherit"
-            size="small"
-            sx={{ height: '40px', bgcolor: '#757575' }}
-            onClick={handleRestart}
+      <div className="flex flex-wrap mb-4">
+        <div className="grid grid-cols-2 items-center w-full mb-4 gap-3">
+          <div className="text-center">
+            <span className="text-7xl font-bold text-red-600">
+              {remainingTime}
+            </span>
+          </div>
+          <button
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium w-full"
+            onClick={() => handleClick("restart")}
           >
             Restart
-          </Button>
-        </GridItem>
-      </Grid>
+          </button>
+        </div>
 
-      <Grid container spacing={1} sx={{ mt: 1 }}>
-        <GridItem xs={8}>
-          <TextField
-            fullWidth
-            placeholder="Nhập thời gian"
-            variant="outlined"
-            size="small"
-            value={inputTime}
-            onChange={(e) => setInputTime(e.target.value)}
-            type="number"
-          />
-        </GridItem>
-        <GridItem xs={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="inherit"
-            size="small"
-            sx={{ height: '40px', bgcolor: '#757575' }}
-            onClick={handleUpdateTime}
-          >
-            Update
-          </Button>
-        </GridItem>
-      </Grid>
+        <div className="flex gap-2 w-full mb-4 flex-col">
+          <div className="flex gap-2 w-full">
+            <input
+              className="p-3 w-1/2 bg-gray-50 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 shadow-sm placeholder-gray-400"
+              type="number"
+              min={0}
+              placeholder="Nhập thời gian"
+              value={inputTime}
+              onChange={e => setInputTime(Number(e.target.value))}
+            />
+            <button
+              className="px-4 py-2 bg-gray-500 text-white hover:bg-gray-600 shadow-md font-medium w-1/2 rounded-lg"
+              onClick={() => handleClick("update")}
+            >
+              Update
+            </button>
+          </div>
+        </div>
+      </div>
 
-      <Typography variant="subtitle2" sx={{ mt: 1, mb: 0.5 }}>
-        Điều khiển video/Audio
-      </Typography>
+      <div className="grid grid-cols-3 gap-2">
+        <h3 className="col-span-3 text-xl font-semibold text-gray-700 mb-3">
+          Điều khiển video/Audio
+        </h3>
 
-      <Grid container spacing={1}>
-        <GridItem xs={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="inherit"
-            size="small"
-            sx={{ height: '40px', bgcolor: '#757575' }}
-            onClick={handleStart}
-            disabled={isRunning}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8 5V19L19 12L8 5Z" fill="white" />
-            </svg>
-          </Button>
-        </GridItem>
-        <GridItem xs={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="inherit"
-            size="small"
-            sx={{ height: '40px', bgcolor: '#757575' }}
-            onClick={handlePause}
-            disabled={!isRunning}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white" />
-            </svg>
-          </Button>
-        </GridItem>
-        <GridItem xs={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="inherit"
-            size="small"
-            sx={{ height: '40px', bgcolor: '#757575' }}
-            onClick={handleRestart}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="white" />
-            </svg>
-          </Button>
-        </GridItem>
-      </Grid>
+        <button
+          className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium flex items-center justify-center"
+          title="Play"
+          onClick={() => handleClick("videoPlay")}
+        >
+          <PlayIcon className="h-5 w-5" />
+        </button>
 
-      <Grid container spacing={1} sx={{ mt: 1 }}>
-        <GridItem xs={6}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="inherit"
-            size="small"
-            sx={{ height: '40px', bgcolor: '#757575' }}
-          >
-            Open
-          </Button>
-        </GridItem>
-        <GridItem xs={6}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="inherit"
-            size="small"
-            sx={{ height: '40px', bgcolor: '#757575' }}
-          >
-            Close ✕
-          </Button>
-        </GridItem>
-      </Grid>
+        <button
+          className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium flex items-center justify-center"
+          title="Pause"
+          onClick={() => handleClick("videoPause")}
+        >
+          <PauseIcon className="h-5 w-5" />
+        </button>
 
-      <Box sx={{ 
-        mt: 1, 
-        p: 1, 
-        bgcolor: '#fff3cd', 
-        borderRadius: 1,
-        border: '1px solid #ffeeba',
-        display: 'flex',
-        alignItems: 'center'
-      }}>
-        <Box sx={{ color: '#856404', mr: 1, fontSize: '16px' }}>⚠</Box>
-        <Typography variant="caption" color="#856404">
-          Show câu hỏi trước khi play đối với câu hỏi video và close trước khi qua câu mới
-        </Typography>
-      </Box>
-    </Box>
+        <button
+          className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium flex items-center justify-center"
+          title="Restart"
+          onClick={() => handleClick("videoRestart")}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.023 9.348h4.992M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M20.015 5.25v4.99"
+            />
+          </svg>
+        </button>
+
+        <button
+          className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium flex items-center justify-center"
+          title="Open Video"
+          onClick={() => handleClick("videoOpen")}
+        >
+          Open
+        </button>
+
+        <button
+          className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium flex items-center justify-center"
+          title="Close Video"
+          onClick={() => handleClick("videoClose")}
+        >
+          Close
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-5 h-5 ml-1"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
   );
 };
 
-export default QuestionControl; 
+export default QuestionControl;

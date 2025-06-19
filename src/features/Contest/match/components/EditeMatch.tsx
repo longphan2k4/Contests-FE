@@ -95,6 +95,7 @@ export default function EditeMatch({
         isActive: matchData.isActive,
         startTime: dayjs(matchData.startTime).format("YYYY-MM-DDTHH:mm"),
         endTime: dayjs(matchData.endTime).format("YYYY-MM-DDTHH:mm"),
+        remainingTime: matchData.remainingTime,
       });
     }
   }, [isOpen, matchData, reset]);
@@ -126,6 +127,14 @@ export default function EditeMatch({
           options={round}
           control={control}
           error={errors.roundId}
+        />
+        <FormInput
+          id="remainingTime"
+          label="Thời gian câu hỏi còn lại"
+          placeholder="Nhập số câu hiện tại"
+          error={errors.remainingTime}
+          register={register("remainingTime")}
+          type="number"
         />
         <FormInput
           id="currentQuestion"
