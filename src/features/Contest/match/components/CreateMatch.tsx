@@ -120,6 +120,15 @@ export default function CreateMatch({
           type="number"
         />
 
+        <FormInput
+          id="remainingTime"
+          label="Thời gian câu hỏi còn lại"
+          placeholder="Nhập số câu hiện tại"
+          error={errors.remainingTime}
+          register={register("remainingTime")}
+          type="number"
+        />
+
         <FormSelect
           id="questionPackageId"
           name="questionPackageId"

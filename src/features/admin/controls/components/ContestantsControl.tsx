@@ -1,256 +1,71 @@
-import React from 'react';
-import { Box, Button, Grid, Typography } from '@mui/material';
-import { GridItem } from '../../../../components/Grid';
+import React, { useState } from "react";
+import { NoSymbolIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 
-interface ContestantsControlProps {
-  className?: string; 
-}
+const ContestantsControlUI: React.FC = () => {
+  const fakeContestants = Array.from({ length: 60 }, (_, i) => ({
+    id: i + 1,
+    student_name: `${i + 1}`,
+  }));
 
-const ContestantsControl: React.FC<ContestantsControlProps> = () => {
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
   return (
-    <Box sx={{ p: 1 }}>
-      <Typography variant="h6" sx={{ mb: 1 }}>
-        Thi sinh trận đấu - Câu 1
-      </Typography>
-      
-      <Grid container spacing={1}>
-        <GridItem xs={4}>
-          <Box sx={{ border: '1px solid #e0e0e0', p: 1, borderRadius: '4px' }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Nhóm 1
-            </Typography>
-            
-            <Grid container spacing={0.5}>
-              {[...Array(10)].map((_, rowIndex) => (
-                <React.Fragment key={`row-${rowIndex}`}>
-                  <GridItem xs={6}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      size="small"
-                      sx={{ mb: 0.5, bgcolor: '#6366f1', height: '32px' }}
-                    >
-                      {rowIndex * 2 + 1}
-                    </Button>
-                  </GridItem>
-                  <GridItem xs={6}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary" 
-                      size="small"
-                      sx={{ mb: 0.5, bgcolor: '#6366f1', height: '32px' }}
-                    >
-                      {rowIndex * 2 + 2}
-                    </Button>
-                  </GridItem>
-                </React.Fragment>
-              ))}
-            </Grid>
-            
-            <Typography variant="caption" color="error" align="center" sx={{ display: 'block', mt: 0.5 }}>
-              Nhóm 1: Chưa chốt
-            </Typography>
-          </Box>
-        </GridItem>
-        
-        <GridItem xs={4}>
-          <Box sx={{ border: '1px solid #e0e0e0', p: 1, borderRadius: '4px' }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Nhóm 2
-            </Typography>
-            
-            <Grid container spacing={0.5}>
-              {[...Array(10)].map((_, rowIndex) => (
-                <React.Fragment key={`row-${rowIndex}`}>
-                  <GridItem xs={6}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      size="small"
-                      sx={{ mb: 0.5, bgcolor: '#6366f1', height: '32px' }}
-                    >
-                      {rowIndex * 2 + 21}
-                    </Button>
-                  </GridItem>
-                  <GridItem xs={6}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      size="small"
-                      sx={{ mb: 0.5, bgcolor: '#6366f1', height: '32px' }}
-                    >
-                      {rowIndex * 2 + 22}
-                    </Button>
-                  </GridItem>
-                </React.Fragment>
-              ))}
-            </Grid>
-            
-            <Typography variant="caption" color="error" align="center" sx={{ display: 'block', mt: 0.5 }}>
-              Nhóm 2: Chưa chốt
-            </Typography>
-          </Box>
-        </GridItem>
-        
-        <GridItem xs={4}>
-          <Box sx={{ border: '1px solid #e0e0e0', p: 1, borderRadius: '4px' }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Nhóm 3
-            </Typography>
-            
-            <Grid container spacing={0.5}>
-              {[...Array(10)].map((_, rowIndex) => (
-                <React.Fragment key={`row-${rowIndex}`}>
-                  <GridItem xs={6}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      size="small"
-                      sx={{ mb: 0.5, bgcolor: '#6366f1', height: '32px' }}
-                    >
-                      {rowIndex * 2 + 41}
-                    </Button>
-                  </GridItem>
-                  <GridItem xs={6}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      size="small"
-                      sx={{ mb: 0.5, bgcolor: '#6366f1', height: '32px' }}
-                    >
-                      {rowIndex * 2 + 42}
-                    </Button>
-                  </GridItem>
-                </React.Fragment>
-              ))}
-            </Grid>
-            
-            <Typography variant="caption" color="error" align="center" sx={{ display: 'block', mt: 0.5 }}>
-              Nhóm 3: Chưa chốt
-            </Typography>
-          </Box>
-        </GridItem>
-      </Grid>
-      
-      <Box sx={{ mt: 1, mb: 1, textAlign: 'center' }}>
-        <Typography variant="body2" color="text.secondary">
-          Chưa có thí sinh nào được chọn
-        </Typography>
-      </Box>
-      
-      <Grid container spacing={1}>
-        <GridItem xs={2}>
-          <Box sx={{ 
-            p: 0.5, 
-            borderRadius: '4px',
-            bgcolor: '#6366f1',
-            color: 'white',
-            textAlign: 'center'
-          }}>
-            <Typography variant="caption">
-              Đang thi
-            </Typography>
-          </Box>
-        </GridItem>
-        <GridItem xs={2}>
-          <Box sx={{ 
-            p: 0.5, 
-            borderRadius: '4px',
-            bgcolor: '#f59e0b',
-            color: 'white',
-            textAlign: 'center'
-          }}>
-            <Typography variant="caption">
-              Xác nhận 1
-            </Typography>
-          </Box>
-        </GridItem>
-        <GridItem xs={2}>
-          <Box sx={{ 
-            p: 0.5, 
-            borderRadius: '4px',
-            bgcolor: '#f59e0b',
-            color: 'white',
-            textAlign: 'center'
-          }}>
-            <Typography variant="caption">
-              Xác nhận 2
-            </Typography>
-          </Box>
-        </GridItem>
-        <GridItem xs={2}>
-          <Box sx={{ 
-            p: 0.5, 
-            borderRadius: '4px',
-            bgcolor: '#10b981',
-            color: 'white',
-            textAlign: 'center'
-          }}>
-            <Typography variant="caption">
-              Đã loại
-            </Typography>
-          </Box>
-        </GridItem>
-        <GridItem xs={2}>
-          <Box sx={{ 
-            p: 0.5, 
-            borderRadius: '4px',
-            bgcolor: '#10b981',
-            color: 'white',
-            textAlign: 'center'
-          }}>
-            <Typography variant="caption">
-              Đúng câu
-            </Typography>
-          </Box>
-        </GridItem>
-        <GridItem xs={2}>
-          <Box sx={{ 
-            p: 0.5, 
-            borderRadius: '4px',
-            bgcolor: '#6b7280',
-            color: 'white',
-            textAlign: 'center'
-          }}>
-            <Typography variant="caption">
-              Qua vòng
-            </Typography>
-          </Box>
-        </GridItem>
-      </Grid>
-      
-      <Grid container spacing={1} sx={{ mt: 1 }}>
-        <GridItem xs={6}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="primary"
-            size="small"
-            sx={{ height: '40px' }}
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-4 text-center">Danh sách thí sinh</h2>
+
+      <div className="grid grid-cols-10 gap-2">
+        {fakeContestants.map(c => (
+          <button
+            key={c.id}
+            onClick={() => toggleSelect(c.id)}
+            className={`p-2 rounded-md font-semibold transition ${
+              selectedIds.includes(c.id)
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100"
+            }`}
           >
-            Hiển thị sơ đồ
-          </Button>
-        </GridItem>
-        <GridItem xs={6}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="primary"
-            size="small"
-            sx={{ height: '40px' }}
-          >
-            Hiển thị ứng dụng & Cập nhật sơ liệu câu trả lời
-          </Button>
-        </GridItem>
-      </Grid>
-    </Box>
+            {c.student_name}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex gap-2 mt-4 flex-wrap">
+        <button className="bg-green-500 text-white px-4 py-2 rounded flex items-center">
+          <PlusCircleIcon className="w-5 h-5 mr-2" />
+          Cứu trợ
+        </button>
+
+        <button className="bg-red-500 text-white px-4 py-2 rounded flex items-center">
+          <NoSymbolIcon className="w-5 h-5 mr-2" />
+          Cấm thi
+        </button>
+
+        <button className="bg-yellow-500 text-white px-4 py-2 rounded">
+          Loại
+        </button>
+
+        <button
+          onClick={() => setSelectedIds([])}
+          className="bg-gray-400 text-white px-4 py-2 rounded"
+        >
+          Reset chọn
+        </button>
+      </div>
+
+      <div className="mt-4">
+        <p className="text-sm text-gray-600">
+          Đã chọn:{" "}
+          {selectedIds.length > 0 ? selectedIds.join(", ") : "Không có"}
+        </p>
+      </div>
+    </div>
   );
 };
 
-export default ContestantsControl; 
+export default ContestantsControlUI;

@@ -1,3 +1,4 @@
+import axiosInstance from "../config/axiosInstance";
 import React, {
   createContext,
   useContext,
@@ -6,6 +7,8 @@ import React, {
   useState,
 } from "react";
 import { io, Socket } from "socket.io-client";
+
+import { useParams } from "react-router-dom";
 
 interface SocketContextProps {
   socket: Socket | null;
@@ -18,18 +21,16 @@ const SocketContext = createContext<SocketContextProps>({
   isConnected: false,
 });
 
-// Custom hook để dùng trong các component
 export const useSocket = () => useContext(SocketContext);
 
-// Tham số từ môi trường
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
-const MATCH_ID = 123; // Có thể nhận từ props/context khác sau này
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const socketRef = useRef<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const { match } = useParams();
 
   useEffect(() => {
     const socketInstance = io(`${SOCKET_URL}/match-control`, {
@@ -38,14 +39,11 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
     socketInstance.on("connect", () => {
       console.log("✅ Socket connected");
-      socketInstance.emit("joinMatchRoom", MATCH_ID, (res: any) => {
-        console.log("📥 Joined room:", res);
-      });
+      socketInstance.emit("joinMatchRoom", match, (res: any) => {});
       setIsConnected(true);
     });
 
     socketInstance.on("disconnect", () => {
-      console.log("❌ Socket disconnected");
       setIsConnected(false);
     });
 

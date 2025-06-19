@@ -56,7 +56,7 @@ const AwardsPage: React.FC = () => {
   const [filter, setFilter] = useState<AwardQuery>({});
   const [selectedAwardIds, setSelectedAwardIds] = useState<number[]>([]);
   const { slug } = useParams<{ slug: string }>();
-  if (!slug) return null; 
+  if (!slug) return null;
   const { showToast } = useToast();
 
   const {
@@ -64,7 +64,7 @@ const AwardsPage: React.FC = () => {
     isLoading: isAwardsLoading,
     isError: isAwardsError,
     refetch: refetchAwards,
-  } = useAwards(slug as string,filter);
+  } = useAwards(slug as string, filter);
 
   const { mutate: mutateCreate } = useCreateAward(slug);
 
@@ -106,7 +106,7 @@ const AwardsPage: React.FC = () => {
   const handeDeletes = (ids: deleteAwardsType) => {
     mutateDeleteMany(ids, {
       onSuccess: data => {
-        data.messages.forEach((item: any, index: number) => {
+        data.messages.forEach((item: any) => {
           if (item.status === "error") {
             showToast(item.msg, "error");
           } else {
@@ -354,7 +354,7 @@ const AwardsPage: React.FC = () => {
             count={pagination?.totalPages}
             page={filter?.page ?? 1}
             color="primary"
-            onChange={(event, value) =>
+            onChange={(_event, value) =>
               setFilter(prev => ({
                 ...prev,
                 page: value,
