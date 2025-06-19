@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 // import PrivateRoute from './PrivateRoute';
 import AdminRoutes from "../features/admin/AdminRoutes";
-import ContestRoutes from "../features/Contest/ContestRouter";
+import ContestRoutes from "../features/contest/ContestRouter";
 
 import AuthRoutes from "../features/auth/routes";
 import PublicRoutes from "./PublicRoutes";
@@ -15,6 +15,7 @@ import ProfilePage from "../features/account/pages/ProfilePage";
 import JudgeHomePage from "../features/judge/pages/JudgeHomePage";
 import MatchSelectionPage from "../features/judge/pages/MatchSelectionPage";
 import EliminatePage from "../features/match/pages/EliminatePage";
+import AudienceOpinionPage from "../features/match/pages/AudienceOpinionPage";
 import { SocketProvider } from "../contexts/SocketContext";
 import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 
@@ -60,7 +61,7 @@ const AppRoutes: React.FC = () => {
           </SocketProvider>
         }
       />
-
+      <Route path="/audience-opinion" element={<AudienceOpinionPage />} />
       <Route path="/match/eliminate" element={<EliminatePage />} />
       <Route path="/banner" element={<TechBanner />} />
       <Route path="/403" element={<Forbidden403 />} />
