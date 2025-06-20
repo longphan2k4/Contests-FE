@@ -15,7 +15,6 @@ const PublicRoute: React.FC<PublicRouteProps> = ({
   const { user, loading } = useAuth();
 
   if (loading) {
-    // Hiển thị spinner loading của MUI
     return (
       <div
         style={{
