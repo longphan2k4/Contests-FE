@@ -63,9 +63,9 @@ export default function EditeAward({
             register={register("name")}
           />
           <FormInput
-            label="ID Thí sinh"
+            label="ID Thí sinh (tùy chọn)"
             id="contestant_id"
-            placeholder="Nhập contestant_id"
+            placeholder="Nhập ID thí sinh (để trống nếu chưa có)"
             type="number"
             error={errors.contestantId}
             register={register("contestantId", { valueAsNumber: true })}
