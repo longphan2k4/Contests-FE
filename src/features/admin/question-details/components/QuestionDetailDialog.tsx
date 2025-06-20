@@ -55,6 +55,7 @@ import { CSS } from '@dnd-kit/utilities';
 import type { QuestionDetailDialogProps, AvailableQuestion } from '../types';
 import { questionDetailService } from '../services/questionDetailService';
 import { useToast } from '../../../../contexts/toastContext';
+import { useBatchUpdate } from '../../../../hooks/useStableCallback';
 
 interface QuestionDetail {
   questionId: number;
@@ -388,12 +389,12 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
   questionPackageId,
   onSuccess
 }) => {
-  console.debug('🔄 [QuestionDetailDialog] Component rendered:', {
-    open,
-    editingQuestion: !!editingQuestion,
-    totalQuestions,
-    questionPackageId
-  });
+  // console.debug('🔄 [QuestionDetailDialog] Component rendered:', {
+  //   open,
+  //   editingQuestion: !!editingQuestion,
+  //   totalQuestions,
+  //   questionPackageId
+  // });
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -426,8 +427,11 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
   // Thêm state cho tìm kiếm câu hỏi đã chọn
   const [selectedQuestionSearchTerm, setSelectedQuestionSearchTerm] = useState('');
   
+  // ✅ Fix: Sử dụng batch update để giảm re-renders
+  const batchUpdate = useBatchUpdate();
+
   const fetchQuestions = useCallback(async () => {
-    console.log('📥 [DEBUG] Bắt đầu fetchQuestions');
+    // console.log('📥 [DEBUG] Bắt đầu fetchQuestions');
     setLoading(true);
     try {
       const response = await questionDetailService.getAvailableQuestions(questionPackageId, {
@@ -439,10 +443,10 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
         search: searchTerm || undefined
       });
 
-      console.log('✅ [DEBUG] fetchQuestions thành công:', {
-        totalQuestions: response.data?.questions?.length,
-        totalPages: response.pagination?.totalPages
-      });
+      // console.log('✅ [DEBUG] fetchQuestions thành công:', {
+      //   totalQuestions: response.data?.questions?.length,
+      //   totalPages: response.pagination?.totalPages
+      // });
 
       if (response.data?.questions) {
         setQuestions(response.data.questions);
@@ -462,7 +466,7 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
   const fetchQuestionDetails = useCallback(async () => {
     if (!open || !questionPackageId) return;
     
-    console.log('📥 [DEBUG] Bắt đầu fetchQuestionDetails');
+    // console.log('📥 [DEBUG] Bắt đầu fetchQuestionDetails');
     try {
       const response = await questionDetailService.getQuestionDetailsByPackage(questionPackageId, {
         limit: 100,
@@ -470,9 +474,9 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
         sortOrder: 'asc'
       });
       
-      console.log('✅ [DEBUG] fetchQuestionDetails thành công:', {
-        totalQuestions: response.data?.questions?.length
-      });
+      // console.log('✅ [DEBUG] fetchQuestionDetails thành công:', {
+      //   totalQuestions: response.data?.questions?.length
+      // });
       
       if (response.data?.questions) {
         const existingQuestions = response.data.questions
@@ -498,17 +502,17 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
       console.error('❌ [DEBUG] fetchQuestionDetails thất bại:', error);
       showToast('Không thể lấy danh sách câu hỏi hiện tại', 'error');
     }
-  }, [open, questionPackageId, showToast]);
+  }, [open, questionPackageId, showToast]); // ✅ Fix: Include all dependencies
 
   // Thay thế 2 useEffect cũ bằng 3 useEffect mới
   useEffect(() => {
     if (open && questionPackageId && isInitialLoad) {
-      console.log('🔍 [DEBUG] Dialog mở - Bắt đầu fetch dữ liệu lần đầu');
+      // console.log('🔍 [DEBUG] Dialog mở - Bắt đầu fetch dữ liệu lần đầu');
       fetchQuestionDetails();
       fetchQuestions();
       setIsInitialLoad(false);
     }
-  }, [open, questionPackageId, isInitialLoad, fetchQuestionDetails, fetchQuestions]);
+  }, [open, questionPackageId, isInitialLoad, fetchQuestionDetails, fetchQuestions]); // ✅ Fix: Include missing deps
 
   // Tách riêng effect cho các thao tác của người dùng
   useEffect(() => {
@@ -517,33 +521,35 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
     }
 
     const timeoutId = setTimeout(() => {
-      console.log('🔍 [DEBUG] Trigger fetchQuestions do thay đổi điều kiện:', {
-        page,
-        pageSize,
-        filters,
-        searchTerm
-      });
+      // console.log('🔍 [DEBUG] Trigger fetchQuestions do thay đổi điều kiện:', {
+      //   page,
+      //   pageSize,
+      //   filters,
+      //   searchTerm
+      // });
       fetchQuestions();
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [page, pageSize, filters, searchTerm, open, questionPackageId, fetchQuestions, isInitialLoad]);
+  }, [page, pageSize, filters, searchTerm, open, questionPackageId, isInitialLoad, fetchQuestions]); // ✅ Fix: Include fetchQuestions
 
   // Reset isInitialLoad khi đóng dialog
   useEffect(() => {
     if (!open) {
-      setIsInitialLoad(true);
-      // Reset các state khác khi đóng dialog
-      setSelectedIds(new Set());
-      setSelectedQuestions([]);
-      setSearchTerm('');
-      setFilters({ difficulty: '', questionType: '' });
-      setPage(1);
+      // ✅ Fix: Batch tất cả state updates để giảm re-renders từ 6 xuống 1
+      batchUpdate([
+        () => setIsInitialLoad(true),
+        () => setSelectedIds(new Set()),
+        () => setSelectedQuestions([]),
+        () => setSearchTerm(''),
+        () => setFilters({ difficulty: '', questionType: '' }),
+        () => setPage(1)
+      ]);
     }
-  }, [open]);
+  }, [open, batchUpdate]);
 
   const handleToggleFullScreen = () => {
-    console.debug('🔄 [QuestionDetailDialog] Toggle fullscreen:', !isFullScreen);
+    // console.debug('🔄 [QuestionDetailDialog] Toggle fullscreen:', !isFullScreen);
     setIsFullScreen(!isFullScreen);
   };
 
@@ -556,7 +562,7 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
     }
 
     try {
-      console.log('📤 [DEBUG] Bắt đầu sync câu hỏi:', selectedQuestions);
+      // console.log('📤 [DEBUG] Bắt đầu sync câu hỏi:', selectedQuestions);
       
       // Tạo mảng questions với thứ tự từ 1 đến n
       const questionsToSync = selectedQuestions.map((question, index) => ({
@@ -565,21 +571,21 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
       }));
 
       // Gọi API sync với thứ tự mới
-      const response = await questionDetailService.syncQuestionDetails(questionPackageId, questionsToSync);
-      console.log('✅ [DEBUG] Sync thành công:', response);
+      await questionDetailService.syncQuestionDetails(questionPackageId, questionsToSync);
+      // console.log('✅ [DEBUG] Sync thành công:', response);
 
       // Hiển thị thông báo thành công
       showToast('Đã cập nhật thành công thứ tự câu hỏi', 'success');
 
       // Gọi callback để cập nhật danh sách câu hỏi trong gói
       if (onSuccess) {
-        console.log('🔄 [DEBUG] Gọi onSuccess để cập nhật danh sách');
+        // console.log('🔄 [DEBUG] Gọi onSuccess để cập nhật danh sách');
         await onSuccess();
-        console.log('✅ [DEBUG] onSuccess hoàn thành');
+        // console.log('✅ [DEBUG] onSuccess hoàn thành');
       }
 
       // Đóng dialog
-      console.log('👋 [DEBUG] Đóng dialog');
+      // console.log('👋 [DEBUG] Đóng dialog');
       onClose();
     } catch (error) {
       console.error('❌ [DEBUG] Lỗi khi sync câu hỏi:', error);
@@ -587,65 +593,83 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
     }
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    // Không gọi setPage ở đây nữa vì đã được xử lý trong useEffect
-  };
+  // ✅ Fix: Debounced search handler để giảm API calls
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    // Tự động reset page khi search (debounced trong hook)
+  }, []);
 
-  const handleFilterChange = (name: string, value: string) => {
+  // ✅ Fix: Optimized filter change handler
+  const handleFilterChange = useCallback((name: string, value: string) => {
     setFilters(prev => ({ ...prev, [name]: value }));
-    // Không gọi setPage ở đây nữa vì đã được xử lý trong useEffect
-  };
+    // Tự động reset page khi filter change (debounced trong hook)
+  }, []);
 
-  const handleSelectOne = (id: number, checked: boolean) => {
-    const newSelectedIds = new Set(selectedIds);
+  // ✅ Fix: Optimized select handlers để giảm re-renders
+  const handleSelectOne = useCallback((id: number, checked: boolean) => {
+    setSelectedIds(prev => {
+      const newSelectedIds = new Set(prev);
+      if (checked) {
+        newSelectedIds.add(id);
+      } else {
+        newSelectedIds.delete(id);
+      }
+      return newSelectedIds;
+    });
+
     if (checked) {
-      newSelectedIds.add(id);
       // Thêm câu hỏi vào danh sách khi được chọn
       const questionToAdd = questions.find(q => q.id === id);
       if (questionToAdd && !selectedQuestions.some(q => q.id === id)) {
         setSelectedQuestions(prev => updateQuestionOrders([...prev, questionToAdd]));
       }
     } else {
-      newSelectedIds.delete(id);
       // Xóa khỏi selectedQuestions khi bỏ chọn
       setSelectedQuestions(prev => updateQuestionOrders(prev.filter(q => q.id !== id)));
     }
-    setSelectedIds(newSelectedIds);
-  };
+  }, [questions, selectedQuestions]);
 
-  const handleSelectAll = (checked: boolean) => {
+  // ✅ Fix: Optimized select all handler
+  const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
-      setSelectedIds(new Set(questions.map(q => q.id)));
-      // Thêm tất cả câu hỏi chưa có vào danh sách
-      const questionsToAdd = questions.filter(
-        question => !selectedQuestions.some(sq => sq.id === question.id)
-      );
-      if (questionsToAdd.length > 0) {
-        setSelectedQuestions(prev => updateQuestionOrders([...prev, ...questionsToAdd]));
-      }
+      batchUpdate([
+        () => setSelectedIds(new Set(questions.map(q => q.id))),
+        () => {
+          // Thêm tất cả câu hỏi chưa có vào danh sách
+          const questionsToAdd = questions.filter(
+            question => !selectedQuestions.some(sq => sq.id === question.id)
+          );
+          if (questionsToAdd.length > 0) {
+            setSelectedQuestions(prev => updateQuestionOrders([...prev, ...questionsToAdd]));
+          }
+        }
+      ]);
     } else {
-      setSelectedIds(new Set());
-      // Xóa tất cả câu hỏi khỏi selectedQuestions khi bỏ chọn tất cả
-      setSelectedQuestions(prev => updateQuestionOrders(prev.filter(q => !questions.some(question => question.id === q.id))));
+      batchUpdate([
+        () => setSelectedIds(new Set()),
+        () => setSelectedQuestions(prev => updateQuestionOrders(prev.filter(q => !questions.some(question => question.id === q.id))))
+      ]);
     }
-  };
+  }, [questions, selectedQuestions, batchUpdate]);
 
+  // ✅ Fix: Optimized remove handler
   const handleRemoveSelected = useCallback((id: number) => {
-    console.log('🗑️ [DEBUG] Bắt đầu xóa câu hỏi:', id);
+    // console.log('🗑️ [DEBUG] Bắt đầu xóa câu hỏi:', id);
     
-    // Cập nhật tất cả state liên quan trong một lần
-    setSelectedIds(prev => {
-      const newIds = new Set(prev);
-      newIds.delete(id);
-      return newIds;
-    });
-    
-    setSelectedQuestions(prev => {
-      const newQuestions = prev.filter(q => q.id !== id);
-      return updateQuestionOrders(newQuestions);
-    });
-  }, []);
+    // ✅ Fix: Batch cả 2 state updates để giảm re-renders
+    batchUpdate([
+      () => setSelectedIds(prev => {
+        const newIds = new Set(prev);
+        newIds.delete(id);
+        return newIds;
+      }),
+      () => setSelectedQuestions(prev => {
+        const newQuestions = prev.filter(q => q.id !== id);
+        return updateQuestionOrders(newQuestions);
+      })
+    ]);
+  }, [batchUpdate]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {

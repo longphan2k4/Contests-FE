@@ -49,7 +49,7 @@ const ResultsPage: React.FC = () => {
     totalResults
   } = useResults();
 
-  const summary = getResultSummary();
+  const summary = getResultSummary;
 
   const handleFilter = (params: ResultFilterParams) => {
     fetchResults({ ...params, page: 1, limit: filter.limit });
@@ -70,7 +70,7 @@ const ResultsPage: React.FC = () => {
   // Load initial data
   useEffect(() => {
     fetchResults({ page: filter.page, limit: filter.limit });
-  }, []);
+  }, [fetchResults, filter.page, filter.limit]);
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -152,8 +152,8 @@ const ResultsPage: React.FC = () => {
           <Box>
             <ResultsFilter 
               onFilter={handleFilter}
-              uniqueRounds={getUniqueRounds()}
-              uniqueMatches={getUniqueMatches()}
+              uniqueRounds={getUniqueRounds}
+              uniqueMatches={getUniqueMatches}
             />
           </Box>
         </Fade>

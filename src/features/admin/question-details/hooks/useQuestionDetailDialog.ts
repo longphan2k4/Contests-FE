@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { AvailableQuestion } from '../types';
 import { questionDetailService } from '../services/questionDetailService';
+import { useStableObject } from '../../../../hooks/useStableCallback';
+import { useDebounceApi } from '../../../../hooks/useDebounceApi';
 
 export const useQuestionDetailDialog = (open: boolean, questionPackageId: number) => {
   const [questions, setQuestions] = useState<AvailableQuestion[]>([]);
@@ -14,165 +16,187 @@ export const useQuestionDetailDialog = (open: boolean, questionPackageId: number
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  
+  const stableFilters = useStableObject(filters);
+  
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const fetchAvailableQuestions = useCallback(async () => {
+  const fetchAvailableQuestionsInternal = useCallback(async (options?: { signal?: AbortSignal }) => {
     if (!questionPackageId) return;
     
-    setIsLoading(true);
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    abortControllerRef.current = new AbortController();
+    const signal = options?.signal || abortControllerRef.current.signal;
+
     try {
-      console.debug('🔍 [useQuestionDetailDialog] Fetching available questions', {
-        packageId: questionPackageId,
-        filters,
-        searchTerm,
-        page: currentPage,
-        limit: pageSize
-      });
+      setIsLoading(true);
       
-      const response = await questionDetailService.getAvailableQuestions(questionPackageId, {
+      const params = {
         page: currentPage,
         limit: pageSize,
-        isActive: true,
-        difficulty: filters.difficulty || undefined,
-        questionType: filters.topic || undefined,
+        difficulty: stableFilters.difficulty || undefined,
+        topic: stableFilters.topic || undefined,
         search: searchTerm || undefined
-      });
-      
-      if (response.data?.questions) {
-        console.debug('✅ [useQuestionDetailDialog] Available questions fetched:', {
-          count: response.data.questions.length,
-          total: response.pagination?.total
-        });
-        
-        setQuestions(response.data.questions);
-        
-        if (response.pagination) {
-          setTotal(response.pagination.total || 0);
-        }
+      };
+
+      // console.debug('🔄 [useQuestionDetailDialog] Fetching with params:', params);
+
+      const response = await questionDetailService.getAvailableQuestions(
+        questionPackageId,
+        params
+      );
+
+      if (signal.aborted) return;
+
+      if (response?.data) {
+        setQuestions(response.data.questions || []);
+        setTotal(response.pagination?.total || 0);
+        // console.debug('✅ [useQuestionDetailDialog] Fetched questions:', {
+        //   count: (response.data.questions || []).length,
+        //   total: response.pagination?.total
+        // });
       } else {
-        console.debug('⚠️ [useQuestionDetailDialog] No available questions found');
         setQuestions([]);
         setTotal(0);
       }
-    } catch (error) {
-      console.error('❌ [useQuestionDetailDialog] Error fetching available questions:', error);
+    } catch (error: unknown) {
+      if (error instanceof Error && (error.name === 'AbortError' || signal.aborted)) {
+        return;
+      }
+      console.error('❌ [useQuestionDetailDialog] Error fetching questions:', error);
       setQuestions([]);
       setTotal(0);
     } finally {
-      setIsLoading(false);
+      if (!signal.aborted) {
+        setIsLoading(false);
+      }
     }
-  }, [questionPackageId, filters, searchTerm, currentPage, pageSize]);
+  }, [questionPackageId, stableFilters, searchTerm, currentPage, pageSize]);
 
-  // Reset state khi dialog mở/đóng
+  const [debouncedFetch, cancelFetch] = useDebounceApi(fetchAvailableQuestionsInternal, { delay: 300 });
+
+  const fetchAvailableQuestions = useCallback(async () => {
+    return debouncedFetch();
+  }, [debouncedFetch]);
+
+  useEffect(() => {
+    return () => {
+      cancelFetch();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [cancelFetch]);
+
   useEffect(() => {
     if (!open) {
-      // Reset state khi dialog đóng
       setQuestions([]);
       setSelectedIds(new Set());
       setSelectedQuestions([]);
       setSearchTerm('');
       setFilters({ difficulty: '', topic: '' });
-    } else if (questionPackageId) {
-      // Nếu dialog mở và có packageId, fetch dữ liệu
-      fetchAvailableQuestions();
+      setCurrentPage(1);
+      return;
     }
-  }, [open, questionPackageId, fetchAvailableQuestions]);
+    
+    if (questionPackageId) {
+      // console.debug('🔄 [useQuestionDetailDialog] Dialog opened, fetching questions');
+      debouncedFetch();
+    }
+  }, [open, questionPackageId, stableFilters, searchTerm, currentPage, pageSize, debouncedFetch]);
 
-  // Cập nhật danh sách câu hỏi đã chọn khi selectedIds thay đổi
   useEffect(() => {
     const selected = questions.filter(q => selectedIds.has(q.id));
-    console.debug('✅ [useQuestionDetailDialog] Selected questions updated:', {
-      selectedIds: Array.from(selectedIds),
-      selectedCount: selected.length
-    });
+    // console.debug('✅ [useQuestionDetailDialog] Selected questions updated:', {
+    //   selectedIds: Array.from(selectedIds),
+    //   selectedCount: selected.length
+    // });
     setSelectedQuestions(selected);
   }, [selectedIds, questions]);
 
-  // Fetch lại câu hỏi khi filters hoặc searchTerm thay đổi
-  useEffect(() => {
-    if (open && questionPackageId) {
-      console.debug('🔄 [useQuestionDetailDialog] Filters changed, fetching new data:', {
-        searchTerm,
-        filters
-      });
-      fetchAvailableQuestions();
-    }
-  }, [filters, searchTerm, open, questionPackageId, currentPage, pageSize, fetchAvailableQuestions]);
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.debug('🔍 [useQuestionDetailDialog] Search term changed:', e.target.value);
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    // console.debug('🔍 [useQuestionDetailDialog] Search term changed:', e.target.value);
     setSearchTerm(e.target.value);
-  };
+    setCurrentPage(1);
+  }, []);
 
-  const handleSearch = () => {
-    console.debug('🔍 [useQuestionDetailDialog] Search triggered:', searchTerm);
-    setCurrentPage(1); // Reset về trang 1 khi tìm kiếm
+  const handleSearch = useCallback(() => {
+    // console.debug('🔍 [useQuestionDetailDialog] Search triggered:', searchTerm);
+    setCurrentPage(1);
     fetchAvailableQuestions();
-  };
+  }, [searchTerm, fetchAvailableQuestions]);
 
-  const handleFilterChange = (name: string, value: string) => {
-    console.debug('🔄 [useQuestionDetailDialog] Filter changed:', { name, value });
+  const handleFilterChange = useCallback((name: string, value: string) => {
+    // console.debug('🔄 [useQuestionDetailDialog] Filter changed:', { name, value });
     setFilters(prev => ({ ...prev, [name]: value }));
-    setCurrentPage(1); // Reset về trang 1 khi thay đổi bộ lọc
-  };
+    setCurrentPage(1);
+  }, []);
 
-  const handleSelectQuestion = (question: AvailableQuestion) => {
-    console.debug('✅ [useQuestionDetailDialog] Question selected:', question);
+  const handleSelectQuestion = useCallback((question: AvailableQuestion) => {
+    // console.debug('✅ [useQuestionDetailDialog] Question selected:', question);
     setSelectedQuestion(question);
-  };
+  }, []);
 
-  const handleSelectAll = (checked: boolean) => {
-    console.debug('✅ [useQuestionDetailDialog] Select all:', {
-      checked,
-      count: questions.length
-    });
+  const handleSelectAll = useCallback((checked: boolean) => {
+    // console.debug('✅ [useQuestionDetailDialog] Select all:', {
+    //   checked,
+    //   count: questions.length
+    // });
     if (checked) {
       setSelectedIds(new Set(questions.map(q => q.id)));
     } else {
       setSelectedIds(new Set());
     }
-  };
+  }, [questions]);
 
-  const handleSelectOne = (id: number, checked: boolean) => {
-    console.debug('✅ [useQuestionDetailDialog] Select one:', { id, checked });
-    const newSelectedIds = new Set(selectedIds);
-    if (checked) {
-      newSelectedIds.add(id);
-    } else {
+  const handleSelectOne = useCallback((id: number, checked: boolean) => {
+    // console.debug('✅ [useQuestionDetailDialog] Select one:', { id, checked });
+    setSelectedIds(prev => {
+      const newSelectedIds = new Set(prev);
+      if (checked) {
+        newSelectedIds.add(id);
+      } else {
+        newSelectedIds.delete(id);
+      }
+      return newSelectedIds;
+    });
+  }, []);
+
+  const handleRemoveSelected = useCallback((id: number) => {
+    // console.debug('❌ [useQuestionDetailDialog] Remove selected:', id);
+    setSelectedIds(prev => {
+      const newSelectedIds = new Set(prev);
       newSelectedIds.delete(id);
-    }
-    setSelectedIds(newSelectedIds);
-  };
+      return newSelectedIds;
+    });
+  }, []);
 
-  const handleRemoveSelected = (id: number) => {
-    console.debug('❌ [useQuestionDetailDialog] Remove selected:', id);
-    const newSelectedIds = new Set(selectedIds);
-    newSelectedIds.delete(id);
-    setSelectedIds(newSelectedIds);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      console.debug('🔍 [useQuestionDetailDialog] Search triggered by Enter key');
+      // console.debug('🔍 [useQuestionDetailDialog] Search triggered by Enter key');
       e.preventDefault();
       handleSearch();
     }
-  };
+  }, [handleSearch]);
 
-  const toggleFilters = () => {
-    console.debug('🔄 [useQuestionDetailDialog] Toggle filters');
+  const toggleFilters = useCallback(() => {
+    // console.debug('🔄 [useQuestionDetailDialog] Toggle filters');
     setShowFilters(prev => !prev);
-  };
+  }, []);
 
-  const handlePageChange = (page: number) => {
-    console.debug('🔄 [useQuestionDetailDialog] Page changed:', page);
+  const handlePageChange = useCallback((page: number) => {
+    // console.debug('🔄 [useQuestionDetailDialog] Page changed:', page);
     setCurrentPage(page);
-  };
+  }, []);
 
-  const handlePageSizeChange = (size: number) => {
-    console.debug('🔄 [useQuestionDetailDialog] Page size changed:', size);
+  const handlePageSizeChange = useCallback((size: number) => {
+    // console.debug('🔄 [useQuestionDetailDialog] Page size changed:', size);
     setPageSize(size);
-    setCurrentPage(1); // Reset về trang 1 khi thay đổi kích thước trang
-  };
+    setCurrentPage(1);
+  }, []);
 
   return {
     questions,
@@ -183,7 +207,7 @@ export const useQuestionDetailDialog = (open: boolean, questionPackageId: number
     searchTerm,
     filters,
     showFilters,
-    topics: [], // Trả về mảng rỗng vì không còn sử dụng topics
+    topics: [],
     total,
     currentPage,
     pageSize,
