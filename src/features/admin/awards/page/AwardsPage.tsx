@@ -349,11 +349,11 @@ const AwardsPage: React.FC = () => {
               Trang {filter?.page || 1} / {pagination?.totalPages}
             </Typography>
           </Box>
-        </Box>
+        </Box>        
         <Box className="flex flex-col items-center">
           {" "}
           <Pagination
-            count={pagination?.totalPages}
+            count={pagination?.totalPages || 0}
             page={filter?.page ?? 1}
             color="primary"
             onChange={(_event, value) =>

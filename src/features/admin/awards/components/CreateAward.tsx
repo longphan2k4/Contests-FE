@@ -55,13 +55,14 @@ export default function CreateAwardDialog({
             label="Tên giải thưởng"
             id="name"
             placeholder="Nhập tên giải thưởng"
-            error={errors.name}
+            {...(errors.name && { error: errors.name })}
             register={register("name")}
-          />          <FormInput
+          />          
+          <FormInput
             label="ID Thí sinh (tùy chọn)"
             id="contestantId"
             placeholder="Nhập ID thí sinh (để trống nếu chưa có)"
-            error={errors.contestantId}
+            {...(errors.contestantId && { error: errors.contestantId })}
             register={register("contestantId", { 
               valueAsNumber: true
             })}
