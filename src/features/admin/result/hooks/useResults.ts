@@ -1,12 +1,18 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Result, ResultFilterParams, ResultSummary, ApiResponse, PaginatedResponse } from '../types';
 import axiosInstance from '../../../../config/axiosInstance';
+import { useStableObject } from '../../../../hooks/useStableCallback';
+import { useDebounceApi } from '../../../../hooks/useDebounceApi';
 
 export const useResults = (initialParams?: ResultFilterParams) => {
   const [results, setResults] = useState<Result[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // ✅ Fix: Sử dụng stable object reference để tránh infinite loop
   const [params, setParams] = useState<ResultFilterParams>(initialParams || {});
+  const stableParams = useStableObject(params || {});
+  
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -14,14 +20,37 @@ export const useResults = (initialParams?: ResultFilterParams) => {
     totalPages: 0
   });
 
-  const fetchResults = useCallback(async (queryParams?: ResultFilterParams) => {
+  // ✅ Fix: Thêm AbortController để cancel requests
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // ✅ Fix: Loại bỏ params dependency để tránh infinite loop
+  const fetchResultsInternal = useCallback(async (queryParams?: ResultFilterParams, options?: { signal?: AbortSignal }) => {
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new AbortController
+    abortControllerRef.current = new AbortController();
+    const signal = options?.signal || abortControllerRef.current.signal;
+    
     setIsLoading(true);
     setError(null);
     
-    const searchParams = queryParams || params;
+    const searchParams = queryParams || stableParams;
     
     try {
-      const response = await axiosInstance.get<ApiResponse<PaginatedResponse<Result>>>(`/results`, { params: searchParams });
+      const response = await axiosInstance.get<ApiResponse<PaginatedResponse<Result>>>(
+        `/results`, 
+        { 
+          params: searchParams,
+          signal // ✅ Fix: Thêm signal để cancel request
+        }
+      );
+      
+      // ✅ Fix: Kiểm tra nếu request đã bị cancel
+      if (signal.aborted) return;
+      
       if (response.data.success && Array.isArray(response.data.data.results)) {
         setResults(response.data.data.results);
         setPagination({
@@ -35,16 +64,47 @@ export const useResults = (initialParams?: ResultFilterParams) => {
         setError('Định dạng dữ liệu không hợp lệ');
         setResults([]);
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      // ✅ Fix: Không set error nếu request bị cancel
+      if (err instanceof Error && (err.name === 'AbortError' || signal.aborted)) {
+        return;
+      }
       setError('Không thể lấy dữ liệu kết quả');
       console.error('Error fetching results:', err);
       setResults([]);
     } finally {
-      setIsLoading(false);
+      if (!signal.aborted) {
+        setIsLoading(false);
+      }
     }
-  }, [params]);
+  }, [stableParams]); // ✅ Fix: Sử dụng stableParams thay vì params
 
-  const getResultSummary = (): ResultSummary => {
+  // ✅ Fix: Sử dụng debounced API để giảm số lượng requests
+  const [debouncedFetchResults, cancelFetch] = useDebounceApi(fetchResultsInternal, { delay: 300 });
+
+  // Public fetch function
+  const fetchResults = useCallback(async (queryParams?: ResultFilterParams) => {
+    return debouncedFetchResults(queryParams);
+  }, [debouncedFetchResults]);
+
+  // ✅ Fix: Cleanup function để cancel requests khi component unmount
+  useEffect(() => {
+    return () => {
+      cancelFetch();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [cancelFetch]);
+
+  // ✅ Fix: Sử dụng stable dependency để tránh infinite loop  
+  useEffect(() => {
+    // ✅ Fix: Gọi debounced fetch thay vì fetchResultsInternal để tránh infinite loop
+    debouncedFetchResults(stableParams);
+  }, [stableParams, debouncedFetchResults]);
+
+  // ✅ Fix: Memoize các expensive computations
+  const getResultSummary = useMemo((): ResultSummary => {
     if (!Array.isArray(results)) {
       console.error('Results is not an array:', results);
       return {
@@ -142,29 +202,24 @@ export const useResults = (initialParams?: ResultFilterParams) => {
       byMatch,
       topStudents
     };
-  };
+  }, [results]); // ✅ Fix: Chỉ phụ thuộc vào results
 
-  // Lấy danh sách các vòng unique để filter
-  const getUniqueRounds = () => {
+  // ✅ Fix: Memoize getUniqueRounds và getUniqueMatches
+  const getUniqueRounds = useMemo(() => {
     const roundsMap = new Map();
     results.forEach(result => {
       roundsMap.set(result.match.round.id, result.match.round.name);
     });
     return Array.from(roundsMap.entries()).map(([id, name]) => ({ id: Number(id), name }));
-  };
+  }, [results]);
 
-  // Lấy danh sách các trận unique để filter
-  const getUniqueMatches = () => {
+  const getUniqueMatches = useMemo(() => {
     const matchesMap = new Map();
     results.forEach(result => {
       matchesMap.set(result.match.id, result.match.name);
     });
     return Array.from(matchesMap.entries()).map(([id, name]) => ({ id: Number(id), name }));
-  };
-
-  useEffect(() => {
-    fetchResults();
-  }, [fetchResults]);
+  }, [results]);
 
   return {
     results,

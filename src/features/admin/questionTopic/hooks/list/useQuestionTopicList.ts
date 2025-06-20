@@ -1,12 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getQuestionTopics } from '../../services/questionTopicService';
 import type { QuestionTopic, QuestionTopicFilter } from '../../types/questionTopic';
+import { useStableObject } from '../../../../../hooks/useStableCallback';
+import { useDebounceApi } from '../../../../../hooks/useDebounceApi';
 
 export const useQuestionTopicList = (initialFilter?: QuestionTopicFilter) => {
   const [questionTopics, setQuestionTopics] = useState<QuestionTopic[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<QuestionTopicFilter>({
     page: 1,
@@ -14,11 +16,25 @@ export const useQuestionTopicList = (initialFilter?: QuestionTopicFilter) => {
     ...initialFilter
   });
 
-  const fetchQuestionTopics = useCallback(async () => {
+  const stableFilter = useStableObject(filter);
+  
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const fetchQuestionTopicsInternal = useCallback(async (options?: { signal?: AbortSignal }) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    abortControllerRef.current = new AbortController();
+    const signal = options?.signal || abortControllerRef.current.signal;
+    
     try {
       setLoading(true);
       setError(null);
-      const response = await getQuestionTopics(filter);
+      
+      const response = await getQuestionTopics(stableFilter);
+      
+      if (signal.aborted) return;
       
       if (!response.success) {
         throw new Error(response.message);
@@ -27,23 +43,42 @@ export const useQuestionTopicList = (initialFilter?: QuestionTopicFilter) => {
       setQuestionTopics(response.data);
       setTotal(response.pagination.total);
       setTotalPages(response.pagination.totalPages);
-    } catch (err) {
+    } catch (err: unknown) {
+      if (err instanceof Error && (err.name === 'AbortError' || signal.aborted)) {
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Lỗi khi tải danh sách chủ đề');
       setQuestionTopics([]);
       setTotal(0);
       setTotalPages(0);
     } finally {
-      setLoading(false);
+      if (!signal.aborted) {
+        setLoading(false);
+      }
     }
-  }, [filter]);
+  }, [stableFilter]);
+
+  const [debouncedFetch, cancelFetch] = useDebounceApi(fetchQuestionTopicsInternal, { delay: 300 });
+
+  const fetchQuestionTopics = useCallback(async () => {
+    return debouncedFetch();
+  }, [debouncedFetch]);
 
   useEffect(() => {
-    fetchQuestionTopics();
-  }, [fetchQuestionTopics]);
+    return () => {
+      cancelFetch();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [cancelFetch]);
+
+  useEffect(() => {
+    debouncedFetch();
+  }, [stableFilter, debouncedFetch]);
 
   const updateFilter = useCallback((newFilter: Partial<QuestionTopicFilter>) => {
     setFilter((prev) => {
-      // Nếu thay đổi search hoặc isActive thì reset page về 1
       if (newFilter.search !== undefined || newFilter.isActive !== undefined) {
         return {
           ...prev,
