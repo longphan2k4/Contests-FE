@@ -14,6 +14,9 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
 
     /* JSX for React */
     "jsx": "react-jsx",
@@ -21,6 +24,7 @@
     /* Build Behavior */
     "noEmit": true,
     "skipLibCheck": true,
+    "isolatedModules": true,
 
     /* Linting & Type Safety */
     "strict": true,
@@ -29,9 +33,45 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "erasableSyntaxOnly": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+
+    /* Path Mapping */
+    "baseUrl": ".",
+    "paths": {
+      "@*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@pages/*": ["src/pages/*"],
+      "@features/*": ["src/features/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@utils/*": ["src/utils/*"],
+      "@types/*": ["src/types/*"],
+      "@contexts/*": ["src/contexts/*"],
+      "@config/*": ["src/config/*"],
+      "@assets/*": ["src/assets/*"],
+      "@layouts/*": ["src/layouts/*"],
+      "@routes/*": ["src/routes/*"],
+      "@common/*": ["src/common/*"]
+    },
 
     /* ✅ Enforce correct casing in import paths */
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"]
+  "include": [
+    "src/**/*",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src/**/*.json"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ]
 }
