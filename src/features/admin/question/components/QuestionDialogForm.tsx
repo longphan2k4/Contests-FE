@@ -16,7 +16,9 @@ import {
   Autocomplete,
   ToggleButtonGroup,
   ToggleButton,
-  Tooltip
+  Tooltip,
+  Radio,
+  RadioGroup
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -531,30 +533,112 @@ const QuestionDialogForm = forwardRef<HTMLFormElement, QuestionDialogFormProps>(
                 Các lựa chọn *
               </Typography>
               
-              {(formData.options || []).map((option, index) => (
-                <Box key={index} display="flex" alignItems="center" mb={1}>
-                  <TextField
-                    fullWidth
-                    value={option}
-                    onChange={(e) => onOptionChange(index, e.target.value)}
-                    placeholder={`Lựa chọn ${index + 1}`}
-                    disabled={isReadOnly}
-                  />
-                  
-                  {!isReadOnly && (formData.options || []).length > 2 && (
-                    <IconButton 
-                      color="error" 
-                      onClick={() => removeOption(index)}
+              <RadioGroup
+                value={formData.correctAnswer || ''}
+                onChange={(e) => onFormChange('correctAnswer', e.target.value)}
+              >
+                {(formData.options || []).map((option, index) => (
+                  <Box 
+                    key={index} 
+                    display="flex" 
+                    alignItems="center" 
+                    mb={1}
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      border: '2px solid',
+                      borderColor: formData.correctAnswer === option ? 'success.main' : 'grey.300',
+                      backgroundColor: formData.correctAnswer === option 
+                        ? 'success.50' 
+                        : 'background.paper',
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        borderColor: formData.correctAnswer === option 
+                          ? 'success.dark' 
+                          : 'primary.main',
+                        backgroundColor: formData.correctAnswer === option 
+                          ? 'success.100' 
+                          : 'action.hover',
+                        transform: 'translateY(-1px)',
+                        boxShadow: 2
+                      }
+                    }}
+                  >
+                    <Radio
+                      value={option}
+                      disabled={isReadOnly || !option.trim()}
+                      sx={{ 
+                        mr: 1,
+                        color: formData.correctAnswer === option ? 'success.main' : 'default',
+                        '&.Mui-checked': {
+                          color: 'success.main',
+                        }
+                      }}
+                    />
+                    <TextField
+                      fullWidth
+                      value={option}
+                      onChange={(e) => {
+                        onOptionChange(index, e.target.value);
+                        // Nếu option này đang được chọn làm đáp án đúng và người dùng thay đổi nội dung
+                        // thì cập nhật luôn correctAnswer
+                        if (formData.correctAnswer === option) {
+                          onFormChange('correctAnswer', e.target.value);
+                        }
+                      }}
+                      placeholder={`Lựa chọn ${index + 1}`}
+                      disabled={isReadOnly}
+                      variant="outlined"
                       size="small"
-                    >
-                      <CloseIcon />
-                    </IconButton>
-                  )}
-                </Box>
-              ))}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          backgroundColor: 'transparent',
+                          '& fieldset': {
+                            borderColor: 'transparent',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: 'transparent',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'primary.main',
+                            borderWidth: 1,
+                          },
+                        },
+                      }}
+                    />
+                    
+                    {!isReadOnly && (formData.options || []).length > 2 && (
+                      <IconButton 
+                        color="error" 
+                        onClick={() => {
+                          // Nếu đang xóa option được chọn làm đáp án đúng, clear correctAnswer
+                          if (formData.correctAnswer === option) {
+                            onFormChange('correctAnswer', '');
+                          }
+                          removeOption(index);
+                        }}
+                        size="small"
+                        sx={{
+                          ml: 1,
+                          '&:hover': {
+                            backgroundColor: 'error.100',
+                            transform: 'scale(1.1)',
+                          }
+                        }}
+                      >
+                        <CloseIcon />
+                      </IconButton>
+                    )}
+                  </Box>
+                ))}
+              </RadioGroup>
               
               {errors.options && (
                 <FormHelperText error>{errors.options}</FormHelperText>
+              )}
+              
+              {errors.correctAnswer && (
+                <FormHelperText error>{errors.correctAnswer}</FormHelperText>
               )}
               
               {!isReadOnly && (
@@ -571,21 +655,23 @@ const QuestionDialogForm = forwardRef<HTMLFormElement, QuestionDialogFormProps>(
           </Box>
         )}
         
-        <Box>
-          <FormControl fullWidth error={!!errors.correctAnswer}>
-            <TextField
-              name="correctAnswer"
-              label={formData.questionType === 'multiple_choice' ? "Đáp án đúng *" : "Đáp án mẫu *"}
-              multiline={formData.questionType === 'essay'}
-              rows={formData.questionType === 'essay' ? 4 : 1}
-              value={formData.correctAnswer || ''}
-              onChange={handleChange}
-              error={!!errors.correctAnswer}
-              helperText={errors.correctAnswer}
-              disabled={isReadOnly}
-            />
-          </FormControl>
-        </Box>
+        {formData.questionType === 'essay' && (
+          <Box>
+            <FormControl fullWidth error={!!errors.correctAnswer}>
+              <TextField
+                name="correctAnswer"
+                label="Đáp án mẫu *"
+                multiline
+                rows={4}
+                value={formData.correctAnswer || ''}
+                onChange={handleChange}
+                error={!!errors.correctAnswer}
+                helperText={errors.correctAnswer}
+                disabled={isReadOnly}
+              />
+            </FormControl>
+          </Box>
+        )}
         
         {renderMediaSection(
           'Media đáp án',

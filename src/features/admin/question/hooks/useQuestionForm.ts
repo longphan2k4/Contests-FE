@@ -151,7 +151,7 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
         defaultTime: question.defaultTime || 30,
         questionType: question.questionType as 'multiple_choice' | 'essay',
         content: question.content || '',
-        options: question.options || ['', ''],
+        options: question.questionType === 'essay' ? null : (question.options || ['', '']),
         correctAnswer: question.correctAnswer || '',
         score: question.score || 1,
         difficulty: question.difficulty as 'Alpha' | 'Beta' | 'Rc' | 'Gold',
@@ -237,7 +237,23 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
   };
 
   const handleFormChange = (name: string, value: string | number | boolean) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+      
+      // Logic đặc biệt cho questionType - xử lý options
+      if (name === 'questionType') {
+        if (value === 'essay') {
+          newData.options = null;
+          newData.correctAnswer = ''; // Clear correctAnswer khi chuyển sang essay
+        } else if (value === 'multiple_choice') {
+          newData.options = prev.options && prev.options.length > 0 ? prev.options : ['', ''];
+          newData.correctAnswer = ''; // Clear correctAnswer khi chuyển sang multiple_choice
+        }
+      }
+      
+      return newData;
+    });
+    
     // Clear error when field is edited
     if (errors[name]) {
       setErrors(prev => {
@@ -470,10 +486,8 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
       }
     });
     
-    // Append options as JSON string
-    if (data.options) {
-      formDataToSubmit.append('options', JSON.stringify(data.options));
-    }
+    // Append options as JSON string - luôn gửi options (null cho essay, array cho multiple_choice)
+    formDataToSubmit.append('options', JSON.stringify(data.options));
     
     // Append files to delete - chỉ gửi các mảng có giá trị hợp lệ
     if (data.deleteQuestionMedia && data.deleteQuestionMedia.length > 0) {
