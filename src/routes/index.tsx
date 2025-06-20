@@ -2,11 +2,10 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 // import PrivateRoute from './PrivateRoute';
 import AdminRoutes from "../features/admin/AdminRoutes";
-import ContestRoutes from "../features/Contest/ContestRouter";
-
+import ContestRoutes from "../features/contest/ContestRouter";
 import AuthRoutes from "../features/auth/routes";
 import PublicRoutes from "./PublicRoutes";
-
+import {AudienceOpinionPage, AUDIENCE_ROUTES } from "../features/audience";
 import MatchPage from "../features/match/pages/MatchPage";
 import TechBanner from "../features/match/components/MediaPopup/BackGround";
 import PrivateRoute from "./PrivateRoute";
@@ -43,7 +42,6 @@ const AppRoutes: React.FC = () => {
       </Route>
 
       {AdminRoutes()}
-
       {/* Protected Routes */}
       <Route element={<PrivateRoute />}>
         <Route path="/account/profile" element={<ProfilePage />} />
@@ -51,7 +49,6 @@ const AppRoutes: React.FC = () => {
       {/* Public Routes */}
       <Route path="/judge/home" element={<JudgeHomePage />} />
       <Route path="/judge/selected-match" element={<MatchSelectionPage />} />
-
       <Route
         path="/match/:slug"
         element={
@@ -60,7 +57,8 @@ const AppRoutes: React.FC = () => {
           </SocketProvider>
         }
       />
-
+      { /*Route của khán giả*/}
+      <Route path={AUDIENCE_ROUTES.OPINION_PAGE} element={<AudienceOpinionPage />} />;
       <Route path="/match/eliminate" element={<EliminatePage />} />
       <Route path="/banner" element={<TechBanner />} />
       <Route path="/403" element={<Forbidden403 />} />
