@@ -50,7 +50,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/judge/home" element={<JudgeHomePage />} />
       <Route path="/judge/selected-match" element={<MatchSelectionPage />} />
       <Route
-        path="/match/:slug"
+        path="/tran-dau/:match"
         element={
           <SocketProvider>
             <MatchPage />

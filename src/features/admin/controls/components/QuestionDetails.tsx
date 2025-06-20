@@ -1,6 +1,7 @@
 import React from "react";
 import { type Question } from "../type/control.type";
-
+import { useSocket } from "../../../../contexts/SocketContext";
+import { useParams } from "react-router-dom";
 interface QuestionDetailsProp {
   questions: Question[];
   currentQuestion?: number;
@@ -32,6 +33,17 @@ const QuestionDetails: React.FC<QuestionDetailsProp> = ({
     video: { color: "bg-teal-600", label: "Video" },
   };
 
+  const { match } = useParams();
+  const { socket } = useSocket();
+
+  const EmitGetCurrentQuestion = (
+    match: string | undefined,
+    questionOrder: number
+  ) => {
+    if (!socket || !match) return;
+    socket.emit("currentQuestion:get", { match, questionOrder });
+  };
+
   return (
     <div className="w-1/5 bg-gradient-to-b from-blue-600 to-blue-800 text-white p-4 shadow-lg flex flex-col h-screen">
       <h2 className="text-2xl font-bold mb-2 tracking-tight text-center bg-blue-900 rounded-lg py-1">
@@ -58,6 +70,7 @@ const QuestionDetails: React.FC<QuestionDetailsProp> = ({
 
             return (
               <li
+                onClick={() => EmitGetCurrentQuestion(match, q.questionOrder)}
                 key={q.id}
                 className={`rounded-lg cursor-pointer transition-all duration-200 shadow-md flex items-center p-1 relative ${
                   isCurrent
