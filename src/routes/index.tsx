@@ -16,31 +16,15 @@ import MatchSelectionPage from "../features/judge/pages/MatchSelectionPage";
 import EliminatePage from "../features/match/pages/EliminatePage";
 import { SocketProvider } from "../contexts/SocketContext";
 import ControlsPage from "../features/admin/controls/pages/ControlsPage";
-import { AuthProvider } from "../features/auth/hooks/authContext";
-import PublicRoute from "./PublicRoute";
 
-// Các component trang admin
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
+      {/* Public Routes */}
       {PublicRoutes()}
-      <Route
-        element={
-          <AuthProvider>
-            <PublicRoute restricted={true} />
-          </AuthProvider>
-        }
-      >
-        {AuthRoutes()}
-      </Route>
-      <Route
-        element={
-          <AuthProvider>
-            <PrivateRoute roles={["Admin"]} />
-          </AuthProvider>
-        }
-      >
-        {AdminRoutes()}
+      {/* Auth Routes - Đăng nhập, Đăng ký */}
+      {AuthRoutes()}
+      <Route element={<PrivateRoute roles={["Admin"]} />}>
         {ContestRoutes()}
       </Route>
       <Route element={<PrivateRoute roles={["Admin"]} />}>
@@ -53,6 +37,7 @@ const AppRoutes: React.FC = () => {
           }
         />
       </Route>
+      {AdminRoutes()}
       {/* Protected Routes */}
       <Route element={<PrivateRoute />}>
         <Route path="/account/profile" element={<ProfilePage />} />
