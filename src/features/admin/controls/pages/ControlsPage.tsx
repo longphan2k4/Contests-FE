@@ -10,7 +10,6 @@ import {
 import QuestionDetails from "../components/QuestionDetails";
 import BackgroundControl from "../components/BackgroundControl";
 import CurrentContestants from "../components/CurrentContestants";
-
 import {
   useBgContest,
   useCurrentQuestion,
@@ -21,7 +20,6 @@ import {
   useListContestant,
   useListRescues,
 } from "../hook/useControls";
-
 import {
   type MatchInfo,
   type BgContest,
@@ -32,14 +30,13 @@ import {
   type SceenControl,
   type CurrentQuestion,
 } from "../type/control.type";
-
 import { useSocket } from "../../../../contexts/SocketContext";
 import { Box, CircularProgress } from "@mui/material";
 
 const ControlsPage: React.FC = () => {
   const { match } = useParams();
-
   const { socket, isConnected } = useSocket();
+
   // 1. State
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
   const [listContestant, setListContestant] = useState<ListContestant[]>([]);
@@ -52,56 +49,47 @@ const ControlsPage: React.FC = () => {
   const [listQuestion, setListQuestion] = useState<Question[]>([]);
   const [screenControl, setScreenControl] = useState<SceenControl | null>(null);
 
-  // 2. Hook với alias
   const {
     data: matchInfoRes,
     isLoading: isLoadingMatch,
     isSuccess: isSuccessMatch,
   } = useMatchInfo(match ?? null);
-
   const {
     data: bgContestRes,
     isLoading: isLoadingBg,
     isSuccess: isSuccessBg,
   } = useBgContest(match ?? null);
-
   const {
     data: currentQuestionRes,
     isLoading: isLoadingCurrentQuestion,
     isSuccess: isSuccessCurrentQuestion,
   } = useCurrentQuestion(match ?? null);
-
   const {
     data: listRescueRes,
     isLoading: isLoadingRescues,
     isSuccess: isSuccessRescues,
   } = useListRescues(match ?? null);
-
   const {
     data: listContestantRes,
     isLoading: isLoadingContestants,
     isSuccess: isSuccessContestants,
   } = useListContestant(match ?? null);
-
   const {
     data: countContestantRes,
     isLoading: isLoadingCount,
     isSuccess: isSuccessCount,
   } = useCountContestant(match ?? null);
-
   const {
     data: listQuestionRes,
     isLoading: isLoadingQuestions,
     isSuccess: isSuccessQuestions,
   } = useListQuestion(match ?? null);
-
   const {
     data: screenControlRes,
     isLoading: isLoadingControl,
     isSuccess: isSuccessControl,
   } = useScreenControl(match ?? null);
 
-  // 3. useEffect gọn gàng với isSuccess
   useEffect(() => {
     if (isSuccessMatch) setMatchInfo(matchInfoRes.data);
   }, [isSuccessMatch, matchInfoRes]);
@@ -134,6 +122,30 @@ const ControlsPage: React.FC = () => {
     if (isSuccessControl) setScreenControl(screenControlRes.data);
   }, [isSuccessControl, screenControlRes]);
 
+  // Di chuyển useEffect của socket lên trước isLoading
+  useEffect(() => {
+    if (!socket) {
+      return () => {};
+    }
+
+    const handleScreenUpdate = (data: any) => {
+      setScreenControl(data?.updatedScreen);
+    };
+
+    const handleCurrentQuestion = (data: any) => {
+      setMatchInfo({ ...data?.matchInfo });
+      setCurrentQuestion({ ...data?.currentQuestion });
+    };
+
+    socket.on("screen:update", handleScreenUpdate);
+    socket.on("currentQuestion:get", handleCurrentQuestion);
+
+    return () => {
+      socket.off("screen:update", handleScreenUpdate);
+      socket.off("currentQuestion:get", handleCurrentQuestion); // Sửa lỗi typo: "screen:update" thành "currentQuestion:get"
+    };
+  }, [socket]);
+
   const isLoading =
     isLoadingMatch ||
     isLoadingBg ||
@@ -144,7 +156,6 @@ const ControlsPage: React.FC = () => {
     isLoadingQuestions ||
     isLoadingControl;
 
-  // 5. Hiển thị loading
   if (isLoading) {
     return (
       <Box
@@ -165,10 +176,7 @@ const ControlsPage: React.FC = () => {
           questions={listQuestion}
           currentQuestion={matchInfo?.currentQuestion}
         />
-
         <div className="w-4/5 p-8 flex flex-col overflow-y-auto max-h-screen">
-          {/* Header Info */}
-
           <QuestionHeader
             questionOrder={matchInfo?.currentQuestion}
             timeRemaining={matchInfo?.remainingTime}
@@ -176,15 +184,18 @@ const ControlsPage: React.FC = () => {
             totalTime={currentQuestion?.defaultTime}
             matchNumber={matchInfo?.name}
           />
-
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <h2 className="text-xl font-semibold text-gray-800 tracking-tight mb-4">
               Trạng thái điều khiển
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="bg-blue-100 p-4 rounded-lg border border-blue-200">
-                <h3 className="text-blue-800 font-medium mb-1">Trạng thái</h3>
-                <p className="text-blue-700 text-sm">Sẵn sàng hiển thị</p>
+                <h3 className="text-blue-800 font-medium mb-1">
+                  Màn hình chiếu
+                </h3>
+                <p className="text-blue-700 text-sm">
+                  <Link to={`/tran-dau/${match}`}>Màn hình chiếu</Link>
+                </p>
               </div>
               <div className="bg-green-100 p-4 rounded-lg border border-green-200">
                 <h3 className="text-green-800 font-medium mb-1">Socket.IO</h3>
@@ -200,11 +211,9 @@ const ControlsPage: React.FC = () => {
               </div>
             </div>
           </div>
-
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <BackgroundControl />
           </div>
-
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
               <QuestionControl remainingTime={matchInfo?.remainingTime} />
@@ -222,21 +231,12 @@ const ControlsPage: React.FC = () => {
               </div>
             </div>
           </div>
-
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <SupplierVideo />
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <ContestantsControl />
           </div>
-          {/* <div className="grid grid-cols-3 gap-2">
-            <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
-              <GoldControl />
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100 col-span-2">
-              <ContestantsResult />
-            </div>
-          </div> */}
           <div>
             <Link
               className="block text-center w-full btn bg-red-500 hover:bg-red-600 cursor-pointer text-white font-bold p-2 rounded-lg"

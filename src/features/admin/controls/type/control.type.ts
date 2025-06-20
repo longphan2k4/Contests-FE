@@ -39,7 +39,7 @@ export type ContestantMatchStatus =
 export const controlKey = {
   background: "background",
   question: "question",
-  questioninfo: "questioninfo",
+  questionInfo: "questionInfo",
   answer: "answer",
   matchdiagram: "matchdiagram",
   explanation: "explanation",
@@ -157,4 +157,10 @@ export type Question = {
   content: string;
   difficulty: difficultyType;
   questionType: QuestionType;
+};
+
+export type UpdateSceenControl = {
+  controlKey?: ControlKey;
+  controlValue?: ControlValue;
+  media?: string;
 };
