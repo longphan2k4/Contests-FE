@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import { PlayIcon, PauseIcon } from "@heroicons/react/24/outline";
-import { type CurrentQuestion } from "../type/control.type";
+import {
+  type CurrentQuestion,
+  type UpdateSceenControl,
+} from "../type/control.type";
+import { useSocket } from "../../../../contexts/SocketContext";
+import { useToast } from "../../../../contexts/toastContext";
+import { useParams } from "react-router-dom";
 interface QuestionControlProp {
   currentQuestion?: CurrentQuestion;
   remainingTime?: number;
@@ -12,6 +18,17 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
   );
   const [timeRemaining, setTimeRemaining] = useState<number>(30);
   const [inputTime, setInputTime] = useState<number>(30);
+
+  const { socket } = useSocket();
+  const { showToast } = useToast();
+  const { match } = useParams();
+
+  const EmitScreenUpdate = (payload: UpdateSceenControl) => {
+    if (!socket || !match) return;
+
+    socket.emit("screen:update", { match, ...payload }, (response: any) => {});
+    showToast("Cập nhật màn hình thành công", "success");
+  };
 
   const handleClick = (action?: string) => {
     switch (action) {
@@ -43,37 +60,33 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
       <div className="grid grid-cols-3 gap-3 mb-6">
         <button
           className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium"
-          onClick={() => handleClick("intro")}
+          onClick={() =>
+            EmitScreenUpdate({
+              controlKey: "questionInfo",
+            })
+          }
         >
           Intro
         </button>
         <button
           className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium"
-          onClick={() => handleClick("show")}
+          onClick={() =>
+            EmitScreenUpdate({
+              controlKey: "question",
+            })
+          }
         >
           Show
         </button>
         <button
-          className={`px-4 py-3 ${
-            timerStatus === "running"
-              ? "bg-orange-500 hover:bg-orange-600"
-              : "bg-green-500 hover:bg-green-600"
-          } text-white rounded-lg shadow-md font-medium flex items-center justify-center gap-2`}
+          className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium"
           onClick={() =>
-            handleClick(timerStatus === "running" ? "pause" : "start")
+            EmitScreenUpdate({
+              controlKey: "explanation",
+            })
           }
         >
-          {timerStatus === "running" ? (
-            <>
-              <PauseIcon className="h-5 w-5" />
-              Pause
-            </>
-          ) : (
-            <>
-              <PlayIcon className="h-5 w-5" />
-              Start
-            </>
-          )}
+          Explanation
         </button>
       </div>
 

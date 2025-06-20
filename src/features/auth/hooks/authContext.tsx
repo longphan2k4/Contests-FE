@@ -22,11 +22,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(null); // reset user
       (async () => {
         try {
-          await refetch();
+          const response = await refetch(); // gọi refetch và chờ kết quả
+          if (response?.data?.data) {
+            setUser(response.data.data);
+          } else {
+            setUser(null);
+          }
         } catch (err) {
           setUser(null);
         } finally {
-          setLoading(false);
+          setLoading(false); // chỉ set loading false sau khi có kết quả
         }
       })();
     } else {
