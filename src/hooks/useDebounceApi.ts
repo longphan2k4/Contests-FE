@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from "react";
 
 interface UseDebounceApiOptions {
   delay?: number;
@@ -8,29 +8,29 @@ interface UseDebounceApiOptions {
 export const useDebounceApi = <T extends (...args: any[]) => Promise<any>>(
   callback: T,
   options: UseDebounceApiOptions = {}
-): [T, () => void] => {
+): [(...args: Parameters<T>) => Promise<ReturnType<T>>, () => void] => {
   const { delay = 300, immediate = false } = options;
-  const timeoutRef = useRef<NodeJS.Timeout>();
-  const abortControllerRef = useRef<AbortController>();
 
-  // Cancel previous request
-  const cancelPreviousRequest = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const cancel = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
     }
   }, []);
 
-  // Debounced function
-  const debouncedCallback = useCallback(
-    ((...args: Parameters<T>) => {
-      cancelPreviousRequest();
+  const debouncedFn = useCallback(
+    (...args: Parameters<T>) => {
+      cancel();
 
-      // Create new AbortController for this request
-      abortControllerRef.current = new AbortController();
-      const signal = abortControllerRef.current.signal;
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
       if (immediate) {
         return callback(...args);
@@ -39,30 +39,30 @@ export const useDebounceApi = <T extends (...args: any[]) => Promise<any>>(
       return new Promise<ReturnType<T>>((resolve, reject) => {
         timeoutRef.current = setTimeout(async () => {
           try {
-            // Pass abort signal to callback if it accepts it
-            const result = await callback(...args, { signal });
-            if (!signal.aborted) {
+            const result = await callback(...args, {
+              signal: controller.signal,
+            });
+            if (!controller.signal.aborted) {
               resolve(result);
             }
-          } catch (error: any) {
-            if (!signal.aborted) {
-              reject(error);
+          } catch (err) {
+            if (!controller.signal.aborted) {
+              reject(err);
             }
           }
         }, delay);
       });
-    }) as T,
-    [callback, delay, immediate, cancelPreviousRequest]
+    },
+    [callback, delay, immediate, cancel]
   );
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      cancelPreviousRequest();
+      cancel();
     };
-  }, [cancelPreviousRequest]);
+  }, [cancel]);
 
-  return [debouncedCallback, cancelPreviousRequest];
+  return [debouncedFn, cancel];
 };
 
-export default useDebounceApi; 
+export default useDebounceApi;
