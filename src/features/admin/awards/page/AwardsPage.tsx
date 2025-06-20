@@ -43,6 +43,8 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 
 const AwardsPage: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
+  
   const [awards, setAwards] = useState<Award[]>([]);
   const [selectedAwardId, setSelectedAwardId] = useState<number | null>(null);
   const [pagination, setPagination] = useState<pagination>({});
@@ -55,18 +57,15 @@ const AwardsPage: React.FC = () => {
 
   const [filter, setFilter] = useState<AwardQuery>({});
   const [selectedAwardIds, setSelectedAwardIds] = useState<number[]>([]);
-  const { slug } = useParams<{ slug: string }>();
-  if (!slug) return null;
   const { showToast } = useToast();
-
   const {
     data: awardsQuery,
     isLoading: isAwardsLoading,
     isError: isAwardsError,
     refetch: refetchAwards,
-  } = useAwards(slug as string, filter);
+  } = useAwards(slug || '', filter);
 
-  const { mutate: mutateCreate } = useCreateAward(slug);
+  const { mutate: mutateCreate } = useCreateAward(slug || '');
 
   const { mutate: mutateUpdate } = useUpdate();
 
@@ -105,67 +104,60 @@ const AwardsPage: React.FC = () => {
 
   const handeDeletes = (ids: deleteAwardsType) => {
     mutateDeleteMany(ids, {
-      onSuccess: data => {
-        data.messages.forEach((item: any) => {
-          if (item.status === "error") {
-            showToast(item.msg, "error");
-          } else {
-            showToast(item.msg, "success");
-          }
-        });
-        refetchAwards();
+      onSuccess: () => {
+        // Hook useDeleteMany đã xử lý invalidation và toast
+        setIsConfirmDeleteMany(false);
+        setSelectedAwardIds([]);
       },
-      onError: err => {
-        console.log(err);
+      onError: (err: unknown) => {
+        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi xóa giải thưởng";
+        showToast(message, "error");
       },
     });
   };
 
   const handleCreate = (payload: CreateAwardInput) => {
     mutateCreate(payload, {
-      onSuccess: data => {
-        if (data) showToast(`Tạo giải thưởng thành công`, "success");
-        refetchAwards();
+      onSuccess: () => {
+        // Hook useCreateAward đã xử lý invalidation và toast
+        setIsCreateOpen(false);
       },
-      onError: (err: any) => {
-        if (err.response?.data?.message) {
-          showToast(err.response?.data?.message, "success");
-        }
+      onError: (err: unknown) => {
+        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi tạo giải thưởng";
+        showToast(message, "error");
       },
     });
-  };
-
+  };  
   const handleUpdate = (payload: UpdateAwardInput) => {
     if (selectedAwardId) {
       mutateUpdate(
         { id: selectedAwardId, payload },
         {
           onSuccess: () => {
-            showToast(`Cập nhật giải thưởng thành công`, "success");
-            refetchAwards();
+            // Toast và invalidation được xử lý trong hook useUpdate
+            setIsEditOpen(false);
           },
-          onError: (err: any) => {
-            if (err.response?.data?.message)
-              showToast(err.response?.data?.message, "error");
+          onError: (err: unknown) => {
+            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi cập nhật giải thưởng";
+            showToast(message, "error");
           },
         }
       );
     }
   };
-
   const handleDelete = useCallback((id: number | null) => {
     if (!id) return;
     mutateDelete(id, {
       onSuccess: () => {
-        showToast(`Xóa giải thưởng thành công`, "success");
-        refetchAwards();
+        // Toast và invalidation được xử lý trong hook useDelete
+        setIsConfirmDelete(false);
       },
-      onError: (error: any) => {
-        showToast(error.response?.data?.message, "success");
+      onError: (error: unknown) => {
+        const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi xóa giải thưởng";
+        showToast(message, "error");
       },
     });
-  }, []);
-
+  }, [mutateDelete, showToast]);
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
       setSelectedAwardId(id);
@@ -179,10 +171,20 @@ const AwardsPage: React.FC = () => {
     },
     []
   );
-
   const hanldConfirmDeleteManyDeletes = () => {
     setIsConfirmDeleteMany(true);
   };
+
+  // Handle missing slug
+  if (!slug) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">
+          Không tìm thấy thông tin cuộc thi
+        </Alert>
+      </Box>
+    );
+  }
 
   if (isAwardsLoading) {
     return (
@@ -196,7 +198,7 @@ const AwardsPage: React.FC = () => {
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchAwards}>Thử lại</Button>}
+          action={<Button onClick={() => refetchAwards()}>Thử lại</Button>}
         >
           Không thể tải danh sách giải thưởng
         </Alert>
@@ -347,11 +349,11 @@ const AwardsPage: React.FC = () => {
               Trang {filter?.page || 1} / {pagination?.totalPages}
             </Typography>
           </Box>
-        </Box>
+        </Box>        
         <Box className="flex flex-col items-center">
           {" "}
           <Pagination
-            count={pagination?.totalPages}
+            count={pagination?.totalPages || 0}
             page={filter?.page ?? 1}
             color="primary"
             onChange={(_event, value) =>
