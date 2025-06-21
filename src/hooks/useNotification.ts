@@ -28,7 +28,6 @@ export const useNotification = (): UseNotificationReturn => {
     message: '',
     severity: 'info'
   });
-
   const showNotification = useCallback((
     message: string,
     severity: AlertColor = 'info',
@@ -38,7 +37,7 @@ export const useNotification = (): UseNotificationReturn => {
       open: true,
       message,
       severity,
-      title
+      ...(title && { title })
     });
   }, []);
 

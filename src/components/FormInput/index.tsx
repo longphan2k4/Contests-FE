@@ -22,21 +22,20 @@ const FormInput = ({
   icon,
   value,
   type = "text",
-}: FormInputProps) => {
-  return (
+}: FormInputProps) => {  return (
     <TextField
       margin="normal"
       fullWidth
       type={type}
       id={id}
       label={label}
-      placeholder={placeholder}
+      {...(placeholder && { placeholder })}
       autoComplete="email"
       autoFocus
       {...register}
       error={!!error}
-      value={value}
-      helperText={error?.message}
+      {...(value !== undefined && { value })}
+      {...(error?.message && { helperText: error.message })}
       variant="outlined"
       sx={{
         mb: 3,

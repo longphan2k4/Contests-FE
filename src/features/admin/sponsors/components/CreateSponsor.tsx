@@ -1,29 +1,28 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import FormInput from "../../../../components/FormInput";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Typography, TextField, IconButton } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import CloseIcon from "@mui/icons-material/Close";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import {
   CreateSponsorSchema,
   type CreateSponsorInput,
+  type CreateSponsorForContestInput,
 } from "../types/sponsors.shame";
 
 interface CreateSponsorDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: {
-    name: string;
-    logo?: File;
-    images?: File;
-    videos?: string;
-  }) => void;
+  onSubmit: (data: CreateSponsorForContestInput) => void;
+  isLoading?: boolean;
 }
 
-export default function CreateSponsorDialog({
+function CreateSponsorDialog({
   isOpen,
   onClose,
   onSubmit,
+  isLoading = false,
 }: CreateSponsorDialogProps): React.ReactElement {
   const {
     register,
@@ -31,191 +30,399 @@ export default function CreateSponsorDialog({
     formState: { errors },
     reset,
     watch,
+    setValue,
   } = useForm<CreateSponsorInput>({
     resolver: zodResolver(CreateSponsorSchema),
     defaultValues: {
       name: "",
-      videos: "",
     },
   });
 
-  useEffect(() => {
-    if (isOpen) reset();
-  }, [isOpen, reset]);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (isOpen) {
+      reset();
+      setLogoPreview(null);
+      setImagePreview(null);
+      setVideoPreview(null);
+    }
+  }, [isOpen, reset]);
   const logoFile = watch("logo")?.[0];
   const imagesFile = watch("images")?.[0];
-  const videoUrl = watch("videos");
+  const videosFile = watch("videos")?.[0];
+
+  useEffect(() => {
+    let objectUrl: string | undefined;
+    if (logoFile) {
+      objectUrl = URL.createObjectURL(logoFile);
+      setLogoPreview(objectUrl);
+    } else {
+      setLogoPreview(null);
+    }
+
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [logoFile]);
+
+  useEffect(() => {
+    let objectUrl: string | undefined;
+    if (imagesFile) {
+      objectUrl = URL.createObjectURL(imagesFile);
+      setImagePreview(objectUrl);
+    } else {
+      setImagePreview(null);
+    }
+
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [imagesFile]);
+
+  useEffect(() => {
+    let objectUrl: string | undefined;
+    if (videosFile) {
+      objectUrl = URL.createObjectURL(videosFile);
+      setVideoPreview(objectUrl);
+    } else {
+      setVideoPreview(null);
+    }
+
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [videosFile]);
 
   const handleFormSubmit = (data: CreateSponsorInput) => {
     onSubmit({
       name: data.name,
       logo: data.logo?.[0],
       images: data.images?.[0],
-      videos: data.videos,
+      videos: data.videos?.[0],
     });
-    onClose();
+  };
+
+  const handleRemoveFile = (field: "logo" | "images" | "videos") => {
+    setValue(field, undefined);
   };
 
   return (
     <AppFormDialog
       open={isOpen}
       onClose={onClose}
-      title="Thêm nhà tài trợ"
-      maxWidth="sm"
+      title="Tạo nhà tài trợ"
+      maxWidth="md"
     >
       <form onSubmit={handleSubmit(handleFormSubmit)}>
-        {/* Tên nhà tài trợ */}
-        <FormInput
-          label="Tên nhà tài trợ"
-          id="name"
-          placeholder="Nhập tên"
-          error={errors.name}
-          register={register("name")}
-        />
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <TextField
+            label="Tên nhà tài trợ"
+            {...register("name")}
+            error={!!errors.name}
+            helperText={errors.name?.message}
+            required
+            fullWidth
+          />
 
-        {/* Logo (file) */}
-        <Typography variant="subtitle2" sx={{ mt: 2 }}>
-          Logo (ảnh)
-        </Typography>
-        <label htmlFor="logo-upload">
           <Box
             sx={{
-              mt: 1,
-              border: "2px dashed #ccc",
-              borderRadius: 2,
-              p: 2,
-              textAlign: "center",
-              cursor: "pointer",
               display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: 100,
-              overflow: "hidden",
-              position: "relative",
-              backgroundColor: "#fafafa",
+              flexDirection: { xs: "column", md: "row" },
+              gap: 3,
             }}
           >
-            {logoFile ? (
-              <img
-                src={URL.createObjectURL(logoFile)}
-                alt="logo-preview"
-                style={{
-                  maxHeight: "100%",
-                  maxWidth: "100%",
-                  objectFit: "contain",
-                }}
-              />
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                Nhấn để chọn logo
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Logo
               </Typography>
-            )}
-          </Box>
-        </label>
-        <input
-          id="logo-upload"
-          type="file"
-          accept="image/*"
-          {...register("logo")}
-          style={{ display: "none" }}
-        />
-        {errors.logo && (
-          <Typography variant="caption" color="error">
-            {errors.logo.message as string}
-          </Typography>
-        )}
-
-        {/* Images (file) */}
-        <Typography variant="subtitle2" sx={{ mt: 2 }}>
-          Hình ảnh giới thiệu (nếu có)
-        </Typography>
-        <label htmlFor="images-upload">
-          <Box
-            sx={{
-              mt: 1,
-              border: "2px dashed #ccc",
-              borderRadius: 2,
-              p: 2,
-              textAlign: "center",
-              cursor: "pointer",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: 100,
-              overflow: "hidden",
-              position: "relative",
-              backgroundColor: "#fafafa",
-            }}
-          >
-            {imagesFile ? (
-              <img
-                src={URL.createObjectURL(imagesFile)}
-                alt="image-preview"
-                style={{
-                  maxHeight: "100%",
-                  maxWidth: "100%",
-                  objectFit: "contain",
-                }}
-              />
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                Nhấn để chọn ảnh
-              </Typography>
-            )}
-          </Box>
-        </label>
-        <input
-          id="images-upload"
-          type="file"
-          accept="image/*"
-          {...register("images")}
-          style={{ display: "none" }}
-        />
-        {errors.images && (
-          <Typography variant="caption" color="error">
-            {errors.images.message as string}
-          </Typography>
-        )}
-
-        {/* Videos (URL) */}
-        <FormInput
-          label="Video giới thiệu (URL)"
-          id="videos"
-          placeholder="https://youtube.com/..."
-          register={register("videos")}
-        />
-        {videoUrl && (
-          <Box mt={2}>
-            <Typography variant="subtitle2">Xem trước video:</Typography>
-            <Box mt={1}>
-              <iframe
-                width="100%"
-                height="250"
-                src={convertYoutubeUrlToEmbed(videoUrl)}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title="video preview"
-              ></iframe>
+              {logoFile ? (
+                <Box
+                  sx={{
+                    position: "relative",
+                    p: 1,
+                    border: "1px solid #ccc",
+                    borderRadius: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  {logoPreview && (
+                    <img
+                      src={logoPreview}
+                      alt="logo-preview"
+                      style={{
+                        width: "100%",
+                        maxHeight: 150,
+                        objectFit: "contain",
+                        borderRadius: "4px",
+                      }}
+                    />
+                  )}
+                  <Box
+                    sx={{
+                      overflow: "hidden",
+                      textAlign: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      {(logoFile.size / 1024 / 1024).toFixed(2)} MB
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    onClick={() => handleRemoveFile("logo")}
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      top: 4,
+                      right: 4,
+                      backgroundColor: "rgba(255, 255, 255, 0.7)",
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.9)",
+                      },
+                    }}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              ) : (
+                <Button
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    p: 2,
+                    borderStyle: "dashed",
+                    height: "100%",
+                    flexDirection: "column",
+                  }}
+                >
+                  <CloudUploadIcon sx={{ mb: 1 }} />
+                  Chọn hoặc kéo thả logo
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                  >
+                    JPG, PNG, GIF, WebP, SVG
+                  </Typography>
+                  <input type="file" accept="image/*" {...register("logo")} hidden />
+                </Button>
+              )}
+              {errors.logo && (
+                <Typography
+                  variant="caption"
+                  color="error"
+                  sx={{ mt: 0.5, display: "block" }}
+                >
+                  {errors.logo.message as string}
+                </Typography>
+              )}
             </Box>
-          </Box>
-        )}
 
-        {/* Nút Submit */}
-        <Button type="submit" variant="contained" sx={{ mt: 2, float: "right" }}>
-          Thêm
-        </Button>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Hình ảnh giới thiệu
+              </Typography>
+              {imagesFile ? (
+                <Box
+                  sx={{
+                    position: "relative",
+                    p: 1,
+                    border: "1px solid #ccc",
+                    borderRadius: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  {imagePreview && (
+                    <img
+                      src={imagePreview}
+                      alt="image-preview"
+                      style={{
+                        width: "100%",
+                        maxHeight: 150,
+                        objectFit: "contain",
+                        borderRadius: "4px",
+                      }}
+                    />
+                  )}
+                  <Box
+                    sx={{
+                      overflow: "hidden",
+                      textAlign: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      {(imagesFile.size / 1024 / 1024).toFixed(2)} MB
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    onClick={() => handleRemoveFile("images")}
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      top: 4,
+                      right: 4,
+                      backgroundColor: "rgba(255, 255, 255, 0.7)",
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.9)",
+                      },
+                    }}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              ) : (
+                <Button
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    p: 2,
+                    borderStyle: "dashed",
+                    height: "100%",
+                    flexDirection: "column",
+                  }}
+                >
+                  <CloudUploadIcon sx={{ mb: 1 }} />
+                  Chọn hoặc kéo thả hình ảnh
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                  >
+                    JPG, PNG, GIF, WebP, SVG
+                  </Typography>
+                  <input type="file" accept="image/*" {...register("images")} hidden />
+                </Button>
+              )}
+              {errors.images && (
+                <Typography
+                  variant="caption"
+                  color="error"
+                  sx={{ mt: 0.5, display: "block" }}
+                >
+                  {errors.images.message as string}
+                </Typography>
+              )}
+            </Box>
+
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Video giới thiệu
+              </Typography>
+              {videosFile ? (
+                <Box
+                  sx={{
+                    position: "relative",
+                    p: 1,
+                    border: "1px solid #ccc",
+                    borderRadius: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  {videoPreview && (
+                    <video
+                      src={videoPreview}
+                      style={{
+                        width: "100%",
+                        maxHeight: 150,
+                        borderRadius: "4px",
+                      }}
+                      controls
+                    />
+                  )}
+                  <Box
+                    sx={{
+                      overflow: "hidden",
+                      textAlign: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      {(videosFile.size / 1024 / 1024).toFixed(2)} MB
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    onClick={() => handleRemoveFile("videos")}
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      top: 4,
+                      right: 4,
+                      backgroundColor: "rgba(255, 255, 255, 0.7)",
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.9)",
+                      },
+                    }}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              ) : (
+                <Button
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    p: 2,
+                    borderStyle: "dashed",
+                    height: "100%",
+                    flexDirection: "column",
+                  }}
+                >
+                  <CloudUploadIcon sx={{ mb: 1 }} />
+                  Chọn hoặc kéo thả video
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                  >
+                    MP4, AVI, MOV, WMV, WebM
+                  </Typography>
+                  <input type="file" accept="video/*" {...register("videos")} hidden />
+                </Button>
+              )}
+              {errors.videos && (
+                <Typography
+                  variant="caption"
+                  color="error"
+                  sx={{ mt: 0.5, display: "block" }}
+                >
+                  {errors.videos.message as string}
+                </Typography>
+              )}
+            </Box>
+          </Box>          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+            <Button variant="outlined" onClick={onClose} fullWidth disabled={isLoading}>
+              Hủy
+            </Button>
+            <Button type="submit" variant="contained" fullWidth disabled={isLoading}>
+              {isLoading ? "Đang tạo..." : "Tạo"}
+            </Button>
+          </Box>
+        </Box>
       </form>
     </AppFormDialog>
   );
 }
 
-// Hàm chuyển URL YouTube sang dạng nhúng iframe
-function convertYoutubeUrlToEmbed(url?: string): string {
-  if (!url) return "";
-  const regExp =
-    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/;
-  const match = url.match(regExp);
-  return match ? `https://www.youtube.com/embed/${match[1]}` : "";
-}
+export default CreateSponsorDialog;
