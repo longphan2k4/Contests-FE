@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import EliminateGrid from '../components/Eliminate/EliminateGrid';
-import ActionButtons from '../components/Eliminate/ActionButtons';
-import EliminateSidebar from '../components/Eliminate/EliminateSidebar';
-import { useEliminate } from '../hooks/useEliminate';
-import MatchHeader from '../../../layouts/MatchLayout/MatchHeader';
+import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import EliminateGrid from "../components/Eliminate/EliminateGrid";
+import ActionButtons from "../components/Eliminate/ActionButtons";
+import EliminateSidebar from "../components/Eliminate/EliminateSidebar";
+import { useEliminate } from "../hooks/useEliminate";
+import MatchHeader from "../components/MatchHeader/MatchHeader";
 
 export default function EliminatePage() {
   const {
@@ -21,25 +21,32 @@ export default function EliminatePage() {
 
   const showSidebar = true;
   useEffect(() => {
-      document.title = 'Thí sinh - kết quả';
-    }, []);
+    document.title = "Thí sinh - kết quả";
+  }, []);
   return (
     <AnimatePresence>
       <div className="flex flex-col min-h-screen">
         {/* MatchHeader cố định ở phía trên */}
-        <MatchHeader />
+
         {/* Nội dung chính với padding-top để tránh bị che bởi header */}
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className="flex flex-col flex-1 overflow-hidden" // Thêm pt-[80px] để tránh che khuất
         >
           <div className="flex flex-1 overflow-auto mt-2">
             <div className="flex-1 p-5 overflow-auto">
-              <EliminateGrid icons={icons} recentlyRestored={recentlyRestored} />
-              <ActionButtons canDelete={canDelete} canRestore={canRestore} handleSnap={handleSnap} />
+              <EliminateGrid
+                icons={icons}
+                recentlyRestored={recentlyRestored}
+              />
+              <ActionButtons
+                canDelete={canDelete}
+                canRestore={canRestore}
+                handleSnap={handleSnap}
+              />
             </div>
             {showSidebar && (
               <EliminateSidebar
@@ -47,8 +54,12 @@ export default function EliminatePage() {
                 displayMode={displayMode}
                 setDisplayMode={setDisplayMode}
                 fadingOutContestants={fadingOutContestants}
-                totalEliminated={icons.filter(i => i.isActive && i.isDisintegrated).length}
-                totalRescued={icons.filter(i => i.isActive && i.isRescued).length}
+                totalEliminated={
+                  icons.filter(i => i.isActive && i.isDisintegrated).length
+                }
+                totalRescued={
+                  icons.filter(i => i.isActive && i.isRescued).length
+                }
               />
             )}
           </div>

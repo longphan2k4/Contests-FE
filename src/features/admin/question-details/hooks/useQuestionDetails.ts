@@ -1,9 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { questionDetailService } from '../services';
 import type { QuestionDetail } from '../types';
 import { useToast } from '../../../../contexts/toastContext';
 import axios from 'axios';
+import { useStableObject } from '../../../../hooks/useStableCallback';
+import { useDebounceApi } from '../../../../hooks/useDebounceApi';
 
 interface Filter {
   page: number;
@@ -36,6 +38,8 @@ interface FilterStats {
 
 export const useQuestionDetails = () => {
   const { packageId } = useParams<{ packageId: string }>();
+  const { showToast } = useToast();
+  
   const [questionDetails, setQuestionDetails] = useState<QuestionDetail[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,42 +47,55 @@ export const useQuestionDetails = () => {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [filterStats, setFilterStats] = useState<FilterStats | null>(null);
+  const [packageName, setPackageName] = useState<string | null>(null);
+  
   const [filter, setFilter] = useState<Filter>({
     page: 1,
     limit: 10,
-    isActive: true,
+    isActive: undefined,
+    questionType: '',
+    difficulty: '',
     sortBy: 'questionOrder',
-    sortOrder: 'asc'
+    sortOrder: 'asc',
+    search: ''
   });
-  const [packageName, setPackageName] = useState<string | null>(null);
+  
+  const stableFilter = useStableObject(filter);
+  
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const { showToast } = useToast();
-
-  const updateFilter = useCallback((newFilter: Partial<Filter>) => {
-    setFilter(prevFilter => ({ ...prevFilter, ...newFilter }));
-  }, []);
-
-  const fetchQuestionDetails = useCallback(async () => {
+  const fetchQuestionDetailsInternal = useCallback(async (options?: { signal?: AbortSignal }) => {
     if (!packageId) {
       setError('Không tìm thấy ID gói câu hỏi');
       return;
     }
+    
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    abortControllerRef.current = new AbortController();
+    const signal = options?.signal || abortControllerRef.current.signal;
+    
     try {
       setLoading(true);
       setError(null);
+      
       const response = await questionDetailService.getQuestionDetailsByPackage(
         Number(packageId),
         {
-          page: filter.page,
-          limit: filter.limit,
-          isActive: filter.isActive,
-          questionType: filter.questionType,
-          difficulty: filter.difficulty,
-          search: filter.search,
-          sortBy: filter.sortBy,
-          sortOrder: filter.sortOrder
+          page: stableFilter.page,
+          limit: stableFilter.limit,
+          isActive: stableFilter.isActive,
+          questionType: stableFilter.questionType,
+          difficulty: stableFilter.difficulty,
+          search: stableFilter.search,
+          sortBy: stableFilter.sortBy,
+          sortOrder: stableFilter.sortOrder
         }
       );
+
+      if (signal.aborted) return;
 
       if (response.data) {
         const questionData = response.data.questions || [];
@@ -91,10 +108,10 @@ export const useQuestionDetails = () => {
             totalQuestions: response.data.total || 0,
             filteredQuestions: questionData.length,
             appliedFilters: response.filters.appliedFilters || {
-              questionType: filter.questionType,
-              difficulty: filter.difficulty,
-              isActive: filter.isActive,
-              search: filter.search
+              questionType: stableFilter.questionType,
+              difficulty: stableFilter.difficulty,
+              isActive: stableFilter.isActive,
+              search: stableFilter.search
             }
           });
         }
@@ -105,7 +122,11 @@ export const useQuestionDetails = () => {
         setTotalPages(0);
         setFilterStats(null);
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      if (error instanceof Error && (error.name === 'AbortError' || signal.aborted)) {
+        return;
+      }
+      
       if (axios.isAxiosError(error) && error.response?.data?.message) {
         setError(error.response.data.message);
         showToast(error.response.data.message, 'error');
@@ -118,15 +139,39 @@ export const useQuestionDetails = () => {
       setTotalPages(0);
       setFilterStats(null);
     } finally {
-      setLoading(false);
+      if (!signal.aborted) {
+        setLoading(false);
+      }
     }
-  }, [packageId, filter, showToast]);
+  }, [packageId, stableFilter, showToast]);
+
+  const [debouncedFetch, cancelFetch] = useDebounceApi(fetchQuestionDetailsInternal, { delay: 300 });
+
+  const fetchQuestionDetails = useCallback(async () => {
+    return debouncedFetch();
+  }, [debouncedFetch]);
+
+  useEffect(() => {
+    return () => {
+      cancelFetch();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [cancelFetch]);
 
   useEffect(() => {
     if (packageId) {
-      fetchQuestionDetails();
+      debouncedFetch();
     }
-  }, [packageId, filter, fetchQuestionDetails]);
+  }, [packageId, stableFilter, debouncedFetch]);
+
+  const updateFilter = useCallback((newFilter: Partial<Filter>) => {
+    setFilter(prev => ({
+      ...prev,
+      ...newFilter
+    }));
+  }, []);
 
   const handleDelete = async (record: QuestionDetail) => {
     try {
@@ -193,7 +238,6 @@ export const useQuestionDetails = () => {
         } else if (errorData?.message) {
           showToast(errorData.message, 'error');
         } else if (errorData?.errors) {
-          // Xử lý trường hợp có nhiều lỗi
           const errorMessages = errorData.errors.map((err: { message: string }) => err.message).join('\n');
           showToast(errorMessages, 'error');
         } else {
@@ -230,7 +274,6 @@ export const useQuestionDetails = () => {
       } else {
         throw new Error('Thiếu thông tin câu hỏi');
       }
-      // fetchQuestionDetails();
       return true;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.message) {

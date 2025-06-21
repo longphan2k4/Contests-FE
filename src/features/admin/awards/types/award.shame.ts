@@ -2,7 +2,13 @@ import { z } from "zod";
 
 export const CreateAwardSchema = z.object({
   name: z.string().min(1, "Tên giải thưởng không được để trống"),
-  contestantId: z.number().nullable(),
+  contestantId: z
+    .union([
+      z.number().positive("ID thí sinh phải lớn hơn 0"),
+      z.nan().transform(() => null),
+      z.null()
+    ])
+    .nullable(),
   type: z.enum([
     "firstPrize",
     "secondPrize",
@@ -10,7 +16,9 @@ export const CreateAwardSchema = z.object({
     "fourthPrize",
     "impressiveVideo",
     "excellentVideo",
-  ]),
+  ], {
+    errorMap: () => ({ message: "Vui lòng chọn loại giải" })
+  }),
 });
 
 
@@ -30,7 +38,13 @@ export const AwardShema = z.object({
 
 export const UpdateAwardSchema = z.object({
   name: z.string().min(1, "Tên giải thưởng không được để trống").optional(),
-  contestantId: z.number().nullable(),
+  contestantId: z
+    .union([
+      z.number().positive("ID thí sinh phải lớn hơn 0"),
+      z.nan().transform(() => null),
+      z.null()
+    ])
+    .nullable(),
   type: z
     .enum([
       "firstPrize",
@@ -39,7 +53,9 @@ export const UpdateAwardSchema = z.object({
       "fourthPrize",
       "impressiveVideo",
       "excellentVideo",
-    ])
+    ], {
+      errorMap: () => ({ message: "Vui lòng chọn loại giải" })
+    })
     .optional(),
 });
 

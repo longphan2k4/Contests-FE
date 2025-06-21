@@ -1,0 +1,100 @@
+import axiosInstance from "../../../../config/axiosInstance";
+
+import {
+  type CreateContestantInput,
+  type UpdateContestantInput,
+  type DeleteContestanteInput,
+  type ContestantQueryInput,
+  type CreatesContestInput,
+} from "../types/contestant.shame";
+
+export const GetAll = async (
+  params: ContestantQueryInput,
+  slug: string | null
+) => {
+  const res = await axiosInstance.get(`/contestant/contest/${slug}`, {
+    params,
+  });
+  return res.data;
+};
+
+export const GetAllNotCotest = async (
+  params: ContestantQueryInput,
+  slug: string | null
+) => {
+  const res = await axiosInstance.get(`/contestant/not-contest/${slug}`, {
+    params,
+  });
+  return res.data;
+};
+
+export const GetAllSutent = async (
+  params: ContestantQueryInput,
+  slug: string | null
+) => {
+  if (!slug) return;
+  const res = await axiosInstance.get(
+    `/student/not-contest/${slug}?isActive=true`,
+    {
+      params,
+    }
+  );
+  return res.data;
+};
+
+export const GetById = async (id: number | null) => {
+  const res = await axiosInstance.get(`/contestant/${id}`);
+  return res.data.data;
+};
+
+export const Create = async (
+  payload: CreateContestantInput,
+  slug: string | null
+) => {
+  const res = await axiosInstance.post(`/contestant/contest/${slug}`, payload);
+  return res.data;
+};
+
+export const Creates = async (
+  payload: CreatesContestInput,
+  slug: string | null
+) => {
+  const res = await axiosInstance.post(`/contestant/contest/${slug}`, payload);
+  return res.data;
+};
+
+export const Update = async (id: number, payload: UpdateContestantInput) => {
+  const res = await axiosInstance.patch(`/contestant/${id}`, payload);
+  return res.data;
+};
+
+export const Deletes = async (ids: DeleteContestanteInput) => {
+  const res = await axiosInstance.post("/contestant/delete-many", ids);
+  return res.data;
+};
+
+export const Delete = async (id: number) => {
+  const res = await axiosInstance.delete(`/contestant/${id}`);
+  return res.data;
+};
+
+export const GetContestantStatus = async () => {
+  const res = await axiosInstance.get(`/enums/ContestantStatus`);
+  return res.data;
+};
+
+export const GetListSchool = async () => {
+  const res = await axiosInstance.get(`/school/get-school`);
+  return res.data;
+};
+
+export const GetListRound = async (slug: string | null) => {
+  if (!slug) return;
+  const res = await axiosInstance.get(`/round/contest/${slug}/get-round`);
+  return res.data;
+};
+
+export const GetListClassBySchool = async (schoolId: number | null) => {
+  const res = await axiosInstance.get(`/class/school/${schoolId}`);
+  return res.data;
+};

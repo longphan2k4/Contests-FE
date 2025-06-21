@@ -9,7 +9,7 @@ import ContestRoutes from "../features/contest/ContestRouter";
 >>>>>>> Stashed changes
 import AuthRoutes from "../features/auth/routes";
 import PublicRoutes from "./PublicRoutes";
-import {AudienceOpinionPage, AUDIENCE_ROUTES } from "../features/audience";
+import { AudienceOpinionPage, AUDIENCE_ROUTES } from "../features/audience";
 import MatchPage from "../features/match/pages/MatchPage";
 import TechBanner from "../features/match/components/MediaPopup/BackGround";
 import PrivateRoute from "./PrivateRoute";
@@ -26,14 +26,11 @@ const AppRoutes: React.FC = () => {
     <Routes>
       {/* Public Routes */}
       {PublicRoutes()}
-
       {/* Auth Routes - Đăng nhập, Đăng ký */}
       {AuthRoutes()}
-
       <Route element={<PrivateRoute roles={["Admin"]} />}>
         {ContestRoutes()}
       </Route>
-
       <Route element={<PrivateRoute roles={["Admin"]} />}>
         <Route
           path="/admin/cuoc-thi/:slug/dieu-kien-tran-dau/:match"
@@ -44,7 +41,6 @@ const AppRoutes: React.FC = () => {
           }
         />
       </Route>
-
       {AdminRoutes()}
       {/* Protected Routes */}
       <Route element={<PrivateRoute />}>
@@ -54,15 +50,19 @@ const AppRoutes: React.FC = () => {
       <Route path="/judge/home" element={<JudgeHomePage />} />
       <Route path="/judge/selected-match" element={<MatchSelectionPage />} />
       <Route
-        path="/match/:slug"
+        path="/tran-dau/:match"
         element={
           <SocketProvider>
             <MatchPage />
           </SocketProvider>
         }
       />
-      { /*Route của khán giả*/}
-      <Route path={AUDIENCE_ROUTES.OPINION_PAGE} element={<AudienceOpinionPage />} />;
+      {/*Route của khán giả*/}
+      <Route
+        path={AUDIENCE_ROUTES.OPINION_PAGE}
+        element={<AudienceOpinionPage />}
+      />
+      ;
       <Route path="/match/eliminate" element={<EliminatePage />} />
       <Route path="/banner" element={<TechBanner />} />
       <Route path="/403" element={<Forbidden403 />} />

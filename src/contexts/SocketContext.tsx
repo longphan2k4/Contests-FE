@@ -1,4 +1,3 @@
-import axiosInstance from "../config/axiosInstance";
 import React, {
   createContext,
   useContext,
@@ -39,7 +38,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
     socketInstance.on("connect", () => {
       console.log("✅ Socket connected");
-      socketInstance.emit("joinMatchRoom", match, (res: any) => {});
+      socketInstance.emit("joinMatchRoom", match);
       setIsConnected(true);
     });
 
@@ -49,6 +48,8 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
     socketRef.current = socketInstance;
 
+    
+    
     return () => {
       socketInstance.disconnect();
     };

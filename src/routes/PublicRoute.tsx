@@ -15,7 +15,6 @@ const PublicRoute: React.FC<PublicRouteProps> = ({
   const { user, loading } = useAuth();
 
   if (loading) {
-    // Hiển thị spinner loading của MUI
     return (
       <div
         style={{
@@ -31,10 +30,6 @@ const PublicRoute: React.FC<PublicRouteProps> = ({
   }
   const isAuthenticated = !!user && !!user.role;
   if (isAuthenticated && restricted) {
-    // Người đã đăng nhập mà truy cập trang restricted (login, register) thì redirect
-    if (user.role === "Admin") {
-      return <Navigate to="/admin/dashboard" replace />;
-    }
     return <Navigate to="/" replace />;
   }
 
