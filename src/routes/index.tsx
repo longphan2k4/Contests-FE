@@ -3,10 +3,6 @@ import { Routes, Route } from "react-router-dom";
 // import PrivateRoute from './PrivateRoute';
 import AdminRoutes from "../features/admin/AdminRoutes";
 import ContestRoutes from "../features/contest/ContestRouter";
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 import AuthRoutes from "../features/auth/routes";
 import PublicRoutes from "./PublicRoutes";
 import { AudienceOpinionPage, AUDIENCE_ROUTES } from "../features/audience";
