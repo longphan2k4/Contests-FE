@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Question } from '../types';
 import type { QuestionTopic } from '../components/QuestionDialog';
+import { useToast } from '../../../../contexts/toastContext';
 
 // Định nghĩa các loại file được phép
 export const ALLOWED_TYPES = {
@@ -77,7 +78,7 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
   const [mediaAnswerFiles, setMediaAnswerFiles] = useState<File[]>([]);
   const [questionMediaPreviews, setQuestionMediaPreviews] = useState<MediaFilePreview[]>([]);
   const [mediaAnswerPreviews, setMediaAnswerPreviews] = useState<MediaFilePreview[]>([]);
-
+  const { showToast } = useToast();
   // Kiểm tra loại file có hợp lệ không
   const isValidFileType = (file: File): { valid: boolean; type: 'image' | 'video' | 'audio' | null; message?: string } => {
     // Kiểm tra file là image
@@ -139,12 +140,8 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
   };
 
   useEffect(() => {
-    console.log('🔄 useQuestionForm useEffect triggered:', { question, mode });
     
     if (question && (mode === 'view' || mode === 'edit')) {
-      console.log('📋 Setting form data for question:', question);
-      console.log('🎬 Question media:', question.questionMedia);
-      console.log('🎵 Media answer:', question.mediaAnswer);
       
       const initialFormData: QuestionFormValues = {
         intro: question.intro || '',
@@ -173,7 +170,6 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
 
       // Set media previews if available
       if (question.questionMedia && question.questionMedia.length > 0) {
-        console.log('🖼️ Processing question media:', question.questionMedia);
         const previews = question.questionMedia.map((media, index) => ({
           id: `existing-question-media-${media.filename}-${index}`, // Sử dụng filename và index để tạo unique id
           url: media.url || '',
@@ -181,15 +177,12 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
           type: media.mimeType || 'application/octet-stream',
           size: media.size || 0
         }));
-        console.log('📸 Question media previews created:', previews);
         setQuestionMediaPreviews(previews);
       } else {
-        console.log('❌ No question media found');
         setQuestionMediaPreviews([]);
       }
 
       if (question.mediaAnswer && question.mediaAnswer.length > 0) {
-        console.log('🎯 Processing media answer:', question.mediaAnswer);
         const previews = question.mediaAnswer.map((media, index) => ({
           id: `existing-media-answer-${media.filename}-${index}`, // Sử dụng filename và index để tạo unique id
           url: media.url || '',
@@ -197,18 +190,15 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
           type: media.mimeType || 'application/octet-stream',
           size: media.size || 0
         }));
-        console.log('🎬 Media answer previews created:', previews);
         setMediaAnswerPreviews(previews);
       } else {
-        console.log('❌ No media answer found');
         setMediaAnswerPreviews([]);
       }
     } else if (mode === 'create') {
-      console.log('🆕 Create mode - resetting form');
       // Reset toàn bộ khi tạo mới
       resetForm();
     } else {
-      console.log('⚠️ No action taken - question or mode invalid');
+      showToast('Có lỗi xảy ra khi tải dữ liệu câu hỏi', 'error');
     }
   }, [question, mode]); // Dependency chính xác để trigger khi question hoặc mode thay đổi
 
@@ -313,7 +303,7 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
     const invalidFiles = files.filter(file => !isValidFileType(file).valid);
     if (invalidFiles.length > 0) {
       const invalidFileNames = invalidFiles.map(f => f.name).join(', ');
-      alert(`Một số file không hợp lệ: ${invalidFileNames}`);
+      alert(`Kích thước file không hợp lệ: ${invalidFileNames}`);
       return;
     }
     
