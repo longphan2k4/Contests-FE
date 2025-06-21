@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Box,
   TextField,
@@ -8,18 +8,21 @@ import {
   Paper,
   Alert,
   FormControlLabel,
-  Switch
-} from '@mui/material';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { vi } from 'date-fns/locale';
-import type { Contest } from '../types';
-import { CreateContestSchema, UpdateContestSchema } from '../schemas/contestSchema';
-import { ZodError } from 'zod';
-import { Fullscreen, FullscreenExit } from '@mui/icons-material';
+  Switch,
+} from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { vi } from "date-fns/locale";
+import type { Contest } from "../types";
+import {
+  CreateContestSchema,
+  UpdateContestSchema,
+} from "../schemas/contestSchema";
+import { ZodError } from "zod";
+import { Fullscreen, FullscreenExit } from "@mui/icons-material";
 
-import { Editor } from '@tinymce/tinymce-react';
+import { Editor } from "@tinymce/tinymce-react";
 interface ValidationError {
   field: string;
   message: string;
@@ -37,19 +40,19 @@ const ContestForm: React.FC<ContestFormProps> = ({
   initialData = {},
   onSubmit,
   isSubmitting = false,
-  submitButtonText = 'Lưu',
-  validationErrors = []
+  submitButtonText = "Lưu",
+  validationErrors = [],
 }) => {
   const [formData, setFormData] = React.useState<Partial<Contest>>({
-    name: '',
-    description: '',
-    rule: '',
-    location: '',
+    name: "",
+    description: "",
+    rule: "",
+    location: "",
     startTime: new Date().toISOString(),
     endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     isActive: false,
-    slogan: '',
-    ...initialData
+    slogan: "",
+    ...initialData,
   });
 
   const [errors, setErrors] = React.useState<Record<string, string>>({});
@@ -58,7 +61,7 @@ const ContestForm: React.FC<ContestFormProps> = ({
   React.useEffect(() => {
     // Xử lý validation errors từ API
     const errorMap: Record<string, string> = {};
-    validationErrors.forEach(error => {
+    validationErrors.forEach((error) => {
       errorMap[error.field] = error.message;
     });
     setErrors(errorMap);
@@ -66,10 +69,10 @@ const ContestForm: React.FC<ContestFormProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     // Xóa lỗi khi người dùng thay đổi giá trị
     if (errors[name]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
@@ -79,15 +82,15 @@ const ContestForm: React.FC<ContestFormProps> = ({
 
   const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
-    setFormData(prev => ({ ...prev, [name]: checked }));
+    setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
   const handleDateChange = (name: string, value: Date | null) => {
     if (value) {
-      setFormData(prev => ({ ...prev, [name]: value.toISOString() }));
+      setFormData((prev) => ({ ...prev, [name]: value.toISOString() }));
       // Xóa lỗi khi người dùng thay đổi giá trị
       if (errors[name]) {
-        setErrors(prev => {
+        setErrors((prev) => {
           const newErrors = { ...prev };
           delete newErrors[name];
           return newErrors;
@@ -101,18 +104,21 @@ const ContestForm: React.FC<ContestFormProps> = ({
 
     try {
       // Sử dụng schema phù hợp dựa trên việc có initialData hay không
-      const schema = Object.keys(initialData).length > 0 ? UpdateContestSchema : CreateContestSchema;
-      
+      const schema =
+        Object.keys(initialData).length > 0
+          ? UpdateContestSchema
+          : CreateContestSchema;
+
       // Validate dữ liệu
       const validatedData = schema.parse(formData) as Partial<Contest>;
-      
+
       // Nếu validate thành công, gọi onSubmit
       onSubmit(validatedData);
     } catch (error) {
       if (error instanceof ZodError) {
         // Chuyển đổi lỗi Zod thành định dạng lỗi cho form
         const newErrors: Record<string, string> = {};
-        error.errors.forEach(err => {
+        error.errors.forEach((err) => {
           if (err.path[0]) {
             newErrors[err.path[0].toString()] = err.message;
           }
@@ -136,28 +142,28 @@ const ContestForm: React.FC<ContestFormProps> = ({
         onSubmit={handleSubmit}
         sx={{
           p: 3,
-          maxWidth: isFullscreen ? '100vw' : '1000px',
-          width: isFullscreen ? '100vw' : '100%',
-          height: isFullscreen ? '100vh' : 'auto',
-          position: isFullscreen ? 'fixed' : 'relative',
-          top: isFullscreen ? 0 : 'auto',
-          left: isFullscreen ? 0 : 'auto',
-          zIndex: isFullscreen ? 1300 : 'auto',
-          overflow: isFullscreen ? 'auto' : 'unset',
-          margin: isFullscreen ? 0 : '0 auto',
+          maxWidth: isFullscreen ? "100vw" : "1000px",
+          width: isFullscreen ? "100vw" : "100%",
+          height: isFullscreen ? "100vh" : "auto",
+          position: isFullscreen ? "fixed" : "relative",
+          top: isFullscreen ? 0 : "auto",
+          left: isFullscreen ? 0 : "auto",
+          zIndex: isFullscreen ? 1300 : "auto",
+          overflow: isFullscreen ? "auto" : "unset",
+          margin: isFullscreen ? 0 : "0 auto",
           borderRadius: isFullscreen ? 0 : 2,
-          background: 'white',
-          transition: 'all 0.3s',
+          background: "white",
+          transition: "all 0.3s",
         }}
       >
         {/* Nút phóng to/thu nhỏ */}
-        <Box sx={{ position: 'absolute', top: 16, right: 16, zIndex: 1400 }}>
+        <Box sx={{ position: "absolute", top: 16, right: 16, zIndex: 1400 }}>
           <Button
             variant="outlined"
             color="primary"
             size="small"
             onClick={() => setIsFullscreen((prev) => !prev)}
-            sx={{ minWidth: 36, minHeight: 36, borderRadius: '50%' }}
+            sx={{ minWidth: 36, minHeight: 36, borderRadius: "50%" }}
           >
             {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
           </Button>
@@ -169,13 +175,13 @@ const ContestForm: React.FC<ContestFormProps> = ({
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               Thông tin cơ bản
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <TextField
                 fullWidth
                 required
                 label="Tên cuộc thi"
                 name="name"
-                value={formData.name || ''}
+                value={formData.name || ""}
                 onChange={handleChange}
                 error={!!errors.name}
                 helperText={errors.name}
@@ -187,7 +193,7 @@ const ContestForm: React.FC<ContestFormProps> = ({
                 required
                 label="Luật thi"
                 name="rule"
-                value={formData.rule || ''}
+                value={formData.rule || ""}
                 onChange={handleChange}
                 error={!!errors.rule}
                 helperText={errors.rule}
@@ -196,41 +202,56 @@ const ContestForm: React.FC<ContestFormProps> = ({
                 multiline
                 rows={4}
               />
-            <Box sx={{ mt: 2 }}>
+              <Box sx={{ mt: 2 }}>
                 <Editor
                   apiKey="27tx6fph0lki6eefz8gfsu5jz74x6clpth0dnq0k02a9wz4b"
-                  value={formData.rule || ''}
+                  value={formData.rule || ""}
                   init={{
                     height: 400,
-                    menubar: true,
+                    menubar: false,
                     plugins: [
-                      'advlist autolink lists link image charmap preview anchor',
-                      'searchreplace visualblocks code fullscreen',
-                      'insertdatetime media table paste code help wordcount emoticons',
+                      "advlist",
+                      "autolink",
+                      "lists",
+                      "link",
+                      "image",
+                      "charmap",
+                      "preview",
+                      "anchor",
+                      "searchreplace",
+                      "visualblocks",
+                      "code",
+                      "fullscreen",
+                      "insertdatetime",
+                      "media",
+                      "table",
+                      "help",
+                      "wordcount",
                     ],
-                    toolbar: [
-                      'undo redo | formatselect |',
-                      'bold italic underline strikethrough | forecolor backcolor |',
-                      'alignleft aligncenter alignright alignjustify |',
-                      'bullist numlist |',
-                      'outdent indent |',
-                      'blockquote subscript superscript |',
-                      'link image media table |',
-                      'removeformat | emoticons |',
-                      'code preview help'
-                    ].join(' '),
+                    toolbar:
+                      "undo redo | blocks | " +
+                      "bold italic forecolor | alignleft aligncenter " +
+                      "alignright alignjustify | bullist numlist outdent indent | " +
+                      "removeformat | help",
                     auto_list: true,
-                    advlist_bullet_styles: 'default',
-                    advlist_number_styles: 'default',
+                    advlist_bullet_styles: "default",
+                    advlist_number_styles: "default",
                     content_style:
-                      'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                    branding: false,
+                    promotion: false,
+                    statusbar: false,
+                    resize: false,
+                    language: "vi",
+                    language_url: "/tinymce/langs/vi.js",
                   }}
                   disabled={isSubmitting}
                   onEditorChange={(content) => {
-                    handleChange({ target: { name: 'rule', value: content } } as React.ChangeEvent<HTMLInputElement>);
+                    handleChange({
+                      target: { name: "rule", value: content },
+                    } as React.ChangeEvent<HTMLInputElement>);
                   }}
                 />
-
               </Box>
 
               <TextField
@@ -238,19 +259,19 @@ const ContestForm: React.FC<ContestFormProps> = ({
                 required
                 label="Địa điểm"
                 name="location"
-                value={formData.location || ''}
+                value={formData.location || ""}
                 onChange={handleChange}
                 error={!!errors.location}
                 helperText={errors.location}
                 disabled={isSubmitting}
                 margin="normal"
               />
-              
+
               <TextField
                 fullWidth
                 label="Slogan"
                 name="slogan"
-                value={formData.slogan || ''}
+                value={formData.slogan || ""}
                 onChange={handleChange}
                 error={!!errors.slogan}
                 helperText={errors.slogan}
@@ -265,33 +286,33 @@ const ContestForm: React.FC<ContestFormProps> = ({
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               Thông tin thời gian
             </Typography>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
               <DateTimePicker
                 label="Thời gian bắt đầu"
                 value={formData.startTime ? new Date(formData.startTime) : null}
-                onChange={(newValue) => handleDateChange('startTime', newValue)}
+                onChange={(newValue) => handleDateChange("startTime", newValue)}
                 slotProps={{
                   textField: {
                     fullWidth: true,
-                    margin: 'normal',
+                    margin: "normal",
                     error: !!errors.startTime,
-                    helperText: errors.startTime
-                  }
+                    helperText: errors.startTime,
+                  },
                 }}
                 disabled={isSubmitting}
               />
-              
+
               <DateTimePicker
                 label="Thời gian kết thúc"
                 value={formData.endTime ? new Date(formData.endTime) : null}
-                onChange={(newValue) => handleDateChange('endTime', newValue)}
+                onChange={(newValue) => handleDateChange("endTime", newValue)}
                 slotProps={{
                   textField: {
                     fullWidth: true,
-                    margin: 'normal',
+                    margin: "normal",
                     error: !!errors.endTime,
-                    helperText: errors.endTime
-                  }
+                    helperText: errors.endTime,
+                  },
                 }}
                 disabled={isSubmitting}
               />
@@ -316,7 +337,7 @@ const ContestForm: React.FC<ContestFormProps> = ({
             />
           </Box>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Button
               type="submit"
               variant="contained"
@@ -332,4 +353,4 @@ const ContestForm: React.FC<ContestFormProps> = ({
   );
 };
 
-export default ContestForm; 
+export default ContestForm;

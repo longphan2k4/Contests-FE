@@ -69,7 +69,6 @@ export const ReorderQuestionsDialog: React.FC<ReorderQuestionsDialogProps> = ({
           uniqueId: `item-${index}`
         }));
         setQuestions(questionsWithIds);
-        console.log('Danh sách câu hỏi ban đầu:', questionsWithIds);
       }
     } catch (error) {
       console.error('Lỗi khi tải danh sách câu hỏi:', error);
@@ -99,7 +98,6 @@ export const ReorderQuestionsDialog: React.FC<ReorderQuestionsDialogProps> = ({
       const newIndex = items.findIndex(item => item.uniqueId === over.id);
       
       if (oldIndex === -1 || newIndex === -1) {
-        console.error('Không tìm thấy item để di chuyển');
         return items;
       }
       
