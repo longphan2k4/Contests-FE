@@ -2,13 +2,19 @@ import { useState, useEffect } from 'react';
 import type { Question } from '../types';
 import type { QuestionTopic } from '../components/QuestionDialog';
 import { useToast } from '../../../../contexts/toastContext';
+import { 
+  questionFormSchema, 
+  validateMediaFiles,
+  type QuestionFormData 
+} from '../schemas/questionSchema';
+import { z } from 'zod';
 
 // Định nghĩa các loại file được phép
 export const ALLOWED_TYPES = {
   image: {
     extensions: /jpeg|jpg|png|gif|webp|svg/,
     mimeTypes: /^image\/(jpeg|jpg|png|gif|webp|svg\+xml)$/,
-    maxSize: 5 * 1024 * 1024, // 5MB
+    maxSize: 30 * 1024 * 1024, // 30MB
   },
   video: {
     extensions: /mp4|avi|mov|wmv|flv|webm|mkv/,
@@ -17,8 +23,8 @@ export const ALLOWED_TYPES = {
   },
   audio: {
     extensions: /mp3|wav|ogg|aac|flac|m4a/,
-    mimeTypes: /^audio\/(mp3|wav|ogg|aac|flac|mp4|x-m4a)$/,
-    maxSize: 20 * 1024 * 1024, // 20MB
+    mimeTypes: /^audio\/(mpeg|wav|ogg|aac|flac|mp4)$/,
+    maxSize: 50 * 1024 * 1024, // 50MB
   }
 };
 
@@ -79,34 +85,6 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
   const [questionMediaPreviews, setQuestionMediaPreviews] = useState<MediaFilePreview[]>([]);
   const [mediaAnswerPreviews, setMediaAnswerPreviews] = useState<MediaFilePreview[]>([]);
   const { showToast } = useToast();
-  // Kiểm tra loại file có hợp lệ không
-  const isValidFileType = (file: File): { valid: boolean; type: 'image' | 'video' | 'audio' | null; message?: string } => {
-    // Kiểm tra file là image
-    if (ALLOWED_TYPES.image.mimeTypes.test(file.type)) {
-      if (file.size > ALLOWED_TYPES.image.maxSize) {
-        return { valid: false, type: 'image', message: `Kích thước ảnh không được vượt quá 5MB` };
-      }
-      return { valid: true, type: 'image' };
-    }
-    
-    // Kiểm tra file là video
-    if (ALLOWED_TYPES.video.mimeTypes.test(file.type)) {
-      if (file.size > ALLOWED_TYPES.video.maxSize) {
-        return { valid: false, type: 'video', message: `Kích thước video không được vượt quá 100MB` };
-      }
-      return { valid: true, type: 'video' };
-    }
-    
-    // Kiểm tra file là audio
-    if (ALLOWED_TYPES.audio.mimeTypes.test(file.type)) {
-      if (file.size > ALLOWED_TYPES.audio.maxSize) {
-        return { valid: false, type: 'audio', message: `Kích thước âm thanh không được vượt quá 20MB` };
-      }
-      return { valid: true, type: 'audio' };
-    }
-    
-    return { valid: false, type: null, message: 'Định dạng file không được hỗ trợ' };
-  };
 
   // Kiểm tra xem các file có cùng loại không
   const areFilesOfSameType = (files: File[]): boolean => {
@@ -299,17 +277,16 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
     
     const files = Array.from(e.target.files);
     
-    // Kiểm tra kích thước và loại file
-    const invalidFiles = files.filter(file => !isValidFileType(file).valid);
-    if (invalidFiles.length > 0) {
-      const invalidFileNames = invalidFiles.map(f => f.name).join(', ');
-      alert(`Kích thước file không hợp lệ: ${invalidFileNames}`);
+    // Validate files using Zod
+    const validation = validateMediaFiles([...questionMediaFiles, ...files]);
+    if (!validation.isValid) {
+      showToast(validation.error || 'File không hợp lệ', 'error');
       return;
     }
     
     // Kiểm tra xem các file có cùng loại không
     if (!areFilesOfSameType(files)) {
-      alert('Tất cả các file phải cùng loại (ảnh, video hoặc âm thanh)');
+      showToast('Tất cả các file phải cùng loại (ảnh, video hoặc âm thanh)', 'error');
       return;
     }
     
@@ -330,17 +307,21 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
         'audio': 'âm thanh'
       };
       
-      alert(`Không thể thêm file khác loại. Chỉ có thể thêm ${typeNames[currentType as keyof typeof typeNames]} khi đã có file cùng loại.`);
+      showToast(
+        `Không thể thêm file khác loại. Chỉ có thể thêm ${typeNames[currentType as keyof typeof typeNames]} khi đã có file cùng loại.`, 
+        'warning'
+      );
       return;
     }
     
     // Kiểm tra số lượng file
     if (files.length + questionMediaFiles.length + questionMediaPreviews.length > 5) {
-      alert('Không thể thêm quá 5 file media');
+      showToast('Không thể thêm quá 5 file media', 'warning');
       return;
     }
     
     setQuestionMediaFiles(prev => [...prev, ...files]);
+    showToast(`Đã thêm ${files.length} file thành công`, 'success');
   };
 
   const handleMediaAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -348,17 +329,16 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
     
     const files = Array.from(e.target.files);
     
-    // Kiểm tra kích thước và loại file
-    const invalidFiles = files.filter(file => !isValidFileType(file).valid);
-    if (invalidFiles.length > 0) {
-      const invalidFileNames = invalidFiles.map(f => f.name).join(', ');
-      alert(`Một số file không hợp lệ: ${invalidFileNames}`);
+    // Validate files using Zod
+    const validation = validateMediaFiles([...mediaAnswerFiles, ...files]);
+    if (!validation.isValid) {
+      showToast(validation.error || 'File không hợp lệ', 'error');
       return;
     }
     
     // Kiểm tra xem các file có cùng loại không
     if (!areFilesOfSameType(files)) {
-      alert('Tất cả các file phải cùng loại (ảnh, video hoặc âm thanh)');
+      showToast('Tất cả các file phải cùng loại (ảnh, video hoặc âm thanh)', 'error');
       return;
     }
     
@@ -379,29 +359,35 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
         'audio': 'âm thanh'
       };
       
-      alert(`Không thể thêm file khác loại. Chỉ có thể thêm ${typeNames[currentType as keyof typeof typeNames]} khi đã có file cùng loại.`);
+      showToast(
+        `Không thể thêm file khác loại. Chỉ có thể thêm ${typeNames[currentType as keyof typeof typeNames]} khi đã có file cùng loại.`, 
+        'warning'
+      );
       return;
     }
     
     // Kiểm tra số lượng file
     if (files.length + mediaAnswerFiles.length + mediaAnswerPreviews.length > 5) {
-      alert('Không thể thêm quá 5 file media');
+      showToast('Không thể thêm quá 5 file media', 'warning');
       return;
     }
     
     setMediaAnswerFiles(prev => [...prev, ...files]);
+    showToast(`Đã thêm ${files.length} file thành công`, 'success');
   };
 
   const removeQuestionMedia = (index: number) => {
     const newFiles = [...questionMediaFiles];
     newFiles.splice(index, 1);
     setQuestionMediaFiles(newFiles);
+    showToast('Đã xóa file', 'info');
   };
 
   const removeMediaAnswer = (index: number) => {
     const newFiles = [...mediaAnswerFiles];
     newFiles.splice(index, 1);
     setMediaAnswerFiles(newFiles);
+    showToast('Đã xóa file', 'info');
   };
 
   const removeQuestionMediaPreview = (index: number) => {
@@ -413,6 +399,7 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
     const newPreviews = [...questionMediaPreviews];
     newPreviews.splice(index, 1);
     setQuestionMediaPreviews(newPreviews);
+    showToast('Đã đánh dấu xóa file', 'info');
   };
 
   const removeMediaAnswerPreview = (index: number) => {
@@ -424,46 +411,62 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
     const newPreviews = [...mediaAnswerPreviews];
     newPreviews.splice(index, 1);
     setMediaAnswerPreviews(newPreviews);
+    showToast('Đã đánh dấu xóa file', 'info');
   };
 
-  const validateForm = () => {
-    const newErrors: QuestionFormErrors = {};
+  const validateForm = (): boolean => {
+    try {
+      // Prepare data for validation
+      const dataToValidate: QuestionFormData = {
+        intro: formData.intro,
+        defaultTime: formData.defaultTime,
+        questionType: formData.questionType,
+        content: formData.content,
+        questionMediaFiles: questionMediaFiles.map(file => ({
+          name: file.name,
+          size: file.size,
+          type: file.type
+        })),
+        options: formData.options,
+        correctAnswer: formData.correctAnswer,
+        mediaAnswerFiles: mediaAnswerFiles.map(file => ({
+          name: file.name,
+          size: file.size,
+          type: file.type
+        })),
+        score: formData.score,
+        difficulty: formData.difficulty,
+        explanation: formData.explanation,
+        questionTopicId: formData.questionTopicId,
+        isActive: formData.isActive
+      };
 
-    // Validate required fields
-    if (!formData.content.trim()) {
-      newErrors.content = 'Nội dung câu hỏi là bắt buộc';
-    }
-
-    if (!formData.correctAnswer.trim()) {
-      newErrors.correctAnswer = 'Đáp án là bắt buộc';
-    }
-
-    if (!formData.questionTopicId) {
-      newErrors.questionTopicId = 'Chủ đề là bắt buộc';
-    }
-
-    if (!formData.score || formData.score <= 0) {
-      newErrors.score = 'Điểm số phải lớn hơn 0';
-    }
-
-    if (!formData.defaultTime || formData.defaultTime < 10) {
-      newErrors.defaultTime = 'Thời gian làm bài phải ít nhất 10 giây';
-    }
-
-    // Validate options for multiple choice questions
-    if (formData.questionType === 'multiple_choice') {
-      if (!formData.options || formData.options.length < 2) {
-        newErrors.options = 'Phải có ít nhất 2 lựa chọn';
-      } else {
-        const emptyOptions = formData.options.filter(opt => !opt.trim()).length;
-        if (emptyOptions > 0) {
-          newErrors.options = 'Các lựa chọn không được để trống';
-        }
+      // Validate using Zod schema
+      questionFormSchema.parse(dataToValidate);
+      
+      setErrors({});
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: QuestionFormErrors = {};
+        
+        error.errors.forEach((err) => {
+          const path = err.path.join('.');
+          newErrors[path] = err.message;
+        });
+        
+        setErrors(newErrors);
+        
+        // Show toast for first error
+        const firstError = error.errors[0];
+        showToast(firstError.message, 'error');
+        
+        return false;
       }
+      
+      showToast('Có lỗi xảy ra khi kiểm tra dữ liệu', 'error');
+      return false;
     }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   const prepareFormData = (data: QuestionFormValues) => {
