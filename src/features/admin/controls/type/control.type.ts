@@ -119,8 +119,8 @@ export type CurrentQuestion = {
   score: number;
   explanation: string | null;
   content: string;
-  mediaAnswer: MediaFile[] | null;
-  questionMedia: MediaFile[] | null;
+  mediaAnswer: MediaFile[] | string | null;
+  questionMedia: MediaFile[] | string | null;
   intro: string | null;
   correctAnswer: string;
 };
