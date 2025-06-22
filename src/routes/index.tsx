@@ -1,6 +1,5 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-// import PrivateRoute from './PrivateRoute';
 import AdminRoutes from "../features/admin/AdminRoutes";
 import ContestRoutes from "../features/contest/ContestRouter";
 import AuthRoutes from "../features/auth/routes";
@@ -58,7 +57,6 @@ const AppRoutes: React.FC = () => {
         path={AUDIENCE_ROUTES.OPINION_PAGE}
         element={<AudienceOpinionPage />}
       />
-      ;
       <Route path="/match/eliminate" element={<EliminatePage />} />
       <Route path="/banner" element={<TechBanner />} />
       <Route path="/403" element={<Forbidden403 />} />

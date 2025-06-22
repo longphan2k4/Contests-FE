@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProfile } from '../../features/auth/hooks/useprofile'; // Import useProfile hook
-import { useNotification } from '../../contexts/NotificationContext'; // Import notification context
+import { useProfile } from '../../features/auth/hooks/useprofile';
+import { useNotification } from '../../contexts/NotificationContext';
 import Logo from "../../assets/image/logo/logo-caothang.png"
 
 const Header: React.FC = () => {
@@ -10,7 +10,6 @@ const Header: React.FC = () => {
   const [activeItem, setActiveItem] = useState('hero');
   const [showUserMenu, setShowUserMenu] = useState(false);
   
-  // Get user profile data
   const { data: userProfile, isLoading: profileLoading } = useProfile();
   const { showSuccessNotification } = useNotification();
   
@@ -27,17 +26,10 @@ const Header: React.FC = () => {
   };
 
   const handleLogout = () => {
-    // Clear tokens from cookie and localStorage
     document.cookie = 'feAccessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
     localStorage.removeItem('feAccessToken');
-    
-    // Show success notification
     showSuccessNotification('Đăng xuất thành công');
-    
-    // Navigate to home page
     navigate('/');
-    
-    // Reload page to reset all states
     window.location.reload();
   };
 
@@ -86,9 +78,9 @@ const Header: React.FC = () => {
     };
   }, []);
 
-  // Check if user is logged in
   const isLoggedIn = userProfile?.success && userProfile?.data;
   const userName = userProfile?.data?.name || userProfile?.data?.username || 'Người dùng';
+  const userRole = userProfile?.data?.role?.toLowerCase(); // Chuẩn hóa role thành lowercase để so sánh
 
   return (
     <header 
@@ -156,7 +148,6 @@ const Header: React.FC = () => {
             {!profileLoading && (
               <>
                 {isLoggedIn ? (
-                  // User is logged in - show user menu
                   <div className="relative user-menu-container">
                     <button
                       onClick={() => setShowUserMenu(!showUserMenu)}
@@ -189,17 +180,15 @@ const Header: React.FC = () => {
                         <div className="px-4 py-2 border-b border-gray-100">
                           <p className="text-xs text-gray-500">Đăng nhập với tư cách</p>
                           <p className="text-sm font-semibold text-gray-700">{userName}</p>
-                          {userProfile?.data?.role && (
-                            <p className="text-xs text-cyan-600 capitalize">{userProfile.data.role}</p>
+                          {userRole && (
+                            <p className="text-xs text-cyan-600 capitalize">{userRole}</p>
                           )}
                         </div>
-                         <button
+
+                        {/* Menu Item: Hồ sơ (Profile) */}
+                        <button
                           onClick={() => {
-                            if (userProfile?.data?.role) {
-                              navigate('/account/profile');
-                            } else {
-                              navigate('/login');
-                            }
+                            navigate('/account/profile');
                             setShowUserMenu(false);
                           }}
                           className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 transition-colors duration-200"
@@ -211,25 +200,30 @@ const Header: React.FC = () => {
                             <span>Hồ sơ</span>
                           </div>
                         </button>
-                        <button
-                          onClick={() => {
-                            if (userProfile?.data?.role === 'admin' || userProfile?.data?.role === 'Admin') {
-                              navigate('/admin/dashboard');
-                            } else {
-                              navigate('/dashboard');
-                            }
-                            setShowUserMenu(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 transition-colors duration-200"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <span>Trang quản lý</span>
-                          </div>
-                        </button>
 
+                        {/* Menu Item: Trang quản lý hoặc Trang giám khảo dựa trên role */}
+                        {(userRole === 'admin' || userRole === 'judge') && (
+                          <button
+                            onClick={() => {
+                              if (userRole === 'admin') {
+                                navigate('/admin/dashboard');
+                              } else if (userRole === 'judge') {
+                                navigate('/judge/selected-match'); // Đường dẫn cho trang giám khảo
+                              }
+                              setShowUserMenu(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 transition-colors duration-200"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7m-9 5v6h4v-6m-7-7h14" />
+                              </svg>
+                              <span>{userRole === 'admin' ? 'Trang quản lý' : 'Trang giám khảo'}</span>
+                            </div>
+                          </button>
+                        )}
+
+                        {/* Menu Item: Đăng xuất */}
                         <button
                           onClick={() => {
                             handleLogout();
@@ -248,7 +242,6 @@ const Header: React.FC = () => {
                     )}
                   </div>
                 ) : (
-                  // User is not logged in - show login button
                   <button 
                     onClick={handleLoginClick}
                     className="relative overflow-hidden bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 group"
