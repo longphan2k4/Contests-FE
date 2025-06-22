@@ -104,12 +104,20 @@ const ControlsPage: React.FC = () => {
       setCurrentQuestion({ ...data?.currentQuestion });
     };
 
+    const handleUpdateTime = (data: any) => {
+      const newTime = data?.timeRemaining;
+      setMatchInfo(prev => (prev ? { ...prev, remainingTime: newTime } : prev));
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
+    socket.on("timer:update", handleUpdateTime);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
       socket.off("currentQuestion:get", handleCurrentQuestion);
+
+      socket.off("timer:update", handleUpdateTime);
     };
   }, [socket]);
 

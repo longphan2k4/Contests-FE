@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PlayIcon, PauseIcon } from "@heroicons/react/24/outline";
 import {
   type CurrentQuestion,
@@ -7,48 +7,85 @@ import {
 import { useSocket } from "../../../../contexts/SocketContext";
 import { useToast } from "../../../../contexts/toastContext";
 import { useParams } from "react-router-dom";
+
 interface QuestionControlProp {
   currentQuestion?: CurrentQuestion;
   remainingTime?: number;
 }
 
 const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
-  const [timerStatus, setTimerStatus] = useState<"running" | "paused">(
-    "paused"
-  );
-  const [timeRemaining, setTimeRemaining] = useState<number>(30);
-  const [inputTime, setInputTime] = useState<number>(30);
+  // QuestionControl.tsx (Component con)
+  const [localTime, setLocalTime] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (typeof remainingTime === "number") {
+      setLocalTime(remainingTime);
+    }
+  }, [remainingTime]);
+
+  const [inputTime, setInputTime] = useState<string>("30");
 
   const { socket } = useSocket();
   const { showToast } = useToast();
   const { match } = useParams();
 
-  const EmitScreenUpdate = (payload: UpdateSceenControl) => {
+  const EmitScreenUpdate = (payload: UpdateSceenControl, msg: string) => {
     if (!socket || !match) return;
 
     socket.emit("screen:update", { match, ...payload }, (response: any) => {});
-    showToast("Cập nhật màn hình thành công", "success");
+    showToast(msg, "success");
   };
 
-  const handleClick = (action?: string) => {
-    switch (action) {
-      case "start":
-        setTimerStatus("running");
-        break;
-      case "pause":
-        setTimerStatus("paused");
-        break;
-      case "restart":
-        setTimeRemaining(inputTime);
-        setTimerStatus("paused");
-        break;
-      case "update":
-        setTimeRemaining(inputTime);
-        break;
-      default:
-        // handle other buttons if needed
-        break;
-    }
+  const handlePlay = () => {
+    if (!socket || !match) return;
+
+    socket.emit("timer:play", { match }, (err: any, res: any) => {
+      if (err) {
+        showToast(err.message, "error");
+      } else {
+        showToast(res.message, "success");
+      }
+    });
+  };
+
+  const handlePause = () => {
+    if (!socket || !match) return;
+
+    socket.emit("timer:pause", { match }, (err: any, res: any) => {
+      if (err) {
+        showToast("Đếm thời gian thất bại", "error");
+      } else {
+        showToast(res.message, "success");
+      }
+    });
+  };
+
+  const handleReset = () => {
+    if (!socket || !match) return;
+
+    socket.emit("timer:reset", { match }, (err: any, res: any) => {
+      if (err) {
+        showToast(err.message, "error");
+      } else {
+        showToast(res.message, "success");
+      }
+    });
+  };
+
+  const handleUpdate = () => {
+    if (!socket || !match) return;
+
+    socket.emit(
+      "timer:update",
+      { match, newTime: inputTime },
+      (err: any, res: any) => {
+        if (err) {
+          showToast(err.message, "error");
+        } else {
+          showToast(res.message, "success");
+        }
+      }
+    );
   };
 
   return (
@@ -61,9 +98,12 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
         <button
           className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium"
           onClick={() =>
-            EmitScreenUpdate({
-              controlKey: "questionInfo",
-            })
+            EmitScreenUpdate(
+              {
+                controlKey: "questionInfo",
+              },
+              "Đã chuyển sang màn hình thông tin câu hỏi"
+            )
           }
         >
           Intro
@@ -71,9 +111,12 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
         <button
           className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium"
           onClick={() =>
-            EmitScreenUpdate({
-              controlKey: "question",
-            })
+            EmitScreenUpdate(
+              {
+                controlKey: "question",
+              },
+              "Đã chuyển sang màn hình câu hỏi"
+            )
           }
         >
           Show
@@ -81,9 +124,12 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
         <button
           className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium"
           onClick={() =>
-            EmitScreenUpdate({
-              controlKey: "explanation",
-            })
+            EmitScreenUpdate(
+              {
+                controlKey: "explanation",
+              },
+              "Đã chuyển sang màn hình giải thích"
+            )
           }
         >
           Explanation
@@ -93,31 +139,29 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
       <div className="flex flex-wrap mb-4">
         <div className="grid grid-cols-2 items-center w-full mb-4 gap-3">
           <div className="text-center">
-            <span className="text-7xl font-bold text-red-600">
-              {remainingTime}
-            </span>
+            <span className="text-7xl font-bold text-red-600">{localTime}</span>
           </div>
-          <button
+          {/* <button
             className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium w-full"
-            onClick={() => handleClick("restart")}
+            // onClick={() => handleClick("restart")}
           >
             Restart
-          </button>
+          </button> */}
         </div>
 
         <div className="flex gap-2 w-full mb-4 flex-col">
           <div className="flex gap-2 w-full">
             <input
-              className="p-3 w-1/2 bg-gray-50 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 shadow-sm placeholder-gray-400"
               type="number"
               min={0}
               placeholder="Nhập thời gian"
               value={inputTime}
-              onChange={e => setInputTime(Number(e.target.value))}
+              onChange={e => setInputTime(e.target.value)}
+              className="p-3 w-1/2 bg-gray-50 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 shadow-sm placeholder-gray-400"
             />
             <button
               className="px-4 py-2 bg-gray-500 text-white hover:bg-gray-600 shadow-md font-medium w-1/2 rounded-lg"
-              onClick={() => handleClick("update")}
+              onClick={() => handleUpdate()}
             >
               Update
             </button>
@@ -127,13 +171,13 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
 
       <div className="grid grid-cols-3 gap-2">
         <h3 className="col-span-3 text-xl font-semibold text-gray-700 mb-3">
-          Điều khiển video/Audio
+          Điều khiển thời gian
         </h3>
 
         <button
           className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium flex items-center justify-center"
           title="Play"
-          onClick={() => handleClick("videoPlay")}
+          onClick={() => handlePlay()}
         >
           <PlayIcon className="h-5 w-5" />
         </button>
@@ -141,7 +185,7 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
         <button
           className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium flex items-center justify-center"
           title="Pause"
-          onClick={() => handleClick("videoPause")}
+          onClick={() => handlePause()}
         >
           <PauseIcon className="h-5 w-5" />
         </button>
@@ -149,7 +193,7 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
         <button
           className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium flex items-center justify-center"
           title="Restart"
-          onClick={() => handleClick("videoRestart")}
+          onClick={() => handleReset()}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -163,36 +207,6 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
               strokeLinecap="round"
               strokeLinejoin="round"
               d="M16.023 9.348h4.992M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M20.015 5.25v4.99"
-            />
-          </svg>
-        </button>
-
-        <button
-          className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium flex items-center justify-center"
-          title="Open Video"
-          onClick={() => handleClick("videoOpen")}
-        >
-          Open
-        </button>
-
-        <button
-          className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium flex items-center justify-center"
-          title="Close Video"
-          onClick={() => handleClick("videoClose")}
-        >
-          Close
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5 ml-1"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
             />
           </svg>
         </button>
