@@ -12,6 +12,7 @@ interface CommonDataGridProps<T> {
   onSelectChange?: (selectedIds: (string | number)[]) => void;
   // New props for responsiveness
   responsiveColumns?: { [key: string]: { xs?: string; sm?: string } }; // e.g., { field: { xs: "none", sm: "table-cell" } }
+  checkboxSelection?: boolean;
 }
 
 const CommonDataGrid = <T,>({
