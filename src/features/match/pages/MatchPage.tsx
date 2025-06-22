@@ -144,7 +144,7 @@ export default function MatchPage() {
       setMatchInfo(data?.matchInfo);
       setCurrentQuestion(data?.currentQuestion);
       setScreenControl(prev => {
-        if (!prev) return null; // hoặc giá trị mặc định nếu cần
+        if (!prev) return null;
 
         return {
           ...prev,
@@ -153,12 +153,26 @@ export default function MatchPage() {
       });
     };
 
+    const handleUpdateTime = (data: any) => {
+      const newTime = data?.timeRemaining;
+      setMatchInfo(prev => {
+        if (!prev) return null;
+
+        return {
+          ...prev,
+          remainingTime: newTime,
+        };
+      });
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
+    socket.on("timer:update", handleUpdateTime);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
-      socket.off("screen:update", handleCurrentQuestion);
+      socket.off("currentQuestion:get", handleCurrentQuestion);
+      socket.off("timer:update", handleUpdateTime);
     };
   }, [socket]);
 
