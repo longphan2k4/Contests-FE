@@ -11,10 +11,12 @@ import PrivateRoute from "./PrivateRoute";
 import Forbidden403 from "../components/403";
 import ProfilePage from "../features/account/pages/ProfilePage";
 import JudgeHomePage from "../features/judge/pages/JudgeHomePage";
-import MatchSelectionPage from "../features/judge/pages/MatchSelectionPage";
+// import MatchSelectionPage from "../features/judge/pages/MatchSelectionPage";
 import EliminatePage from "../features/match/pages/EliminatePage";
 import { SocketProvider } from "../contexts/SocketContext";
 import ControlsPage from "../features/admin/controls/pages/ControlsPage";
+import ContestList from "../features/judge/components/selector/ContestList";
+import MatchList from "../features/judge/components/selector/MatchList";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -41,9 +43,12 @@ const AppRoutes: React.FC = () => {
       <Route element={<PrivateRoute />}>
         <Route path="/account/profile" element={<ProfilePage />} />
       </Route>
+      <Route element={<PrivateRoute roles={["Judge"]} />}>
+        <Route path="/contests" element={<ContestList />} />
+        <Route path="/contests/:contestId/matches" element={<MatchList />} />
+      </Route>
       {/* Public Routes */}
       <Route path="/judge/home" element={<JudgeHomePage />} />
-      <Route path="/judge/selected-match" element={<MatchSelectionPage />} />
       <Route
         path="/tran-dau/:match"
         element={

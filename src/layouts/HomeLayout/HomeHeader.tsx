@@ -208,7 +208,7 @@ const Header: React.FC = () => {
                               if (userRole === 'admin') {
                                 navigate('/admin/dashboard');
                               } else if (userRole === 'judge') {
-                                navigate('/judge/selected-match'); // Đường dẫn cho trang giám khảo
+                                navigate('/contests'); // Đường dẫn cho trang giám khảo
                               }
                               setShowUserMenu(false);
                             }}
