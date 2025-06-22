@@ -14,28 +14,30 @@ import {
   Select,
 } from "@mui/material";
 import DataGrid from "../../../../components/DataGrid";
-import type { GridColDef } from "@mui/x-data-grid";
 
 import {
   type listRound,
-  type StudentQueryParams,
+  type listStatus,
+  type ContestantQueryInput,
 } from "../types/contestant.shame";
-import { listSchool } from "../../../admin/class/service/api";
+
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 import SearchIcon from "@mui/icons-material/Search";
 
 import {
-  useClassSchoolId,
+  useContestStatus,
   useCreates,
-  useGetListSchool,
-  useGetStudent,
+  useGetAllNotContest,
+  useGetListContest,
+  useGetListRoundByContestId,
   useListRound,
 } from "../hook/useContestant";
 import { useToast } from "@contexts/toastContext";
-import { z } from "zod";
+import { set, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import FormSelect from "@components/FormSelect";
+import type { GridColDef } from "@mui/x-data-grid";
 
 interface ListStudentProps {
   tab: number;
@@ -48,20 +50,20 @@ const createContestantSchema = z.object({
 
 type FormValues = z.infer<typeof createContestantSchema>;
 
-export interface Student {
+export interface Contestant {
   id: number;
   fullName: string;
-  studentCode: string;
-  isActive: boolean;
-  className: string;
+  roundName: string;
+  status: string;
+  studentId: number;
 }
 
-export interface listSchool {
+export interface listContest {
   id: number;
   name: string;
 }
 
-export interface listClass {
+export interface lisRoundByContestId {
   id: number;
   name: string;
 }
@@ -75,43 +77,73 @@ export type pagination = {
   hasPrev?: boolean;
 };
 
-export default function ListStudent({
+export default function ListContestantNotContest({
   tab,
   open,
 }: ListStudentProps): React.ReactElement {
   const { slug } = useParams();
-  const [filter, setFilter] = useState<StudentQueryParams>({});
-  const [stundent, SetStudent] = useState<Student[]>([]);
-  const [listSchool, setListSchool] = useState<listSchool[]>([]);
-  const [listClass, setlistClass] = useState<listClass[]>([]);
+  const [filter, setFilter] = useState<ContestantQueryInput>({});
+  const [contestant, setContestant] = useState<Contestant[]>([]);
+  const [listContest, setListContest] = useState<listContest[]>([]);
+  const [listStatus, setListStatus] = useState<listStatus[]>([]);
+  const [lisRoundByContestId, setlisRoundByContestId] = useState<
+    lisRoundByContestId[]
+  >([]);
   const [pagination, setPagination] = useState<pagination>({});
-  const [schoolId, setSchoolId] = useState<number>(1);
-  const [listRound, setListRound] = useState<listRound[]>([]);
+  const [contestId, setContestId] = useState<number>(1);
+
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [listRound, setListRound] = useState<listRound[]>([]);
 
   const { showToast } = useToast();
 
-  const { data: studentData, refetch } = useGetStudent(filter, slug ?? null);
-
-  const { data: SchoolData } = useGetListSchool();
-
-  const { data: ClassData } = useClassSchoolId(schoolId);
-
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormValues>({
-    resolver: zodResolver(createContestantSchema),
-  });
+  const { data: ContestantData, refetch } = useGetAllNotContest(
+    filter,
+    slug ?? null
+  );
 
   const { data: roundData } = useListRound(slug ?? null);
 
+  const { data: ListContestData } = useGetListContest(slug ?? null);
+
+  const { data: lisRoundByContestIData } =
+    useGetListRoundByContestId(contestId);
+
+  const { mutate: mutateCreate } = useCreates();
+
+  const { data: statusData } = useContestStatus();
   useEffect(() => {
     if (roundData) {
       setListRound(roundData.data);
     }
   }, [roundData]);
+
+  useEffect(() => {
+    if (ListContestData) {
+      setListContest(ListContestData.data);
+    }
+  }, [ListContestData]);
+
+  useEffect(() => {
+    if (lisRoundByContestIData) {
+      setlisRoundByContestId(lisRoundByContestIData.data);
+    }
+  }, [lisRoundByContestIData]);
+
+  useEffect(() => {
+    if (statusData?.data?.options?.length) {
+      setListStatus(statusData?.data?.options);
+    } else {
+      setListStatus([]);
+    }
+  }, [statusData]);
+
+  useEffect(() => {
+    if (ContestantData) {
+      setContestant(ContestantData.data.Contestantes);
+      setPagination(ContestantData.data.pagination);
+    }
+  }, [ContestantData]);
 
   useEffect(() => {
     if (tab) {
@@ -120,7 +152,13 @@ export default function ListStudent({
     refetch();
   }, [tab, open]);
 
-  const { mutate: mutateCreate } = useCreates();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(createContestantSchema),
+  });
 
   const onSubmit = (data: FormValues) => {
     if (!slug) return;
@@ -172,25 +210,6 @@ export default function ListStudent({
     refetch();
   };
 
-  useEffect(() => {
-    if (studentData) {
-      SetStudent(studentData.data.students);
-      setPagination(studentData.data.pagination);
-    }
-  }, [studentData]);
-
-  useEffect(() => {
-    if (SchoolData) {
-      setListSchool(SchoolData.data);
-    }
-  }, [SchoolData]);
-
-  useEffect(() => {
-    if (ClassData) {
-      setlistClass(ClassData.data);
-    }
-  }, [ClassData]);
-
   const columns: GridColDef[] = [
     {
       field: "index",
@@ -202,13 +221,14 @@ export default function ListStudent({
         params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
     { field: "fullName", headerName: "Họ và tên", flex: 1 },
+    { field: "studentId", headerName: "Mã sinh viên", flex: 1 },
     {
-      field: "studentCode",
-      headerName: "Mã số",
+      field: "roundName",
+      headerName: "Vòng đấu",
     },
     {
-      field: "className",
-      headerName: "Lớp",
+      field: "status",
+      headerName: "Trạng thái",
     },
   ];
 
@@ -288,37 +308,55 @@ export default function ListStudent({
 
           {/* Bộ lọc vòng đấu */}
           <FormAutocompleteFilter
-            label="Trường"
+            label="Cuộc thi"
             options={[
-              { label: "Tất cả", value: "all" },
-              ...listSchool.map(s => ({
+              ...listContest.map(s => ({
                 label: s.name,
                 value: s.id,
               })),
             ]}
-            value={schoolId || "all"}
+            value={contestId || "all"}
             onChange={(val: string | number | undefined) => {
               const selectedId = val === "all" ? 0 : Number(val);
-              setSchoolId(selectedId);
+              setContestId(selectedId);
             }}
             sx={{ flex: 1, minWidth: 200 }}
           />
 
           {/* Bộ lọc trạng thái */}
           <FormAutocompleteFilter
-            label="Lớp học"
-            options={[
-              { label: "Tất cả", value: "all" },
-              ...listClass.map(s => ({
-                label: s.name,
-                value: s.id,
-              })),
-            ]}
-            value={filter.classId ?? "all"}
+            label="Vòng đấu"
+            options={lisRoundByContestId.map(s => ({
+              label: s.name,
+              value: s.id,
+            }))}
+            value={filter.roundId ?? "all"}
             onChange={(val: string | number | undefined) =>
               setFilter(prev => ({
                 ...prev,
-                classId: val === "all" ? undefined : Number(val),
+                roundId: val === "all" ? undefined : Number(val), // ✅ đúng là roundId
+              }))
+            }
+            sx={{ flex: 1, minWidth: 200 }}
+          />
+
+          <FormAutocompleteFilter
+            label="Trạng thái"
+            options={[
+              { label: "Tất cả", value: "all" },
+              ...listStatus.map(s => ({
+                label: s.label,
+                value: s.value,
+              })),
+            ]}
+            value={filter.status ?? "all"}
+            onChange={(val: string | number | undefined) =>
+              setFilter(prev => ({
+                ...prev,
+                status:
+                  val === "all"
+                    ? undefined
+                    : (val as "compete" | "eliminate" | "advanced"),
               }))
             }
             sx={{ flex: 1, minWidth: 200 }}
@@ -336,10 +374,11 @@ export default function ListStudent({
             Tổng số: {pagination.total} thí sinh học
           </Typography>
         </Box>
+        {/* <DataGrid /> Tui muốn data Grid này lấy select theo contestant.studentId   */}
         <DataGrid
-          rows={stundent}
+          rows={contestant}
           columns={columns}
-          getRowId={row => row.id}
+          getRowId={row => row.studentId}
           selectedIds={selectedIds}
           onSelectChange={selection => {
             const idsArray = Array.isArray(selection)

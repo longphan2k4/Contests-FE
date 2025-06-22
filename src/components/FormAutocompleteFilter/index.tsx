@@ -1,5 +1,5 @@
-// components/FormAutocompleteFilter.tsx
 import { Autocomplete, TextField } from "@mui/material";
+import { useMemo } from "react";
 
 export interface OptionType {
   label: string;
@@ -11,7 +11,7 @@ interface FormAutocompleteFilterProps {
   options: OptionType[];
   value?: string | number;
   onChange: (value: string | number | undefined) => void;
-  sx?: object; // Cho phép truyền style từ bên ngoài (ví dụ: flex, width)
+  sx?: object;
 }
 
 export default function FormAutocompleteFilter({
@@ -21,20 +21,21 @@ export default function FormAutocompleteFilter({
   onChange,
   sx,
 }: FormAutocompleteFilterProps) {
-  const selectedOption = options.find(opt => opt.value === value) || options[0];
+  const selectedOption = useMemo(() => {
+    return options.find(opt => opt.value === value) ?? null;
+  }, [options, value]);
 
   return (
     <Autocomplete
       size="small"
-      fullWidth
       options={options}
       getOptionLabel={option => option.label}
       value={selectedOption}
-      disableClearable
+      isOptionEqualToValue={(option, val) => option.value === val?.value}
       onChange={(_, newValue) =>
         onChange(newValue?.value === "all" ? undefined : newValue?.value)
       }
-      sx={sx} // Apply custom styles from parent
+      sx={sx}
       renderInput={params => (
         <TextField
           {...params}
