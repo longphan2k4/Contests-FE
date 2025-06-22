@@ -10,8 +10,7 @@ export const useResults = (initialParams?: ResultFilterParams) => {
   const [error, setError] = useState<string | null>(null);
   
   // ✅ Fix: Sử dụng stable object reference để tránh infinite loop
-  const [params, setParams] = useState<ResultFilterParams>(initialParams || {});
-  const stableParams = useStableObject(params || {});
+  const stableParams = useStableObject(initialParams || {});
   
   const [pagination, setPagination] = useState({
     total: 0,
@@ -40,10 +39,17 @@ export const useResults = (initialParams?: ResultFilterParams) => {
     const searchParams = queryParams || stableParams;
     
     try {
+      // Tách contestSlug ra khỏi searchParams để không gửi trong query string
+      const { contestSlug, ...apiParams } = searchParams;
+      
+      // Xác định endpoint dựa vào contestSlug
+      // sử dụng logic này vì sau này nếu mở rộng lấy tất cả result
+      const endpoint = contestSlug ? `/results/contest/${contestSlug}` : `/results`;
+      
       const response = await axiosInstance.get<ApiResponse<PaginatedResponse<Result>>>(
-        `/results`, 
+        endpoint, 
         { 
-          params: searchParams,
+          params: apiParams,
           signal // ✅ Fix: Thêm signal để cancel request
         }
       );
@@ -226,7 +232,6 @@ export const useResults = (initialParams?: ResultFilterParams) => {
     isLoading,
     error,
     fetchResults,
-    setParams,
     getResultSummary,
     getUniqueRounds,
     getUniqueMatches,

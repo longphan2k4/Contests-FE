@@ -68,7 +68,6 @@ export const questionDetailService = {
 
     try {
       const response = await axiosInstance.post<ApiResponse<QuestionDetail>>(BASE_URL, data);
-      console.log(response)
       return response.data.data;
     } catch (error) {
       console.error('Lỗi khi tạo chi tiết câu hỏi mới:', error);
@@ -131,10 +130,8 @@ export const questionDetailService = {
       questionOrder: number;
     }>;
   }): Promise<BulkCreateResponse> => {
-    console.log('data bulk create', data);
     try {
       const response = await axiosInstance.post<ApiResponse<BulkCreateResponse>>(`${BASE_URL}/bulk`, data);
-      console.log('response', response);
       return response.data.data;
       
     } catch (error) {
@@ -237,9 +234,7 @@ export const questionDetailService = {
     search?: string;
   }): Promise<ApiResponse<QuestionPackageResponse>> => {
     try {
-      console.log('params', params);
       const response = await axiosInstance.get<ApiResponse<QuestionPackageResponse>>(`${BASE_URL}/package/${packageId}`, { params });
-      console.log('response', response);
       return response.data;
     } catch (error) {
       console.error('Lỗi khi lấy danh sách chi tiết câu hỏi theo gói:', error);
@@ -252,10 +247,8 @@ export const questionDetailService = {
    * POST /api/question-details/batch-delete
    */
   batchDelete: async (payload: BatchDeletePayload) => {
-    console.log('payload delete batch', payload);
     try {
       const response = await axiosInstance.delete(`${BASE_URL}/batch-delete`, { data: payload });
-      console.log(response);
       return response.data;
     } catch (error) {
       console.error('Lỗi khi xóa nhiều câu hỏi:', error);
