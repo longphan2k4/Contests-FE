@@ -76,10 +76,7 @@ export const questionService = {
    */
   createQuestion: async (formData: FormData): Promise<{ question: Question; message: string }> => {
     try {
-      // Log toàn bộ entries của formData để debug
-      for (const [key, value] of formData.entries()) {
-        console.log('FormData field:', key, value);
-      }
+
       const response = await axiosInstance.post<ApiResponse<Question>>(BASE_URL, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -101,11 +98,7 @@ export const questionService = {
    */
   updateQuestion: async (id: number, formData: FormData): Promise<ApiResponse<Question>> => {
     try {
-      // Log FormData để kiểm tra
-      console.log('📤 FormData trước khi gửi API:');
-      for (const pair of formData.entries()) {
-        console.log(`${pair[0]}:`, pair[1]);
-      }
+
 
       const response = await axiosInstance.patch<ApiResponse<Question>>(
         `/questions/${id}`,
@@ -115,19 +108,11 @@ export const questionService = {
             'Content-Type': 'multipart/form-data'
           },
           onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-            console.log(`📊 Upload progress: ${percentCompleted}%`);
+            Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
           }
         }
       );
       
-      console.log('📥 API Response received:', response.data);
-      console.log('🎬 Response question media:', response.data.data?.questionMedia);
-      console.log('🎵 Response media answer:', response.data.data?.mediaAnswer);
-      console.log('📊 Media lengths:', {
-        questionMediaLength: response.data.data?.questionMedia?.length || 0,
-        mediaAnswerLength: response.data.data?.mediaAnswer?.length || 0
-      });
       
       return response.data;
     } catch (error) {
@@ -143,8 +128,6 @@ export const questionService = {
   deleteQuestion: async (id: number): Promise<{ message: string }> => {
     try {
       const response = await axiosInstance.delete<ApiResponse<null>>(`${BASE_URL}/${id}/hard`);
-      console.log('respone delete',response)
-      console.log('message delete',response.data.message)
       return {
         message: response.data.message
       };
@@ -176,14 +159,10 @@ export const questionService = {
    * POST /api/questions/batch
    */
   batchDelete: async (ids: number[]): Promise<BatchDeleteResponseData> => {
-    console.log('ids delete',ids)
     try {
-        console.log('ids delete2',ids)
       const response = await axiosInstance.delete<BatchDeleteApiResponse>(`${BASE_URL}/batch`,
         {data: { ids, hardDelete: true} }
       );
-      console.log('respone batch delete',response)
-      console.log('message batch delete',response.data.message)
       return response.data.data;
     } catch (error) {
       console.error('Lỗi khi xóa nhiều câu hỏi:', error);

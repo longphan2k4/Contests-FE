@@ -20,6 +20,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import QuestionDialogForm from './QuestionDialogForm';
 import { useQuestionForm } from '../hooks/useQuestionForm';
 import type { Question } from '../types';
+import { useToast } from '../../../../contexts/toastContext';
 
 export interface QuestionTopic {
   id: number;
@@ -81,14 +82,7 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
   mode,
   topics,
 }) => {
-  console.log('🔄 QuestionDialog rendered with props:', { 
-    open, 
-    mode, 
-    questionId: question?.id, 
-    questionMedia: question?.questionMedia,
-    mediaAnswer: question?.mediaAnswer
-  });
-  
+
   const isReadOnly = mode === 'view';
   const [tabValue, setTabValue] = React.useState(0);
   const theme = useTheme();
@@ -96,7 +90,7 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formKey, setFormKey] = useState(0);
-  
+  const { showToast } = useToast();
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
@@ -125,12 +119,7 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
     removeMediaAnswerPreview,
   } = useQuestionForm({ question, mode, topics });
 
-  console.log('📋 QuestionDialog form state:', { 
-    questionMediaPreviews: questionMediaPreviews.length,
-    mediaAnswerPreviews: mediaAnswerPreviews.length,
-    questionMediaFiles: questionMediaFiles.length,
-    mediaAnswerFiles: mediaAnswerFiles.length
-  });
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,13 +136,11 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
       setIsSubmitting(true);
       const formDataToSubmit = prepareFormData(formData);
       await onSubmit(formDataToSubmit);
-      console.log('✅ QuestionDialog submit completed successfully');
       // Đóng dialog sẽ được xử lý trong onClose callback hoặc bởi parent component
     } catch (error) {
-      console.error('❌ Lỗi khi gửi dữ liệu câu hỏi:', error);
+      showToast(error instanceof Error ? error.message : 'Lỗi khi gửi dữ liệu câu hỏi');
     } finally {
       // Reset submitting state trong finally để đảm bảo luôn được reset
-      console.log('🔄 Resetting isSubmitting state');
       setIsSubmitting(false);
     }
   };
@@ -168,7 +155,6 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
   // Reset isSubmitting state khi dialog đóng
   React.useEffect(() => {
     if (!open) {
-      console.log('🔄 Dialog closed - resetting isSubmitting state');
       setIsSubmitting(false);
     }
   }, [open]);
