@@ -1,19 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { type CurrentQuestion, type MediaFile } from "../type/control.type";
+import {
+  type CurrentQuestion,
+  type MediaFile,
+  type UpdateSceenControl,
+} from "../type/control.type";
+import { useSocket } from "@contexts/SocketContext";
+import { useParams } from "react-router-dom";
+import { useToast } from "@contexts/toastContext";
 
 interface SupplierVideoProps {
   currentQuestion?: CurrentQuestion | null;
 }
 
+interface fileMedia {
+  url: string;
+  type: string;
+}
+
 const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
+  const { match } = useParams();
   const [activeTab, setActiveTab] = useState<"question" | "answer">("question");
-  const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<fileMedia | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [videoThumbnails, setVideoThumbnails] = useState<
     Record<string, string>
   >({});
 
-  // Xử lý trường hợp dữ liệu có thể là string thay vì array
   const getMediaArray = (
     media: MediaFile[] | string | null | undefined
   ): MediaFile[] => {
@@ -37,6 +49,32 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
     }
 
     return [];
+  };
+
+  const { socket } = useSocket();
+  const { showToast } = useToast();
+
+  const EmitScreenUpdate = () => {
+    if (!socket || !match) return;
+
+    let payload: UpdateSceenControl = {};
+
+    if (selectedMedia?.type === "image") {
+      payload = {
+        controlKey: "image",
+        media: selectedMedia.url,
+      };
+    }
+    if (selectedMedia?.type === "video") {
+      payload = {
+        controlKey: "video",
+        media: selectedMedia.url,
+      };
+    }
+
+    socket.emit("screen:update", { match, ...payload }, (response: any) => {
+      showToast("Cập nhật màn hình thành công", "success");
+    });
   };
 
   const questionMedia = getMediaArray(currentQuestion?.questionMedia);
@@ -74,11 +112,11 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
   // Load thumbnail cho video khi component mount
   const loadVideoThumbnails = async () => {
     const allMedia = [...questionMedia, ...mediaAnswer];
-    const videoFiles = allMedia.filter((media) =>
+    const videoFiles = allMedia.filter(media =>
       /\.(mp4|avi|mov|wmv|flv|webm)$/i.test(media.url)
     );
 
-    const thumbnailPromises = videoFiles.map(async (media) => {
+    const thumbnailPromises = videoFiles.map(async media => {
       try {
         const thumbnail = await generateVideoThumbnail(media.url);
         return { url: media.url, thumbnail };
@@ -91,7 +129,7 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
     const thumbnails = await Promise.all(thumbnailPromises);
     const thumbnailMap: Record<string, string> = {};
 
-    thumbnails.forEach((result) => {
+    thumbnails.forEach(result => {
       if (result) {
         thumbnailMap[result.url] = result.thumbnail;
       }
@@ -107,8 +145,8 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
     }
   }, [currentQuestion?.questionMedia, currentQuestion?.mediaAnswer]);
 
-  const handleMediaSelect = (mediaUrl: string) => {
-    setSelectedMedia(mediaUrl);
+  const handleMediaSelect = (data: fileMedia) => {
+    setSelectedMedia(data);
   };
 
   const handleClearPreview = () => {
@@ -132,9 +170,11 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
 
     return (
       <div
-        key={mediaFile.filename}
+        // key={`${mediaFile.filename}-${Date.now()}`}
         className="p-2 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 border border-gray-200"
-        onClick={() => handleMediaSelect(mediaUrl)}
+        onClick={() =>
+          handleMediaSelect({ type: mediaFile.type, url: mediaUrl })
+        }
       >
         {isImage ? (
           <div className="flex flex-col items-center">
@@ -217,8 +257,8 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
       );
     }
 
-    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(selectedMedia);
-    const isVideo = /\.(mp4|avi|mov|wmv|flv|webm)$/i.test(selectedMedia);
+    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(selectedMedia.url);
+    const isVideo = /\.(mp4|avi|mov|wmv|flv|webm)$/i.test(selectedMedia.url);
 
     return (
       <div className="relative w-full h-full group">
@@ -266,14 +306,14 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
 
         {isImage ? (
           <img
-            src={selectedMedia}
+            src={selectedMedia.url}
             alt="Preview"
             className="w-full h-full object-contain rounded-lg cursor-pointer"
             onClick={handleOpenModal}
           />
         ) : isVideo ? (
           <video
-            src={selectedMedia}
+            src={selectedMedia.url}
             controls
             className="w-full h-full rounded-lg object-contain"
           >
@@ -291,8 +331,8 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
   const renderModal = () => {
     if (!isModalOpen || !selectedMedia) return null;
 
-    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(selectedMedia);
-    const isVideo = /\.(mp4|avi|mov|wmv|flv|webm)$/i.test(selectedMedia);
+    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(selectedMedia.url);
+    const isVideo = /\.(mp4|avi|mov|wmv|flv|webm)$/i.test(selectedMedia.url);
 
     return (
       <div
@@ -301,7 +341,7 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
       >
         <div
           className="relative max-w-2xl max-h-2xl p-4"
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           {/* Nút đóng modal */}
           <button
@@ -326,13 +366,13 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
 
           {isImage ? (
             <img
-              src={selectedMedia}
+              src={selectedMedia.url}
               alt="Preview phóng to"
               className="max-w-full max-h-full object-contain rounded-lg"
             />
           ) : isVideo ? (
             <video
-              src={selectedMedia}
+              src={selectedMedia.url}
               controls
               autoPlay
               className="max-w-full max-h-full rounded-lg"
@@ -387,7 +427,7 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
             {activeTab === "question" ? (
               <div className="space-y-2">
                 {questionMedia.length > 0 ? (
-                  questionMedia.map((media) =>
+                  questionMedia.map(media =>
                     renderMediaThumbnail(media, "Câu hỏi")
                   )
                 ) : (
@@ -399,7 +439,7 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
             ) : (
               <div className="space-y-2">
                 {mediaAnswer.length > 0 ? (
-                  mediaAnswer.map((media) =>
+                  mediaAnswer.map(media =>
                     renderMediaThumbnail(media, "Đáp án")
                   )
                 ) : (
@@ -427,8 +467,11 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
           </div>
           <div className="p-4">
             <div className="grid grid-cols-2 gap-3 w-full">
-              <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md font-medium">
-                Hiện Câu Hỏi
+              <button
+                onClick={EmitScreenUpdate}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md font-medium"
+              >
+                Show
               </button>
               <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 shadow-md font-medium">
                 Hiện Đáp Án
@@ -449,7 +492,9 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
             {selectedMedia && (
               <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs text-gray-600 mb-2">Media đã chọn:</p>
-                <p className="text-sm font-medium truncate">{selectedMedia}</p>
+                <p className="text-sm font-medium truncate">
+                  {selectedMedia.url}
+                </p>
                 <button
                   onClick={handleClearPreview}
                   className="mt-2 px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-colors"

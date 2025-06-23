@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import MatchHeader from "../components/MatchHeader/MatchHeader";
 import Background from "../components/QuestionDisplay/Background";
+import FullScreenImage from "../components/Media/FullScreenImage";
 
 import { Box, CircularProgress } from "@mui/material";
 import {
@@ -31,6 +32,7 @@ import AnswerContent from "../components/QuestionDisplay/AnswerContent";
 import QuestionExplanation from "../components/QuestionDisplay/QuestionExplanation";
 import QuestionIntro from "../components/QuestionDisplay/QuestionIntro";
 import { useSocket } from "../../../contexts/SocketContext";
+import FullScreenVideo from "../components/Media/FullScreenVideo";
 
 export default function MatchPage() {
   useEffect(() => {
@@ -248,6 +250,18 @@ export default function MatchPage() {
               "Câu hỏi này không có phần mở rộng"
             }
           />
+        </div>
+      )}
+
+      {screenControl?.controlKey === "image" && screenControl?.media && (
+        <div key="image">
+          <FullScreenImage imageUrl={screenControl?.media} />
+        </div>
+      )}
+
+      {screenControl?.controlKey === "video" && screenControl?.media && (
+        <div key="video">
+          <FullScreenVideo videoUrl={screenControl?.media} />
         </div>
       )}
 
