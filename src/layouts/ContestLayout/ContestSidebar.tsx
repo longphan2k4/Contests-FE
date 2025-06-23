@@ -124,7 +124,7 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       key: "rescues",
       icon: <TrophyIcon />,
       label: "Cứu trợ ",
-      path: `/admin/cuoc-thi/${slug}/rescues`,
+      path: `/admin/cuoc-thi/${slug}/cuu-tro`,
     },
     {
       key: "contestant",

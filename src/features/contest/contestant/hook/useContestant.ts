@@ -26,7 +26,6 @@ import {
   GetListContestNotSlug,
   GetListRoundByContestId,
 } from "../service/api";
-import { sl } from "date-fns/locale";
 
 export const useGetAll = (
   filter: ContestantQueryInput,

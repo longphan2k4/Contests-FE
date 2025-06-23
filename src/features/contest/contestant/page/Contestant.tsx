@@ -20,7 +20,7 @@ import {
   type UpdateContestantInput,
   type DeleteContestanteInput,
   type ContestantQueryInput,
-  type CreatesContestInput,
+  // type CreatesContestInput,
   type Contestant,
   type pagination,
   type listStatus,

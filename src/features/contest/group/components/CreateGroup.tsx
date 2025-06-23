@@ -20,7 +20,7 @@ interface CreateClassProps {
   onSubmit: (data: CreateGroupInput) => void;
 }
 
-export default function CreateClass({
+export default function CreateGroup({
   isOpen,
   onClose,
   onSubmit,
