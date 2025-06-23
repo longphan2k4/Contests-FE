@@ -9,7 +9,6 @@ const RoundPage = lazy(() => import("./round/page/RoundPage"));
 const GroupPage = lazy(() => import("./group/page/GroupPage"));
 const ContestantPage = lazy(() => import("./contestant/page/Contestant"));
 const MatchPage = lazy(() => import("./match/page/MatchPage"));
-const ContestantMatchPage = lazy(() => import("./match/page/ContestantMatchPage"));
 const ResultsPage = lazy(() => import("../admin/result/pages/ResultsPage"));
 const SponsorsPage = lazy(() => import("../admin/sponsors/page/SponsorsPage"));
 const AwardsPage = lazy(() => import("../admin/awards/page/AwardsPage"));
@@ -62,14 +61,6 @@ const ContestRoutes = () => {
         element={
           <Suspense fallback={<PageLoader />}>
             <MatchPage />
-          </Suspense>
-        } 
-      />
-      <Route 
-        path="thi-sinh-tran-dau/:matchId" 
-        element={
-          <Suspense fallback={<PageLoader />}>
-            <ContestantMatchPage />
           </Suspense>
         } 
       />
