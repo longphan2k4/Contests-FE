@@ -184,6 +184,10 @@ const UsersPage: React.FC = () => {
     setIsConfirmDeleteMany(true);
   };
 
+  useEffect(() => {
+    document.title = "Quản lý người dùng";
+  }, []);
+
   if (isUsersLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
@@ -239,10 +243,12 @@ const UsersPage: React.FC = () => {
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
+            useFlexGap
+            flexWrap="wrap"
             sx={{
-              flexWrap: "wrap",
-              alignItems: { sm: "center" },
+              alignItems: "stretch",
               mb: 2,
+              gap: 2,
             }}
           >
             {/* Ô tìm kiếm */}
@@ -335,22 +341,22 @@ const UsersPage: React.FC = () => {
             )}
 
             {/* Tổng số người dùng */}
-            <Box
-              sx={{
-                ml: { xs: 0, sm: "auto" },
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                alignSelf={{ xs: "flex-start", sm: "center" }}
-              >
-                Tổng số: {pagination.total} người dùng
-              </Typography>
-            </Box>
           </Stack>
+          <Box
+            sx={{
+              ml: { xs: 0, sm: "auto" },
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              alignSelf={{ xs: "flex-start", sm: "center" }}
+            >
+              Tổng số: {pagination.total} người dùng
+            </Typography>
+          </Box>
 
           <UserList
             users={users}

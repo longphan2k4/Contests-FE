@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo } from "react";
+import React, { useState, useEffect, useCallback, memo, use } from "react";
 import { useParams } from "react-router-dom";
 import {
   Box,
@@ -45,7 +45,7 @@ import AddIcon from "@mui/icons-material/Add";
 
 import SearchIcon from "@mui/icons-material/Search";
 
-const esPage: React.FC = () => {
+const RoundPage: React.FC = () => {
   const [round, setRound] = useState<Rounds[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [pagination, setPagination] = useState<pagination>({});
@@ -85,6 +85,11 @@ const esPage: React.FC = () => {
       setPagination(roundData.data.pagination);
     }
   }, [roundData]);
+
+  useEffect(() => {
+    refetchs();
+    document.title = "Quản lý vòng đấu";
+  }, [refetchs, slug]);
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
@@ -244,10 +249,12 @@ const esPage: React.FC = () => {
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
+            useFlexGap
+            flexWrap="wrap"
             sx={{
-              flexWrap: "wrap",
-              alignItems: { sm: "center" },
+              alignItems: "stretch",
               mb: 2,
+              gap: 2,
             }}
           >
             <TextField
@@ -268,7 +275,7 @@ const esPage: React.FC = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{ minWidth: { xs: "100%", sm: 200 } }}
+              sx={{ flex: 1, minWidth: 200 }}
             />
 
             <FormAutocompleteFilter
@@ -298,36 +305,31 @@ const esPage: React.FC = () => {
                       : undefined, // fallback nếu Autocomplete trả undefined
                 }));
               }}
-              sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
+              sx={{ flex: 1, minWidth: 200 }}
             />
 
             {selectedIds.length > 0 && (
               <Button
                 variant="contained"
                 color="error"
-                sx={{ width: { xs: "100%", sm: "auto" } }}
+                sx={{ flex: 1, minWidth: 200 }}
                 onClick={() => setIsComfirmDeleteMany(true)}
               >
                 Xoá ({selectedIds.length})
               </Button>
             )}
-
-            <Box
-              sx={{
-                ml: { xs: 0, sm: "auto" },
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                alignSelf={{ xs: "flex-start", sm: "center" }}
-              >
-                Tổng số: {pagination.total} vòng đấu học
-              </Typography>
-            </Box>
           </Stack>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              mb: 1,
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              Tổng số: {pagination.total} vòng đấu
+            </Typography>
+          </Box>
 
           <ListRound
             rounds={round}
@@ -374,21 +376,30 @@ const esPage: React.FC = () => {
             </Typography>
           </Box>
         </Box>
-        <Box className="flex flex-col items-center">
-          {" "}
-          <Pagination
-            count={pagination.totalPages}
-            page={filter.page ?? 1}
-            color="primary"
-            onChange={(_event, value) =>
-              setFilter(prev => ({
-                ...prev,
-                page: value,
-              }))
-            }
-            showFirstButton
-            showLastButton
-          />
+        <Box
+          style={{
+            display:
+              pagination.totalPages !== undefined && pagination.totalPages > 1
+                ? "block"
+                : "none",
+          }}
+        >
+          <Box className="flex flex-col items-center">
+            {" "}
+            <Pagination
+              count={pagination.totalPages}
+              page={filter.page ?? 1}
+              color="primary"
+              onChange={(_event, value) =>
+                setFilter(prev => ({
+                  ...prev,
+                  page: value,
+                }))
+              }
+              showFirstButton
+              showLastButton
+            />
+          </Box>
         </Box>
         <CreateRound
           isOpen={isCreateOpen}
@@ -427,4 +438,4 @@ const esPage: React.FC = () => {
   );
 };
 
-export default memo(esPage);
+export default memo(RoundPage);

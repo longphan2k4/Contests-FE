@@ -54,6 +54,7 @@ export default function ListRound({
       field: "actions",
       headerName: "Thao tác",
       flex: 1,
+      minWidth: 200,
       renderCell: params => (
         <>
           <IconButton color="primary" onClick={() => onView(params.row.id)}>

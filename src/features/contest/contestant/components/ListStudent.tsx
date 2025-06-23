@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Box,
@@ -12,6 +12,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  CircularProgress,
 } from "@mui/material";
 import DataGrid from "../../../../components/DataGrid";
 import type { GridColDef } from "@mui/x-data-grid";
@@ -91,11 +92,34 @@ export default function ListStudent({
 
   const { showToast } = useToast();
 
-  const { data: studentData, refetch } = useGetStudent(filter, slug ?? null);
+  const {
+    data: studentData,
+    refetch,
+    isError,
+    isLoading,
+  } = useGetStudent(filter, slug ?? null);
 
-  const { data: SchoolData } = useGetListSchool();
+  const {
+    data: SchoolData,
+    isLoading: isLoadingSchool,
+    isError: isErrorSchool,
+    refetch: refetchSchool,
+  } = useGetListSchool();
 
-  const { data: ClassData } = useClassSchoolId(schoolId);
+  const {
+    data: ClassData,
+    isLoading: isLoadingClass,
+    refetch: refetchClass,
+    isError: isErrorClass,
+  } = useClassSchoolId(schoolId);
+
+  useEffect(() => {
+    if (slug) {
+      refetch();
+      refetchSchool();
+      refetchClass();
+    }
+  }, [slug, refetch, refetchSchool, refetchClass, open]);
 
   const {
     control,
@@ -212,6 +236,18 @@ export default function ListStudent({
     },
   ];
 
+  if (isLoading || isLoadingSchool || isLoadingClass) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError || isErrorSchool || isErrorClass) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
+
   return (
     <Box>
       <Box
@@ -306,7 +342,7 @@ export default function ListStudent({
 
           {/* Bộ lọc trạng thái */}
           <FormAutocompleteFilter
-            label="Lớp học"
+            label="Lớp "
             options={[
               { label: "Tất cả", value: "all" },
               ...listClass.map(s => ({
@@ -333,7 +369,7 @@ export default function ListStudent({
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            Tổng số: {pagination.total} thí sinh học
+            Tổng số: {pagination.total} thí sinh
           </Typography>
         </Box>
         <DataGrid

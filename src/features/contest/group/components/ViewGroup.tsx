@@ -1,5 +1,5 @@
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 import { useGetById } from "../hook/useGroup";
 
@@ -14,7 +14,14 @@ export default function ViewClass({
   isOpen,
   onClose,
 }: ViewClassProps): React.ReactElement {
-  const { data: group } = useGetById(id);
+  const { data: group, isLoading, isError } = useGetById(id);
+  if (isLoading)
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  if (isError) return <div>Không thể tải dữ liệu</div>;
   const fields = [
     { label: "ID", value: group?.id },
     { label: "Tên nhóm", value: group?.name },
