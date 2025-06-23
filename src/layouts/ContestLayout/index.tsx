@@ -48,7 +48,6 @@ const ContestLayout: React.FC = () => {
               flex: 1,
               backgroundColor: "white",
               borderRadius: 1,
-              boxShadow: 1,
               p: { xs: 2, sm: 3 }, // Responsive padding
               minHeight: "calc(100vh - 112px)", // Adjust for header and padding
             }}

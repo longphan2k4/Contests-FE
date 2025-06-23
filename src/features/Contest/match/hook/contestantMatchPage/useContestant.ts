@@ -149,16 +149,3 @@ export interface JudgeInfo {
     username: string;
     email: string;
 }
-
-// Hook mới để gọi API
-export const useGetAvailableJudges = () => {
-    return useQuery<any, Error, { data: { judges: JudgeInfo[] } }>({
-        queryKey: ["availableJudges"],
-        queryFn: async () => {
-            // Giả sử bạn có một hàm `apiGet` để gọi API
-            // Thay thế bằng cách gọi API của bạn (ví dụ: axios)
-            const response = await apiGet("/api/judges?limit=200"); // Lấy nhiều để dùng cho Autocomplete
-            return response.data;
-        },
-    });
-};
