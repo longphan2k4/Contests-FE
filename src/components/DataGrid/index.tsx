@@ -2,6 +2,7 @@ import {
   DataGrid,
   type GridColDef,
   type GridRowSelectionModel,
+  type GridRowClassNameParams,
 } from "@mui/x-data-grid";
 
 interface CommonDataGridProps<T> {
@@ -12,6 +13,9 @@ interface CommonDataGridProps<T> {
   onSelectChange?: (selectedIds: (string | number)[]) => void;
   // New props for responsiveness
   responsiveColumns?: { [key: string]: { xs?: string; sm?: string } }; // e.g., { field: { xs: "none", sm: "table-cell" } }
+  // New props for disabled rows
+  disabledRowIds?: (string | number)[];
+  getRowClassName?: (params: GridRowClassNameParams) => string;
 }
 
 const CommonDataGrid = <T,>({
@@ -20,6 +24,8 @@ const CommonDataGrid = <T,>({
   getRowId,
   onSelectChange,
   responsiveColumns = {},
+  disabledRowIds = [],
+  getRowClassName,
 }: CommonDataGridProps<T>) => {
   // Map columns to include responsive display styles
   const responsiveColumnsDef: GridColDef[] = columns.map(col => ({
@@ -36,9 +42,7 @@ const CommonDataGrid = <T,>({
           },
         }
       : {}),
-  }));
-
-  return (
+  }));  return (
     <DataGrid
       rows={rows}
       columns={responsiveColumnsDef}
@@ -47,6 +51,8 @@ const CommonDataGrid = <T,>({
       disableRowSelectionOnClick
       hideFooter
       checkboxSelection
+      isRowSelectable={(params) => !disabledRowIds.includes(getRowId(params.row))}
+      {...(getRowClassName && { getRowClassName })}
       onRowSelectionModelChange={(model: GridRowSelectionModel) => {
         if (onSelectChange) {
           onSelectChange(model as unknown as (string | number)[]);
@@ -62,10 +68,19 @@ const CommonDataGrid = <T,>({
         },
         "& .data-grid-cell": {
           fontSize: { xs: "0.75rem", sm: "0.875rem" },
-          padding: { xs: "4px 8px", sm: "8px 16px" },
-        },
+          padding: { xs: "4px 8px", sm: "8px 16px" },        },
         "& .MuiDataGrid-checkboxInput": {
           transform: { xs: "scale(0.9)", sm: "scale(1)" },
+        },
+        "& .disabled-row": {
+          backgroundColor: "#f5f5f5",
+          color: "#999999",
+          "& .MuiDataGrid-cell": {
+            color: "#999999",
+          },
+          "& .MuiCheckbox-root": {
+            color: "#cccccc",
+          },
         },
         border: "1px solid",
         borderColor: "divider",
