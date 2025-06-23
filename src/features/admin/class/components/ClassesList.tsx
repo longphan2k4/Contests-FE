@@ -44,6 +44,7 @@ export default function ClassList({
       field: "isActive",
       headerName: "Trạng thái",
       flex: 1,
+
       renderCell: params => (
         <IsSwitch
           value={params.row.isActive}
@@ -55,6 +56,7 @@ export default function ClassList({
       field: "actions",
       headerName: "Thao tác",
       flex: 1,
+      minWidth: 200,
       renderCell: params => (
         <>
           <IconButton color="primary" onClick={() => onView(params.row.id)}>

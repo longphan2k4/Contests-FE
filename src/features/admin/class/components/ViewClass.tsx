@@ -1,5 +1,5 @@
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 import { useClassById } from "../hook/useClassById";
 
@@ -14,7 +14,7 @@ export default function ViewClass({
   isOpen,
   onClose,
 }: ViewClassProps): React.ReactElement {
-  const { data: Class } = useClassById(id);
+  const { data: Class, isLoading, isError } = useClassById(id);
   const fields = [
     { label: "ID", value: Class?.id },
     { label: "Tên lớp", value: Class?.name },
@@ -24,6 +24,15 @@ export default function ViewClass({
       value: Class?.isActive ? "Đang hoạt động" : "Đã bị vô hiệu hóa",
     },
   ];
+
+  if (isLoading) {
+    return (
+      <Box>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  if (isError) return <div>Không thể load dữ liệu</div>;
   return (
     <Box>
       <AppFormDialog

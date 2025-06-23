@@ -152,7 +152,7 @@ const RescuePage: React.FC = () => {
         refetchs();
       },
       onError: () => {
-        showToast("Xóa cứu trợ học thất bại");
+        showToast("Xóa cứu trợ  thất bại");
       },
     });
   };
@@ -205,7 +205,7 @@ const RescuePage: React.FC = () => {
     if (!id) return;
     mutateDelete(id, {
       onSuccess: () => {
-        showToast(`Xóa cứu trợ học thành công`);
+        showToast(`Xóa cứu trợ  thành công`);
         refetchs();
       },
       onError: (error: any) => {
@@ -226,6 +226,9 @@ const RescuePage: React.FC = () => {
     },
     [handleDelete]
   );
+  useEffect(() => {
+    document.title = "Quản lý cứu trợ ";
+  }, []);
 
   if (
     issLoading ||
@@ -384,11 +387,7 @@ const RescuePage: React.FC = () => {
               <Button
                 variant="contained"
                 color="error"
-                sx={{
-                  width: { xs: "100%", sm: "auto" },
-                  alignSelf: "center",
-                  whiteSpace: "nowrap",
-                }}
+                sx={{ flex: 1, minWidth: 200 }}
                 onClick={() => setIsComfirmDeleteMany(true)}
               >
                 Xoá ({selectedIds.length})
@@ -396,16 +395,18 @@ const RescuePage: React.FC = () => {
             )}
 
             {/* Tổng số */}
-            <Box sx={{ flex: 1, minWidth: 200 }}>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                alignSelf={{ xs: "flex-start", sm: "flex-end" }}
-              >
-                Tổng số: {pagination.total} cứu trợ
-              </Typography>
-            </Box>
           </Stack>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              mb: 1,
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              Tổng số: {pagination.total} cứu trợ
+            </Typography>
+          </Box>
 
           <ListRescue
             rescues={rescue}
@@ -451,22 +452,66 @@ const RescuePage: React.FC = () => {
             </Typography>
           </Box>
         </Box>
-        <Box className="flex flex-col items-center">
-          {" "}
-          <Pagination
-            count={pagination.totalPages}
-            page={filter.page ?? 1}
-            color="primary"
-            onChange={(_event, value) =>
-              setFilter(prev => ({
-                ...prev,
-                page: value,
-              }))
-            }
-            showFirstButton
-            showLastButton
-          />
+        <Box
+          style={{
+            display:
+              pagination.totalPages !== undefined && pagination.totalPages > 1
+                ? "block"
+                : "none",
+          }}
+        >
+          <Box
+            style={{
+              display:
+                pagination.totalPages !== undefined && pagination.totalPages > 1
+                  ? "block"
+                  : "none",
+            }}
+          >
+            <Box className="flex flex-col items-center">
+              {" "}
+              <Pagination
+                count={pagination.totalPages}
+                page={filter.page ?? 1}
+                color="primary"
+                onChange={(_event, value) =>
+                  setFilter(prev => ({
+                    ...prev,
+                    page: value,
+                  }))
+                }
+                showFirstButton
+                showLastButton
+              />
+            </Box>
+          </Box>{" "}
+          <Box
+            style={{
+              display:
+                pagination.totalPages !== undefined && pagination.totalPages > 1
+                  ? "block"
+                  : "none",
+            }}
+          >
+            <Box className="flex flex-col items-center">
+              {" "}
+              <Pagination
+                count={pagination.totalPages}
+                page={filter.page ?? 1}
+                color="primary"
+                onChange={(_event, value) =>
+                  setFilter(prev => ({
+                    ...prev,
+                    page: value,
+                  }))
+                }
+                showFirstButton
+                showLastButton
+              />
+            </Box>
+          </Box>{" "}
         </Box>
+
         <CreateRescue
           isOpen={isCreateOpen}
           onClose={closeCreate}
@@ -487,15 +532,15 @@ const RescuePage: React.FC = () => {
         />
         <ConfirmDelete
           open={isComfirmDelete}
-          title="Xóa cứu trợ học"
+          title="Xóa cứu trợ "
           onClose={() => setIsComfirmDelete(false)}
-          description="Bạn có chắc chắn xóa cứu trợ học này không"
+          description="Bạn có chắc chắn xóa cứu trợ  này không"
           onConfirm={() => handleDelete(selectedId)}
         />
 
         <ConfirmDelete
           open={isComfirmDeleteMany}
-          title="Xóa cứu trợ học"
+          title="Xóa cứu trợ "
           onClose={() => setIsComfirmDeleteMany(false)}
           onConfirm={() => handleDeletes({ ids: selectedIds })}
         />

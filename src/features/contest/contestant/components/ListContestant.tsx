@@ -42,6 +42,7 @@ export default function Listcontestant({
       field: "status",
       headerName: "Trạng thái",
       flex: 1,
+      minWidth: 200,
       renderCell: (params: GridRenderCellParams<any, string>) => {
         const status = params.row.status;
 
@@ -54,6 +55,7 @@ export default function Listcontestant({
       field: "actions",
       headerName: "Thao tác",
       flex: 1,
+      minWidth: 200,
       renderCell: params => (
         <>
           <IconButton color="primary" onClick={() => onView(params.row.id)}>

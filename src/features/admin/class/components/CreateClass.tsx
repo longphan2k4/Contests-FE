@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -35,18 +35,22 @@ export default function CreateClass({
     },
   });
 
-  const { data } = useListSChool();
+  const {
+    data: schoolData,
+    isLoading: isLoadingSchool,
+    isError: isErrorSchool,
+  } = useListSChool();
 
   // Memo hóa danh sách trường học để tránh re-render thừa
   const schoolOptions = useMemo(() => {
-    if (data?.success) {
-      return data.data.map((item: any) => ({
+    if (schoolData?.success) {
+      return schoolData.data.map((item: any) => ({
         label: item.name,
         value: item.id,
       }));
     }
     return [];
-  }, [data]);
+  }, [schoolData]);
 
   // Reset khi mở lại form
   useEffect(() => {
@@ -59,6 +63,21 @@ export default function CreateClass({
     onSubmit(formData);
     onClose();
   };
+
+  if (isLoadingSchool) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "200px",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <AppFormDialog

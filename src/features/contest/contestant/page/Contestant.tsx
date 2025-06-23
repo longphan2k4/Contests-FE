@@ -79,9 +79,19 @@ const ContestantPage: React.FC = () => {
 
   const { mutate: mutateDeletes } = useDeletes();
 
-  const { data: roundData } = useListRound(slug ?? null);
+  const {
+    data: roundData,
+    isLoading: isLoadingRound,
+    isError: isErrorRound,
+    refetch: refetchRound,
+  } = useListRound(slug ?? null);
 
-  const { data: statusData } = useContestStatus();
+  const {
+    data: statusData,
+    isLoading: isLoadingStatus,
+    isError: isErrorStatus,
+    refetch: refetchStatus,
+  } = useContestStatus();
 
   useEffect(() => {
     if (roundData) {
@@ -103,6 +113,12 @@ const ContestantPage: React.FC = () => {
     }
   }, [contestantData]);
 
+  useEffect(() => {
+    refetchs();
+    refetchRound();
+    refetchStatus();
+  }, [slug, refetchRound, refetchStatus, refetchs]);
+
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
 
@@ -119,7 +135,7 @@ const ContestantPage: React.FC = () => {
         refetchs();
       },
       onError: () => {
-        showToast("Xóa thí sinh học thất bại");
+        showToast("Xóa thí sinh  thất bại");
       },
     });
   };
@@ -146,7 +162,7 @@ const ContestantPage: React.FC = () => {
     if (!id) return;
     mutateDelete(id, {
       onSuccess: () => {
-        showToast(`Xóa thí sinh học thành công`);
+        showToast(`Xóa thí sinh  thành công`);
         refetchs();
       },
       onError: (error: any) => {
@@ -167,15 +183,18 @@ const ContestantPage: React.FC = () => {
     },
     [handleDelete]
   );
+  useEffect(() => {
+    document.title = "Quản lý thí sinh";
+  }, []);
 
-  if (issLoading) {
+  if (issLoading || isLoadingRound || isLoadingStatus) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
-  if (issError) {
+  if (issError || isErrorRound || isErrorStatus) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert
@@ -311,7 +330,7 @@ const ContestantPage: React.FC = () => {
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            Tổng số: {pagination.total} thí sinh học
+            Tổng số: {pagination.total} thí sinh
           </Typography>
         </Box>
 
@@ -408,15 +427,15 @@ const ContestantPage: React.FC = () => {
         />
         <ConfirmDelete
           open={isComfirmDelete}
-          title="Xóa thí sinh học"
+          title="Xóa thí sinh "
           onClose={() => setIsComfirmDelete(false)}
-          description="Bạn có chắc chắn xóa thí sinh học này không"
+          description="Bạn có chắc chắn xóa thí sinh  này không"
           onConfirm={() => handleDelete(selectedId)}
         />
 
         <ConfirmDelete
           open={isComfirmDeleteMany}
-          title="Xóa thí sinh học"
+          title="Xóa thí sinh "
           onClose={() => setIsComfirmDeleteMany(false)}
           onConfirm={() => handeDeletes({ ids: selectedIds })}
         />

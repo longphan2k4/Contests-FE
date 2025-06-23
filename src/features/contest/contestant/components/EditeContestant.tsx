@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,13 +41,36 @@ export default function EditeContestant({
     resolver: zodResolver(UpdateContestantSchema),
   });
 
-  const { data: contestantData } = useGetById(id);
-
   const { slug } = useParams();
 
-  const { data: listStatus } = useContestStatus();
+  const {
+    data: contestantData,
+    isLoading: isLoadingContestant,
+    isError: isErrorContestant,
+    refetch: refetchContestant,
+  } = useGetById(id);
 
-  const { data: listRound } = useListRound(slug ?? null);
+  const {
+    data: listStatus,
+    isLoading: isLoadingStatus,
+    isError: isErrorStatus,
+    refetch: refetchStatus,
+  } = useContestStatus();
+
+  const {
+    data: listRound,
+    isLoading: isLoadingRound,
+    isError: isErrorRound,
+    refetch: refetchRound,
+  } = useListRound(slug ?? null);
+
+  useEffect(() => {
+    if (isOpen) {
+      refetchContestant();
+      refetchStatus();
+      refetchRound();
+    }
+  }, [isOpen, refetchContestant, refetchStatus, refetchRound]);
 
   const round = useMemo(() => {
     if (listRound?.success && Array.isArray(listRound.data)) {
@@ -82,6 +105,17 @@ export default function EditeContestant({
     onSubmit(formData);
     onClose();
   };
+
+  if (isLoadingContestant || isLoadingStatus || isLoadingRound) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  if (isErrorContestant || isErrorStatus || isErrorRound) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
 
   return (
     <AppFormDialog

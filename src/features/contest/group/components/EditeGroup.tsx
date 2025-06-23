@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,9 +40,27 @@ export default function EditClass({
   const { data: groupData } = useGetById(id);
   const { slug } = useParams();
 
-  const { data: listUsers } = useListUser();
+  const {
+    data: listUsers,
+    refetch: refetchUser,
+    isError: isUserError,
+    isLoading: isUserLoading,
+  } = useListUser();
 
-  const { data: listMatches } = useListMatch(slug ?? null);
+  const {
+    data: listMatches,
+    refetch: refetchMatch,
+    isError: isMatchError,
+    isLoading: isMatchLoading,
+  } = useListMatch(slug ?? null);
+
+  useEffect(() => {
+    // Kiểm tra nếu slug có giá trị thì gọi lại hàm refetch để lấy dữ liệu mới
+    if (slug) {
+      refetchMatch();
+      refetchUser();
+    }
+  }, [slug, refetchMatch, refetchUser, open]);
 
   // Memo hóa danh sách trường học để tránh re-render thừa
   const matches = useMemo(() => {
@@ -78,6 +96,18 @@ export default function EditClass({
     onSubmit(formData);
     onClose();
   };
+
+  if (isUserLoading || isMatchLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isUserError || isMatchError) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
 
   return (
     <AppFormDialog

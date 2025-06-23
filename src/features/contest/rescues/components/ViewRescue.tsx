@@ -1,8 +1,7 @@
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 import { useGetById } from "../hook/useRescue";
-
 
 interface ViewClassProps {
   id: number | null;
@@ -15,18 +14,46 @@ export default function ViewRescue({
   isOpen,
   onClose,
 }: ViewClassProps): React.ReactElement {
-  const { data: rescue } = useGetById(id);
+  const { data: rescue, isLoading, isError } = useGetById(id);
+  if (isLoading)
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  if (isError) return <div>Không thể tải dữ liệu</div>;
   const fields = [
     { label: "ID", value: rescue?.id },
     { label: "Tên cứu trợ", value: rescue?.name },
-    { label: "Loại cứu trợ", value: rescue?.rescueType },
+    {
+      label: "Loại cứu trợ",
+      value:
+        rescue?.rescueType === "resurrected" ? "Hồi sinh" : "Phao cứu sinh",
+    },
     { label: "Câu bắt đầu", value: rescue?.questionFrom },
     { label: "Câu bắt đầu", value: rescue?.questionFrom },
     { label: "Câu kết thúc", value: rescue?.questionTo },
     { label: "Số thí sinh còn lại", value: rescue?.remainingContestants },
-    { label: "Trạng thái", value: rescue?.status },
-    { label: "Id các thí sinh được cứu", value: rescue?.studentIds },
-    { label: "Đáp án cứu trợ", value: rescue?.supportAnswers },
+    {
+      label: "Trạng thái",
+      value:
+        rescue?.status === "notUsed"
+          ? "Chưa sử dụng"
+          : rescue?.status === "used"
+          ? "Đã sử dụng"
+          : "Đã qua",
+    },
+    {
+      label: "Id các thí sinh được cứu",
+      value: rescue?.studentIds.length > 0 ? rescue?.studentIds : "Không có",
+    },
+    {
+      label: "Đáp án cứu trợ",
+      value:
+        rescue?.supportAnswers?.length > 0
+          ? rescue?.supportAnswers
+          : "Không có",
+    },
     { label: "Cứu trợ ở câu", value: rescue?.questionOrder },
     { label: "Trận đấu", value: rescue?.match.name },
   ];

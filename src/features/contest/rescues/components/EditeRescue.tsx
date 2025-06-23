@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,13 +45,26 @@ export default function EditRescue({
   const { data: rescueData } = useGetById(id);
   const { slug } = useParams();
 
-  const { data: listTypes, refetch: refetchListTypes } = useListType();
+  const {
+    data: listTypes,
+    refetch: refetchListTypes,
+    isLoading: isListTypesLoading,
+    isError: isListTypesError,
+  } = useListType();
 
-  const { data: listStatus, refetch: refetchListStatus } = useListStatus();
+  const {
+    data: listStatus,
+    refetch: refetchListStatus,
+    isLoading: isListStatusLoading,
+    isError: isListStatusError,
+  } = useListStatus();
 
-  const { data: listMatches, refetch: refetchListMatches } = useListMatch(
-    slug ?? null
-  );
+  const {
+    data: listMatches,
+    refetch: refetchListMatches,
+    isLoading: isListMatchesLoading,
+    isError: isListMatchesError,
+  } = useListMatch(slug ?? null);
 
   useEffect(() => {
     if (isOpen) {
@@ -111,6 +124,18 @@ export default function EditRescue({
     onSubmit(formData);
     onClose();
   };
+
+  if (isListTypesLoading || isListStatusLoading || isListMatchesLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    ); // Hiển thị loading khi đang tải dữ liệu
+  }
+
+  if (isListTypesError || isListStatusError || isListMatchesError) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
 
   return (
     <AppFormDialog
