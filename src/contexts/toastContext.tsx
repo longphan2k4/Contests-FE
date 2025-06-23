@@ -119,10 +119,10 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed top-23 right-4 z-100 flex flex-col gap-2">
+      <div className="fixed top-23 right-4 z-[1400] flex flex-col gap-2">
         {toasts.map(toast => (
           <div
-            key={toast.id}
+            key={toast.id + toast.message}
             className={`relative overflow-hidden ${getBgColor(
               toast.type
             )} text-white rounded-lg shadow-xl flex items-center gap-3 p-4 pr-10 w-80`}

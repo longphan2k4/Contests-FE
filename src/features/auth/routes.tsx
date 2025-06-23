@@ -9,7 +9,7 @@ const ResetPasswordPage = () => <div>Trang Đặt lại mật khẩu</div>;
 
 const AuthRoutes = () => {
   return (
-    <Route path="/" element={<PublicRoute restricted={true} />}>
+    <Route path="/">
       <Route path="login" element={<LoginPage />} />
       <Route path="register" element={<RegisterPage />} />
       <Route path="forgot-password" element={<ForgotPasswordPage />} />

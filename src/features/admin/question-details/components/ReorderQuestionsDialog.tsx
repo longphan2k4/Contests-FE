@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -9,25 +9,25 @@ import {
   Typography,
   Paper,
   List,
-  CircularProgress
-} from '@mui/material';
+  CircularProgress,
+} from "@mui/material";
 import {
   DndContext,
   closestCenter,
   PointerSensor,
   useSensor,
   useSensors,
-  type DragEndEvent
-} from '@dnd-kit/core';
+  type DragEndEvent,
+} from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
-  verticalListSortingStrategy
-} from '@dnd-kit/sortable';
-import { SortableItem } from './SortableItem';
-import { questionDetailService } from '../services/questionDetailService';
-import { useNotification } from '../../../../contexts/NotificationContext';
-import type { QuestionDetail } from '../types';
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { SortableItem } from "./SortableItem";
+import { questionDetailService } from "../services/questionDetailService";
+import { useNotification } from "../../../../contexts/NotificationContext";
+import type { QuestionDetail } from "../types";
 
 interface ReorderQuestionsDialogProps {
   open: boolean;
@@ -40,12 +40,13 @@ export const ReorderQuestionsDialog: React.FC<ReorderQuestionsDialogProps> = ({
   open,
   onClose,
   packageId,
-  refreshQuestions
+  refreshQuestions,
 }) => {
   const [questions, setQuestions] = useState<QuestionDetail[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const { showSuccessNotification, showErrorNotification } = useNotification();
+  const dialogRef = React.useRef<HTMLDivElement>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -58,22 +59,26 @@ export const ReorderQuestionsDialog: React.FC<ReorderQuestionsDialogProps> = ({
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await questionDetailService.getQuestionDetailsByPackage(packageId, {
-        limit: 100,
-        sortBy: 'questionOrder',
-        sortOrder: 'asc'
-      });
+      const response = await questionDetailService.getQuestionDetailsByPackage(
+        packageId,
+        {
+          limit: 100,
+          sortBy: "questionOrder",
+          sortOrder: "asc",
+        }
+      );
       if (response.data.questions) {
-        const questionsWithIds = response.data.questions.map((q: QuestionDetail, index: number) => ({
-          ...q,
-          uniqueId: `item-${index}`
-        }));
+        const questionsWithIds = response.data.questions.map(
+          (q: QuestionDetail, index: number) => ({
+            ...q,
+            uniqueId: `item-${index}`,
+          })
+        );
         setQuestions(questionsWithIds);
-        console.log('Danh sách câu hỏi ban đầu:', questionsWithIds);
       }
     } catch (error) {
-      console.error('Lỗi khi tải danh sách câu hỏi:', error);
-      showErrorNotification('Không thể tải danh sách câu hỏi');
+      console.error("Lỗi khi tải danh sách câu hỏi:", error);
+      showErrorNotification("Không thể tải danh sách câu hỏi");
     } finally {
       setLoading(false);
     }
@@ -86,30 +91,57 @@ export const ReorderQuestionsDialog: React.FC<ReorderQuestionsDialogProps> = ({
     }
   }, [open, packageId, fetchQuestions]);
 
-  // Xử lý khi kéo thả hoàn tất
+  // Xử lý đóng dialog và blur focus
+  const handleClose = useCallback(() => {
+    // Tìm tất cả elements có thể focus trong dialog và blur chúng
+    if (dialogRef.current) {
+      const focusableElements = dialogRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      focusableElements.forEach((element) => {
+        if (element instanceof HTMLElement) {
+          element.blur();
+        }
+      });
+    }
+
+    // Blur document.activeElement nếu có
+    if (
+      document.activeElement &&
+      document.activeElement instanceof HTMLElement
+    ) {
+      document.activeElement.blur();
+    }
+
+    // Sử dụng setTimeout để đảm bảo blur xảy ra trước khi dialog đóng hoàn toàn
+    setTimeout(() => {
+      onClose();
+    }, 0);
+  }, [onClose]);
+
+  // Xử lý kéo thả hoàn tất
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     if (!over || active.id === over.id) {
       return;
     }
-    
+
     setQuestions((items) => {
-      const oldIndex = items.findIndex(item => item.uniqueId === active.id);
-      const newIndex = items.findIndex(item => item.uniqueId === over.id);
-      
+      const oldIndex = items.findIndex((item) => item.uniqueId === active.id);
+      const newIndex = items.findIndex((item) => item.uniqueId === over.id);
+
       if (oldIndex === -1 || newIndex === -1) {
-        console.error('Không tìm thấy item để di chuyển');
         return items;
       }
-      
+
       const newItems = arrayMove(items, oldIndex, newIndex);
-      
+
       // Cập nhật thứ tự mới và ID
       return newItems.map((item, index) => ({
         ...item,
         questionOrder: index + 1,
-        uniqueId: `item-${index}`
+        uniqueId: `item-${index}`,
       }));
     });
   };
@@ -118,40 +150,58 @@ export const ReorderQuestionsDialog: React.FC<ReorderQuestionsDialogProps> = ({
   const handleSave = useCallback(async () => {
     try {
       setSaving(true);
-      const reorders = questions.map((q: QuestionDetail, index: number) => ({
-        questionId: q.questionId,
-        questionOrder: index + 1
-      }));
+      const questionsToSync = questions.map(
+        (q: QuestionDetail, index: number) => ({
+          questionId: q.questionId,
+          questionOrder: index + 1,
+        })
+      );
 
-      await questionDetailService.reorderQuestionDetails({
-        questionPackageId: packageId,
-        reorders
-      });
+      await questionDetailService.syncQuestionDetails(
+        packageId,
+        questionsToSync
+      );
 
-      showSuccessNotification('Đã cập nhật thứ tự câu hỏi thành công');
-      onClose();
+      showSuccessNotification("Đã cập nhật thứ tự câu hỏi thành công");
+      handleClose();
       await refreshQuestions();
     } catch (error) {
-      console.error('Lỗi khi cập nhật thứ tự câu hỏi:', error);
-      showErrorNotification('Không thể cập nhật thứ tự câu hỏi');
+      console.error("Lỗi khi cập nhật thứ tự câu hỏi:", error);
+      showErrorNotification("Không thể cập nhật thứ tự câu hỏi");
     } finally {
       setSaving(false);
     }
-  }, [questions, packageId, onClose, refreshQuestions, showSuccessNotification, showErrorNotification]);
+  }, [
+    questions,
+    packageId,
+    handleClose,
+    refreshQuestions,
+    showSuccessNotification,
+    showErrorNotification,
+  ]);
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      ref={dialogRef}
+    >
       <DialogTitle>Sắp xếp thứ tự câu hỏi</DialogTitle>
       <DialogContent>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
             <CircularProgress />
           </Box>
         ) : questions.length === 0 ? (
           <Typography sx={{ p: 2 }}>Không có câu hỏi để sắp xếp</Typography>
         ) : (
           <Paper variant="outlined" sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" sx={{ p: 2, bgcolor: 'background.default' }}>
+            <Typography
+              variant="subtitle2"
+              sx={{ p: 2, bgcolor: "background.default" }}
+            >
               Kéo và thả để sắp xếp thứ tự câu hỏi
             </Typography>
             <DndContext
@@ -160,14 +210,21 @@ export const ReorderQuestionsDialog: React.FC<ReorderQuestionsDialogProps> = ({
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={questions.map(q => q.uniqueId || '')}
+                items={questions.map((q) => q.uniqueId || "")}
                 strategy={verticalListSortingStrategy}
               >
-                <List sx={{ width: '100%', maxHeight: '400px', overflow: 'auto', p: 2 }}>
+                <List
+                  sx={{
+                    width: "100%",
+                    maxHeight: "400px",
+                    overflow: "auto",
+                    p: 2,
+                  }}
+                >
                   {questions.map((question) => (
-                    <SortableItem 
+                    <SortableItem
                       key={question.uniqueId}
-                      id={question.uniqueId || ''}
+                      id={question.uniqueId || ""}
                       question={question}
                     />
                   ))}
@@ -178,15 +235,15 @@ export const ReorderQuestionsDialog: React.FC<ReorderQuestionsDialogProps> = ({
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Hủy</Button>
-        <Button 
-          onClick={handleSave} 
-          variant="contained" 
+        <Button onClick={handleClose}>Hủy</Button>
+        <Button
+          onClick={handleSave}
+          variant="contained"
           disabled={loading || saving || questions.length === 0}
         >
-          {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+          {saving ? "Đang lưu..." : "Lưu thay đổi"}
         </Button>
       </DialogActions>
     </Dialog>
   );
-}; 
+};

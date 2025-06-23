@@ -10,7 +10,6 @@ export const useQuestionTopics = (searchTerm: string = '', enabled = true) => {
         isActive: true, // Chỉ lấy các chủ đề đang hoạt động
         limit: 100, // Giới hạn số lượng kết quả
       });
-      console.log('topic',response)
       return response.data || [];
     },
     staleTime: 5 * 60 * 1000, // 5 phút

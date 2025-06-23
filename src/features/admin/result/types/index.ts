@@ -42,12 +42,14 @@ export interface Result {
 
 // Tham số lọc kết quả với nhiều tùy chọn hơn
 export interface ResultFilterParams {
+  contestSlug?: string;
   matchId?: number;
   contestantId?: number;
   roundId?: number;
   studentName?: string;
   matchName?: string;
   isCorrect?: boolean;
+  search?: string;
   page?: number;
   limit?: number;
   sortBy?: 'createdAt' | 'questionOrder' | 'studentName' | 'matchName';
@@ -103,6 +105,7 @@ export interface PaginatedResponse<T> {
 
 // Filter state cho UI
 export interface FilterState {
+  search: string;
   studentName: string;
   matchName: string;
   roundId: string;

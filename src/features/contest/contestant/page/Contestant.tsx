@@ -42,7 +42,6 @@ import {
   useDeletes,
   useContestStatus,
   useListRound,
-  useCreates,
 } from "../hook/useContestant";
 import AddIcon from "@mui/icons-material/Add";
 
@@ -73,8 +72,6 @@ const ContestantPage: React.FC = () => {
     isError: issError,
     refetch: refetchs,
   } = useGetAll(filter, slug ?? null);
-
-  const { mutate: mutateCreates } = useCreates();
 
   const { mutate: mutateUpdate } = useUpdate();
 
@@ -125,23 +122,6 @@ const ContestantPage: React.FC = () => {
         showToast("Xóa thí sinh học thất bại");
       },
     });
-  };
-
-  const handleCreates = (payload: CreatesContestInput) => {
-    mutateCreates(
-      { payload: payload, slug: slug ?? null },
-      {
-        onSuccess: () => {
-          showToast(`Thêm thí sinh thành công`, "success");
-          refetchs();
-        },
-        onError: (err: any) => {
-          if (err.response?.data?.message) {
-            showToast(err.response?.data?.message, "error"); // nên là "error" thay vì "success"
-          }
-        },
-      }
-    );
   };
 
   const handleUpdate = (payload: UpdateContestantInput) => {
@@ -372,6 +352,8 @@ const ContestantPage: React.FC = () => {
                 <MenuItem value={10}>10</MenuItem>
                 <MenuItem value={25}>25</MenuItem>
                 <MenuItem value={50}>50</MenuItem>
+                <MenuItem value={100}>100</MenuItem>
+                <MenuItem value={200}>200</MenuItem>
               </Select>
             </FormControl>
             <Typography>
@@ -404,7 +386,13 @@ const ContestantPage: React.FC = () => {
             />
           </Box>
         </Box>
-        <CreateContestant isOpen={isCreateOpen} onClose={closeCreate} />
+        <CreateContestant
+          isOpen={isCreateOpen}
+          onClose={() => {
+            closeCreate();
+            refetchs();
+          }}
+        />
 
         <ViewContestant
           isOpen={isViewOpen}
