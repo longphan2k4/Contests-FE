@@ -1,39 +1,35 @@
 import React from "react";
-import { useParams, Link } from "react-router-dom";
-
 import { Box, IconButton } from "@mui/material";
-import DataGrid from "../../../../components/DataGrid";
-import type { GridColDef } from "@mui/x-data-grid";
+import DataGrid from "../../../../../components/DataGrid";
+import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import ForumIcon from "@mui/icons-material/Forum";
-// them icon de tuowng tac voi danh sach thi sinh
-import GroupsIcon from "@mui/icons-material/Groups";
 
-import { type Match } from "../types/match.shame";
-import IsSwitch from "../../../../components/IsSwitch";
+import { type Contestant } from "../../../contestant/types/contestant.shame";
 
-interface ListMatchProps {
-  matchs: Match[];
+interface ListcontestantProps {
+  contestants: Contestant[];
   selectedIds: number[];
   setSelectedIds: React.Dispatch<React.SetStateAction<number[]>>;
   onView: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
   onToggle?: (id: number) => void;
+  
+  // New props for disabled rows
+  assignedContestantIds?: number[];
 }
 
-export default function ListMatch({
+export default function Listcontestant({
   selectedIds,
   setSelectedIds,
-  matchs,
+  contestants,
   onView,
   onEdit,
   onDelete,
-  onToggle,
-}: ListMatchProps): React.ReactElement {
-  const { slug } = useParams();
+  assignedContestantIds = [],
+}: ListcontestantProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
       field: "index",
@@ -44,19 +40,19 @@ export default function ListMatch({
       renderCell: params =>
         params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
-    { field: "name", headerName: "Trận đấu", flex: 1 },
+    { field: "fullName", headerName: "Họ và tên", flex: 1 },
     { field: "roundName", headerName: "Vòng đấu", flex: 1 },
-    { field: "questionPackageName", headerName: "Gói câu hỏi", flex: 1 },
     {
-      field: "isActive",
+      field: "status",
       headerName: "Trạng thái",
       flex: 1,
-      renderCell: params => (
-        <IsSwitch
-          value={params.row.isActive}
-          onChange={() => onToggle?.(params.row.id)}
-        />
-      ),
+      renderCell: (params: GridRenderCellParams<any, string>) => {
+        const status = params.row.status;
+
+        if (status === "compete") return <span>Thi đấu</span>;
+        if (status === "eliminate") return <span>Bị loại</span>;
+        return <span>Qua vòng</span>;
+      },
     },
     {
       field: "actions",
@@ -70,36 +66,43 @@ export default function ListMatch({
           <IconButton color="primary" onClick={() => onEdit(params.row.id)}>
             <EditIcon />
           </IconButton>
-          <Link
-            to={`/admin/cuoc-thi/${slug}/thi-sinh-tran-dau/${params.row.id}`}
-            style={{ textDecoration: 'none' }}
-          >
-            <IconButton color="info" title="Danh sách thí sinh">
-              <GroupsIcon />
-            </IconButton>
-          </Link>
-          <Link
-            to={`/admin/cuoc-thi/${slug}/dieu-kien-tran-dau/${params.row.slug}`}
-          >
-            <ForumIcon />
-          </Link>
           <IconButton color="error" onClick={() => onDelete(params.row.id)}>
             <DeleteIcon />
           </IconButton>
         </>
       ),
     },
-  ];
-  return (
-    <Box>
-      <DataGrid
-        rows={matchs}
+  ];  return (
+    <Box sx={{ 
+      overflow: "auto",
+      '&::-webkit-scrollbar': {
+        width: '4px',
+        height: '4px'
+      },
+      '&::-webkit-scrollbar-track': {
+        backgroundColor: '#f1f1f1',
+        borderRadius: '4px'
+      },
+      '&::-webkit-scrollbar-thumb': {
+        backgroundColor: '#c1c1c1',
+        borderRadius: '4px',
+        '&:hover': {
+          backgroundColor: '#a8a8a8'
+        }
+      }
+    }}>      <DataGrid
+        rows={contestants}
         columns={columns}
         getRowId={row => row.id}
-        selectedIds={selectedIds}        onSelectChange={selection => {
+        selectedIds={selectedIds}
+        disabledRowIds={assignedContestantIds}
+        getRowClassName={(params) => 
+          assignedContestantIds.includes(params.row.id) ? 'disabled-row' : ''
+        }
+        onSelectChange={selection => {
           const idsArray = Array.isArray(selection)
             ? selection
-            : Array.from((selection as Set<number>).values() || []);
+            : Array.from((selection as unknown as { ids: number[] }).ids || []);
           setSelectedIds(idsArray.map(id => Number(id)));
         }}
       />

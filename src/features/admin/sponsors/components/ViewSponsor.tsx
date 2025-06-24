@@ -2,7 +2,8 @@ import React from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import { Box } from "@mui/material";
 import { useSponsorById } from "../hook/useSponsorById";
-const BASE_URL = "http://localhost:3000";
+import { getMediaUrl } from '@/config/env';
+
 interface ViewSponsorProps {
   id: number | null;
   isOpen: boolean;
@@ -18,12 +19,11 @@ export default function ViewSponsor({
 
   const fields = [
     { label: "ID", value: sponsor?.id },
-    { label: "Tên nhà tài trợ", value: sponsor?.name },
-    {
+    { label: "Tên nhà tài trợ", value: sponsor?.name },    {
   label: "Logo",
   value: sponsor?.logo ? (
     <img
-      src={`${BASE_URL}${sponsor.logo}`}
+      src={getMediaUrl(sponsor.logo)}
       alt="logo"
       style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 8 }}
     />
@@ -35,16 +35,25 @@ export default function ViewSponsor({
   label: "Ảnh giới thiệu",
   value: sponsor?.images ? (
     <img
-      src={`${BASE_URL}${sponsor.images}`}
+      src={getMediaUrl(sponsor.images)}
       alt="image"
       style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 8 }}
     />
   ) : (
     "Không có ảnh"
   ),
-},
-
-    { label: "Video", value: sponsor?.videos },
+},    {
+      label: "Video",
+      value: sponsor?.videos ? (
+        <video
+          src={getMediaUrl(sponsor.videos)}
+          controls
+          style={{ width: 200, height: 150, borderRadius: 8 }}
+        />
+      ) : (
+        "Không có video"
+      ),
+    },
     
     { label: "Cuộc thi liên kết", value: sponsor?.contestId ?? "Chưa gán" },
   ];

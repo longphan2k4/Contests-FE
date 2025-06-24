@@ -7,6 +7,7 @@ import ContestantPage from "./contestant/page/Contestant";
 import MatchPage from "./match/page/MatchPage";
 import ResultsPage from "../admin/result/pages/ResultsPage";
 import RescuePage from "./rescues/page/RescuePage";
+import ContestantMatchPage from "./match/page/ContestantMatchPage";
 
 const Dashboard = () => <div>Trang Dashboard Cuộc Thi</div>;
 import SponsorsPage from "../admin/sponsors/page/SponsorsPage";
@@ -26,6 +27,7 @@ const ContestRoutes = () => {
       <Route path="cuu-tro" element={<RescuePage />} />
       <Route index element={<Navigate to="dashboard" replace />} />
       <Route path="results" element={<ResultsPage />} />
+      <Route path="thi-sinh-tran-dau/:matchId" element={<ContestantMatchPage />} />
     </Route>
   );
 };

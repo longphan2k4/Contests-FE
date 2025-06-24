@@ -1,233 +1,454 @@
-import React, { useEffect,useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import FormInput from "../../../../components/FormInput";
-import { Box, Button,Typography } from "@mui/material";
+import { Box, Button, Typography, TextField, IconButton } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UpdateSponsorSchema, type UpdateSponsorInput } from "../types/sponsors.shame";
+import CloseIcon from "@mui/icons-material/Close";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import {
+  UpdateSponsorSchema,
+  type Sponsor,
+  type UpdateSponsorInput,
+} from "../types/sponsors.shame";
 
-import { useSponsorById } from "../hook/useSponsorById";
-
-interface EditSponsorProps {
-  id: number | null;
+interface EditSponsorDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: UpdateSponsorInput) => void;
+  sponsor: Sponsor;
+  isLoading?: boolean;
 }
 
-
-export default function EditSponsor({
-  id,
+function EditSponsorDialog({
   isOpen,
   onClose,
   onSubmit,
-}: EditSponsorProps): React.ReactElement {
+  sponsor,
+  isLoading = false,
+}: EditSponsorDialogProps): React.ReactElement {
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-    watch
+    watch,
+    setValue,
   } = useForm<UpdateSponsorInput>({
     resolver: zodResolver(UpdateSponsorSchema),
   });
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  
+  // Track file removal states
+  const [removedFiles, setRemovedFiles] = useState<{
+    logo: boolean;
+    images: boolean;
+    videos: boolean;
+  }>({
+    logo: false,
+    images: false,
+    videos: false,
+  });
 
-  const { data: sponsor } = useSponsorById(id);
-
+  const logoFile = watch("logo");
+  const imagesFile = watch("images");
+  const videosFile = watch("videos");
   useEffect(() => {
-    if (sponsor) {
-      reset({
+    if (isOpen) {      reset({
         name: sponsor.name,
-        logo: sponsor.logo ?? "",
-        images: sponsor.images ?? "",
-        videos: sponsor.videos ?? "",
-        contestId: sponsor.contestId,
+        logo: sponsor.logo,
+        images: sponsor.images,
+        videos: sponsor.videos,
+      });
+      
+      // Reset removed files state
+      setRemovedFiles({
+        logo: false,
+        images: false,
+        videos: false,
       });
     }
-  }, [sponsor, reset]);
+  }, [isOpen, sponsor, reset]);
+  useEffect(() => {
+    let url: string | undefined;
+    if (logoFile instanceof File) {
+      url = URL.createObjectURL(logoFile);
+      setLogoPreview(url);
+    } else if (typeof logoFile === "string" && !removedFiles.logo) {
+      setLogoPreview(logoFile);
+    } else {
+      setLogoPreview(null);
+    }
 
+    return () => {
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [logoFile, removedFiles.logo]);
+  useEffect(() => {
+    let url: string | undefined;
+    if (imagesFile instanceof File) {
+      url = URL.createObjectURL(imagesFile);
+      setImagePreview(url);
+    } else if (typeof imagesFile === "string" && !removedFiles.images) {
+      setImagePreview(imagesFile);
+    } else {
+      setImagePreview(null);
+    }
 
-    const logoFile = watch("logo")?.[0];
-  const imagesFile = watch("images")?.[0];
-  const videoUrl = watch("videos");
+    return () => {
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [imagesFile, removedFiles.images]);
+  useEffect(() => {
+    let url: string | undefined;
+    if (videosFile instanceof File) {
+      url = URL.createObjectURL(videosFile);
+      setVideoPreview(url);
+    } else if (typeof videosFile === "string" && !removedFiles.videos) {
+      setVideoPreview(videosFile);
+    } else {
+      setVideoPreview(null);
+    }
 
-  const logoPreview = useMemo(() => {
-    if (logoFile instanceof File) return URL.createObjectURL(logoFile);
-    if (typeof sponsor?.logo === "string") return sponsor.logo;
-    return undefined;
-  }, [logoFile, sponsor?.logo]);
-
-  const imagePreview = useMemo(() => {
-    if (imagesFile instanceof File) return URL.createObjectURL(imagesFile);
-    if (typeof sponsor?.images === "string") return sponsor.images;
-    return undefined;
-  }, [imagesFile, sponsor?.images]);
-
-  const handleFormSubmit = (data: UpdateSponsorInput) => {
-    onSubmit(data);
-    onClose();
+    return () => {
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [videosFile, removedFiles.videos]);  const handleFormSubmit = (data: UpdateSponsorInput) => {
+    // Add removal flags to the data
+    const submitData = {
+      ...data,
+      removeLogo: removedFiles.logo,
+      removeImages: removedFiles.images,
+      removeVideos: removedFiles.videos,
+    };
+    
+    onSubmit(submitData);
+  };const handleRemoveFile = (field: "logo" | "images" | "videos") => {
+    // Get current value before setting to undefined
+    const currentValue = watch(field);
+    
+    // Mark file as removed if it was originally a string URL
+    if (typeof currentValue === "string") {
+      setRemovedFiles(prev => ({
+        ...prev,
+        [field]: true
+      }));
+    }
+    
+    setValue(field, undefined, { shouldValidate: true });
   };
-  
-function convertYoutubeUrlToEmbed(url?: string): string {
-  if (!url) return "";
-  const regExp =
-    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/;
-  const match = url.match(regExp);
-  return match ? `https://www.youtube.com/embed/${match[1]}` : "";
-}
-  return (
-    <Box>
-      <AppFormDialog
-        open={isOpen}
-        onClose={onClose}
-        title={`Cập nhật ${sponsor?.name ?? "nhà tài trợ"}`}
-        maxWidth="sm"
-      >
-        <form onSubmit={handleSubmit(handleFormSubmit)}>
-          <FormInput
-            label="Tên nhà tài trợ"
-            id="name"
-            placeholder="Nhập tên nhà tài trợ"
-            error={errors.name}
-            register={register("name")}
-          />
-     {/* Logo */}
-        <Typography variant="subtitle2" sx={{ mt: 2 }}>
-          Logo (ảnh)
-        </Typography>
-        <label htmlFor="logo-upload">
-          <Box
-            sx={{
-              mt: 1,
-              border: "2px dashed #ccc",
-              borderRadius: 2,
-              p: 2,
-              textAlign: "center",
-              cursor: "pointer",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: 100,
-              overflow: "hidden",
-              position: "relative",
-              backgroundColor: "#fafafa",
-            }}
-          >
-            {logoPreview ? (
-              <img
-                src={logoPreview}
-                alt="logo-preview"
-                style={{
-                  maxHeight: "100%",
-                  maxWidth: "100%",
-                  objectFit: "contain",
-                }}
-              />
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                Nhấn để chọn logo
-              </Typography>
-            )}
-          </Box>
-        </label>
-        <input
-          id="logo-upload"
-          type="file"
-          accept="image/*"
-          {...register("logo")}
-          style={{ display: "none" }}
-        />
-        {errors.logo && (
-          <Typography variant="caption" color="error">
-            {errors.logo.message as string}
-          </Typography>
-        )}
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: "logo" | "images" | "videos"
+  ) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setValue(field, e.target.files[0], { shouldValidate: true });
+      
+      // Reset removed state when new file is selected
+      setRemovedFiles(prev => ({
+        ...prev,
+        [field]: false
+      }));
+    }
+  };
 
-        {/* Hình ảnh */}
-        <Typography variant="subtitle2" sx={{ mt: 2 }}>
-          Hình ảnh giới thiệu (nếu có)
-        </Typography>
-        <label htmlFor="images-upload">
+  return (
+    <AppFormDialog
+      open={isOpen}
+      onClose={onClose}
+      title="Chỉnh sửa nhà tài trợ"
+      maxWidth="md"
+    >
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <TextField
+            label="Tên nhà tài trợ"
+            {...register("name")}
+            error={!!errors.name}
+            helperText={errors.name?.message}
+            required
+            fullWidth
+          />
+
           <Box
             sx={{
-              mt: 1,
-              border: "2px dashed #ccc",
-              borderRadius: 2,
-              p: 2,
-              textAlign: "center",
-              cursor: "pointer",
               display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: 100,
-              overflow: "hidden",
-              position: "relative",
-              backgroundColor: "#fafafa",
+              flexDirection: { xs: "column", md: "row" },
+              gap: 3,
             }}
           >
-            {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt="image-preview"
-                style={{
-                  maxHeight: "100%",
-                  maxWidth: "100%",
-                  objectFit: "contain",
-                }}
-              />
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                Nhấn để chọn ảnh
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Logo
               </Typography>
-            )}
-          </Box>
-        </label>
-        <input
-          id="images-upload"
-          type="file"
-          accept="image/*"
-          {...register("images")}
-          style={{ display: "none" }}
-        />
-        {errors.images && (
-          <Typography variant="caption" color="error">
-            {errors.images.message as string}
-          </Typography>
-        )}
-   
-     
-        {/* Video (URL) */}
-        <FormInput
-          label="Video giới thiệu (URL)"
-          id="videos"
-          placeholder="https://youtube.com/..."
-          register={register("videos")}
-        />
-        {videoUrl && (
-          <Box mt={2}>
-            <Typography variant="subtitle2">Xem trước video:</Typography>
-            <Box mt={1}>
-              <iframe
-                width="100%"
-                height="250"
-                src={convertYoutubeUrlToEmbed(videoUrl)}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title="video preview"
-              ></iframe>
+              {(logoFile && !removedFiles.logo) ? (
+                <Box
+                  sx={{
+                    position: "relative",
+                    p: 1,
+                    border: "1px solid #ccc",
+                    borderRadius: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  {logoPreview && (
+                    <img
+                      src={logoPreview}
+                      alt="logo-preview"
+                      style={{
+                        width: "100%",
+                        maxHeight: 150,
+                        objectFit: "contain",
+                        borderRadius: "4px",
+                      }}
+                    />
+                  )}
+                  <IconButton
+                    onClick={() => handleRemoveFile("logo")}
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      top: 4,
+                      right: 4,
+                      backgroundColor: "rgba(255, 255, 255, 0.7)",
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.9)",
+                      },
+                    }}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              ) : (
+                <Button
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    p: 2,
+                    borderStyle: "dashed",
+                    height: "100%",
+                    flexDirection: "column",
+                  }}
+                >
+                  <CloudUploadIcon sx={{ mb: 1 }} />
+                  Chọn hoặc kéo thả logo mới
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                  >
+                    JPG, PNG, GIF, WebP, SVG
+                  </Typography>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => handleFileChange(e, "logo")}
+                  />
+                </Button>
+              )}
+              {errors.logo && (
+                <Typography
+                  variant="caption"
+                  color="error"
+                  sx={{ mt: 0.5, display: "block" }}
+                >
+                  {errors.logo.message as string}
+                </Typography>
+              )}
             </Box>
+
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Hình ảnh giới thiệu
+              </Typography>
+              {(imagesFile && !removedFiles.images) ? (
+                <Box
+                  sx={{
+                    position: "relative",
+                    p: 1,
+                    border: "1px solid #ccc",
+                    borderRadius: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  {imagePreview && (
+                    <img
+                      src={imagePreview}
+                      alt="image-preview"
+                      style={{
+                        width: "100%",
+                        maxHeight: 150,
+                        objectFit: "contain",
+                        borderRadius: "4px",
+                      }}
+                    />
+                  )}
+                  <IconButton
+                    onClick={() => handleRemoveFile("images")}
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      top: 4,
+                      right: 4,
+                      backgroundColor: "rgba(255, 255, 255, 0.7)",
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.9)",
+                      },
+                    }}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              ) : (
+                <Button
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    p: 2,
+                    borderStyle: "dashed",
+                    height: "100%",
+                    flexDirection: "column",
+                  }}
+                >
+                  <CloudUploadIcon sx={{ mb: 1 }} />
+                  Chọn hoặc kéo thả hình ảnh mới
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                  >
+                    JPG, PNG, GIF, WebP, SVG
+                  </Typography>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => handleFileChange(e, "images")}
+                  />
+                </Button>
+              )}
+              {errors.images && (
+                <Typography
+                  variant="caption"
+                  color="error"
+                  sx={{ mt: 0.5, display: "block" }}
+                >
+                  {errors.images.message as string}
+                </Typography>
+              )}
+            </Box>
+
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Video giới thiệu
+              </Typography>
+              {(videosFile && !removedFiles.videos) ? (
+                <Box
+                  sx={{
+                    position: "relative",
+                    p: 1,
+                    border: "1px solid #ccc",
+                    borderRadius: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  {videoPreview && (
+                    <video
+                      src={videoPreview}
+                      style={{
+                        width: "100%",
+                        maxHeight: 150,
+                        borderRadius: "4px",
+                      }}
+                      controls
+                    />
+                  )}
+                  <IconButton
+                    onClick={() => handleRemoveFile("videos")}
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      top: 4,
+                      right: 4,
+                      backgroundColor: "rgba(255, 255, 255, 0.7)",
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.9)",
+                      },
+                    }}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              ) : (
+                <Button
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    p: 2,
+                    borderStyle: "dashed",
+                    height: "100%",
+                    flexDirection: "column",
+                  }}
+                >
+                  <CloudUploadIcon sx={{ mb: 1 }} />
+                  Chọn hoặc kéo thả video mới
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                  >
+                    MP4, AVI, MOV, WMV, WebM
+                  </Typography>
+                  <input
+                    type="file"
+                    accept="video/*"
+                    hidden
+                    onChange={(e) => handleFileChange(e, "videos")}
+                  />
+                </Button>
+              )}
+              {errors.videos && (
+                <Typography
+                  variant="caption"
+                  color="error"
+                  sx={{ mt: 0.5, display: "block" }}
+                >
+                  {errors.videos.message as string}
+                </Typography>
+              )}
+            </Box>
+          </Box>          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+            <Button variant="outlined" onClick={onClose} fullWidth disabled={isLoading}>
+              Hủy
+            </Button>
+            <Button type="submit" variant="contained" fullWidth disabled={isLoading}>
+              {isLoading ? "Đang lưu..." : "Lưu"}
+            </Button>
           </Box>
-        )}
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{ mt: 2, float: "right" }}
-          >
-            Cập nhật
-          </Button>
-        </form>
-      </AppFormDialog>
-    </Box>
+        </Box>
+      </form>
+    </AppFormDialog>
   );
 }
+
+export default EditSponsorDialog;
