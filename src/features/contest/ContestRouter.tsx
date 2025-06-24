@@ -6,8 +6,8 @@ import GroupPage from "./group/page/GroupPage";
 import ContestantPage from "./contestant/page/Contestant";
 import MatchPage from "./match/page/MatchPage";
 import ResultsPage from "../admin/result/pages/ResultsPage";
-
-const Dashboard = () => <div>Trang Dashboard Cuộc Thi</div>;
+import Dashboard from "@features/admin/dashboard_slug/pages/Dashboard";
+//const Dashboard = () => <div>Trang Dashboard Cuộc Thi</div>;
 import SponsorsPage from "../admin/sponsors/page/SponsorsPage";
 import RescuesPage from "../admin/sponsors/page/SponsorsPage";
 import AwardsPage from "../admin/awards/page/AwardsPage";

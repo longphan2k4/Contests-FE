@@ -22,6 +22,7 @@ const QuestionDetailListPage = lazy(() =>
     default: module.QuestionDetailListPage,
   }))
 );
+const Dashboard = lazy(() => import("./dashboard/pages/Dashboard"));
 const StudentsPage = lazy(() => import("./students/page/StudentsPage"));
 const QuestionsPackagesPage = lazy(
   () => import("./questionpackages/page/QuestionsPackagesPage")
@@ -48,7 +49,7 @@ const PageLoader = () => (
   </Box>
 );
 
-const Dashboard = () => <div>Trang Dashboard</div>;
+//const Dashboard = () => <div>Trang Dashboard</div>;
 
 const AdminRoutes = () => {
   return (
