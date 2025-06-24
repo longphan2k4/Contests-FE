@@ -2,6 +2,7 @@ import AppFormDialog from "../../../../components/AppFormDialog";
 import { Box, CircularProgress } from "@mui/material";
 
 import { useClassById } from "../hook/useClassById";
+import { use, useEffect } from "react";
 
 interface ViewClassProps {
   id: number | null;
@@ -14,7 +15,14 @@ export default function ViewClass({
   isOpen,
   onClose,
 }: ViewClassProps): React.ReactElement {
-  const { data: Class, isLoading, isError } = useClassById(id);
+  const { data: Class, isLoading, isError, refetch } = useClassById(id);
+
+  useEffect(() => {
+    if (isOpen) {
+      refetch();
+    }
+  }, [isOpen, refetch]);
+
   const fields = [
     { label: "ID", value: Class?.id },
     { label: "Tên lớp", value: Class?.name },
@@ -38,7 +46,7 @@ export default function ViewClass({
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Cập nhật ${Class?.name}`}
+        title={`Xem lớp: ${Class?.name}`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>

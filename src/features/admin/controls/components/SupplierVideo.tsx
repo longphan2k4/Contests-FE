@@ -72,8 +72,25 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
       };
     }
 
-    socket.emit("screen:update", { match, ...payload }, (response: any) => {
+    socket.emit("screen:update", { match, ...payload }, () => {
       showToast("Cập nhật màn hình thành công", "success");
+    });
+  };
+
+  const EmitControlVideo = (
+    control: "start" | "pause" | "reset",
+    msg: string
+  ) => {
+    if (!socket || !match) return;
+
+    if (!control) return;
+
+    let payload: UpdateSceenControl = {
+      controlValue: control,
+    };
+
+    socket.emit("screen:update", { match, ...payload }, () => {
+      showToast(msg, "success");
     });
   };
 
@@ -170,7 +187,7 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
 
     return (
       <div
-        // key={`${mediaFile.filename}-${Date.now()}`}
+        key={`${mediaFile.filename}-${Date.now()}`}
         className="p-2 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 border border-gray-200"
         onClick={() =>
           handleMediaSelect({ type: mediaFile.type, url: mediaUrl })
@@ -476,14 +493,29 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
               <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 shadow-md font-medium">
                 Hiện Đáp Án
               </button>
-              <button className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-200 shadow-md font-medium">
-                Phát
+              <button
+                onClick={() =>
+                  EmitControlVideo("start", "Start video thành công")
+                }
+                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-200 shadow-md font-medium"
+              >
+                Play
               </button>
-              <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-200 shadow-md font-medium">
-                Tạm Dừng
+              <button
+                onClick={() =>
+                  EmitControlVideo("pause", "Pause video thành công")
+                }
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-200 shadow-md font-medium"
+              >
+                Pause
               </button>
-              <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-md font-medium">
-                Dừng
+              <button
+                onClick={() =>
+                  EmitControlVideo("reset", "Reset video thành công")
+                }
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-md font-medium"
+              >
+                Reset
               </button>
               <button className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors duration-200 shadow-md font-medium">
                 Ẩn

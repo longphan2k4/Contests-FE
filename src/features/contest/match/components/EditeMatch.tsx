@@ -68,12 +68,10 @@ export default function EditeMatch({
   } = useListQuestionPackage();
 
   useEffect(() => {
-    if (slug) {
-      refetchRound();
-      refetchStatus();
-      refetchQuestionPackage();
-    }
-  }, [slug, refetchRound, refetchStatus, refetchQuestionPackage, isOpen]);
+    refetchRound();
+    refetchStatus();
+    refetchQuestionPackage();
+  }, [refetchRound, refetchStatus, refetchQuestionPackage, isOpen]);
 
   // Memo hóa danh sách trường học để tránh re-render thừa
   const round = useMemo(() => {
@@ -144,7 +142,7 @@ export default function EditeMatch({
     <AppFormDialog
       open={isOpen}
       onClose={onClose}
-      title={`Cập nhật vòng đấu: ${matchData?.name || ""}`}
+      title={`Cập nhật trận đấu: ${matchData?.name || ""}`}
       maxWidth="sm"
     >
       <form id="create-class-form" onSubmit={handleSubmit(handleFormSubmit)}>

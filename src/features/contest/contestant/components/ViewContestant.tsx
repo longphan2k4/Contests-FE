@@ -2,6 +2,7 @@ import AppFormDialog from "../../../../components/AppFormDialog";
 import { Box, CircularProgress } from "@mui/material";
 
 import { useGetById } from "../hook/useContestant";
+import { useEffect } from "react";
 
 interface ViewcontestantProps {
   id: number | null;
@@ -14,7 +15,12 @@ export default function ViewContestant({
   isOpen,
   onClose,
 }: ViewcontestantProps): React.ReactElement {
-  const { data: contestant, isLoading, isError } = useGetById(id);
+  const { data: contestant, isLoading, isError, refetch } = useGetById(id);
+  useEffect(() => {
+    if (isOpen) {
+      refetch();
+    }
+  }, [isOpen, refetch]);
   if (isLoading)
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import dayjs from "dayjs";
@@ -34,7 +34,13 @@ export default function EditClass({
     resolver: zodResolver(UpdateRoundSchema),
   });
 
-  const { data: round } = useGetById(id);
+  const { data: round, isLoading, isError, refetch } = useGetById(id);
+
+  useEffect(() => {
+    if (isOpen) {
+      refetch();
+    }
+  }, [isOpen, refetch]);
 
   useEffect(() => {
     if (isOpen && round) {
@@ -52,6 +58,15 @@ export default function EditClass({
     onSubmit(formData);
     onClose();
   };
+
+  if (isLoading)
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+
+  if (isError) return <div>Không thể tải dữ liệu</div>;
 
   return (
     <AppFormDialog
