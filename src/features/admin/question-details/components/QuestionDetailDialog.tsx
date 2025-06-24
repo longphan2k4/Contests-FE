@@ -981,10 +981,23 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
     setSelectedQuestionSearchTerm(e.target.value);
   };
 
+  // Xử lý đóng dialog với focus management
+  const handleClose = () => {
+    // Blur tất cả focusable elements trước khi đóng
+    const focusableElements = document.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), video, audio'
+    );
+    focusableElements.forEach((element) => {
+      (element as HTMLElement).blur();
+    });
+
+    onClose();
+  };
+
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       maxWidth="xl"
       fullWidth
       fullScreen={isFullScreen}
@@ -1056,7 +1069,7 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
             </IconButton>
             <IconButton
               aria-label="close"
-              onClick={onClose}
+              onClick={handleClose}
               sx={{
                 color: (theme) => theme.palette.grey[500],
                 "&:hover": {
@@ -1555,7 +1568,7 @@ export const QuestionDetailDialog: React.FC<QuestionDetailDialogProps> = ({
           }}
         >
           <Button
-            onClick={onClose}
+            onClick={handleClose}
             color="inherit"
             sx={{
               textTransform: "none",

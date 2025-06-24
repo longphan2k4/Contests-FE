@@ -1,7 +1,7 @@
 import AppFormDialog from "../../../../components/AppFormDialog";
 import { Box, CircularProgress } from "@mui/material";
 
-import { useGetById } from "../hook/useRound";
+import { useGetById } from "../hook/useRescue";
 
 interface ViewClassProps {
   id: number | null;
@@ -9,12 +9,12 @@ interface ViewClassProps {
   onClose: () => void;
 }
 
-export default function ViewClass({
+export default function ViewRescue({
   id,
   isOpen,
   onClose,
 }: ViewClassProps): React.ReactElement {
-  const { data: round, isLoading, isError } = useGetById(id);
+  const { data: rescue, isLoading, isError } = useGetById(id);
   if (isLoading)
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
@@ -23,22 +23,46 @@ export default function ViewClass({
     );
   if (isError) return <div>Không thể tải dữ liệu</div>;
   const fields = [
-    { label: "ID", value: round?.id },
-    { label: "Tên vòng", value: round?.name },
-    { label: "Thứ tự", value: round?.index },
-    { label: "Ngày bắt đầu ", value: round?.startTime },
-    { label: "Ngày kết thúc ", value: round?.endTime },
+    { label: "ID", value: rescue?.id },
+    { label: "Tên cứu trợ", value: rescue?.name },
+    {
+      label: "Loại cứu trợ",
+      value:
+        rescue?.rescueType === "resurrected" ? "Hồi sinh" : "Phao cứu sinh",
+    },
+    { label: "Câu bắt đầu", value: rescue?.questionFrom },
+    { label: "Câu bắt đầu", value: rescue?.questionFrom },
+    { label: "Câu kết thúc", value: rescue?.questionTo },
+    { label: "Số thí sinh còn lại", value: rescue?.remainingContestants },
     {
       label: "Trạng thái",
-      value: round?.isActive ? "Đang hoạt động" : "Đã bị vô hiệu hóa",
+      value:
+        rescue?.status === "notUsed"
+          ? "Chưa sử dụng"
+          : rescue?.status === "used"
+          ? "Đã sử dụng"
+          : "Đã qua",
     },
+    {
+      label: "Id các thí sinh được cứu",
+      value: rescue?.studentIds.length > 0 ? rescue?.studentIds : "Không có",
+    },
+    {
+      label: "Đáp án cứu trợ",
+      value:
+        rescue?.supportAnswers?.length > 0
+          ? rescue?.supportAnswers
+          : "Không có",
+    },
+    { label: "Cứu trợ ở câu", value: rescue?.questionOrder },
+    { label: "Trận đấu", value: rescue?.match.name },
   ];
   return (
     <Box>
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Cập nhật ${round?.name}`}
+        title={`Cập nhật ${rescue?.name}`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>

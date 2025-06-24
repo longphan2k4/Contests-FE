@@ -3,7 +3,6 @@ import { Box, Tabs, Tab } from "@mui/material";
 
 import AppFormDialog from "../../../../components/AppFormDialog";
 import ListStudent from "./ListStudent";
-import ListContestantNotContest from "./ListContestantNotContest";
 
 interface CreateContestantProps {
   isOpen: boolean;
@@ -27,7 +26,6 @@ export default function CreateContestant({
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs value={tabIndex} onChange={(_, val) => setTabIndex(val)}>
           <Tab label="Sinh viên" />
-          <Tab label="Cuộc thi" />
         </Tabs>
       </Box>
 
@@ -40,11 +38,11 @@ export default function CreateContestant({
         </Box>
       )}
 
-      {tabIndex === 1 && (
+      {/* {tabIndex === 1 && (
         <Box sx={{ p: 2 }}>
           <ListContestantNotContest tab={tabIndex} open={isOpen} />
         </Box>
-      )}
+      )} */}
     </AppFormDialog>
   );
 }

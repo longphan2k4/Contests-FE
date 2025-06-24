@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import MatchHeader from "../components/MatchHeader/MatchHeader";
 import Background from "../components/QuestionDisplay/Background";
+import FullScreenImage from "../components/Media/FullScreenImage";
 
 import { Box, CircularProgress } from "@mui/material";
 import {
@@ -31,6 +32,7 @@ import AnswerContent from "../components/QuestionDisplay/AnswerContent";
 import QuestionExplanation from "../components/QuestionDisplay/QuestionExplanation";
 import QuestionIntro from "../components/QuestionDisplay/QuestionIntro";
 import { useSocket } from "../../../contexts/SocketContext";
+import FullScreenVideo from "../components/Media/FullScreenVideo";
 
 export default function MatchPage() {
   useEffect(() => {
@@ -144,7 +146,7 @@ export default function MatchPage() {
       setMatchInfo(data?.matchInfo);
       setCurrentQuestion(data?.currentQuestion);
       setScreenControl(prev => {
-        if (!prev) return null; // hoặc giá trị mặc định nếu cần
+        if (!prev) return null;
 
         return {
           ...prev,
@@ -153,12 +155,26 @@ export default function MatchPage() {
       });
     };
 
+    const handleUpdateTime = (data: any) => {
+      const newTime = data?.timeRemaining;
+      setMatchInfo(prev => {
+        if (!prev) return null;
+
+        return {
+          ...prev,
+          remainingTime: newTime,
+        };
+      });
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
+    socket.on("timer:update", handleUpdateTime);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
-      socket.off("screen:update", handleCurrentQuestion);
+      socket.off("currentQuestion:get", handleCurrentQuestion);
+      socket.off("timer:update", handleUpdateTime);
     };
   }, [socket]);
 
@@ -234,6 +250,18 @@ export default function MatchPage() {
               "Câu hỏi này không có phần mở rộng"
             }
           />
+        </div>
+      )}
+
+      {screenControl?.controlKey === "image" && screenControl?.media && (
+        <div key="image">
+          <FullScreenImage imageUrl={screenControl?.media} />
+        </div>
+      )}
+
+      {screenControl?.controlKey === "video" && screenControl?.media && (
+        <div key="video">
+          <FullScreenVideo videoUrl={screenControl?.media} />
         </div>
       )}
 

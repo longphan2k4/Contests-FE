@@ -1,6 +1,6 @@
 import React from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 import { useUserById } from "../hook/userUserById";
 
@@ -15,7 +15,7 @@ export default function ViewUser({
   isOpen,
   onClose,
 }: ViewUserProps): React.ReactElement {
-  const { data: user } = useUserById(id);
+  const { data: user, isLoading, isError } = useUserById(id);
   const fields = [
     { label: "ID", value: user?.id },
     { label: "Tên tài khoản", value: user?.username },
@@ -26,6 +26,15 @@ export default function ViewUser({
       value: user?.isActive ? "Đang hoạt động" : "Đã bị vô hiệu hóa",
     },
   ];
+
+  if (isLoading) {
+    return (
+      <Box>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  if (isError) return <div>Không thể load dữ liệu</div>;
   return (
     <Box>
       <AppFormDialog

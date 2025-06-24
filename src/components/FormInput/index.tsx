@@ -25,21 +25,22 @@ const FormInput = ({
 }: FormInputProps) => {
   return (
     <TextField
-      margin="normal"
+      margin="none" // ❌ bỏ margin mặc định
       fullWidth
       type={type}
       id={id}
       label={label}
       placeholder={placeholder}
-      autoComplete="email"
+      autoComplete="off"
       autoFocus
       {...register}
       error={!!error}
       value={value}
       helperText={error?.message}
       variant="outlined"
+      InputLabelProps={{ shrink: true }}
       sx={{
-        mb: 3,
+        my: "16px",
         "& .MuiOutlinedInput-root": {
           borderRadius: "10px",
           transition: "0.3s",

@@ -6,10 +6,10 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
-import { type Group } from "../types/group.shame";
+import { type Rescues } from "../types/rescue.shame";
 
-interface ListGroupProps {
-  groups: Group[];
+interface ListrescueProps {
+  rescues: Rescues[];
   selectedIds: number[];
   setSelectedIds: React.Dispatch<React.SetStateAction<number[]>>;
   onView: (id: number) => void;
@@ -18,14 +18,14 @@ interface ListGroupProps {
   onToggle?: (id: number) => void;
 }
 
-export default function ListGroup({
+export default function ListRescue({
   selectedIds,
   setSelectedIds,
-  groups,
+  rescues,
   onView,
   onEdit,
   onDelete,
-}: ListGroupProps): React.ReactElement {
+}: ListrescueProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
       field: "index",
@@ -36,9 +36,11 @@ export default function ListGroup({
       renderCell: params =>
         params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
-    { field: "name", headerName: "Tên nhóm", flex: 1 },
+    { field: "name", headerName: "Tên cứu trợ", flex: 1 },
+    { field: "rescueType", headerName: "Loại cứu trợ", flex: 1 },
     { field: "matchName", headerName: "Tên trận đấu", flex: 1 },
-    { field: "userName", headerName: "Trọng tài", flex: 1 },
+    { field: "status", headerName: "Trạng thái", flex: 1 },
+
     {
       field: "actions",
       headerName: "Thao tác",
@@ -62,7 +64,7 @@ export default function ListGroup({
   return (
     <Box>
       <DataGrid
-        rows={groups}
+        rows={rescues}
         columns={columns}
         getRowId={row => row.id}
         selectedIds={selectedIds}

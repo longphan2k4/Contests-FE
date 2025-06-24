@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo, use } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import { useParams } from "react-router-dom";
 import {
   Box,
@@ -17,21 +17,24 @@ import { Button } from "@mui/material";
 import { Pagination } from "@mui/material";
 
 import {
-  type RoundQueryInput,
-  type CreateRoundInput,
-  type UpdateRoundInput,
-  type DeleteRoundsInput,
+  type CreateRescueInput,
+  type UpdateRescueInput,
+  type DeleteRescuesInput,
+  type RescuesQueryInput,
+  type Rescues,
   type pagination,
-  type Rounds,
-} from "../types/round.shame";
+  type listmatch,
+  type listType,
+  type liststatus,
+} from "../types/rescue.shame";
 
-import CreateRound from "../components/CreateRound";
-import ViewRound from "../components/ViewRound";
-import EditeRound from "../components/EditeRound";
-import ListRound from "../components/ListRound";
-import { useToast } from "../../../../contexts/toastContext";
-import ConfirmDelete from "../../../../components/Confirm";
-import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
+import CreateRescue from "../components/CreateRescue";
+import EditRescue from "../components/EditeRescue";
+import ListRescue from "../components/ListRescue";
+import ViewRescue from "../components/ViewRescue";
+import { useToast } from "@/contexts/toastContext";
+import ConfirmDelete from "@components/Confirm";
+import FormAutocompleteFilter from "@components/FormAutocompleteFilter";
 
 import {
   useGetAll,
@@ -39,14 +42,16 @@ import {
   useUpdate,
   useDelete,
   useDeletes,
-  useToggleIsActive,
-} from "../hook/useRound";
+  useListStatus,
+  useListType,
+  useListMatch,
+} from "../hook/useRescue";
 import AddIcon from "@mui/icons-material/Add";
 
 import SearchIcon from "@mui/icons-material/Search";
 
-const RoundPage: React.FC = () => {
-  const [round, setRound] = useState<Rounds[]>([]);
+const RescuePage: React.FC = () => {
+  const [rescue, setRescue] = useState<Rescues[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [pagination, setPagination] = useState<pagination>({});
 
@@ -56,14 +61,17 @@ const RoundPage: React.FC = () => {
   const [isComfirmDelete, setIsComfirmDelete] = useState(false);
   const [isComfirmDeleteMany, setIsComfirmDeleteMany] = useState(false);
 
-  const [filter, setFilter] = useState<RoundQueryInput>({});
+  const [filter, setFilter] = useState<RescuesQueryInput>({});
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [listMatch, setListMatch] = useState<listmatch[]>([]);
+  const [listStatus, setListStatus] = useState<liststatus[]>([]);
+  const [listType, setListType] = useState<listType[]>([]);
 
   const { showToast } = useToast();
   const { slug } = useParams();
 
   const {
-    data: roundData,
+    data: rescueData,
     isLoading: issLoading,
     isError: issError,
     refetch: refetchs,
@@ -73,41 +81,65 @@ const RoundPage: React.FC = () => {
 
   const { mutate: mutateUpdate } = useUpdate();
 
-  const { mutate: mutateToggleIsActive } = useToggleIsActive();
-
   const { mutate: mutateDelete } = useDelete();
 
   const { mutate: mutateDeletes } = useDeletes();
 
-  useEffect(() => {
-    if (roundData) {
-      setRound(roundData.data.rounds);
-      setPagination(roundData.data.pagination);
-    }
-  }, [roundData]);
+  const {
+    data: statusData,
+    refetch: refetchStatus,
+    isLoading: isLoadingStatus,
+  } = useListStatus();
+
+  const {
+    data: listTypeData,
+    refetch: refetchListType,
+    isLoading: isLoadingListType,
+  } = useListType();
+  const {
+    data: matchData,
+    refetch: refetchMatchData,
+    isLoading: isLoadingMatchData,
+  } = useListMatch(slug ?? null);
 
   useEffect(() => {
     refetchs();
-    document.title = "Quản lý vòng đấu";
-  }, [refetchs, slug]);
+    refetchStatus();
+    refetchListType();
+    refetchMatchData();
+  }, [slug, refetchs, refetchStatus, refetchListType, refetchMatchData]);
+
+  useEffect(() => {
+    if (matchData) {
+      setListMatch(matchData.data);
+    }
+  }, [matchData]);
+
+  useEffect(() => {
+    if (statusData?.data?.options?.length > 0) {
+      setListStatus(statusData.data?.options);
+    }
+  }, [statusData]);
+
+  useEffect(() => {
+    if (listTypeData?.data?.options?.length > 0) {
+      setListType(listTypeData.data?.options);
+    } else {
+      setListType([]);
+    }
+  }, [listTypeData]);
+
+  useEffect(() => {
+    if (rescueData) {
+      setRescue(rescueData.data.rescues);
+      setPagination(rescueData.data.pagination);
+    }
+  }, [rescueData]);
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
 
-  const toggleActive = useCallback((id: number) => {
-    mutateToggleIsActive(id, {
-      onSuccess: () => {
-        showToast(`Cập nhật trạng thái thành công`, "success");
-        refetchs();
-        setSelectedId(null);
-      },
-      onError: (err: any) => {
-        showToast(err.response?.data?.message, "error");
-      },
-    });
-  }, []);
-
-  const handeDeletes = (ids: DeleteRoundsInput) => {
+  const handleDeletes = (ids: DeleteRescuesInput) => {
     mutateDeletes(ids, {
       onSuccess: data => {
         data.messages.forEach((item: any) => {
@@ -120,25 +152,26 @@ const RoundPage: React.FC = () => {
         refetchs();
       },
       onError: () => {
-        showToast("Xóa vòng đấu học thất bại");
+        showToast("Xóa cứu trợ  thất bại");
       },
     });
   };
 
-  const handleCreate = (payload: CreateRoundInput) => {
-    const data = {
-      name: payload.name,
-      index: payload.index,
-      isActive: payload.isActive,
-      startTime: new Date(payload.startTime).toISOString(),
-      endTime: new Date(payload.endTime).toISOString(),
-    };
-
+  const handleCreate = (payload: CreateRescueInput) => {
+    if (payload.questionFrom > payload.questionTo) {
+      showToast("Câu bắt đầu phải nhỏ hơn hoặc bằng câu kết thúc", "error");
+      return;
+    }
+    if (payload.questionFrom < 1 || payload.questionTo < 1) {
+      showToast("Câu bắt đầu và câu kết thúc phải lớn hơn 0", "error");
+      return;
+    }
+    const data = { ...payload, supportAnswers: [], studentIds: [] };
     mutateCreate(
       { payload: data, slug: slug ?? null },
       {
         onSuccess: () => {
-          showToast(`Thêm vòng đấu thành công`, "success");
+          showToast(`Thêm cứu trợ thành công`, "success");
           refetchs();
         },
         onError: (err: any) => {
@@ -150,13 +183,13 @@ const RoundPage: React.FC = () => {
     );
   };
 
-  const handleUpdate = (payload: UpdateRoundInput) => {
+  const handleUpdate = (payload: UpdateRescueInput) => {
     if (selectedId) {
       mutateUpdate(
         { id: selectedId, payload },
         {
           onSuccess: () => {
-            showToast(`Cập nhật vòng đấu thành công`, "success");
+            showToast(`Cập nhật cứu trợ thành công`, "success");
             refetchs();
           },
           onError: (err: any) => {
@@ -172,7 +205,7 @@ const RoundPage: React.FC = () => {
     if (!id) return;
     mutateDelete(id, {
       onSuccess: () => {
-        showToast(`Xóa vòng đấu học thành công`);
+        showToast(`Xóa cứu trợ  thành công`);
         refetchs();
       },
       onError: (error: any) => {
@@ -193,8 +226,16 @@ const RoundPage: React.FC = () => {
     },
     [handleDelete]
   );
+  useEffect(() => {
+    document.title = "Quản lý cứu trợ ";
+  }, []);
 
-  if (issLoading) {
+  if (
+    issLoading ||
+    isLoadingStatus ||
+    isLoadingListType ||
+    isLoadingMatchData
+  ) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
@@ -208,7 +249,7 @@ const RoundPage: React.FC = () => {
           severity="error"
           action={<Button onClick={() => refetchs}>Thử lại</Button>}
         >
-          Không thể tải danh danh sách vòng đấu
+          Không thể tải danh danh sách cứu trợ
         </Alert>
       </Box>
     );
@@ -217,20 +258,20 @@ const RoundPage: React.FC = () => {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h5">Quản lý vòng đấu </Typography>
+        <Typography variant="h5">Quản lý cứu trợ </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={openCreate}
         >
-          Thêm vòng đấu
+          Thêm cứu trợ
         </Button>
       </Box>
 
       {/*  list card */}
       <Box
         sx={{
-          background: "#FFFFFF",
+          backgrescue: "#FFFFFF",
           p: 3,
           borderRadius: 2,
           border: "1px solid",
@@ -251,12 +292,9 @@ const RoundPage: React.FC = () => {
             spacing={2}
             useFlexGap
             flexWrap="wrap"
-            sx={{
-              alignItems: "stretch",
-              mb: 2,
-              gap: 2,
-            }}
+            sx={{ alignItems: "stretch", mb: 2, gap: { xs: 1, sm: 2 } }}
           >
+            {/* Tìm kiếm */}
             <TextField
               label="Tìm kiếm"
               variant="outlined"
@@ -278,36 +316,73 @@ const RoundPage: React.FC = () => {
               sx={{ flex: 1, minWidth: 200 }}
             />
 
+            {/* Trận đấu */}
             <FormAutocompleteFilter
-              label="Trạng thái"
+              label="Trận đấu"
               options={[
                 { label: "Tất cả", value: "all" },
-                { label: "Hoạt động", value: "active" },
-                { label: "Không hoạt động", value: "inactive" },
+                ...listMatch.map(s => ({
+                  label: s.name,
+                  value: s.id,
+                })),
               ]}
-              value={
-                filter.isActive === undefined
-                  ? "all"
-                  : filter.isActive
-                  ? "active"
-                  : "inactive"
-              }
-              onChange={val => {
+              value={filter.matchId ?? "all"}
+              onChange={(val: string | number | undefined) =>
                 setFilter(prev => ({
                   ...prev,
-                  isActive:
-                    val === "all"
-                      ? undefined
-                      : val === "active"
-                      ? true
-                      : val === "inactive"
-                      ? false
-                      : undefined, // fallback nếu Autocomplete trả undefined
-                }));
-              }}
+                  matchId: val === "all" ? undefined : Number(val),
+                }))
+              }
               sx={{ flex: 1, minWidth: 200 }}
             />
 
+            {/* Loại cứu trợ */}
+            <FormAutocompleteFilter
+              label="Loại cứu trợ"
+              options={[
+                { label: "Tất cả", value: "all" },
+                ...listType.map(s => ({
+                  label: s.label,
+                  value: s.value,
+                })),
+              ]}
+              value={filter.rescueType ?? "all"}
+              onChange={(val: string | number | undefined) =>
+                setFilter(prev => ({
+                  ...prev,
+                  rescueType:
+                    val === "all"
+                      ? undefined
+                      : (val as "resurrected" | "lifelineUsed"),
+                }))
+              }
+              sx={{ flex: 1, minWidth: 200 }}
+            />
+
+            {/* Trạng thái cứu trợ */}
+            <FormAutocompleteFilter
+              label="Trạng thái cứu trợ"
+              options={[
+                { label: "Tất cả", value: "all" },
+                ...listStatus.map(s => ({
+                  label: s.label,
+                  value: s.value,
+                })),
+              ]}
+              value={filter.status ?? "all"}
+              onChange={(val: string | number | undefined) =>
+                setFilter(prev => ({
+                  ...prev,
+                  status:
+                    val === "all"
+                      ? undefined
+                      : (val as "notUsed" | "used" | "passed"),
+                }))
+              }
+              sx={{ flex: 1, minWidth: 200 }}
+            />
+
+            {/* Nút xoá nhiều */}
             {selectedIds.length > 0 && (
               <Button
                 variant="contained"
@@ -318,6 +393,8 @@ const RoundPage: React.FC = () => {
                 Xoá ({selectedIds.length})
               </Button>
             )}
+
+            {/* Tổng số */}
           </Stack>
           <Box
             sx={{
@@ -327,18 +404,17 @@ const RoundPage: React.FC = () => {
             }}
           >
             <Typography variant="body2" color="text.secondary">
-              Tổng số: {pagination.total} vòng đấu
+              Tổng số: {pagination.total} cứu trợ
             </Typography>
           </Box>
 
-          <ListRound
-            rounds={round}
+          <ListRescue
+            rescues={rescue}
             selectedIds={selectedIds}
             setSelectedIds={setSelectedIds}
             onView={id => handleAction("view", id)}
             onEdit={id => handleAction("edit", id)}
             onDelete={id => handleAction("delete", id)}
-            onToggle={toggleActive}
           />
         </Box>
 
@@ -384,36 +460,71 @@ const RoundPage: React.FC = () => {
                 : "none",
           }}
         >
-          <Box className="flex flex-col items-center">
-            {" "}
-            <Pagination
-              count={pagination.totalPages}
-              page={filter.page ?? 1}
-              color="primary"
-              onChange={(_event, value) =>
-                setFilter(prev => ({
-                  ...prev,
-                  page: value,
-                }))
-              }
-              showFirstButton
-              showLastButton
-            />
-          </Box>
+          <Box
+            style={{
+              display:
+                pagination.totalPages !== undefined && pagination.totalPages > 1
+                  ? "block"
+                  : "none",
+            }}
+          >
+            <Box className="flex flex-col items-center">
+              {" "}
+              <Pagination
+                count={pagination.totalPages}
+                page={filter.page ?? 1}
+                color="primary"
+                onChange={(_event, value) =>
+                  setFilter(prev => ({
+                    ...prev,
+                    page: value,
+                  }))
+                }
+                showFirstButton
+                showLastButton
+              />
+            </Box>
+          </Box>{" "}
+          <Box
+            style={{
+              display:
+                pagination.totalPages !== undefined && pagination.totalPages > 1
+                  ? "block"
+                  : "none",
+            }}
+          >
+            <Box className="flex flex-col items-center">
+              {" "}
+              <Pagination
+                count={pagination.totalPages}
+                page={filter.page ?? 1}
+                color="primary"
+                onChange={(_event, value) =>
+                  setFilter(prev => ({
+                    ...prev,
+                    page: value,
+                  }))
+                }
+                showFirstButton
+                showLastButton
+              />
+            </Box>
+          </Box>{" "}
         </Box>
-        <CreateRound
+
+        <CreateRescue
           isOpen={isCreateOpen}
           onClose={closeCreate}
           onSubmit={handleCreate}
         />
 
-        <ViewRound
+        <ViewRescue
           isOpen={isViewOpen}
           onClose={() => setIsViewOpen(false)}
           id={selectedId}
         />
 
-        <EditeRound
+        <EditRescue
           isOpen={isEditOpen}
           onClose={() => setIsEditOpen(false)}
           id={selectedId}
@@ -421,21 +532,21 @@ const RoundPage: React.FC = () => {
         />
         <ConfirmDelete
           open={isComfirmDelete}
-          title="Xóa vòng đấu học"
+          title="Xóa cứu trợ "
           onClose={() => setIsComfirmDelete(false)}
-          description="Bạn có chắc chắn xóa vòng đấu học này không"
+          description="Bạn có chắc chắn xóa cứu trợ  này không"
           onConfirm={() => handleDelete(selectedId)}
         />
 
         <ConfirmDelete
           open={isComfirmDeleteMany}
-          title="Xóa vòng đấu học"
+          title="Xóa cứu trợ "
           onClose={() => setIsComfirmDeleteMany(false)}
-          onConfirm={() => handeDeletes({ ids: selectedIds })}
+          onConfirm={() => handleDeletes({ ids: selectedIds })}
         />
       </Box>
     </Box>
   );
 };
 
-export default memo(RoundPage);
+export default memo(RescuePage);

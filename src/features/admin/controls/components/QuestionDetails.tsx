@@ -43,7 +43,6 @@ const QuestionDetails: React.FC<QuestionDetailsProp> = ({
     if (!socket || !match) return;
     socket.emit("currentQuestion:get", { match, questionOrder });
   };
-
   return (
     <div className="w-1/5 bg-gradient-to-b from-blue-600 to-blue-800 text-white p-4 shadow-lg flex flex-col h-screen">
       <h2 className="text-2xl font-bold mb-2 tracking-tight text-center bg-blue-900 rounded-lg py-1">
