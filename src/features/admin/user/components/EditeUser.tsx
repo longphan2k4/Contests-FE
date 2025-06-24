@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
-import { Box, Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UpdateUserSchema, type UpdateUserInput } from "../types/user.shame";
@@ -39,7 +39,7 @@ export default function EditeUser({
     resolver: zodResolver(UpdateUserSchema),
   });
 
-  const { data: user } = useUserById(id);
+  const { data: user, isLoading, isError } = useUserById(id);
 
   useEffect(() => {
     if (user) {
@@ -54,6 +54,15 @@ export default function EditeUser({
     onSubmit(data);
     onClose();
   };
+
+  if (isLoading) {
+    return (
+      <Box>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  if (isError) return <div>Không thể load dữ liệu</div>;
   return (
     <Box>
       <AppFormDialog

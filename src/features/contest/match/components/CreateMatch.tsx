@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect } from "react";
-import { Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,9 +43,32 @@ export default function CreateMatch({
 
   const { slug } = useParams();
 
-  const { data: listStatus } = useStatus();
-  const { data: listRound } = useListRound(slug ?? null);
-  const { data: listQuestionPackage } = useListQuestionPackage();
+  const {
+    data: listStatus,
+    refetch: refetchStatus,
+    isError: isStatusError,
+    isLoading: isStatusLoading,
+  } = useStatus();
+  const {
+    data: listRound,
+    refetch: refetchRound,
+    isError: isRoundError,
+    isLoading: isRoundLoading,
+  } = useListRound(slug ?? null);
+  const {
+    data: listQuestionPackage,
+    refetch: refetchQuestionPackage,
+    isError: isQuestionPackageError,
+    isLoading: isQuestionPackageLoading,
+  } = useListQuestionPackage();
+
+  useEffect(() => {
+    if (slug) {
+      refetchRound();
+      refetchStatus();
+      refetchQuestionPackage();
+    }
+  }, [slug, refetchRound, refetchStatus, refetchQuestionPackage]);
 
   const roundOptions = useMemo(() => {
     if (listRound?.success) {
@@ -86,6 +109,19 @@ export default function CreateMatch({
   useEffect(() => {
     if (!isOpen) reset(); // Reset lại khi đóng form
   }, [isOpen]);
+
+  if (isStatusLoading || isRoundLoading || isQuestionPackageLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isRoundError || isStatusError || isQuestionPackageError) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
+
   return (
     <AppFormDialog
       open={isOpen}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo } from "react";
+import React, { useState, useEffect, useCallback, memo, use } from "react";
 import {
   Box,
   Typography,
@@ -69,7 +69,11 @@ const ClassesPage: React.FC = () => {
     refetch: refetchClasss,
   } = useClasses(filter);
 
-  const { data: schoolData } = useListSChool();
+  const {
+    data: schoolData,
+    isLoading: isLoadingSchool,
+    isError: isErrorSchool,
+  } = useListSChool();
 
   const { mutate: mutateCreate } = useCreate();
 
@@ -187,14 +191,18 @@ const ClassesPage: React.FC = () => {
     [handleDelete]
   );
 
-  if (isClasssLoading) {
+  useEffect(() => {
+    document.title = "Quản lý lớp học";
+  }, []);
+
+  if (isClasssLoading || isLoadingSchool) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
-  if (isClasssError) {
+  if (isClasssError || isErrorSchool) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert
@@ -242,10 +250,12 @@ const ClassesPage: React.FC = () => {
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
+            useFlexGap
+            flexWrap="wrap"
             sx={{
-              flexWrap: "wrap",
-              alignItems: { sm: "center" },
+              alignItems: "stretch",
               mb: 2,
+              gap: 2,
             }}
           >
             <TextField
@@ -266,7 +276,7 @@ const ClassesPage: React.FC = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{ minWidth: { xs: "100%", sm: 200 } }}
+              sx={{ flex: 1, minWidth: { xs: "100%", sm: 200 } }}
             />
 
             <FormAutocompleteFilter
@@ -296,7 +306,7 @@ const ClassesPage: React.FC = () => {
                       : undefined, // fallback nếu Autocomplete trả undefined
                 }));
               }}
-              sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
+              sx={{ flex: 1, minWidth: { xs: "100%", sm: 200 } }}
             />
 
             <FormAutocompleteFilter
@@ -315,36 +325,35 @@ const ClassesPage: React.FC = () => {
                   schoolId: val === "all" ? undefined : Number(val),
                 }))
               }
-              sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
+              sx={{ flex: 1, minWidth: { xs: "100%", sm: 200 } }}
             />
 
             {selectedClassIds.length > 0 && (
               <Button
                 variant="contained"
                 color="error"
-                sx={{ width: { xs: "100%", sm: "auto" } }}
+                sx={{ flex: 1, minWidth: { xs: "100%", sm: 200 } }}
                 onClick={() => setIsComfirmDeleteMany(true)}
               >
                 Xoá ({selectedClassIds.length})
               </Button>
             )}
-
-            <Box
-              sx={{
-                ml: { xs: 0, sm: "auto" },
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                alignSelf={{ xs: "flex-start", sm: "center" }}
-              >
-                Tổng số: {pagination.total} lớp học
-              </Typography>
-            </Box>
           </Stack>
+          <Box
+            sx={{
+              ml: { xs: 0, sm: "auto" },
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              alignSelf={{ xs: "flex-start", sm: "center" }}
+            >
+              Tổng số: {pagination.total} lớp học
+            </Typography>
+          </Box>
 
           <ClassList
             Classes={Classes}
@@ -391,21 +400,30 @@ const ClassesPage: React.FC = () => {
             </Typography>
           </Box>
         </Box>
-        <Box className="flex flex-col items-center">
-          {" "}
-          <Pagination
-            count={pagination.totalPages}
-            page={filter.page ?? 1}
-            color="primary"
-            onChange={(_event, value) =>
-              setFilter(prev => ({
-                ...prev,
-                page: value,
-              }))
-            }
-            showFirstButton
-            showLastButton
-          />
+        <Box
+          style={{
+            display:
+              pagination.totalPages !== undefined && pagination.totalPages > 1
+                ? "block"
+                : "none",
+          }}
+        >
+          <Box className="flex flex-col items-center">
+            {" "}
+            <Pagination
+              count={pagination.totalPages}
+              page={filter.page ?? 1}
+              color="primary"
+              onChange={(_event, value) =>
+                setFilter(prev => ({
+                  ...prev,
+                  page: value,
+                }))
+              }
+              showFirstButton
+              showLastButton
+            />
+          </Box>
         </Box>
         <CreateClass
           isOpen={isCreateOpen}
