@@ -85,27 +85,9 @@ const MatchPage: React.FC = () => {
 
   const { mutate: mutateToggleIsActive } = useToggleIsActive();
 
-  const {
-    data: roundData,
-    refetch: refetchRound,
-    isError: isRoundError,
-    isLoading: isRoundLoading,
-  } = useListRound(slug ?? null);
+  const { data: roundData } = useListRound(slug ?? null);
 
-  const {
-    data: statusData,
-    refetch: refetchStatus,
-    isError: isStatusError,
-    isLoading: isStatusLoading,
-  } = useStatus();
-
-  useEffect(() => {
-    if (slug) {
-      refetchs();
-      refetchRound();
-      refetchStatus();
-    }
-  }, [slug, refetchs, refetchRound, refetchStatus]);
+  const { data: statusData } = useStatus();
 
   useEffect(() => {
     if (roundData) {
@@ -143,7 +125,7 @@ const MatchPage: React.FC = () => {
         refetchs();
       },
       onError: () => {
-        showToast("Xóa trận đấu  thất bại");
+        showToast("Xóa trận đấu học thất bại");
       },
     });
   };
@@ -200,7 +182,7 @@ const MatchPage: React.FC = () => {
     if (!id) return;
     mutateDelete(id, {
       onSuccess: () => {
-        showToast(`Xóa trận đấu  thành công`);
+        showToast(`Xóa trận đấu học thành công`);
         refetchs();
       },
       onError: (error: any) => {
@@ -221,18 +203,15 @@ const MatchPage: React.FC = () => {
     },
     [handleDelete]
   );
-  useEffect(() => {
-    document.title = "Quản lý trận đấu ";
-  }, []);
 
-  if (issLoading || isRoundLoading || isStatusLoading) {
+  if (issLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
-  if (issError || isRoundError || isStatusError) {
+  if (issError) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert
@@ -382,7 +361,7 @@ const MatchPage: React.FC = () => {
             <Button
               variant="contained"
               color="error"
-              sx={{ flex: 1, minWidth: 200 }}
+              sx={{ width: { xs: "100%", sm: "auto" }, alignSelf: "center" }}
               onClick={() => setIsComfirmDeleteMany(true)}
             >
               Xoá ({selectedIds.length})
@@ -399,7 +378,7 @@ const MatchPage: React.FC = () => {
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            Tổng số: {pagination.total} trận đấu
+            Tổng số: {pagination.total} trận đấu học
           </Typography>
         </Box>
 
@@ -493,15 +472,15 @@ const MatchPage: React.FC = () => {
         />
         <ConfirmDelete
           open={isComfirmDelete}
-          title="Xóa trận đấu "
+          title="Xóa trận đấu học"
           onClose={() => setIsComfirmDelete(false)}
-          description="Bạn có chắc chắn xóa trận đấu  này không"
+          description="Bạn có chắc chắn xóa trận đấu học này không"
           onConfirm={() => handleDelete(selectedId)}
         />
 
         <ConfirmDelete
           open={isComfirmDeleteMany}
-          title="Xóa trận đấu "
+          title="Xóa trận đấu học"
           onClose={() => setIsComfirmDeleteMany(false)}
           onConfirm={() => handeDeletes({ ids: selectedIds })}
         />

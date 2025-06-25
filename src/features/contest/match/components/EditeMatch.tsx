@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { Box, Button, CircularProgress } from "@mui/material";
+import { Button } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,34 +46,9 @@ export default function EditeMatch({
 
   const { slug } = useParams();
 
-  const {
-    data: listStatus,
-    refetch: refetchStatus,
-    isError: isStatusError,
-    isLoading: isStatusLoading,
-  } = useStatus();
+  const { data: listStatus } = useStatus();
 
-  const {
-    data: listRound,
-    refetch: refetchRound,
-    isError: isRoundError,
-    isLoading: isRoundLoading,
-  } = useListRound(slug ?? null);
-
-  const {
-    data: listQuestionPackage,
-    refetch: refetchQuestionPackage,
-    isError: isQuestionPackageError,
-    isLoading: isQuestionPackageLoading,
-  } = useListQuestionPackage();
-
-  useEffect(() => {
-    if (slug) {
-      refetchRound();
-      refetchStatus();
-      refetchQuestionPackage();
-    }
-  }, [slug, refetchRound, refetchStatus, refetchQuestionPackage, isOpen]);
+  const { data: listRound } = useListRound(slug ?? null);
 
   // Memo hóa danh sách trường học để tránh re-render thừa
   const round = useMemo(() => {
@@ -86,16 +61,18 @@ export default function EditeMatch({
     return [];
   }, [listRound]);
 
+  const { data: listQuestionPackAge } = useListQuestionPackage();
+
   // Memo hóa danh sách trường học để tránh re-render thừa
   const questionPackage = useMemo(() => {
-    if (listQuestionPackage?.success) {
-      return listQuestionPackage.data.map((item: any) => ({
+    if (listQuestionPackAge?.success) {
+      return listQuestionPackAge.data.map((item: any) => ({
         label: item.name,
         value: item.id,
       }));
     }
     return [];
-  }, [listQuestionPackage]);
+  }, [listQuestionPackAge]);
 
   const status = useMemo(() => {
     if (listStatus?.success && Array.isArray(listStatus.data.options)) {
@@ -127,18 +104,6 @@ export default function EditeMatch({
     onSubmit(formData);
     onClose();
   };
-
-  if (isStatusLoading || isRoundLoading || isQuestionPackageLoading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (isStatusError || isRoundError || isQuestionPackageError) {
-    return <div>Không thể tải dữ liệu</div>;
-  }
 
   return (
     <AppFormDialog

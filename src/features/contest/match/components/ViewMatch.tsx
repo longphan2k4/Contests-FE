@@ -1,5 +1,5 @@
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { Box, CircularProgress } from "@mui/material";
+import { Box } from "@mui/material";
 
 import { useGetById } from "../hook/useMatch";
 
@@ -14,14 +14,7 @@ export default function ViewMatch({
   isOpen,
   onClose,
 }: ViewMatchProps): React.ReactElement {
-  const { data: match, isLoading, isError } = useGetById(id);
-  if (isLoading)
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  if (isError) return <div>Không thể tải dữ liệu</div>;
+  const { data: match } = useGetById(id);
   const fields = [
     { label: "ID", value: match?.id },
     { label: "Đường dẫn", value: match?.slug },

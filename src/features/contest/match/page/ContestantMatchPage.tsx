@@ -45,8 +45,10 @@ import {
   useGetAll,
   useUpdate,
   useDelete,
+  useDeletes,
   useContestStatus,
-  useListRound
+  useListRound,
+  useCreates,
 } from "../hook/contestantMatchPage/useContestant";
 import AddIcon from "@mui/icons-material/Add";
 import GroupWorkIcon from "@mui/icons-material/GroupWork";
@@ -117,6 +119,7 @@ const ContestantMatchPage: React.FC = () => {
 
   const { mutate: mutateDelete } = useDelete();
 
+  const { mutate: mutateDeletes } = useDeletes();
 
   const { data: roundData } = useListRound(slug ?? null);
 
@@ -396,8 +399,9 @@ const ContestantMatchPage: React.FC = () => {
             showToast(`Cập nhật thí sinh thành công`, "success");
             refetchs();
           },
-          onError: (err: Error) => {
-            showToast(err.message, "error");
+          onError: (err: any) => {
+            if (err.response?.data?.message)
+              showToast(err.response?.data?.message, "error");
           },
         }
       );
@@ -411,8 +415,8 @@ const ContestantMatchPage: React.FC = () => {
         showToast(`Xóa thí sinh học thành công`);
         refetchs();
       },
-      onError: (error: Error) => {
-        showToast(error.message, "error");
+      onError: (error: any) => {
+        showToast(error.response?.data?.message, "error");
       },
     });
   }, []);
