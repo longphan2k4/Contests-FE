@@ -43,6 +43,7 @@ const AppRoutes: React.FC = () => {
       <Route element={<PrivateRoute />}>
         <Route path="/account/profile" element={<ProfilePage />} />
       </Route>
+      {/* Routes dành cho trọng tài */}
       <Route element={<PrivateRoute roles={["Judge"]} />}>
         <Route path="/contests" element={<ContestList />} />
         <Route path="/contests/:contestId/matches" element={<MatchList />} />
