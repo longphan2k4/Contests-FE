@@ -39,3 +39,15 @@ export const GetListContestant = async (match: string | null) => {
   const res = await axiosInstance.get(`/match/${match}/ListContestant`);
   return res.data;
 };
+
+export const GetListSponsorMedia = async (slug: string | null) => {
+  const res = await axiosInstance.get(`/sponsors/contest/list-video/${slug}`);
+  return res.data;
+};
+
+export const GetListClassVideo = async (slug: string | null) => {
+  const res = await axiosInstance.get(
+    `/class-video/contest/list-video/${slug}`
+  );
+  return res.data;
+};

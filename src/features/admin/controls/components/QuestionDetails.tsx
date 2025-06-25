@@ -2,6 +2,8 @@ import React from "react";
 import { type Question } from "../type/control.type";
 import { useSocket } from "../../../../contexts/SocketContext";
 import { useParams } from "react-router-dom";
+
+import { useToast } from "@contexts/toastContext";
 interface QuestionDetailsProp {
   questions: Question[];
   currentQuestion?: number;
@@ -11,6 +13,7 @@ const QuestionDetails: React.FC<QuestionDetailsProp> = ({
   questions,
   currentQuestion,
 }) => {
+  const { showToast } = useToast();
   // Khai báo kiểu cho difficultyMap
   const difficultyMap: Record<
     "Alpha" | "Beta" | "Rc" | "Gold",
@@ -41,7 +44,17 @@ const QuestionDetails: React.FC<QuestionDetailsProp> = ({
     questionOrder: number
   ) => {
     if (!socket || !match) return;
-    socket.emit("currentQuestion:get", { match, questionOrder });
+    socket.emit(
+      "currentQuestion:get",
+      { match, questionOrder },
+      (err: any, response: any) => {
+        if (err) {
+          showToast(err.message, "error");
+        } else {
+          showToast(response.message, "success");
+        }
+      }
+    );
   };
   return (
     <div className="w-1/5 bg-gradient-to-b from-blue-600 to-blue-800 text-white p-4 shadow-lg flex flex-col h-screen">

@@ -10,6 +10,7 @@ import { useToast } from "@contexts/toastContext";
 
 interface SupplierVideoProps {
   currentQuestion?: CurrentQuestion | null;
+  controlKey?: string;
 }
 
 interface fileMedia {
@@ -17,7 +18,10 @@ interface fileMedia {
   type: string;
 }
 
-const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
+const SupplierVideo: React.FC<SupplierVideoProps> = ({
+  currentQuestion,
+  controlKey,
+}) => {
   const { match } = useParams();
   const [activeTab, setActiveTab] = useState<"question" | "answer">("question");
   const [selectedMedia, setSelectedMedia] = useState<fileMedia | null>(null);
@@ -83,13 +87,22 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
   ) => {
     if (!socket || !match) return;
 
+    if (controlKey !== "video") {
+      showToast("Vui lòng hiển thị video trước", "error");
+      return;
+    }
+
     if (!control) return;
 
     let payload: UpdateSceenControl = {
       controlValue: control,
     };
 
-    socket.emit("screen:update", { match, ...payload }, () => {
+    socket.emit("screen:update", { match, ...payload }, (err: any) => {
+      if (err) {
+        showToast(err.message, "error");
+        return;
+      }
       showToast(msg, "success");
     });
   };
@@ -495,7 +508,7 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({ currentQuestion }) => {
               </button>
               <button
                 onClick={() =>
-                  EmitControlVideo("start", "Start video thành công")
+                  EmitControlVideo("start", "Play video thành công")
                 }
                 className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-200 shadow-md font-medium"
               >

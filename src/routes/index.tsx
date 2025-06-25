@@ -26,6 +26,7 @@ const AppRoutes: React.FC = () => {
       {AuthRoutes()}
       <Route element={<PrivateRoute roles={["Admin"]} />}>
         {ContestRoutes()}
+        {AdminRoutes()}
       </Route>
       <Route element={<PrivateRoute roles={["Admin"]} />}>
         <Route
@@ -37,13 +38,20 @@ const AppRoutes: React.FC = () => {
           }
         />
       </Route>
-      {AdminRoutes()}
-      {/* Protected Routes */}
       <Route element={<PrivateRoute />}>
         <Route path="/account/profile" element={<ProfilePage />} />
       </Route>
       {/* Public Routes */}
-      <Route path="/judge/home" element={<JudgeHomePage />} />
+      <Route
+        path="/judge/home/:match"
+        element={
+          <PrivateRoute roles={["Judge"]}>
+            <SocketProvider>
+              <JudgeHomePage />
+            </SocketProvider>
+          </PrivateRoute>
+        }
+      />
       <Route path="/judge/selected-match" element={<MatchSelectionPage />} />
       <Route
         path="/tran-dau/:match"

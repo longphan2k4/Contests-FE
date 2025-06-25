@@ -162,3 +162,9 @@ export type UpdateSceenControl = {
   controlValue?: ControlValue;
   media?: string;
 };
+
+export type MediaType = {
+  id: number;
+  name: string | null;
+  videos: string | null;
+};
