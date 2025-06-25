@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -35,9 +35,25 @@ export default function EditClass({
     resolver: zodResolver(UpdateClassSchema),
   });
 
-  const { data: classData } = useClassById(id);
-  const { data: schoolData } = useListSChool();
+  const {
+    data: classData,
+    isLoading: isLoadingClass,
+    refetch: refetchClass,
+    isError: isErrorClass,
+  } = useClassById(id);
+  const {
+    data: schoolData,
+    isLoading: isLoadingSchool,
+    isError: isErrorSchool,
+    refetch: refetchSchools,
+  } = useListSChool();
 
+  useEffect(() => {
+    if (id) {
+      refetchClass();
+      refetchSchools();
+    }
+  }, [id, refetchClass, refetchSchools]);
   const schoolOptions = useMemo(() => {
     if (schoolData?.success) {
       return schoolData.data.map((item: any) => ({
@@ -62,6 +78,25 @@ export default function EditClass({
     onSubmit(formData);
     onClose();
   };
+
+  if (isLoadingClass || isLoadingSchool) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "200px",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isErrorClass || isErrorSchool) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
 
   return (
     <AppFormDialog

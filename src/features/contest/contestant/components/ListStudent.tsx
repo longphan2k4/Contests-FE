@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Box,
@@ -12,25 +12,42 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  CircularProgress,
 } from "@mui/material";
 import DataGrid from "../../../../components/DataGrid";
 import type { GridColDef } from "@mui/x-data-grid";
 
-import { type StudentQueryParams } from "../types/contestant.shame";
+import {
+  type listRound,
+  type StudentQueryParams,
+} from "../types/contestant.shame";
 import { listSchool } from "../../../admin/class/service/api";
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 import SearchIcon from "@mui/icons-material/Search";
 
 import {
   useClassSchoolId,
+  useCreates,
   useGetListSchool,
   useGetStudent,
+  useListRound,
 } from "../hook/useContestant";
+import { useToast } from "@contexts/toastContext";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import FormSelect from "@components/FormSelect";
 
 interface ListStudentProps {
-  selectedIds: number[];
-  setSelectedIds: React.Dispatch<React.SetStateAction<number[]>>;
+  tab: number;
+  open: boolean;
 }
+
+const createContestantSchema = z.object({
+  roundId: z.string().min(1, "Vui lòng chọn vòng đấu"),
+});
+
+type FormValues = z.infer<typeof createContestantSchema>;
 
 export interface Student {
   id: number;
@@ -60,8 +77,8 @@ export type pagination = {
 };
 
 export default function ListStudent({
-  selectedIds,
-  setSelectedIds,
+  tab,
+  open,
 }: ListStudentProps): React.ReactElement {
   const { slug } = useParams();
   const [filter, setFilter] = useState<StudentQueryParams>({});
@@ -70,11 +87,114 @@ export default function ListStudent({
   const [listClass, setlistClass] = useState<listClass[]>([]);
   const [pagination, setPagination] = useState<pagination>({});
   const [schoolId, setSchoolId] = useState<number>(1);
-  const { data: studentData } = useGetStudent(filter, slug ?? null);
+  const [listRound, setListRound] = useState<listRound[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-  const { data: SchoolData } = useGetListSchool();
+  const { showToast } = useToast();
 
-  const { data: ClassData } = useClassSchoolId(schoolId);
+  const {
+    data: studentData,
+    refetch,
+    isError,
+    isLoading,
+  } = useGetStudent(filter, slug ?? null);
+
+  const {
+    data: SchoolData,
+    isLoading: isLoadingSchool,
+    isError: isErrorSchool,
+    refetch: refetchSchool,
+  } = useGetListSchool();
+
+  const {
+    data: ClassData,
+    isLoading: isLoadingClass,
+    refetch: refetchClass,
+    isError: isErrorClass,
+  } = useClassSchoolId(schoolId);
+
+  useEffect(() => {
+    if (slug) {
+      refetch();
+      refetchSchool();
+      refetchClass();
+    }
+  }, [slug, refetch, refetchSchool, refetchClass, open]);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(createContestantSchema),
+  });
+
+  const { data: roundData } = useListRound(slug ?? null);
+
+  useEffect(() => {
+    if (roundData) {
+      setListRound(roundData.data);
+    }
+  }, [roundData]);
+
+  useEffect(() => {
+    if (tab) {
+      setSelectedIds([]);
+    }
+    refetch();
+  }, [tab, open]);
+
+  const { mutate: mutateCreate } = useCreates();
+
+  const onSubmit = (data: FormValues) => {
+    if (!slug) return;
+    if (selectedIds.length <= 0) {
+      showToast("Vui lòng chọn sinh viên", "warning");
+      return;
+    }
+    mutateCreate(
+      {
+        payload: {
+          ids: selectedIds,
+          roundId: Number(data.roundId),
+        },
+        slug,
+      },
+      {
+        onSuccess: res => {
+          if (!res.success) {
+            showToast(res.message || "Có lỗi xảy ra!", "error");
+            return;
+          }
+          if (res.data?.successCount > 0) {
+            showToast(
+              `Thêm thành công: ${res.data?.successCount || 0}`,
+              "success"
+            );
+          }
+
+          res?.data?.messages?.forEach((msg: any) => {
+            if (msg.status === "error") {
+              showToast(
+                `Thí sinh ID ${msg.studentId}: ${msg.msg || "Lỗi không rõ"}`,
+                "error"
+              );
+            }
+          });
+          refetch();
+        },
+        onError: (err: any) => {
+          const message =
+            err?.response?.data?.message ||
+            err?.message ||
+            "Lỗi không xác định!";
+          showToast(message, "error");
+          refetch();
+        },
+      }
+    );
+    refetch();
+  };
 
   useEffect(() => {
     if (studentData) {
@@ -116,6 +236,18 @@ export default function ListStudent({
     },
   ];
 
+  if (isLoading || isLoadingSchool || isLoadingClass) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError || isErrorSchool || isErrorClass) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
+
   return (
     <Box>
       <Box
@@ -129,6 +261,34 @@ export default function ListStudent({
             "0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12)",
         }}
       >
+        <Box>
+          {/* Select */}
+          <Box className="min-w-[220px]">
+            <FormSelect
+              id="roundId"
+              name="roundId"
+              label="Tên vòng đấu"
+              control={control}
+              error={errors.roundId}
+              options={[
+                { label: "Chọn trận đấu", value: "" },
+                ...listRound.map(r => ({
+                  label: r.name,
+                  value: String(r.id),
+                })),
+              ]}
+            />
+          </Box>
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            variant="contained"
+            color="primary"
+            className="w-full !my-[8px]"
+          >
+            Thêm ({selectedIds.length})
+          </Button>
+        </Box>
+
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={2}
@@ -182,7 +342,7 @@ export default function ListStudent({
 
           {/* Bộ lọc trạng thái */}
           <FormAutocompleteFilter
-            label="Lớp học"
+            label="Lớp "
             options={[
               { label: "Tất cả", value: "all" },
               ...listClass.map(s => ({
@@ -199,16 +359,6 @@ export default function ListStudent({
             }
             sx={{ flex: 1, minWidth: 200 }}
           />
-
-          {selectedIds.length > 0 && (
-            <Button
-              variant="contained"
-              color="error"
-              sx={{ width: { xs: "100%", sm: "auto" }, alignSelf: "center" }}
-            >
-              Thêm ({selectedIds.length})
-            </Button>
-          )}
         </Stack>
 
         <Box
@@ -219,7 +369,7 @@ export default function ListStudent({
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            Tổng số: {pagination.total} thí sinh học
+            Tổng số: {pagination.total} thí sinh
           </Typography>
         </Box>
         <DataGrid
@@ -261,6 +411,8 @@ export default function ListStudent({
                 <MenuItem value={10}>10</MenuItem>
                 <MenuItem value={25}>25</MenuItem>
                 <MenuItem value={50}>50</MenuItem>
+                <MenuItem value={100}>100</MenuItem>
+                <MenuItem value={200}>200</MenuItem>
               </Select>
             </FormControl>
             <Typography>

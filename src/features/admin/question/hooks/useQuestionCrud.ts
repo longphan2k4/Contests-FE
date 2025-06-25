@@ -40,16 +40,6 @@ export const useQuestionCrud = () => {
       return questionService.updateQuestion(id, formData);
     },
     onSuccess: (data) => {
-      console.log('✅ Update mutation success - data received:', data);
-      console.log('📦 New question data:', data.data);
-      console.log('🎬 Question media from API:', data.data?.questionMedia);
-      console.log('🎵 Media answer from API:', data.data?.mediaAnswer);
-      console.log('🔍 Current selectedQuestion before update:', selectedQuestion);
-      console.log('📊 selectedQuestion media before update:', {
-        questionMedia: selectedQuestion?.questionMedia,
-        mediaAnswer: selectedQuestion?.mediaAnswer
-      });
-      
       showToast(data.message, 'success');
       
       // Invalidate và refetch data ngay lập tức để có data mới
@@ -58,7 +48,6 @@ export const useQuestionCrud = () => {
       });
       
       if (selectedQuestion) {
-        console.log('🔄 Updating cache and selectedQuestion for ID:', selectedQuestion.id);
         
         // Invalidate query cho question detail cụ thể
         queryClient.invalidateQueries({ 
@@ -67,28 +56,17 @@ export const useQuestionCrud = () => {
         
         // Set data mới vào cache để component có thể sử dụng ngay
         if (data.data) {
-          console.log('💾 Setting new data to cache:', data.data);
-          console.log('🎭 Cache data media check:', {
-            questionMedia: data.data.questionMedia,
-            mediaAnswer: data.data.mediaAnswer,
-            questionMediaLength: data.data.questionMedia?.length || 0,
-            mediaAnswerLength: data.data.mediaAnswer?.length || 0
-          });
           
           queryClient.setQueryData(['question', selectedQuestion.id], data.data);
           
           // Cập nhật selectedQuestion với data mới
-          console.log('🎯 Setting selectedQuestion with new data');
-          console.log('🎬 New question media:', data.data.questionMedia);
-          console.log('🎵 New media answer:', data.data.mediaAnswer);
           setSelectedQuestion(data.data);
         }
       } else {
-        console.log('⚠️ No selectedQuestion to update');
+        showToast('Có lỗi xảy ra khi cập nhật câu hỏi', 'error');
       }
     },
     onError: (error: AxiosError<ApiErrorResponse>) => {
-      console.error('❌ Update mutation failed:', error);
       showToast(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật câu hỏi', 'error');
     }
   });
@@ -173,24 +151,19 @@ export const useQuestionCrud = () => {
         await createMutation.mutateAsync(formData);
         // Dialog sẽ được đóng trong onSuccess của createMutation
       } else if (dialogMode === 'edit' && selectedQuestion) {
-        console.log('🚀 Starting update mutation for question ID:', selectedQuestion.id);
         
         // Đợi update mutation hoàn thành
         await updateMutation.mutateAsync({ id: selectedQuestion.id, formData });
         
-        console.log('✅ Update mutation completed successfully');
         
         // Chỉ đóng dialog sau khi mutation thành công
         // Đợi một chút để UI có thể update với data mới
         setTimeout(() => {
-          console.log('🔒 Closing dialog after successful update');
           setDialogOpen(false);
         }, 300);
       }
     } catch (error) {
-      console.error('❌ Error in handleSubmit:', error);
-      // Lỗi đã được xử lý trong onError của mutation
-      // Không đóng dialog để user có thể thử lại
+      showToast(error instanceof Error ? error.message : 'Lỗi khi gửi dữ liệu câu hỏi');
     }
   };
 

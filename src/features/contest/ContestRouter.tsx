@@ -6,10 +6,10 @@ import GroupPage from "./group/page/GroupPage";
 import ContestantPage from "./contestant/page/Contestant";
 import MatchPage from "./match/page/MatchPage";
 import ResultsPage from "../admin/result/pages/ResultsPage";
+import RescuePage from "./rescues/page/RescuePage";
 
 const Dashboard = () => <div>Trang Dashboard Cuộc Thi</div>;
 import SponsorsPage from "../admin/sponsors/page/SponsorsPage";
-import RescuesPage from "../admin/sponsors/page/SponsorsPage";
 import AwardsPage from "../admin/awards/page/AwardsPage";
 const ClassVideos = () => <div>Trang Videos Lớp</div>;
 const ContestRoutes = () => {
@@ -23,7 +23,7 @@ const ContestRoutes = () => {
       <Route path="sponsors" element={<SponsorsPage />} />
       <Route path="awards" element={<AwardsPage />} />
       <Route path="class-videos" element={<ClassVideos />} />
-      <Route path="rescues" element={<RescuesPage />} />
+      <Route path="cuu-tro" element={<RescuePage />} />
       <Route index element={<Navigate to="dashboard" replace />} />
       <Route path="results" element={<ResultsPage />} />
     </Route>

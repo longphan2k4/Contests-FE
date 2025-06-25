@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -13,13 +13,13 @@ import {
   Card,
   CardContent,
   Collapse,
-  IconButton
-} from '@mui/material';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import ClearIcon from '@mui/icons-material/Clear';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import SearchIcon from '@mui/icons-material/Search';
-import type { ResultFilterParams, FilterState } from '../types';
+  IconButton,
+} from "@mui/material";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import ClearIcon from "@mui/icons-material/Clear";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import SearchIcon from "@mui/icons-material/Search";
+import type { ResultFilterParams, FilterState } from "../types";
 
 interface ResultsFilterProps {
   onFilter: (params: ResultFilterParams) => void;
@@ -27,18 +27,19 @@ interface ResultsFilterProps {
   uniqueMatches?: { id: number; name: string }[];
 }
 
-const ResultsFilter: React.FC<ResultsFilterProps> = ({ 
-  onFilter, 
-  uniqueRounds = [], 
-  uniqueMatches = [] 
+const ResultsFilter: React.FC<ResultsFilterProps> = ({
+  onFilter,
+  uniqueRounds = [],
+  uniqueMatches = [],
 }) => {
   const [filterState, setFilterState] = useState<FilterState>({
-    studentName: '',
-    matchName: '',
-    roundId: '',
-    isCorrect: 'all',
-    sortBy: 'createdAt',
-    sortOrder: 'desc'
+    search: "",
+    studentName: "",
+    matchName: "",
+    roundId: "",
+    isCorrect: "all",
+    sortBy: "createdAt",
+    sortOrder: "desc",
   });
 
   const [expanded, setExpanded] = useState(false);
@@ -47,62 +48,77 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
   // Cập nhật active filters khi filterState thay đổi
   useEffect(() => {
     const filters: string[] = [];
-    if (filterState.studentName) filters.push(`Tên: ${filterState.studentName}`);
+    if (filterState.search) filters.push(`Tìm kiếm: ${filterState.search}`);
+    if (filterState.studentName)
+      filters.push(`Tên: ${filterState.studentName}`);
     if (filterState.matchName) filters.push(`Trận: ${filterState.matchName}`);
     if (filterState.roundId) {
-      const round = uniqueRounds.find(r => r.id.toString() === filterState.roundId);
+      const round = uniqueRounds.find(
+        (r) => r.id.toString() === filterState.roundId
+      );
       if (round) filters.push(`Vòng: ${round.name}`);
     }
-    if (filterState.isCorrect !== 'all') {
-      filters.push(`Kết quả: ${filterState.isCorrect === 'true' ? 'Đúng' : 'Sai'}`);
+    if (filterState.isCorrect !== "all") {
+      filters.push(
+        `Kết quả: ${filterState.isCorrect === "true" ? "Đúng" : "Sai"}`
+      );
     }
     setActiveFilters(filters);
   }, [filterState, uniqueRounds]);
 
   const handleInputChange = (field: keyof FilterState, value: string) => {
-    setFilterState(prev => ({ ...prev, [field]: value }));
+    setFilterState((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     const params: ResultFilterParams = {};
-    
+
+    if (filterState.search.trim()) {
+      params.search = filterState.search.trim();
+    }
+
     if (filterState.studentName.trim()) {
       params.studentName = filterState.studentName.trim();
     }
-    
+
     if (filterState.matchName.trim()) {
       params.matchName = filterState.matchName.trim();
     }
-    
+
     if (filterState.roundId) {
       params.roundId = parseInt(filterState.roundId, 10);
     }
-    
-    if (filterState.isCorrect !== 'all') {
-      params.isCorrect = filterState.isCorrect === 'true';
+
+    if (filterState.isCorrect !== "all") {
+      params.isCorrect = filterState.isCorrect === "true";
     }
 
     if (filterState.sortBy) {
-      params.sortBy = filterState.sortBy as 'createdAt' | 'questionOrder' | 'studentName' | 'matchName';
+      params.sortBy = filterState.sortBy as
+        | "createdAt"
+        | "questionOrder"
+        | "studentName"
+        | "matchName";
     }
 
     if (filterState.sortOrder) {
-      params.sortOrder = filterState.sortOrder as 'asc' | 'desc';
+      params.sortOrder = filterState.sortOrder as "asc" | "desc";
     }
-    
+
     onFilter(params);
   };
 
   const handleClear = () => {
     const clearedState: FilterState = {
-      studentName: '',
-      matchName: '',
-      roundId: '',
-      isCorrect: 'all',
-      sortBy: 'createdAt',
-      sortOrder: 'desc'
+      search: "",
+      studentName: "",
+      matchName: "",
+      roundId: "",
+      isCorrect: "all",
+      sortBy: "createdAt",
+      sortOrder: "desc",
     };
     setFilterState(clearedState);
     onFilter({});
@@ -110,31 +126,46 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
 
   const handleRemoveFilter = (filterIndex: number) => {
     const newState = { ...filterState };
-    
-    if (filterIndex === 0 && filterState.studentName) {
-      newState.studentName = '';
-    } else if (filterIndex === 1 && filterState.matchName) {
-      newState.matchName = '';
-    } else if (filterIndex === 2 && filterState.roundId) {
-      newState.roundId = '';
-    } else if (filterIndex === 3 && filterState.isCorrect !== 'all') {
-      newState.isCorrect = 'all';
+
+    if (filterIndex === 0 && filterState.search) {
+      newState.search = "";
+    } else if (filterIndex === 1 && filterState.studentName) {
+      newState.studentName = "";
+    } else if (filterIndex === 2 && filterState.matchName) {
+      newState.matchName = "";
+    } else if (filterIndex === 3 && filterState.roundId) {
+      newState.roundId = "";
+    } else if (filterIndex === 4 && filterState.isCorrect !== "all") {
+      newState.isCorrect = "all";
     }
-    
+
     setFilterState(newState);
   };
 
   return (
     <Card elevation={2} sx={{ mb: 3 }}>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          >
             <FilterAltIcon color="primary" />
             Bộ lọc kết quả
           </Typography>
           <IconButton
             onClick={() => setExpanded(!expanded)}
-            sx={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: '0.3s' }}
+            sx={{
+              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "0.3s",
+            }}
           >
             <ExpandMoreIcon />
           </IconButton>
@@ -146,7 +177,7 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Bộ lọc đang áp dụng:
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
               {activeFilters.map((filter, index) => (
                 <Chip
                   key={index}
@@ -172,27 +203,31 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
 
         <Collapse in={!expanded}>
           <Box component="form" onSubmit={handleSubmit}>
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { 
-                xs: '1fr', 
-                sm: 'repeat(2, 1fr)', 
-                md: 'repeat(3, 1fr)' 
-              }, 
-              gap: 3,
-              mb: 3
-            }}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(3, 1fr)",
+                },
+                gap: 3,
+                mb: 3,
+              }}
+            >
               {/* Tìm kiếm theo tên thí sinh */}
               <TextField
                 fullWidth
-                label="Tìm theo tên thí sinh"
+                label="Tìm kiếm tổng quát"
                 variant="outlined"
                 size="small"
-                value={filterState.studentName}
-                onChange={(e) => handleInputChange('studentName', e.target.value)}
+                value={filterState.search}
+                onChange={(e) => handleInputChange("search", e.target.value)}
                 placeholder="Nhập tên thí sinh..."
                 InputProps={{
-                  startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                  startAdornment: (
+                    <SearchIcon sx={{ mr: 1, color: "text.secondary" }} />
+                  ),
                 }}
               />
 
@@ -200,8 +235,13 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
               <Autocomplete
                 options={uniqueMatches}
                 getOptionLabel={(option) => option.name}
-                value={uniqueMatches.find(m => m.name === filterState.matchName) || null}
-                onChange={(_, newValue) => handleInputChange('matchName', newValue?.name || '')}
+                value={
+                  uniqueMatches.find((m) => m.name === filterState.matchName) ||
+                  null
+                }
+                onChange={(_, newValue) =>
+                  handleInputChange("matchName", newValue?.name || "")
+                }
                 renderInput={(params) => (
                   <TextField
                     {...params}
@@ -219,7 +259,7 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
                 <Select
                   labelId="round-select-label"
                   value={filterState.roundId}
-                  onChange={(e) => handleInputChange('roundId', e.target.value)}
+                  onChange={(e) => handleInputChange("roundId", e.target.value)}
                   label="Vòng thi"
                 >
                   <MenuItem value="">Tất cả vòng</MenuItem>
@@ -237,7 +277,9 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
                 <Select
                   labelId="result-select-label"
                   value={filterState.isCorrect}
-                  onChange={(e) => handleInputChange('isCorrect', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("isCorrect", e.target.value)
+                  }
                   label="Kết quả"
                 >
                   <MenuItem value="all">Tất cả</MenuItem>
@@ -252,7 +294,7 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
                 <Select
                   labelId="sort-by-label"
                   value={filterState.sortBy}
-                  onChange={(e) => handleInputChange('sortBy', e.target.value)}
+                  onChange={(e) => handleInputChange("sortBy", e.target.value)}
                   label="Sắp xếp theo"
                 >
                   <MenuItem value="createdAt">Thời gian tạo</MenuItem>
@@ -268,7 +310,9 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
                 <Select
                   labelId="sort-order-label"
                   value={filterState.sortOrder}
-                  onChange={(e) => handleInputChange('sortOrder', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("sortOrder", e.target.value)
+                  }
                   label="Thứ tự"
                 >
                   <MenuItem value="desc">Giảm dần</MenuItem>
@@ -278,15 +322,17 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
             </Box>
 
             {/* Action Buttons */}
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'flex-end',
-              gap: 2,
-              mt: 3,
-              pt: 2,
-              borderTop: '1px solid',
-              borderColor: 'divider'
-            }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 2,
+                mt: 3,
+                pt: 2,
+                borderTop: "1px solid",
+                borderColor: "divider",
+              }}
+            >
               <Button
                 variant="outlined"
                 color="inherit"
@@ -306,33 +352,9 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
             </Box>
           </Box>
         </Collapse>
-
-        {/* Quick Actions when collapsed */}
-        {!expanded && (
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-            <TextField
-              size="small"
-              placeholder="Tìm nhanh theo tên thí sinh..."
-              value={filterState.studentName}
-              onChange={(e) => handleInputChange('studentName', e.target.value)}
-              sx={{ flex: 1, maxWidth: 300 }}
-              InputProps={{
-                startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
-              }}
-            />
-            <Button
-              variant="contained"
-              size="small"
-              onClick={handleSubmit}
-              startIcon={<FilterAltIcon />}
-            >
-              Lọc
-            </Button>
-          </Box>
-        )}
       </CardContent>
     </Card>
   );
 };
 
-export default ResultsFilter; 
+export default ResultsFilter;

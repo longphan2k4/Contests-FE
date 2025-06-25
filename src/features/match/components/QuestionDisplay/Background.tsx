@@ -32,7 +32,7 @@ interface Particle {
 }
 
 const Background: React.FC = () => {
-  const [scanlineActive, setScanlineActive] = useState<boolean>(true);
+  const [scanlineActive, _setScanlineActive] = useState<boolean>(true);
   const [overlayOpacity, setOverlayOpacity] = useState<number>(0.3);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);

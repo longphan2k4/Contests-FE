@@ -23,6 +23,8 @@ import {
   Deletes,
   GetContestantStatus,
   GetAllSutent,
+  GetListContestNotSlug,
+  GetListRoundByContestId,
 } from "../service/api";
 
 export const useGetAll = (
@@ -41,7 +43,7 @@ export const useGetAllNotContest = (
   slug: string | null
 ) => {
   return useQuery({
-    queryKey: ["contestant-not-contest", filter],
+    queryKey: ["contestant-not-contest", filter, slug],
     queryFn: () => GetAllNotCotest(filter, slug),
     placeholderData: prevData => prevData,
   });
@@ -139,5 +141,19 @@ export const useClassSchoolId = (schooId: number | null) => {
   return useQuery({
     queryKey: ["useClassSchoolId", schooId],
     queryFn: () => GetListClassBySchool(schooId),
+  });
+};
+
+export const useGetListContest = (slug: string | null) => {
+  return useQuery({
+    queryKey: ["useGetListContest", slug],
+    queryFn: () => GetListContestNotSlug(slug),
+  });
+};
+
+export const useGetListRoundByContestId = (contestId: number | null) => {
+  return useQuery({
+    queryKey: ["useGetListRoundByContestId", contestId],
+    queryFn: () => GetListRoundByContestId(contestId),
   });
 };

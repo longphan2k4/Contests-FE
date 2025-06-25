@@ -11,21 +11,15 @@ import QuestionDetails from "../components/QuestionDetails";
 import BackgroundControl from "../components/BackgroundControl";
 import CurrentContestants from "../components/CurrentContestants";
 import {
-  useBgContest,
   useCurrentQuestion,
   useListQuestion,
   useMatchInfo,
   useScreenControl,
   useCountContestant,
-  useListContestant,
-  useListRescues,
 } from "../hook/useControls";
 import {
   type MatchInfo,
-  type BgContest,
   type Question,
-  type ListRescue,
-  type ListContestant,
   type countContestant,
   type SceenControl,
   type CurrentQuestion,
@@ -39,9 +33,6 @@ const ControlsPage: React.FC = () => {
 
   // 1. State
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
-  const [listContestant, setListContestant] = useState<ListContestant[]>([]);
-  const [listRescue, setListRescue] = useState<ListRescue[]>([]);
-  const [bgContest, setBgContest] = useState<BgContest | null>(null);
   const [currentQuestion, setCurrentQuestion] =
     useState<CurrentQuestion | null>(null);
   const [countContestant, setCountContestant] =
@@ -55,25 +46,10 @@ const ControlsPage: React.FC = () => {
     isSuccess: isSuccessMatch,
   } = useMatchInfo(match ?? null);
   const {
-    data: bgContestRes,
-    isLoading: isLoadingBg,
-    isSuccess: isSuccessBg,
-  } = useBgContest(match ?? null);
-  const {
     data: currentQuestionRes,
     isLoading: isLoadingCurrentQuestion,
     isSuccess: isSuccessCurrentQuestion,
   } = useCurrentQuestion(match ?? null);
-  const {
-    data: listRescueRes,
-    isLoading: isLoadingRescues,
-    isSuccess: isSuccessRescues,
-  } = useListRescues(match ?? null);
-  const {
-    data: listContestantRes,
-    isLoading: isLoadingContestants,
-    isSuccess: isSuccessContestants,
-  } = useListContestant(match ?? null);
   const {
     data: countContestantRes,
     isLoading: isLoadingCount,
@@ -95,20 +71,8 @@ const ControlsPage: React.FC = () => {
   }, [isSuccessMatch, matchInfoRes]);
 
   useEffect(() => {
-    if (isSuccessBg) setBgContest(bgContestRes.data);
-  }, [isSuccessBg, bgContestRes]);
-
-  useEffect(() => {
     if (isSuccessCurrentQuestion) setCurrentQuestion(currentQuestionRes.data);
   }, [isSuccessCurrentQuestion, currentQuestionRes]);
-
-  useEffect(() => {
-    if (isSuccessRescues) setListRescue(listRescueRes.data);
-  }, [isSuccessRescues, listRescueRes]);
-
-  useEffect(() => {
-    if (isSuccessContestants) setListContestant(listContestantRes.data);
-  }, [isSuccessContestants, listContestantRes]);
 
   useEffect(() => {
     if (isSuccessCount) setCountContestant(countContestantRes.data);
@@ -128,30 +92,38 @@ const ControlsPage: React.FC = () => {
       return () => {};
     }
 
-    const handleScreenUpdate = (data: any) => {
+    const handleScreenUpdate = (data: { updatedScreen: SceenControl }) => {
       setScreenControl(data?.updatedScreen);
     };
 
-    const handleCurrentQuestion = (data: any) => {
+    const handleCurrentQuestion = (data: {
+      matchInfo: MatchInfo;
+      currentQuestion: CurrentQuestion;
+    }) => {
       setMatchInfo({ ...data?.matchInfo });
       setCurrentQuestion({ ...data?.currentQuestion });
     };
 
+    const handleUpdateTime = (data: any) => {
+      const newTime = data?.timeRemaining;
+      setMatchInfo(prev => (prev ? { ...prev, remainingTime: newTime } : prev));
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
+    socket.on("timer:update", handleUpdateTime);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
-      socket.off("currentQuestion:get", handleCurrentQuestion); // Sửa lỗi typo: "screen:update" thành "currentQuestion:get"
+      socket.off("currentQuestion:get", handleCurrentQuestion);
+
+      socket.off("timer:update", handleUpdateTime);
     };
   }, [socket]);
 
   const isLoading =
     isLoadingMatch ||
-    isLoadingBg ||
     isLoadingCurrentQuestion ||
-    isLoadingRescues ||
-    isLoadingContestants ||
     isLoadingCount ||
     isLoadingQuestions ||
     isLoadingControl;
@@ -232,7 +204,7 @@ const ControlsPage: React.FC = () => {
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
-            <SupplierVideo />
+            <SupplierVideo currentQuestion={currentQuestion} />
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <ContestantsControl />

@@ -59,7 +59,10 @@ export const Creates = async (
   payload: CreatesContestInput,
   slug: string | null
 ) => {
-  const res = await axiosInstance.post(`/contestant/contest/${slug}`, payload);
+  const res = await axiosInstance.post(
+    `/contestant/bulk/contest/${slug}`,
+    payload
+  );
   return res.data;
 };
 
@@ -96,5 +99,15 @@ export const GetListRound = async (slug: string | null) => {
 
 export const GetListClassBySchool = async (schoolId: number | null) => {
   const res = await axiosInstance.get(`/class/school/${schoolId}`);
+  return res.data;
+};
+
+export const GetListContestNotSlug = async (slug: string | null) => {
+  const res = await axiosInstance.get(`/contest/not-conest/${slug}`);
+  return res.data;
+};
+
+export const GetListRoundByContestId = async (contestId: number | null) => {
+  const res = await axiosInstance.get(`/round/list-round/${contestId}`);
   return res.data;
 };
