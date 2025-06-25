@@ -2,5 +2,5 @@
 export interface Match {
   id: number;
   name: string;
-  slug: string | null;
+  slug: string;
 }
