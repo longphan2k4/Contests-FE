@@ -5,6 +5,13 @@ export const ContestantSchema = z.object({
   roundName: z.string(),
   fullName: z.string(),
   status: z.enum([" compete", "eliminate", "advanced"]),
+  studentCode: z.string().optional().nullable(),
+  schoolName: z.string(),
+  className: z.string(),
+  groupName: z.string().optional(),
+  schoolId: z.number(),
+  classId: z.number(),
+  groupId: z.number().optional(),
 });
 
 export const CreateContestantSchema = z.object({
@@ -66,6 +73,10 @@ export const ContestantQuerySchema = z.object({
     )
     .optional(),
   status: z.enum(["compete", "eliminate", "advanced"]).optional(),
+  schoolId: z.number().positive().optional(),
+  classId: z.number().positive().optional(),
+  groupId: z.number().optional(), // Có thể là -1 cho "unassigned"
+  matchId: z.number().positive().optional(),
 });
 
 export const deleteContestantesSchema = z.object({

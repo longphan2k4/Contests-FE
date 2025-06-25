@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton, Chip } from "@mui/material";
 import DataGrid from "../../../../../components/DataGrid";
 import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
@@ -40,18 +40,33 @@ export default function Listcontestant({
       renderCell: params =>
         params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
-    { field: "fullName", headerName: "Họ và tên", flex: 1 },
+    { field: "fullName", headerName: "Họ và tên", flex: 1.5 },
+    { field: "studentCode", headerName: "Mã SV", flex: 1 },
+    { field: "schoolName", headerName: "Trường", flex: 1.5 },
+    { field: "className", headerName: "Lớp", flex: 1 },
     { field: "roundName", headerName: "Vòng đấu", flex: 1 },
+    {
+      field: "groupName",
+      headerName: "Nhóm",
+      flex: 1,
+      renderCell: (params: GridRenderCellParams<Contestant, string>) => {
+        const groupName = params.row.groupName;
+        if (!groupName) {
+          return <Chip label="Chưa phân nhóm" size="small" color="default" />;
+        }
+        return <Chip label={groupName} size="small" color="primary" />;
+      },
+    },
     {
       field: "status",
       headerName: "Trạng thái",
       flex: 1,
-      renderCell: (params: GridRenderCellParams<any, string>) => {
-        const status = params.row.status;
+      renderCell: (params: GridRenderCellParams<Contestant, string>) => {
+        const status = params.row.status.trim();
 
-        if (status === "compete") return <span>Thi đấu</span>;
-        if (status === "eliminate") return <span>Bị loại</span>;
-        return <span>Qua vòng</span>;
+        if (status === "compete") return <Chip label="Thi đấu" size="small" color="success" />;
+        if (status === "eliminate") return <Chip label="Bị loại" size="small" color="error" />;
+        return <Chip label="Qua vòng" size="small" color="info" />;
       },
     },
     {

@@ -12,6 +12,8 @@ interface FormAutocompleteFilterProps {
   value?: string | number;
   onChange: (value: string | number | undefined) => void;
   sx?: object;
+  loading?: boolean;
+  disabled?: boolean;
 }
 
 export default function FormAutocompleteFilter({
@@ -20,6 +22,8 @@ export default function FormAutocompleteFilter({
   value,
   onChange,
   sx,
+  loading = false,
+  disabled = false,
 }: FormAutocompleteFilterProps) {
   const selectedOption = useMemo(() => {
     return options.find(opt => opt.value === value) ?? null;
@@ -35,6 +39,8 @@ export default function FormAutocompleteFilter({
       onChange={(_, newValue) =>
         onChange(newValue?.value === "all" ? undefined : newValue?.value)
       }
+      loading={loading}
+      disabled={disabled}
       sx={sx}
       renderInput={params => (
         <TextField

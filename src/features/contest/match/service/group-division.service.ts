@@ -151,6 +151,23 @@ export class GroupDivisionService {
   }
 
   /**
+   * Tạo nhóm mới cho trận đấu
+   */
+  static async createGroup(
+    matchId: number,
+    groupName: string,
+    judgeId: number
+  ): Promise<GroupInfo> {
+    const response = await axiosInstance.post(`/group`, {
+      name: groupName,
+      matchId: matchId,
+      userId: judgeId,
+      confirmCurrentQuestion: 1
+    });
+    return response.data.data;
+  }
+
+  /**
    * Chia nhóm thí sinh cho trận đấu
    */
   static async divideGroups(
@@ -178,5 +195,12 @@ export class GroupDivisionService {
   static async getClassesBySchool(schoolId: number): Promise<ClassInfo[]> {
     const response = await axiosInstance.get(`${this.baseUrl}/schools/${schoolId}/classes`);
     return response.data.data.classes;
+  }
+
+  /**
+   * Xóa nhóm (bao gồm cả thí sinh trong nhóm)
+   */
+  static async deleteGroup(groupId: number): Promise<void> {
+    await axiosInstance.delete(`/group/${groupId}`);
   }
 }
