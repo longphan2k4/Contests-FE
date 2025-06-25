@@ -2,6 +2,7 @@ import {
   DataGrid,
   type GridColDef,
   type GridRowSelectionModel,
+  type GridRowParams,
 } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 
@@ -12,6 +13,8 @@ interface CommonDataGridProps<T> {
   selectedIds?: (string | number)[];
   onSelectChange?: (selectedIds: (string | number)[]) => void;
   checkboxSelection?: boolean;
+  disabledRowIds?: (string | number)[];
+  getRowClassName?: (params: GridRowParams) => string;
 }
 
 const CommonDataGrid = <T,>({
@@ -21,6 +24,8 @@ const CommonDataGrid = <T,>({
   selectedIds,
   onSelectChange,
   checkboxSelection = true,
+  disabledRowIds = [],
+  getRowClassName,
 }: CommonDataGridProps<T>) => {
   return (
     <Box
@@ -33,8 +38,7 @@ const CommonDataGrid = <T,>({
         sx={{
           minWidth: "600px", // hoặc lớn hơn nếu có nhiều cột
         }}
-      >
-        <DataGrid
+      >        <DataGrid
           rows={rows}
           columns={columns}
           getRowId={getRowId}
@@ -42,6 +46,8 @@ const CommonDataGrid = <T,>({
           checkboxSelection={checkboxSelection}
           disableRowSelectionOnClick
           hideFooter
+          isRowSelectable={(params) => !disabledRowIds.includes(params.id)}
+          getRowClassName={getRowClassName}
           onRowSelectionModelChange={(model: GridRowSelectionModel) => {
             if (onSelectChange) {
               onSelectChange(model as unknown as (string | number)[]);
@@ -53,6 +59,16 @@ const CommonDataGrid = <T,>({
             },
             "& .MuiDataGrid-columnHeaders": {
               backgroundColor: "grey.100",
+            },
+            "& .disabled-row": {
+              backgroundColor: "#f5f5f5",
+              color: "#666",
+              "&:hover": {
+                backgroundColor: "#f0f0f0",
+              },
+            },
+            "& .disabled-row .MuiCheckbox-root": {
+              color: "#ccc",
             },
             fontSize: { xs: "0.75rem", sm: "0.875rem" },
             border: "1px solid",
