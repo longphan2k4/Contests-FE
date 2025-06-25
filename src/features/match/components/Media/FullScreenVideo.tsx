@@ -1,39 +1,31 @@
 import { useEffect, useRef, type FC } from "react";
+
 interface FullScreenVideoProps {
   videoUrl?: string;
-  isPlaying?: boolean;
-  resetTrigger?: number;
+  control?: string | null; // "play" | "pause" | "reset"
 }
 
 const FullScreenVideo: FC<FullScreenVideoProps> = ({
   videoUrl,
-  isPlaying = true,
-  resetTrigger = 0,
+  control = "start",
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  // Điều khiển Play/Pause
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-      if (isPlaying) {
-        video.play().catch(() => {});
-      } else {
-        video.pause();
-      }
-    }
-  }, [isPlaying]);
+  console.log("FullScreenVideo control:", control);
 
-  // Reset video
   useEffect(() => {
     const video = videoRef.current;
-    if (video) {
+    if (!video) return;
+
+    if (control === "start") {
+      video.play().catch(() => {});
+    } else if (control === "pause") {
+      video.pause();
+    } else if (control === "reset") {
       video.currentTime = 0;
-      if (isPlaying) {
-        video.play().catch(() => {});
-      }
+      video.play().catch(() => {});
     }
-  }, [resetTrigger]);
+  }, [control]);
 
   if (!videoUrl) return null;
 
@@ -45,7 +37,7 @@ const FullScreenVideo: FC<FullScreenVideoProps> = ({
         className="w-full h-full object-cover"
         muted
         controls={false}
-        autoPlay={isPlaying}
+        autoPlay={false}
       />
     </div>
   );

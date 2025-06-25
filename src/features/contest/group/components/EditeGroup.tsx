@@ -55,12 +55,9 @@ export default function EditClass({
   } = useListMatch(slug ?? null);
 
   useEffect(() => {
-    // Kiểm tra nếu slug có giá trị thì gọi lại hàm refetch để lấy dữ liệu mới
-    if (slug) {
-      refetchMatch();
-      refetchUser();
-    }
-  }, [slug, refetchMatch, refetchUser, open]);
+    refetchMatch();
+    refetchUser();
+  }, [refetchMatch, refetchUser, open]);
 
   // Memo hóa danh sách trường học để tránh re-render thừa
   const matches = useMemo(() => {
@@ -113,7 +110,7 @@ export default function EditClass({
     <AppFormDialog
       open={isOpen}
       onClose={onClose}
-      title={`Cập nhật lớp: ${groupData?.name || ""}`}
+      title={`Cập nhật nhóm: ${groupData?.name || ""}`}
       maxWidth="sm"
     >
       <form id="create-class-form" onSubmit={handleSubmit(handleFormSubmit)}>

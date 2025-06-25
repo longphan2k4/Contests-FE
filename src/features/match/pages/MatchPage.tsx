@@ -202,6 +202,7 @@ export default function MatchPage() {
 
   return (
     <>
+      {/*  Ma */}
       {screenControl?.controlKey === "question" && (
         <div key="question">
           <MatchHeader
@@ -261,7 +262,10 @@ export default function MatchPage() {
 
       {screenControl?.controlKey === "video" && screenControl?.media && (
         <div key="video">
-          <FullScreenVideo videoUrl={screenControl?.media} />
+          <FullScreenVideo
+            videoUrl={screenControl?.media}
+            control={screenControl?.controlValue ?? null}
+          />
         </div>
       )}
 
