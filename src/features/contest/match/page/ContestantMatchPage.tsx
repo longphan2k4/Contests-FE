@@ -1796,7 +1796,7 @@ const ContestantMatchPage: React.FC = () => {
               </Paper>
 
               {/* Active Group Content */}
-              <Box sx={{ flex: 1, overflow: 'auto' }}>
+              <Box sx={{ flex: 1, overflow: 'auto', pt: 1 }}>
                 {groups[activeGroupTab]?.length > 0 ? (
                   <Box>
                     {/* Clear All Button */}
