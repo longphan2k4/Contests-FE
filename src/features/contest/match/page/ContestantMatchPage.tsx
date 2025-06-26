@@ -117,7 +117,8 @@ const ContestantMatchPage: React.FC = () => {
 
   // Judge-related states
   const [availableJudges, setAvailableJudges] = useState<JudgeInfo[]>([]);
-  const [judgeSearchTerm, setJudgeSearchTerm] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [judgeSearchTerm, _setJudgeSearchTerm] = useState<string>('');
   const [assignedJudges, setAssignedJudges] = useState<{ [groupIndex: number]: JudgeInfo | null }>({});
   const [isLoadingJudges, setIsLoadingJudges] = useState(false);
 
@@ -1980,7 +1981,7 @@ const ContestantMatchPage: React.FC = () => {
               </Paper>
 
               {/* Active Group Content */}
-              <Box sx={{ flex: 1, overflow: 'auto', pt: 1 }}>
+              <Box sx={{ flex: 1, overflow: 'hidden', pt: 1 }}>
                 {groups[activeGroupTab]?.length > 0 ? (
                   <Box>
                     {/* Clear All Button */}
@@ -2003,7 +2004,27 @@ const ContestantMatchPage: React.FC = () => {
                       </Button>
                     </Box>
 
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: 1,
+                      maxHeight: '300px',
+                      overflowY: 'auto',
+                      '&::-webkit-scrollbar': {
+                        width: '4px',
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        backgroundColor: '#f1f1f1',
+                        borderRadius: '4px'
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: '#c1c1c1',
+                        borderRadius: '4px',
+                        '&:hover': {
+                          backgroundColor: '#a8a8a8'
+                        }
+                      }
+                    }}>
                       {groups[activeGroupTab].map((contestant) => (
                         <Box
                           key={contestant.id}
