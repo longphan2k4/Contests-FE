@@ -34,7 +34,6 @@ import {
 } from "../type/control.type";
 import { useSocket } from "@contexts/SocketContext";
 import { Box, CircularProgress } from "@mui/material";
-import { da } from "@faker-js/faker";
 
 // Define types for socket responses
 interface SocketResponse {
@@ -253,7 +252,8 @@ const ControlsPage: React.FC = () => {
     isLoadingQuestions ||
     isLoadingControl ||
     isLoadingSponsorMedia ||
-    isLoadingClassVideo;
+    isLoadingClassVideo ||
+    isLoadingContestants;
 
   if (isLoading) {
     return (
@@ -275,7 +275,8 @@ const ControlsPage: React.FC = () => {
     isErrorQuestions ||
     isErrorControl ||
     isErrorSponsorMedia ||
-    isErrorClassVideo
+    isErrorClassVideo ||
+    isErrorContestants
   ) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
