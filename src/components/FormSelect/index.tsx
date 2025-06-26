@@ -79,7 +79,7 @@ const FormSelect = ({
                 field.onChange(selectedValues);
               } else {
                 const single = newValue as OptionType | null;
-                field.onChange(single ? single.value : "");
+                field.onChange(single ? single.value : undefined); // 👈 CHỈNH SỬA TẠI ĐÂY
               }
             }}
             filterOptions={(opts, state) => filter(opts, state)}

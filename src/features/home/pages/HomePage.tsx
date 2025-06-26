@@ -1,58 +1,74 @@
-import React, { useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+
+import { useRef, useEffect, useState } from 'react';
 import Header from '../../../layouts/HomeLayout/HomeHeader';
-import Hero from '../components/home/Hero';
-import Stats from '../components/home/Stats';
-import About from '../components/home/About';
-import Programs from '../components/home/Programs';
-import News from '../components/home/News';
-import Contact from '../components/home/Contact';
+import BannerSlideshow from '../components/contest/Banner';
+import VideoSection from '../components/contest/Video';
+import HeroSection from '../components/contest/Hero';
+import StatsSection from '../components/contest/Stats';
+import TimelineSection from '../components/contest/Timeline';
+import SponsorsSection from '../components/contest/SponsorsSection';
+import ContestRulesSection from '../components/contest/ContestRulesSection';
 import Footer from '../../../layouts/HomeLayout/HomeFooter';
+import BackgroundEffects from '../components/contest/Background';
+import LargeSpinner from '@components/LargeSpinner';
 
-const HomePage: React.FC = () => {
-  const location = useLocation();
+const HomePage = () => {
+  // Trạng thái để kiểm soát việc tải
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Xác định tiêu đề dựa trên route
-  const getPageTitle = (pathname: string) => {
-    switch (pathname) {
-      case '/':
-        return 'Trang chủ - CĐ Kỹ Thuật Cao Thắng';
-      default:
-        return 'CĐ Kỹ Thuật Cao Thắng';
-    }
-  };
-
-  // Cập nhật tiêu đề trên tab
+  // Thêm useEffect để set title cho trang và giả lập tải
   useEffect(() => {
-    document.title = getPageTitle(location.pathname);
-    const id = location.pathname.replace('/', '') || 'hero';
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [location.pathname]);
+    // Set title cho tab
+    document.title = 'Cuộc thi - Olympic Tin học';
 
+    // Giả lập thời gian tải (thay thế bằng logic tải thực tế nếu có)
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // Tải trong 2 giây
+
+    // Cleanup function
+    return () => {
+      document.title = 'My App'; // hoặc title mặc định của app
+      clearTimeout(timer);
+    };
+  }, []);
+
+  // Refs cho các phần, sử dụng HTMLDivElement
+  const homeRef = useRef<HTMLDivElement>(null);
+  const contestRef = useRef<HTMLDivElement>(null);
+  const ruleRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const sponsorRef = useRef<HTMLDivElement>(null);
+
+  // Nếu đang tải, hiển thị LargeSpinner
+  if (isLoading) {
+    return <LargeSpinner size={80}/>;
+  }
+
+  // Nội dung chính khi tải xong
   return (
-    <div className="min-h-screen bg-white transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 text-gray-800 overflow-hidden pt-20">
+      <BackgroundEffects />
       <Header />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <>
-              <Hero />
-              <Stats />
-              <About />
-              <Programs />
-              <News />
-              <Contact />
-            </>
-          }
-        />
-        <Route path="/programs" element={<Programs />} />
-        <Route path="/news" element={<News />} />
-        <Route path="/contact" element={<Contact />} />
-      </Routes>
+      <div ref={homeRef} id="home" className="grid grid-cols-1 lg:grid-cols-[68%_30%] gap-6 max-w-7xl mx-auto">
+        <BannerSlideshow />
+        <VideoSection />
+      </div>
+      <div ref={contestRef} id="contest">
+        <HeroSection />
+      </div>
+      <div>
+        <StatsSection />
+      </div>
+      <div ref={ruleRef} id="rules">
+        <ContestRulesSection />
+      </div>
+      <div ref={timelineRef} id="timeline">
+        <TimelineSection />
+      </div>
+      <div ref={sponsorRef} id="sponsors">
+        <SponsorsSection />
+      </div>
       <Footer />
     </div>
   );

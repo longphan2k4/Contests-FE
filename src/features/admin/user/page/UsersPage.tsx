@@ -77,6 +77,10 @@ const UsersPage: React.FC = () => {
   const { mutate: mutateDelete } = useDelete();
 
   useEffect(() => {
+    refetchUsers();
+  }, [refetchUsers]);
+
+  useEffect(() => {
     if (usersQuery) {
       setUsers(usersQuery.data.user);
       setPagination(usersQuery.data.pagination);

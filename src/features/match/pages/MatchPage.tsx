@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import MatchHeader from "../components/MatchHeader/MatchHeader";
 import Background from "../components/QuestionDisplay/Background";
 import FullScreenImage from "../components/Media/FullScreenImage";
+import { AudienceDisplayManager } from "../components/AudienceDisplay";
 
 import { Box, CircularProgress } from "@mui/material";
 import {
@@ -42,8 +43,8 @@ export default function MatchPage() {
 
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
   const [listContestant, setListContestant] = useState<ListContestant[]>([]);
-  const [listRescue, setListRescue] = useState<ListRescue[]>([]);
-  const [bgContest, setBgContest] = useState<BgContest | null>(null);
+  const [_listRescue, setListRescue] = useState<ListRescue[]>([]);
+  const [_bgContest, setBgContest] = useState<BgContest | null>(null);
   const [currentQuestion, setCurrentQuestion] =
     useState<CurrentQuestion | null>(null);
   const [countContestant, setCountContestant] =
@@ -55,48 +56,56 @@ export default function MatchPage() {
     data: matchInfoRes,
     isLoading: isLoadingMatch,
     isSuccess: isSuccessMatch,
+    isError: isErrorMatch,
   } = useMatchInfo(match ?? null);
 
   const {
     data: bgContestRes,
     isLoading: isLoadingBg,
     isSuccess: isSuccessBg,
+    isError: isErrorBg,
   } = useBgContest(match ?? null);
 
   const {
     data: currentQuestionRes,
     isLoading: isLoadingCurrentQuestion,
     isSuccess: isSuccessCurrentQuestion,
+    isError: isErrorCurrentQuestion,
   } = useCurrentQuestion(match ?? null);
 
   const {
     data: listRescueRes,
     isLoading: isLoadingRescues,
     isSuccess: isSuccessRescues,
+    isError: isErrorRescues,
   } = useListRescues(match ?? null);
 
   const {
     data: listContestantRes,
     isLoading: isLoadingContestants,
     isSuccess: isSuccessContestants,
+    isError: isErrorContestants,
   } = useListContestant(match ?? null);
 
   const {
     data: countContestantRes,
     isLoading: isLoadingCount,
     isSuccess: isSuccessCount,
+    isError: isErrorCount,
   } = useCountContestant(match ?? null);
 
   const {
     data: listQuestionRes,
     isLoading: isLoadingQuestions,
     isSuccess: isSuccessQuestions,
+    isError: isErrorQuestions,
   } = useListQuestion(match ?? null);
 
   const {
     data: screenControlRes,
     isLoading: isLoadingControl,
     isSuccess: isSuccessControl,
+    isError: isErrorControl,
   } = useScreenControl(match ?? null);
 
   // 3. useEffect gọn gàng với isSuccess
@@ -200,8 +209,37 @@ export default function MatchPage() {
     );
   }
 
+  if (
+    isErrorMatch ||
+    isErrorBg ||
+    isErrorCurrentQuestion ||
+    isErrorRescues ||
+    isErrorContestants ||
+    isErrorCount ||
+    isErrorQuestions ||
+    isErrorControl
+  ) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
+        <p className="text-red-500">Đã có lỗi xảy ra khi tải dữ liệu.</p>
+      </Box>
+    );
+  }
+
   return (
     <>
+      {/* Audience Display Component - hiển thị QR hoặc Chart khi được điều khiển */}
+
+      <AudienceDisplayManager
+        matchSlug={match}
+        currentQuestionId={currentQuestion?.id}
+      />
+
       {screenControl?.controlKey === "question" && (
         <div key="question">
           <MatchHeader

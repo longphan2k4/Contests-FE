@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export const useTimer = (initialTime: number, isPaused: boolean) => {
   const [timeLeft, setTimeLeft] = useState<number>(initialTime);
@@ -12,6 +12,7 @@ export const useTimer = (initialTime: number, isPaused: boolean) => {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
     }
+    return () => {}; // Cleanup function to clear the timer
   }, [timeLeft, isPaused]);
 
   return { timeLeft, setTimeLeft };

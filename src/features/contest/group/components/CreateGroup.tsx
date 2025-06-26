@@ -34,7 +34,7 @@ export default function CreateGroup({
   } = useForm<CreateGroupInput>({
     resolver: zodResolver(CreateGroupsSchema),
     defaultValues: {
-      confirmCurrentQuestion: 1,
+      confirmCurrentQuestion: 0,
     },
   });
 
@@ -55,14 +55,10 @@ export default function CreateGroup({
   } = useListMatch(slug ?? null);
 
   useEffect(() => {
-    // Kiểm tra nếu slug có giá trị thì gọi lại hàm refetch để lấy dữ liệu mới
-    if (slug) {
-      refetchMatch();
-      refetchUser();
-    }
-  }, [slug, refetchMatch, refetchUser, isOpen]);
+    refetchMatch();
+    refetchUser();
+  }, [refetchMatch, refetchUser, isOpen]);
 
-  // Memo hóa danh sách trường học để tránh re-render thừa
   const matches = useMemo(() => {
     if (listMatches?.success) {
       return listMatches.data.map((item: any) => ({

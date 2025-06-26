@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Box,
@@ -114,12 +114,10 @@ export default function ListStudent({
   } = useClassSchoolId(schoolId);
 
   useEffect(() => {
-    if (slug) {
-      refetch();
-      refetchSchool();
-      refetchClass();
-    }
-  }, [slug, refetch, refetchSchool, refetchClass, open]);
+    refetch();
+    refetchSchool();
+    refetchClass();
+  }, [refetch, refetchSchool, refetchClass, open]);
 
   const {
     control,

@@ -121,11 +121,11 @@ const ContestHeader: React.FC<ContestHeaderProps> = ({ onToggle }) => {
           </IconButton>
           <Menu
             id="user-menu"
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
             PaperProps={{ sx: { minWidth: isMobile ? 120 : 160 } }}
           >
             <MenuItem
@@ -134,7 +134,12 @@ const ContestHeader: React.FC<ContestHeaderProps> = ({ onToggle }) => {
               onClick={handleMenuClose}
             >
               <AccountCircle fontSize="small" sx={{ mr: 1 }} />
-              Hồ sơ
+              <Link
+                to="/admin"
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                Trang quản trị
+              </Link>
             </MenuItem>
             <Divider />
             <MenuItem onClick={handleLogout}>

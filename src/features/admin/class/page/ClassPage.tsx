@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo, use } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import {
   Box,
   Typography,
@@ -73,6 +73,7 @@ const ClassesPage: React.FC = () => {
     data: schoolData,
     isLoading: isLoadingSchool,
     isError: isErrorSchool,
+    refetch: refetchSchools,
   } = useListSChool();
 
   const { mutate: mutateCreate } = useCreate();
@@ -83,6 +84,11 @@ const ClassesPage: React.FC = () => {
 
   const { mutate: mutateDelete } = useDelete();
   const { mutate: mutateDeleteMany } = useDeleteMany();
+
+  useEffect(() => {
+    refetchClasss();
+    refetchSchools();
+  }, [refetchClasss, refetchSchools]);
 
   useEffect(() => {
     if (ClasssQuery) {

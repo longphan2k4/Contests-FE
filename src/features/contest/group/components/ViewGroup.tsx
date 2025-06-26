@@ -2,6 +2,7 @@ import AppFormDialog from "../../../../components/AppFormDialog";
 import { Box, CircularProgress } from "@mui/material";
 
 import { useGetById } from "../hook/useGroup";
+import { useEffect } from "react";
 
 interface ViewClassProps {
   id: number | null;
@@ -14,7 +15,14 @@ export default function ViewClass({
   isOpen,
   onClose,
 }: ViewClassProps): React.ReactElement {
-  const { data: group, isLoading, isError } = useGetById(id);
+  const { data: group, isLoading, isError, refetch } = useGetById(id);
+
+  useEffect(() => {
+    if (isOpen) {
+      refetch();
+    }
+  }, [isOpen, refetch]);
+
   if (isLoading)
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
@@ -33,7 +41,7 @@ export default function ViewClass({
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Cập nhật ${group?.name}`}
+        title={`Xem nhóm: ${group?.name}`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>

@@ -64,8 +64,6 @@ export const controlValue = {
   start: "start",
   pause: "pause",
   reset: "reset",
-  zoomin: "zoomin",
-  zoomout: "zoomout",
 } as const;
 
 export type ControlValue = (typeof controlValue)[keyof typeof controlValue];
@@ -123,6 +121,8 @@ export type CurrentQuestion = {
   questionMedia: MediaFile[] | string | null;
   intro: string | null;
   correctAnswer: string;
+  questionOrder: number;
+  questionTopicName?: string;
 };
 
 export type ListRescue = {
@@ -163,4 +163,11 @@ export type UpdateSceenControl = {
   controlKey?: ControlKey;
   controlValue?: ControlValue;
   media?: string;
+  value?: string;
+};
+
+export type MediaType = {
+  id: number;
+  name: string | null;
+  videos: string | null;
 };

@@ -1,7 +1,16 @@
 export interface Contestant {
-  registration_number: string;
-  status: 'Đang thi' | 'Xác nhận 1' | 'Xác nhận 2';
+  registrationNumber: string;
+  status: "in_progress" | "confirmed1" | "confirmed2";
 }
+export type MatchInfo = {
+  mockQuestionOrder: number;
+  mockMatchName: string;
+};
 
-export type TabType = 'Đang thi' | 'Xác nhận 1' | 'Xác nhận 2' | 'Đăng xuất';
-export type NotificationType = 'success' | 'error' | 'warning';
+export type RawMatchData = {
+  id: number;
+  name: string;
+  currentQuestion: number;
+};
+
+export type TabType = "Đang thi" | "Xác nhận 1" | "Xác nhận 2" | "Đăng xuất";
