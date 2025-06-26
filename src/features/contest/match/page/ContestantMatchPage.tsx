@@ -37,6 +37,9 @@ import Editecontestant from "../components/contestantMatchPage/EditeContestant";
 import Listcontestant from "../components/contestantMatchPage/ListContestant";
 import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDelete from "../../../../components/Confirm";
+import CreateUser from "../../../admin/user/components/CreateUser";
+import { CreateUser as CreateUserAPI } from "../../../admin/user/service/api";
+import { type CreateUserInput } from "../../../admin/user/types/user.shame";
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 
 import {
@@ -46,7 +49,6 @@ import {
   useDeletes,
   useContestStatus,
   useListRound,
-  useCreates,
 } from "../hook/contestantMatchPage/useContestant";
 import AddIcon from "@mui/icons-material/Add";
 import GroupWorkIcon from "@mui/icons-material/GroupWork";
@@ -83,10 +85,22 @@ const ContestantMatchPage: React.FC = () => {
   const [isConfirmDeleteGroupOpen, setIsConfirmDeleteGroupOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState<{ index: number; name: string; contestantCount: number } | null>(null);
 
+  // Modal tạo trọng tài mới
+  const [isCreateJudgeOpen, setIsCreateJudgeOpen] = useState(false);
+  
+  // Flag để tránh useEffect override local changes
+  const [skipSyncFromAPI, setSkipSyncFromAPI] = useState(false);
+
+  // Function to allow sync from API again (when user wants to refresh or navigate)
+  const allowSyncFromAPI = useCallback(() => {
+    setSkipSyncFromAPI(false);
+  }, []);
+
   // Group management states
   const [groups, setGroups] = useState<{ [key: number]: Contestant[] }>({});
   const [activeGroupTab, setActiveGroupTab] = useState<number>(0);
   const [totalGroups, setTotalGroups] = useState<number>(0);
+  const [hasInitializedGroups, setHasInitializedGroups] = useState<boolean>(false);
 
   // Drag scroll states
   const [isDragging, setIsDragging] = useState(false);
@@ -174,7 +188,15 @@ const ContestantMatchPage: React.FC = () => {
 
   // Xử lý khi có dữ liệu nhóm từ API
   useEffect(() => {
-    if (existingGroups && existingGroups.length > 0) {
+    console.log('Sync effect triggered:', {
+      hasExistingGroups: existingGroups?.length > 0,
+      skipSyncFromAPI,
+      activeGroupTab,
+      hasInitializedGroups
+    });
+    
+    if (existingGroups && existingGroups.length > 0 && !skipSyncFromAPI) {
+      console.log('Syncing data from API...');
       // Chuyển đổi dữ liệu từ API thành format local state
       const convertedGroups: { [key: number]: Contestant[] } = {};
       const convertedJudges: { [groupIndex: number]: JudgeInfo | null } = {};      existingGroups.forEach((group, index) => {
@@ -202,14 +224,23 @@ const ContestantMatchPage: React.FC = () => {
       setGroups(convertedGroups);
       setAssignedJudges(convertedJudges);
       setTotalGroups(existingGroups.length);
-      setActiveGroupTab(0);
+      
+      // Chỉ reset về tab 0 nếu:
+      // 1. Lần đầu tiên khởi tạo nhóm, HOẶC
+      // 2. Tab hiện tại không hợp lệ (vượt quá số nhóm hiện có)
+      if (!hasInitializedGroups || activeGroupTab >= existingGroups.length) {
+        setActiveGroupTab(0);
+      }
+      
+      // Đánh dấu đã khởi tạo nhóm
+      setHasInitializedGroups(true);
 
       // Nếu có nhóm thì chuyển thẳng đến bước 2
       if (isGroupDivisionOpen) {
         setGroupDivisionStep(2);
       }
     }
-  }, [existingGroups, isGroupDivisionOpen]);
+  }, [existingGroups, isGroupDivisionOpen, skipSyncFromAPI, activeGroupTab, hasInitializedGroups]);
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
@@ -255,6 +286,9 @@ const ContestantMatchPage: React.FC = () => {
     setActiveGroupTab(0);
   };
   const distributeContestantsEvenly = useCallback((selectedContestants: Contestant[]) => {
+    // Set flag để tránh useEffect override
+    setSkipSyncFromAPI(true);
+    
     if (selectedMethod === 'byNumberOfGroups' && totalGroups > 0) {
       const newGroups: { [key: number]: Contestant[] } = {};
 
@@ -319,15 +353,89 @@ const ContestantMatchPage: React.FC = () => {
 
       setGroups(newGroups);
     }
+    
+    // Reset flag sau 1 giây
+    setTimeout(() => {
+      setSkipSyncFromAPI(false);
+    }, 1000);
   }, [selectedMethod, totalGroups, maxMembersPerGroup]);
 
-  // Remove contestant from group
-  const removeContestantFromGroup = (groupIndex: number, contestantId: number) => {
-    setGroups(prev => ({
-      ...prev,
-      [groupIndex]: prev[groupIndex].filter(c => c.id !== contestantId)
-    }));
-  };
+  // Remove contestant from group (local only)
+  const removeContestantFromGroup = useCallback((groupIndex: number, contestantId: number) => {
+    console.log('removeContestantFromGroup called:', { groupIndex, contestantId, currentGroups: groups });
+    
+    // Tìm thí sinh để kiểm tra và hiển thị thông tin
+    const currentGroup = groups[groupIndex];
+    if (!currentGroup) {
+      console.error('Group not found:', groupIndex);
+      showToast('Nhóm không tồn tại', 'error');
+      return;
+    }
+
+    const contestant = currentGroup.find(c => c.id === contestantId);
+    if (!contestant) {
+      console.error('Contestant not found in group:', { contestantId, groupIndex, currentGroup });
+      showToast('Thí sinh không tồn tại trong nhóm này', 'error');
+      return;
+    }
+
+    console.log('Removing contestant:', contestant.fullName, 'from group', groupIndex + 1);
+
+    // Set flag để tránh useEffect override trong thời gian dài hơn
+    setSkipSyncFromAPI(true);
+    
+    // Xóa chỉ thí sinh được chỉ định khỏi nhóm được chỉ định
+    setGroups(prevGroups => {
+      const newGroups = { ...prevGroups };
+      const originalLength = newGroups[groupIndex].length;
+      newGroups[groupIndex] = newGroups[groupIndex].filter(c => c.id !== contestantId);
+      
+      console.log('Group updated:', {
+        groupIndex,
+        originalLength,
+        newLength: newGroups[groupIndex].length,
+        removedId: contestantId
+      });
+      
+      return newGroups;
+    });
+    
+    showToast(`Đã xóa tạm thời "${contestant.fullName}" khỏi Nhóm ${groupIndex + 1}`, 'info');
+  }, [groups, showToast]);
+
+  // Remove all contestants from a specific group (local only)
+  const removeAllContestantsFromGroup = useCallback((groupIndex: number) => {
+    console.log('removeAllContestantsFromGroup called:', { groupIndex, currentGroups: groups });
+    
+    const currentGroup = groups[groupIndex];
+    if (!currentGroup || currentGroup.length === 0) {
+      console.warn('Group is empty or not found:', groupIndex);
+      showToast('Nhóm này không có thí sinh nào để xóa', 'warning');
+      return;
+    }
+
+    const contestantCount = currentGroup.length;
+    console.log('Removing all contestants from group:', groupIndex + 1, 'count:', contestantCount);
+
+    // Set flag để tránh useEffect override
+    setSkipSyncFromAPI(true);
+    
+    // Xóa tất cả thí sinh khỏi nhóm được chỉ định
+    setGroups(prevGroups => {
+      const newGroups = { ...prevGroups };
+      newGroups[groupIndex] = [];
+      
+      console.log('All contestants removed from group:', {
+        groupIndex,
+        previousCount: contestantCount,
+        newLength: newGroups[groupIndex].length
+      });
+      
+      return newGroups;
+    });
+    
+    showToast(`Đã xóa tạm thời tất cả ${contestantCount} thí sinh khỏi Nhóm ${groupIndex + 1}`, 'info');
+  }, [groups, showToast]);
 
   // Handle next button click
   const handleNext = () => {
@@ -396,6 +504,7 @@ const ContestantMatchPage: React.FC = () => {
     setNumberOfGroups(0);
     setMaxMembersPerGroup(0);
     setActiveGroupTab(0);
+    setHasInitializedGroups(false); // Reset flag khởi tạo nhóm
 
     // Quay lại bước 1
     setGroupDivisionStep(1);
@@ -478,16 +587,27 @@ const ContestantMatchPage: React.FC = () => {
         );
 
         if (newContestants.length > 0) {
-          setGroups(prev => ({
-            ...prev,
-            [activeGroupTab]: [...(prev[activeGroupTab] || []), ...newContestants]
-          }));
+          console.log('Adding contestants to group:', { activeGroupTab, newContestants: newContestants.length });
+          // Set flag để tránh useEffect override - KHÔNG tự động reset
+          setSkipSyncFromAPI(true);
+          
+          setGroups(prev => {
+            const updated = {
+              ...prev,
+              [activeGroupTab]: [...(prev[activeGroupTab] || []), ...newContestants]
+            };
+            console.log('Groups after adding contestants:', updated);
+            return updated;
+          });
+          
+          // Không reset flag tự động nữa - để user tự quyết định khi nào sync lại
+          showToast(`Đã thêm ${newContestants.length} thí sinh vào Nhóm ${activeGroupTab + 1}`, 'success');
         }
       }
 
       setSelectedIds([]);
     }
-  }, [selectedIds, groupDivisionStep, contestant, groups, activeGroupTab, shouldAutoDistribute]);
+  }, [selectedIds, groupDivisionStep, contestant, groups, activeGroupTab, shouldAutoDistribute, showToast]);
   // Fetch judges when component mounts or when search term changes
   const fetchJudges = useCallback(async (search: string = '') => {
     try {
@@ -674,6 +794,27 @@ const ContestantMatchPage: React.FC = () => {
     }
   }, [matchId, availableJudges, assignedJudges, totalGroups, fetchCurrentGroups, refetchGroups, showToast]);
 
+  // Handle create new judge
+  const handleCreateJudge = useCallback(async (data: CreateUserInput) => {
+    try {
+      await CreateUserAPI(data);
+      showToast(`Tạo trọng tài "${data.username}" thành công`, 'success');
+      
+      // Reload danh sách trọng tài sau khi tạo thành công
+      await fetchJudges('');
+      
+      setIsCreateJudgeOpen(false);
+    } catch (error) {
+      console.error('Error creating judge:', error);
+      let errorMessage = 'Lỗi khi tạo trọng tài mới';
+      if (error && typeof error === 'object' && 'response' in error) {
+        const response = (error as { response?: { data?: { message?: string } } }).response;
+        errorMessage = response?.data?.message || errorMessage;
+      }
+      showToast(errorMessage, 'error');
+    }
+  }, [fetchJudges, showToast]);
+
   // Drag scroll handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     setIsDragging(true);
@@ -832,6 +973,8 @@ const ContestantMatchPage: React.FC = () => {
             variant="outlined"
             startIcon={<GroupWorkIcon />}
             onClick={() => {
+              // Reset flag khi mở/đóng modal để cho phép sync lại dữ liệu
+              allowSyncFromAPI();
               setIsGroupDivisionOpen(!isGroupDivisionOpen);
               // Nếu mở group division lần đầu và đã có nhóm, chuyển đến step 2
               if (!isGroupDivisionOpen && hasGroups) {
@@ -1324,9 +1467,28 @@ const ContestantMatchPage: React.FC = () => {
                   </Typography>
                 )}
               </Box>
-              <Typography variant="subtitle1" fontWeight="medium" sx={{ mb: 2 }}>
-                Quản lý nhóm thí sinh
-              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  Quản lý nhóm thí sinh
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  {skipSyncFromAPI && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        allowSyncFromAPI();
+                        fetchCurrentGroups();
+                        showToast('Đã làm mới dữ liệu từ server', 'info');
+                      }}
+                      sx={{ fontSize: '11px', px: 1.5 }}
+                      title="Làm mới dữ liệu từ server"
+                    >
+                      🔄 Sync
+                    </Button>
+                  )}
+                </Box>
+              </Box>
 
               {/* Current Group Status */}
               <Box sx={{ mb: 2, p: 2, backgroundColor: 'white', borderRadius: 1, border: '1px solid #e0e0e0' }}>
@@ -1380,30 +1542,47 @@ const ContestantMatchPage: React.FC = () => {
                   <Typography variant="subtitle2" fontWeight="medium">
                     Nhóm ({totalGroups})
                   </Typography>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={handleAddNewGroup}
-                    startIcon={<span style={{ fontSize: '14px' }}>+</span>}
-                    sx={{ 
-                      minHeight: 28,
-                      fontSize: '12px',
-                      px: 1.5
-                    }}
-                    disabled={
-                      // Disable nếu tất cả judges đã được assign hoặc không có judge nào
-                      availableJudges.length === 0 || areAllJudgesAssigned()
-                    }
-                    title={
-                      availableJudges.length === 0 
-                        ? "Không có trọng tài nào khả dụng" 
-                        : areAllJudgesAssigned()
-                        ? "Tất cả trọng tài đã được phân nhóm"
-                        : "Thêm nhóm mới"
-                    }
-                  >
-                    Thêm nhóm
-                  </Button>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => setIsCreateJudgeOpen(true)}
+                      startIcon={<span style={{ fontSize: '14px' }}>+</span>}
+                      sx={{ 
+                        minHeight: 28,
+                        fontSize: '12px',
+                        px: 1.5
+                      }}
+                      title="Thêm trọng tài mới"
+                    >
+                      Trọng tài
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={handleAddNewGroup}
+                      startIcon={<span style={{ fontSize: '14px' }}>+</span>}
+                      sx={{ 
+                        minHeight: 28,
+                        fontSize: '12px',
+                        px: 1.5
+                      }}
+                      disabled={
+                        // Disable nếu tất cả judges đã được assign hoặc không có judge nào
+                        availableJudges.length === 0 || areAllJudgesAssigned()
+                      }
+                      title={
+                        availableJudges.length === 0 
+                          ? "Không có trọng tài nào khả dụng" 
+                          : areAllJudgesAssigned()
+                          ? "Tất cả trọng tài đã được phân nhóm"
+                          : "Thêm nhóm mới"
+                      }
+                    >
+                      Nhóm
+                    </Button>
+                  </Box>
                 </Box>
                 
                 {/* Scrollable group tabs */}
@@ -1420,7 +1599,7 @@ const ContestantMatchPage: React.FC = () => {
                       cursor: 'grabbing'
                     },
                     '&::-webkit-scrollbar': {
-                      height: '4px',
+                      height: '3px',
                     },
                     '&::-webkit-scrollbar-track': {
                       backgroundColor: 'rgba(0,0,0,0.1)',
@@ -1448,7 +1627,7 @@ const ContestantMatchPage: React.FC = () => {
                       key={index}
                       sx={{
                         minWidth: 120,
-                        p: 1.5,
+                        p: 1,
                         borderRadius: 1,
                         border: activeGroupTab === index ? '2px solid #1976d2' : '1px solid #e0e0e0',
                         backgroundColor: activeGroupTab === index ? '#e3f2fd' : 'white',
@@ -1503,7 +1682,10 @@ const ContestantMatchPage: React.FC = () => {
                       
                       {/* Nội dung tab nhóm */}
                       <Box 
-                        onClick={() => setActiveGroupTab(index)}
+                        onClick={() => {
+                          // Không reset flag khi chuyển tab để giữ local changes
+                          setActiveGroupTab(index);
+                        }}
                         sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1616,44 +1798,66 @@ const ContestantMatchPage: React.FC = () => {
               {/* Active Group Content */}
               <Box sx={{ flex: 1, overflow: 'auto' }}>
                 {groups[activeGroupTab]?.length > 0 ? (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {groups[activeGroupTab].map((contestant) => (
-                      <Box
-                        key={contestant.id}
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 2,
-                          p: 2,
-                          backgroundColor: 'white',
-                          borderRadius: 1,
-                          border: '1px solid #e0e0e0',
+                  <Box>
+                    {/* Clear All Button */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Thí sinh trong nhóm ({groups[activeGroupTab]?.length || 0})
+                      </Typography>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        onClick={() => removeAllContestantsFromGroup(activeGroupTab)}
+                        sx={{ 
+                          minHeight: 28,
+                          fontSize: '11px',
+                          px: 1.5
                         }}
                       >
-                        <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>
-                          {contestant.fullName?.charAt(0)?.toUpperCase()}
-                        </Avatar>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography variant="body2" fontWeight="medium">
-                            {contestant.fullName}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {contestant.roundName} • {
-                              contestant.status?.trim() === 'compete' ? 'Thi đấu' :
-                                contestant.status === 'eliminate' ? 'Bị loại' : 'Qua vòng'
-                            }
-                          </Typography>
-                        </Box>
-                        <Button
-                          size="small"
-                          color="error"
-                          onClick={() => removeContestantFromGroup(activeGroupTab, contestant.id)}
-                          sx={{ minWidth: 'auto', p: 0.5 }}
+                        Xóa tất cả
+                      </Button>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {groups[activeGroupTab].map((contestant) => (
+                        <Box
+                          key={contestant.id}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2,
+                            p: 2,
+                            backgroundColor: 'white',
+                            borderRadius: 1,
+                            border: '1px solid #e0e0e0',
+                          }}
                         >
-                          ✕
-                        </Button>
-                      </Box>
-                    ))}
+                          <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>
+                            {contestant.fullName?.charAt(0)?.toUpperCase()}
+                          </Avatar>
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" fontWeight="medium">
+                              {contestant.fullName}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {contestant.roundName} • {
+                                contestant.status?.trim() === 'compete' ? 'Thi đấu' :
+                                  contestant.status === 'eliminate' ? 'Bị loại' : 'Qua vòng'
+                              }
+                            </Typography>
+                          </Box>
+                          <Button
+                            size="small"
+                            color="error"
+                            onClick={() => removeContestantFromGroup(activeGroupTab, contestant.id)}
+                            sx={{ minWidth: 'auto', p: 0.5 }}
+                          >
+                            ✕
+                          </Button>
+                        </Box>
+                      ))}
+                    </Box>
                   </Box>
                 ) : (<Box sx={{
                   textAlign: 'center',
@@ -1778,6 +1982,9 @@ const ContestantMatchPage: React.FC = () => {
                   //   return;
                   // }
 
+                  // Reset flag để cho phép sync từ API khi hoàn thành
+                  allowSyncFromAPI();
+                  
                   // Prepare data for API call
                   const groupsData = Object.entries(groups)
                     .filter(([groupIndex]) => assignedJudges[parseInt(groupIndex)])
@@ -1822,6 +2029,13 @@ const ContestantMatchPage: React.FC = () => {
           </Box>
         </Box>
       )}
+
+      {/* Create Judge Modal */}
+      <CreateUser
+        isOpen={isCreateJudgeOpen}
+        onClose={() => setIsCreateJudgeOpen(false)}
+        onSubmit={handleCreateJudge}
+      />
 
       {/* Confirm Back Dialog */}
       <ConfirmDelete
