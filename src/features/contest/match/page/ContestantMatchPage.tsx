@@ -98,6 +98,7 @@ const ContestantMatchPage: React.FC = () => {
 
   // Flag để tránh useEffect override local changes
   const [skipSyncFromAPI, setSkipSyncFromAPI] = useState(false);
+  const [isLocalMode, setIsLocalMode] = useState(false); // Phân biệt local vs API mode
 
   // Function to allow sync from API again (when user wants to refresh or navigate)
   const allowSyncFromAPI = useCallback(() => {
@@ -262,13 +263,15 @@ const ContestantMatchPage: React.FC = () => {
     console.log('Sync effect triggered:', {
       hasExistingGroups: existingGroups?.length > 0,
       skipSyncFromAPI,
+      isLocalMode,
       activeGroupTab,
-      hasInitializedGroups
+      hasInitializedGroups,
+      groupDivisionStep
     });
 
-    // Skip sync nếu đang thao tác local
-    if (skipSyncFromAPI) {
-      console.log('Skipping sync from API due to local operations');
+    // Skip sync nếu đang thao tác local hoặc ở local mode
+    if (skipSyncFromAPI || isLocalMode) {
+      console.log('Skipping sync from API due to local operations or local mode');
       return;
     }
 
@@ -276,7 +279,6 @@ const ContestantMatchPage: React.FC = () => {
       console.log('Syncing data from API...');
       
       // Chuyển đổi dữ liệu từ API thành format local state
-      // LUÔN giữ nguyên thứ tự từ API (existingGroups đã được sort theo created_at trên server)
       const convertedGroups: { [key: number]: Contestant[] } = {};
       const convertedJudges: { [groupIndex: number]: JudgeInfo | null } = {};
       
@@ -301,59 +303,42 @@ const ContestantMatchPage: React.FC = () => {
       // Cập nhật state
       setGroups(convertedGroups);
       
-      // Đối với assignedJudges, chỉ cập nhật những nhóm chưa có thay đổi local
-      // hoặc những nhóm mới từ server (preserve local judge changes)
-      setAssignedJudges(prevAssignedJudges => {
-        const newAssignedJudges = { ...prevAssignedJudges };
-        
-        existingGroups.forEach((group, index) => {
-          // Chỉ cập nhật judge nếu:
-          // 1. Nhóm này chưa có judge được assign local, HOẶC
-          // 2. Judge hiện tại trong local state khác với judge từ server (có thể server đã update)
-          const currentLocalJudge = prevAssignedJudges[index];
-          const serverJudge = group.judge;
-          
-          if (!currentLocalJudge || currentLocalJudge.id === serverJudge.id) {
-            // Safe to update từ server
-            newAssignedJudges[index] = serverJudge;
-          }
-          // Nếu có local change (currentLocalJudge.id !== serverJudge.id), giữ nguyên local change
-        });
-        
-        return newAssignedJudges;
-      });
+      // Cập nhật assignedJudges
+      setAssignedJudges(convertedJudges);
       
       setTotalGroups(existingGroups.length);
 
-      // Chỉ reset về tab 0 nếu:
-      // 1. Lần đầu tiên khởi tạo nhóm, HOẶC
-      // 2. Tab hiện tại không hợp lệ (vượt quá số nhóm hiện có)
-      if (!hasInitializedGroups || activeGroupTab >= existingGroups.length) {
+      // Chỉ reset về tab 0 nếu tab hiện tại không hợp lệ
+      if (activeGroupTab >= existingGroups.length) {
         setActiveGroupTab(0);
       }
 
-      // Đánh dấu đã khởi tạo nhóm
+      // Đánh dấu đã khởi tạo nhóm và chuyển sang API mode
       setHasInitializedGroups(true);
+      setIsLocalMode(false); // Chuyển sang API mode
 
       // Nếu có nhóm thì chuyển thẳng đến bước 2
       if (isGroupDivisionOpen) {
         setGroupDivisionStep(2);
       }
     } else {
-      // Không có nhóm nào từ API - reset về trạng thái ban đầu
-      console.log('No groups from API - resetting to initial state');
-      setGroups({});
-      setAssignedJudges({});
-      setTotalGroups(0);
-      setActiveGroupTab(0);
-      setHasInitializedGroups(false);
-      
-      // Reset về bước 1 nếu đang mở group division
-      if (isGroupDivisionOpen) {
-        setGroupDivisionStep(1);
+      // Không có nhóm nào từ API - chỉ reset nếu không ở local mode
+      console.log('No groups from API - checking if should reset');
+      if (!isLocalMode) {
+        console.log('Resetting to initial state');
+        setGroups({});
+        setAssignedJudges({});
+        setTotalGroups(0);
+        setActiveGroupTab(0);
+        setHasInitializedGroups(false);
+        
+        // Reset về bước 1 nếu đang mở group division
+        if (isGroupDivisionOpen) {
+          setGroupDivisionStep(1);
+        }
       }
     }
-  }, [existingGroups, isGroupDivisionOpen, skipSyncFromAPI, hasInitializedGroups, activeGroupTab]);
+  }, [existingGroups, isGroupDivisionOpen, skipSyncFromAPI, isLocalMode, hasInitializedGroups, activeGroupTab, groupDivisionStep]);
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
@@ -389,18 +374,41 @@ const ContestantMatchPage: React.FC = () => {
       requiredGroupCount = 4; // Hoặc một con số bạn cho phép người dùng nhập
     }
 
-    // Luôn tạo lại cấu trúc nhóm mới khi khởi tạo từ bước 1
+    console.log('Initializing local groups:', { requiredGroupCount, selectedMethod });
+
+    // Chuyển sang local mode và tạo cấu trúc nhóm local
+    setIsLocalMode(true);
+    setSkipSyncFromAPI(true); // Tránh API sync override
+    
     setTotalGroups(requiredGroupCount);
     const initialGroups: { [key: number]: Contestant[] } = {};
+    const initialJudges: { [groupIndex: number]: JudgeInfo | null } = {};
+    
     for (let i = 0; i < requiredGroupCount; i++) {
       initialGroups[i] = [];
+      initialJudges[i] = null; // Khởi tạo null cho tất cả judges
     }
+    
     setGroups(initialGroups);
+    setAssignedJudges(initialJudges);
     setActiveGroupTab(0);
+    setHasInitializedGroups(true);
+    
+    console.log('Local groups initialized:', { totalGroups: requiredGroupCount, mode: 'local' });
   };
   const distributeContestantsEvenly = useCallback((selectedContestants: Contestant[]) => {
-    // Set flag để tránh useEffect override
-    setSkipSyncFromAPI(true);
+    console.log('Distributing contestants evenly:', { 
+      selectedMethod, 
+      totalGroups, 
+      maxMembersPerGroup, 
+      contestantCount: selectedContestants.length,
+      isLocalMode 
+    });
+
+    // Trong local mode, không cần set flag vì đã được set từ trước
+    if (!isLocalMode) {
+      setSkipSyncFromAPI(true);
+    }
 
     if (selectedMethod === 'byNumberOfGroups' && totalGroups > 0) {
       const newGroups: { [key: number]: Contestant[] } = {};
@@ -441,18 +449,22 @@ const ContestantMatchPage: React.FC = () => {
       const actualGroupCount = currentGroupIndex + 1;
       setTotalGroups(actualGroupCount);
 
-      // Initialize any missing groups for tabs display
+      // Initialize any missing groups for tabs display and judges
+      const newJudges: { [groupIndex: number]: JudgeInfo | null } = {};
       for (let i = 0; i < actualGroupCount; i++) {
         if (!newGroups[i]) {
           newGroups[i] = [];
         }
+        newJudges[i] = assignedJudges[i] || null;
       }
 
       setGroups(newGroups);
+      setAssignedJudges(newJudges);
     } else if (selectedMethod === 'random' && totalGroups > 0) {
       // Shuffle contestants randomly
       const shuffledContestants = [...selectedContestants].sort(() => Math.random() - 0.5);
       const newGroups: { [key: number]: Contestant[] } = {};
+      
       // Initialize empty groups
       for (let i = 0; i < totalGroups; i++) {
         newGroups[i] = [];
@@ -467,10 +479,12 @@ const ContestantMatchPage: React.FC = () => {
       setGroups(newGroups);
     }
 
-    // Không reset flag tự động - để user tự quyết định khi nào sync lại
-    // Điều này tránh việc useEffect sync từ API ghi đè lên thay đổi local
-    console.log('🚫 SkipSyncFromAPI flag set to prevent API override after distribution');
-  }, [selectedMethod, totalGroups, maxMembersPerGroup]);
+    console.log('Distribution completed:', { 
+      mode: isLocalMode ? 'local' : 'api',
+      totalGroups,
+      groupSizes: Object.values(groups).map(g => g.length)
+    });
+  }, [selectedMethod, totalGroups, maxMembersPerGroup, isLocalMode, assignedJudges, groups]);
 
   // Redistribute contestants evenly across all groups (cân bằng số lượng)
   const redistributeContestantsEvenly = useCallback(() => {
@@ -691,20 +705,30 @@ const ContestantMatchPage: React.FC = () => {
   };
 
   const resetGroupDivision = useCallback(() => {
+    console.log('Resetting group division - full reset');
+    
     // Đặt lại tất cả state liên quan đến việc chia nhóm
     setGroups({});
+    setAssignedJudges({});
     setTotalGroups(0);
     setSelectedMethod('');
     setNumberOfGroups(0);
     setMaxMembersPerGroup(0);
     setActiveGroupTab(0);
-    setHasInitializedGroups(false); // Reset flag khởi tạo nhóm
+    setHasInitializedGroups(false);
+    setSelectedIds([]);
+
+    // Reset mode flags
+    setIsLocalMode(false);
+    setSkipSyncFromAPI(false);
 
     // Quay lại bước 1
     setGroupDivisionStep(1);
 
     // Đóng dialog sau khi thực hiện
     setIsConfirmBackOpen(false);
+    
+    console.log('Group division reset completed - back to step 1');
   }, []);
 
   // const handeDeletes = (ids: DeleteContestanteInput) => {
@@ -921,25 +945,70 @@ const ContestantMatchPage: React.FC = () => {
 
   // Handle judge assignment
   const handleJudgeAssign = (groupIndex: number, judge: JudgeInfo | null) => {
-    console.log('Judge assignment:', { groupIndex, judge: judge?.username });
+    console.log('Judge assignment:', { groupIndex, judge: judge?.username, isLocalMode });
     
-    // Set flag để tránh useEffect sync ghi đè thay đổi local
-    setSkipSyncFromAPI(true);
+    // Trong local mode, không cần set skipSyncFromAPI vì đã được set sẵn
+    if (!isLocalMode) {
+      // Trong API mode, set flag để tránh useEffect sync ghi đè thay đổi local
+      setSkipSyncFromAPI(true);
+      
+      // Cho phép sync lại sau 3 giây (đủ thời gian để user thao tác)
+      setTimeout(() => {
+        setSkipSyncFromAPI(false);
+      }, 3000);
+    }
     
     setAssignedJudges(prev => ({
       ...prev,
       [groupIndex]: judge
     }));
-    
-    // Cho phép sync lại sau 3 giây (đủ thời gian để user thao tác)
-    setTimeout(() => {
-      setSkipSyncFromAPI(false);
-    }, 3000);
   };
 
   // Handle adding new group
   const handleAddNewGroup = useCallback(async () => {
     try {
+      console.log('Adding new group:', { isLocalMode, totalGroups });
+
+      if (isLocalMode) {
+        // Local mode: chỉ tạo nhóm local, không gọi API
+        const newGroupIndex = totalGroups;
+        
+        // Kiểm tra có trọng tài nào chưa được assign không (local)
+        const assignedJudgeIds = Object.values(assignedJudges)
+          .filter(judge => judge !== null)
+          .map(judge => judge!.id);
+
+        const unassignedJudges = availableJudges.filter(judge =>
+          !assignedJudgeIds.includes(judge.id)
+        );
+
+        if (unassignedJudges.length === 0) {
+          showToast('Không có trọng tài nào khả dụng để tạo nhóm mới', 'warning');
+          return;
+        }
+
+        // Lấy trọng tài đầu tiên chưa được assign (trong local mode)
+        const selectedJudge = unassignedJudges[0];
+        
+        // Cập nhật local state
+        setTotalGroups(prev => prev + 1);
+        setGroups(prev => ({
+          ...prev,
+          [newGroupIndex]: []
+        }));
+        setAssignedJudges(prev => ({
+          ...prev,
+          [newGroupIndex]: selectedJudge
+        }));
+
+        // Chuyển đến tab nhóm mới
+        setActiveGroupTab(newGroupIndex);
+
+        showToast(`Tạo Nhóm ${newGroupIndex + 1} thành công (local)`, 'success');
+        return;
+      }
+
+      // API mode: tạo nhóm thực sự trong database
       if (!matchId) {
         showToast('Không tìm thấy ID trận đấu', 'error');
         return;
@@ -1001,7 +1070,7 @@ const ContestantMatchPage: React.FC = () => {
       }
       showToast(errorMessage, 'error');
     }
-  }, [matchId, availableJudges, assignedJudges, totalGroups, fetchCurrentGroups, refetchGroups, showToast]);
+  }, [isLocalMode, matchId, availableJudges, assignedJudges, totalGroups, fetchCurrentGroups, refetchGroups, showToast]);
 
   // Handle create new judge
   const handleCreateJudge = useCallback(async (data: CreateUserInput) => {
@@ -1122,6 +1191,13 @@ const ContestantMatchPage: React.FC = () => {
   // Handle double click to edit group name
   const handleGroupNameDoubleClick = useCallback((groupIndex: number, e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Chỉ cho phép đổi tên trong API mode (khi đã có nhóm thực trong DB)
+    if (isLocalMode) {
+      showToast('Không thể đổi tên nhóm trong chế độ tạm thời. Vui lòng hoàn thành việc chia nhóm trước.', 'warning');
+      return;
+    }
+    
     const group = existingGroups?.[groupIndex];
     if (!group) return;
     
@@ -1134,7 +1210,7 @@ const ContestantMatchPage: React.FC = () => {
         editingInputRef.current.select();
       }
     }, 0);
-  }, [existingGroups]);
+  }, [existingGroups, isLocalMode, showToast]);
 
   // Handle cancel edit group name
   const handleCancelEditGroupName = useCallback(() => {
@@ -1247,7 +1323,8 @@ const ContestantMatchPage: React.FC = () => {
       setMaxMembersPerGroup(0);
       setShouldAutoDistribute(false);
       
-      // QUAN TRỌNG: Reset flag để cho phép sync từ API sau này
+      // Reset mode flags
+      setIsLocalMode(false);
       setSkipSyncFromAPI(false);
       
       // Refresh data từ server để đảm bảo consistency (chạy bất đồng bộ)
@@ -1731,10 +1808,21 @@ const ContestantMatchPage: React.FC = () => {
               {isLoadingGroups && (
                 <CircularProgress size={16} />
               )}
+              {/* Mode indicator */}
+              {isLocalMode && (
+                <Chip 
+                  label="Chế độ tạm thời" 
+                  size="small" 
+                  color="warning" 
+                  variant="outlined"
+                  title="Đang tạo nhóm tạm thời. Nhấn 'Hoàn thành' để lưu vào database."
+                />
+              )}
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               Bước {groupDivisionStep} / 2
-              {hasGroups && !isLoadingGroups && " • Đã có nhóm"}
+              {hasGroups && !isLoadingGroups && !isLocalMode && " • Đã có nhóm"}
+              {isLocalMode && " • Đang tạo nhóm tạm thời"}
             </Typography>
           </Box>{/* Step 1: Choose Methods */}
           {groupDivisionStep === 1 && (
@@ -2467,7 +2555,10 @@ const ContestantMatchPage: React.FC = () => {
               <Button
                 variant="contained"
                 color="success"
-                disabled={Object.values(assignedJudges).some(judge => judge === null)} onClick={async () => {
+                disabled={Object.values(assignedJudges).some(judge => judge === null)} 
+                onClick={async () => {
+                  console.log('Hoàn thành button clicked:', { isLocalMode, totalGroups });
+
                   // Validation: Check if all groups have judges assigned
                   const unassignedGroups = Object.entries(assignedJudges)
                     .filter(([, judge]) => judge === null)
@@ -2478,18 +2569,10 @@ const ContestantMatchPage: React.FC = () => {
                     return;
                   }
 
-                  // Check if all groups have contestants
-                  // const emptyGroups = Object.entries(groups)
-                  //   .filter(([, contestants]) => contestants.length === 0)
-                  //   .map(([groupIdx]) => parseInt(groupIdx) + 1);
-
-                  // if (emptyGroups.length > 0) {
-                  //   showToast(`Vui lòng thêm thí sinh vào nhóm: ${emptyGroups.join(', ')}`, 'warning');
-                  //   return;
-                  // }
-
-                  // Reset flag để cho phép sync từ API khi hoàn thành
-                  allowSyncFromAPI();
+                  if (!matchId) {
+                    showToast('Không tìm thấy ID trận đấu', 'error');
+                    return;
+                  }
 
                   // Prepare data for API call
                   const groupsData = Object.entries(groups)
@@ -2500,26 +2583,27 @@ const ContestantMatchPage: React.FC = () => {
                       contestantIds: contestants.map(c => c.id)
                     }));
 
-                  // Kiểm tra xem có nhóm nào chưa có trọng tài không
-                  const groupsWithoutJudge = Object.keys(groups).filter(groupIndex =>
-                    !assignedJudges[parseInt(groupIndex)]
-                  );
-
-                  if (groupsWithoutJudge.length > 0) {
-                    showToast(`Vui lòng chọn trọng tài cho nhóm: ${groupsWithoutJudge.map(idx => parseInt(idx) + 1).join(', ')}`, 'warning');
-                    return;
-                  }
+                  console.log('Submitting groups data:', groupsData);
 
                   try {
-                    if (matchId) {
-                      await GroupDivisionService.divideGroups(matchId, { groups: groupsData });
-                      showToast('Chia nhóm thành công!', 'success');
-                      // Refetch groups để cập nhật dữ liệu
+                    // Gọi API để lưu tất cả nhóm vào database
+                    await GroupDivisionService.divideGroups(matchId, { groups: groupsData });
+                    
+                    // Chuyển sang API mode và cho phép sync từ API
+                    setIsLocalMode(false);
+                    setSkipSyncFromAPI(false);
+                    
+                    showToast('Chia nhóm thành công!', 'success');
+                    
+                    // Refetch groups để cập nhật dữ liệu từ server
+                    setTimeout(() => {
                       refetchGroups();
-                    } else {
-                      showToast('Không tìm thấy ID trận đấu', 'error');
-                    }
+                      fetchCurrentGroups();
+                    }, 500);
+                    
+                    console.log('Successfully switched from local mode to API mode');
                   } catch (error) {
+                    console.error('Error dividing groups:', error);
                     let errorMessage = 'Lỗi khi chia nhóm';
                     if (error && typeof error === 'object' && 'response' in error) {
                       const response = (error as { response?: { data?: { message?: string } } }).response;
