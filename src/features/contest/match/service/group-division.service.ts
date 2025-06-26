@@ -92,6 +92,14 @@ export interface DivideGroupsRequest {
   }>;
 }
 
+export interface DeleteGroupsResponse {
+  success: boolean;
+  messages: Array<{
+    status: 'success' | 'error';
+    msg: string;
+  }>;
+}
+
 export class GroupDivisionService {
   private static baseUrl = '/group-division';
 
@@ -202,5 +210,15 @@ export class GroupDivisionService {
    */
   static async deleteGroup(groupId: number): Promise<void> {
     await axiosInstance.delete(`/group/${groupId}`);
+  }
+
+  /**
+   * Xóa tất cả nhóm theo danh sách ID (hard reset)
+   */
+  static async deleteAllGroups(groupIds: number[]): Promise<DeleteGroupsResponse> {
+    const response = await axiosInstance.post('/group/delete-many', {
+      ids: groupIds
+    });
+    return response.data;
   }
 }

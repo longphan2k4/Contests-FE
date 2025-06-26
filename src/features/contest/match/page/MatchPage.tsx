@@ -115,7 +115,7 @@ const MatchPage: React.FC = () => {
   const handeDeletes = (ids: DeleteMatchInput) => {
     mutateDeletes(ids, {
       onSuccess: data => {
-        data.messages.forEach((item: any) => {
+        data.messages.forEach((item: { status: string; msg: string }) => {
           if (item.status === "error") {
             showToast(item.msg, "error");
           } else {
@@ -138,9 +138,10 @@ const MatchPage: React.FC = () => {
           showToast(`Thêm trận đấu thành công`, "success");
           refetchs();
         },
-        onError: (err: any) => {
-          if (err.response?.data?.message) {
-            showToast(err.response?.data?.message, "error"); // nên là "error" thay vì "success"
+        onError: (err: unknown) => {
+          const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+          if (message) {
+            showToast(message, "error"); // nên là "error" thay vì "success"
           }
         },
       }
@@ -156,9 +157,9 @@ const MatchPage: React.FC = () => {
             showToast(`Cập nhật trận đấu thành công`, "success");
             refetchs();
           },
-          onError: (err: any) => {
-            if (err.response?.data?.message)
-              showToast(err.response?.data?.message, "error");
+          onError: (err: unknown) => {
+            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            if (message) showToast(message, "error");
           },
         }
       );
@@ -172,8 +173,9 @@ const MatchPage: React.FC = () => {
         refetchs();
         setSelectedId(null);
       },
-      onError: (err: any) => {
-        showToast(err.response?.data?.message, "error");
+      onError: (err: unknown) => {
+        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+        if (message) showToast(message, "error");
       },
     });
   }, []);
@@ -185,8 +187,9 @@ const MatchPage: React.FC = () => {
         showToast(`Xóa trận đấu học thành công`);
         refetchs();
       },
-      onError: (error: any) => {
-        showToast(error.response?.data?.message, "error");
+      onError: (error: unknown) => {
+        const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+        if (message) showToast(message, "error");
       },
     });
   }, []);

@@ -76,7 +76,7 @@ export default function EditeMatch({
   // Memo hóa danh sách trường học để tránh re-render thừa
   const round = useMemo(() => {
     if (listRound?.success) {
-      return listRound.data.map((item: any) => ({
+      return listRound.data.map((item: { id: number; name: string }) => ({
         label: item.name,
         value: item.id,
       }));
@@ -87,7 +87,7 @@ export default function EditeMatch({
   // Memo hóa danh sách trường học để tránh re-render thừa
   const questionPackage = useMemo(() => {
     if (listQuestionPackage?.success) {
-      return listQuestionPackage.data.map((item: any) => ({
+      return listQuestionPackage.data.map((item: { id: number; name: string }) => ({
         label: item.name,
         value: item.id,
       }));
@@ -97,7 +97,7 @@ export default function EditeMatch({
 
   const status = useMemo(() => {
     if (listStatus?.success && Array.isArray(listStatus.data.options)) {
-      return listStatus.data.options.map((item: any) => ({
+      return listStatus.data.options.map((item: { label: string; value: string }) => ({
         label: item.label,
         value: item.value,
       }));
