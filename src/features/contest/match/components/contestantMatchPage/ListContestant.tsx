@@ -42,8 +42,8 @@ export default function Listcontestant({
     },
     { field: "fullName", headerName: "Họ và tên", flex: 1.5 },
     { field: "studentCode", headerName: "Mã SV", flex: 1 },
-    { field: "schoolName", headerName: "Trường", flex: 1.5 },
-    { field: "className", headerName: "Lớp", flex: 1 },
+    // { field: "schoolName", headerName: "Trường", flex: 1.5 },
+    // { field: "className", headerName: "Lớp", flex: 1 },
     { field: "roundName", headerName: "Vòng đấu", flex: 1 },
     {
       field: "groupName",

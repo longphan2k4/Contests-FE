@@ -25,6 +25,8 @@ import {
     GetAllSutent,
 } from "../../../contestant/service/api";
 
+import { contestantMatchApi } from "../../service/contestant-match.api";
+
 export const useGetAll = (
     filter: ContestantQueryInput,
     slug: string | null
@@ -63,6 +65,29 @@ export const useGetById = (id: number | null) => {
         queryKey: ["contestants", id],
         queryFn: () => GetById(id),
         enabled: !!id,
+    });
+};
+
+export const useGetByIdAndContestSlug = (id: number, matchId: number) => {
+    return useQuery({
+        queryKey: ["contestants", id, matchId],
+        queryFn: () => contestantMatchApi.getContestantInMatch(id, matchId),
+        enabled: !!id && !!matchId,
+        retry: false, // Không retry khi thí sinh không có trong match
+        throwOnError: false, // Không throw error, return undefined thay vì
+    });
+};
+
+// Lấy thông tin thí sinh với nhóm trong trận đấu hiện tại
+export const useGetContestantWithGroups = ( 
+   contestantId: number,
+    contestSlug: string,
+    matchId: number
+) => {
+    return useQuery({
+        queryKey: ["contestant-with-groups", contestantId, contestSlug, matchId],
+        queryFn: () => contestantMatchApi.getContestantWithGroups(contestantId, contestSlug, matchId),
+        enabled: !!contestantId && !!matchId && !!contestSlug,
     });
 };
 

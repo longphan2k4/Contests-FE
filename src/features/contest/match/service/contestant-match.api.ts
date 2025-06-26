@@ -24,6 +24,25 @@ export const contestantMatchApi = {
     return response.data;
   },
 
+  //lấy chi tiết thí sinh trong trận đấu : /contestant/53/match/2
+  getContestantInMatch: async (contestantId: number, matchId: number) => {
+    const response = await axiosInstance.get(`/contestant/${contestantId}/match/${matchId}`);
+    return response.data.data; // Trả về data.data để lấy đúng cấu trúc dữ liệu
+  },
+
+  // lấy thông tin thí sinh với nhóm trong trận đấu hiện tại: /:id/contest/:slug/match/:matchId/with-groups
+  getContestantWithGroups: async (
+    contestantId: number,
+    contestSlug: string,
+    matchId: number
+  ) => {
+    const response = await axiosInstance.get(
+      `/contestant/${contestantId}/contest/${contestSlug}/match/${matchId}/with-groups`
+    );
+    return response.data.data; // Trả về data.data để lấy đúng cấu trúc dữ liệu
+  },
+  
+
   // Lấy danh sách trận đấu
   getMatches: async (contestSlug: string, roundId?: number) => {
     const params = roundId ? { roundId } : {};
