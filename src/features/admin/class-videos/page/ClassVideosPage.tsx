@@ -14,39 +14,36 @@ import {
 } from "@mui/material";
 import { Button } from "@mui/material";
 import { Pagination } from "@mui/material";
-
-import CreateAward from "../components/CreateAward";
-import ViewAward from "../components/ViewAward";
-import EditAward from "../components/EditAward";
-import AwardList from "../components/AwardList";
+import { useParams } from "react-router-dom";
+import CreateClassVideo from "../components/CreateClassVideo";
+import ViewClassVideo from "../components/ViewClassVideo";
+import EditClassVideo from "../components/EditClassVideo";
+import ClassVideoList from "../components/ClassVideoList";
 import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDeleteMany from "../../../../components/Confirm";
 import ConfirmDelete from "../../../../components/Confirm";
-//import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
-import { useParams } from "react-router-dom";
-import { useAwards } from "../hook/useAwards";
-import { useCreateAward } from "../hook/useCreate";
+
+import { useClassVideos } from "../hook/useClassVideos";
+import { useCreateClassVideo } from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
-//import { useActive } from "../hook/useActive";
 import { useDeleteMany } from "../hook/useDeleteMany";
 import { useDelete } from "../hook/useDelete";
 import AddIcon from "@mui/icons-material/Add";
 
 import {
-  type Award,
-  type CreateAwardInput,
-  type UpdateAwardInput,
-  type AwardQuery,
+  type ClassVideo,
+  type CreateClassVideoInput,
+  type UpdateClassVideoInput,
+  type ClassVideoQuery,
   type pagination,
-  type deleteAwardsType,
-} from "../types/award.shame";
+  type deleteClassVideosType,
+} from "../types/class-video.shame";
 import SearchIcon from "@mui/icons-material/Search";
 
-const AwardsPage: React.FC = () => {
+const ClassVideos: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  
-  const [awards, setAwards] = useState<Award[]>([]);
-  const [selectedAwardId, setSelectedAwardId] = useState<number | null>(null);
+  const [classVideos, setclassVideos] = useState<ClassVideo[]>([]);
+  const [selectedClassVideoId, setSelectedClassVideoId] = useState<number | null>(null);
   const [pagination, setPagination] = useState<pagination>({});
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -55,112 +52,110 @@ const AwardsPage: React.FC = () => {
   const [isConfirmDeleteMany, setIsConfirmDeleteMany] = useState(false);
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
 
-  const [filter, setFilter] = useState<AwardQuery>({});
-  const [selectedAwardIds, setSelectedAwardIds] = useState<number[]>([]);
-  const { showToast } = useToast();
-  const {
-    data: awardsQuery,
-    isLoading: isAwardsLoading,
-    isError: isAwardsError,
-    refetch: refetchAwards,
-  } = useAwards(slug || '', filter);
+  const [filter, setFilter] = useState<ClassVideoQuery>({});
+  const [selectedClassVideoIds, setSelectedClassVideoIds] = useState<number[]>([]);
 
-  const { mutate: mutateCreate } = useCreateAward(slug || '');
+  const { showToast } = useToast();
+
+  const {
+    data: classVideosQuery,
+    isLoading: isClassVideosLoading,
+    isError: isClassVideosError,
+    refetch: refetchClassVideos,
+  } = useClassVideos(slug || '',filter);
+
+  const { mutate: mutateCreate } = useCreateClassVideo();
 
   const { mutate: mutateUpdate } = useUpdate();
-
-  //const { mutate: mutateActive } = useActive();
 
   const { mutate: mutateDeleteMany } = useDeleteMany();
 
   const { mutate: mutateDelete } = useDelete();
 
   useEffect(() => {
-    if (awardsQuery) {
-      setAwards(awardsQuery?.data);
-      setPagination(awardsQuery?.data.pagination);
+    if (classVideosQuery) {
+      setclassVideos(classVideosQuery.data);
+      setPagination(classVideosQuery.data.pagination);
     }
-  }, [awardsQuery]);
+  }, [classVideosQuery]);
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
 
-  // const toggleActive = useCallback((id: number) => {
-  //   mutateActive(
-  //     { id: id },
-  //     {
-  //       onSuccess: data => {
-  //         showToast(`Cập nhật trạng thái thành công`, "success");
-
-  //         refetchAwards();
-  //         setSelectedAwardId(null);
-  //       },
-  //       onError: (err: any) => {
-  //         showToast(err.response?.data?.message, "error");
-  //       },
-  //     }
-  //   );
-  // }, []);
-
-  const handeDeletes = (ids: deleteAwardsType) => {
+  const handeDeletes = (ids: deleteClassVideosType) => {
     mutateDeleteMany(ids, {
-      onSuccess: () => {
-        // Hook useDeleteMany đã xử lý invalidation và toast
-        setIsConfirmDeleteMany(false);
-        setSelectedAwardIds([]);
+      onSuccess: data => {
+        data.messages.forEach((item: any) => {
+          if (item.status === "error") {
+            showToast(item.msg, "error");
+          } else {
+            showToast(item.msg, "success");
+          }
+        });
+        refetchClassVideos();
       },
-      onError: (err: unknown) => {
-        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi xóa giải thưởng";
-        showToast(message, "error");
+      onError: err => {
+        console.log(err);
       },
     });
   };
 
-  const handleCreate = (payload: CreateAwardInput) => {
-    mutateCreate(payload, {
-      onSuccess: () => {
-        // Hook useCreateAward đã xử lý invalidation và toast
-        setIsCreateOpen(false);
+  const handleCreate = (payload: CreateClassVideoInput) => {
+  mutateCreate(
+    {
+      slug: slug || "",
+      data: payload,
+    },
+    {
+      onSuccess: data => {
+        if (data) showToast(`Tạo Video Lớp thành công`, "success");
+        refetchClassVideos();
       },
-      onError: (err: unknown) => {
-        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi tạo giải thưởng";
-        showToast(message, "error");
+      onError: (err: any) => {
+        if (err.response?.data?.message) {
+          showToast(err.response?.data?.message, "error");
+        }
       },
-    });
-  };  
-  const handleUpdate = (payload: UpdateAwardInput) => {
-    if (selectedAwardId) {
+    }
+  );
+};
+
+
+  const handleUpdate = (payload: UpdateClassVideoInput) => {
+    if (selectedClassVideoId) {
       mutateUpdate(
-        { id: selectedAwardId, payload },
+        { id: selectedClassVideoId, payload },
         {
           onSuccess: () => {
-            // Toast và invalidation được xử lý trong hook useUpdate
-            setIsEditOpen(false);
+            showToast(`Cập nhật Video Lớp thành công`, "success");
+            refetchClassVideos();
           },
-          onError: (err: unknown) => {
-            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi cập nhật giải thưởng";
-            showToast(message, "error");
+          onError: (err: any) => {
+            if (err.response?.data?.message)
+              showToast(err.response?.data?.message, "error");
           },
         }
       );
     }
   };
+  
+
   const handleDelete = useCallback((id: number | null) => {
     if (!id) return;
     mutateDelete(id, {
       onSuccess: () => {
-        // Toast và invalidation được xử lý trong hook useDelete
-        setIsConfirmDelete(false);
+        showToast(`Xóa Video Lớp thành công`, "success");
+        refetchClassVideos();
       },
-      onError: (error: unknown) => {
-        const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi xóa giải thưởng";
-        showToast(message, "error");
+      onError: (error: any) => {
+        showToast(error.response?.data?.message, "success");
       },
     });
-  }, [mutateDelete, showToast]);
+  }, []);
+
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
-      setSelectedAwardId(id);
+      setSelectedClassVideoId(id);
 
       if (type === "delete") {
         setIsConfirmDelete(true);
@@ -171,36 +166,30 @@ const AwardsPage: React.FC = () => {
     },
     []
   );
+
   const hanldConfirmDeleteManyDeletes = () => {
     setIsConfirmDeleteMany(true);
   };
 
-  // Handle missing slug
-  if (!slug) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Alert severity="error">
-          Không tìm thấy thông tin cuộc thi
-        </Alert>
-      </Box>
-    );
-  }
+  useEffect(() => {
+    document.title = "Quản lý Video Lớp";
+  }, []);
 
-  if (isAwardsLoading) {
+  if (isClassVideosLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
-  if (isAwardsError) {
+  if (isClassVideosError) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchAwards()}>Thử lại</Button>}
+          action={<Button onClick={() => refetchClassVideos}>Thử lại</Button>}
         >
-          Không thể tải danh sách giải thưởng
+          Không thể tải danh sách Video Lớp.
         </Alert>
       </Box>
     );
@@ -209,17 +198,16 @@ const AwardsPage: React.FC = () => {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h5">Quản lý giải thưởng</Typography>
+        <Typography variant="h5">Quản lý Video Lớp</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={openCreate}
         >
-          Thêm giải thưởng
+          Thêm Video Lớp
         </Button>
       </Box>
 
-      {/* User list card */}
       <Box
         sx={{
           background: "#FFFFFF",
@@ -241,10 +229,12 @@ const AwardsPage: React.FC = () => {
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
+            useFlexGap
+            flexWrap="wrap"
             sx={{
-              flexWrap: "wrap",
-              alignItems: { sm: "center" },
+              alignItems: "stretch",
               mb: 2,
+              gap: 2,
             }}
           >
             {/* Ô tìm kiếm */}
@@ -273,7 +263,7 @@ const AwardsPage: React.FC = () => {
             />
 
             {/* Nút xoá người */}
-            {selectedAwardIds.length > 0 && (
+            {selectedClassVideoIds.length > 0 && (
               <Button
                 variant="contained"
                 color="error"
@@ -284,32 +274,32 @@ const AwardsPage: React.FC = () => {
                   whiteSpace: "nowrap",
                 }}
               >
-                Xoá ({selectedAwardIds.length})
+                Xoá ({selectedClassVideoIds.length})
               </Button>
             )}
 
-            {/* Tổng số người dùng */}
-            <Box
-              sx={{
-                ml: { xs: 0, sm: "auto" },
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                alignSelf={{ xs: "flex-start", sm: "center" }}
-              >
-                Tổng số: {pagination?.total} giải thưởng
-              </Typography>
-            </Box>
+           
           </Stack>
+          <Box
+            sx={{
+              ml: { xs: 0, sm: "auto" },
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              alignSelf={{ xs: "flex-start", sm: "center" }}
+            >
+              Tổng số: {pagination?.total} video lớp
+            </Typography>
+          </Box>
 
-          <AwardList
-            awards={awards}
-            selectedAwardIds={selectedAwardIds}
-            setSelectedAwardIds={setSelectedAwardIds}
+          <ClassVideoList
+            classVideos={classVideos}
+            selectedClassVideoIds={selectedClassVideoIds}
+            setSelectedClassVideoIds={setSelectedClassVideoIds}
             onView={id => handleAction("view", id)}
             onEdit={id => handleAction("edit", id)}
             onDelete={id => handleAction("delete", id)}
@@ -346,15 +336,15 @@ const AwardsPage: React.FC = () => {
               </Select>
             </FormControl>
             <Typography>
-              Trang {filter?.page || 1} / {pagination?.totalPages}
+              Trang {filter.page || 1} / {pagination?.totalPages}
             </Typography>
           </Box>
-        </Box>        
+        </Box>
         <Box className="flex flex-col items-center">
           {" "}
           <Pagination
-            count={pagination?.totalPages || 0}
-            page={filter?.page ?? 1}
+            count={pagination?.totalPages}
+            page={filter.page ?? 1}
             color="primary"
             onChange={(_event, value) =>
               setFilter(prev => ({
@@ -366,42 +356,42 @@ const AwardsPage: React.FC = () => {
             showLastButton
           />
         </Box>
-        <CreateAward
+        <CreateClassVideo
           isOpen={isCreateOpen}
           onClose={closeCreate}
           onSubmit={handleCreate}
         />
 
-        <ViewAward
+        <ViewClassVideo
           isOpen={isViewOpen}
           onClose={() => setIsViewOpen(false)}
-          id={selectedAwardId}
+          id={selectedClassVideoId}
         />
 
-        <EditAward
+        <EditClassVideo
           isOpen={isEditOpen}
           onClose={() => setIsEditOpen(false)}
-          id={selectedAwardId}
+          id={selectedClassVideoId}
           onSubmit={handleUpdate}
         />
       </Box>
       <ConfirmDeleteMany
         open={isConfirmDeleteMany}
         onClose={() => setIsConfirmDeleteMany(false)}
-        title="Xác nhận xóa giải thưởng "
-        description={`Bạn có chắc xóa ${selectedAwardIds.length} giải thưởng này không`}
-        onConfirm={() => handeDeletes({ ids: selectedAwardIds })}
+        title="Xác nhận xóa video lớp "
+        description={`Bạn có chắc xóa ${selectedClassVideoIds.length} video lớp này không`}
+        onConfirm={() => handeDeletes({ ids: selectedClassVideoIds })}
       />
 
       <ConfirmDelete
         open={isConfirmDelete}
         onClose={() => setIsConfirmDelete(false)}
-        title="Xác nhận xóa giải thưởng "
-        description={`Bạn có chắc chắn xóa giải thưởng này không`}
-        onConfirm={() => handleDelete(selectedAwardId)}
+        title="Xác nhận xóa video lớp "
+        description={`Bạn có chắc chắn xóa video lớp này không`}
+        onConfirm={() => handleDelete(selectedClassVideoId)}
       />
     </Box>
   );
 };
 
-export default memo(AwardsPage);
+export default memo(ClassVideos);

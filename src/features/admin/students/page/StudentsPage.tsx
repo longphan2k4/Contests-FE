@@ -23,7 +23,7 @@ import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDeleteMany from "../../../../components/Confirm";
 import ConfirmDelete from "../../../../components/Confirm";
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
-
+import { useClasses } from "../hook/useGetClass";
 import { useStudents } from "../hook/useStudents";
 import { useCreateStudent } from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
@@ -31,7 +31,7 @@ import { useActive } from "../hook/useActive";
 import { useDeleteMany } from "../hook/useDeleteMany";
 import { useDelete } from "../hook/useDelete";
 import AddIcon from "@mui/icons-material/Add";
-
+import { type ClassItem } from "../types/student.shame";
 import {
   type Student,
   type CreateStudentInput,
@@ -74,6 +74,8 @@ const StudentsPage: React.FC = () => {
   const { mutate: mutateDeleteMany } = useDeleteMany();
 
   const { mutate: mutateDelete } = useDelete();
+  const { data: classData } = useClasses({});
+  const classOptions = (classData?.data?.classes || []) as ClassItem[];
 
   useEffect(() => {
     if (studentsQuery) {
@@ -269,6 +271,30 @@ const StudentsPage: React.FC = () => {
               }}
             />
 
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel id="class-select-label">Lớp</InputLabel>
+              <Select
+                labelId="class-select-label"
+                id="class-select"
+                value={filter.classId !== undefined ? String(filter.classId) : ""}
+                label="Lớp"
+                onChange={e =>
+                  setFilter(prev => ({
+                    ...prev,
+                    classId: e.target.value === "" ? undefined : Number(e.target.value),
+                  }))
+                }
+              >
+                <MenuItem value="">Tất cả</MenuItem>
+               {classOptions.map((cls: ClassItem) => (
+                <MenuItem key={cls.id} value={String(cls.id)}>
+                  {`${cls.name} - ${cls.shoolName}`}
+                </MenuItem>
+              ))}
+
+              </Select>
+            </FormControl>
+
             <FormAutocompleteFilter
               label="Trạng thái"
               options={[
@@ -312,7 +338,7 @@ const StudentsPage: React.FC = () => {
                   whiteSpace: "nowrap",
                 }}
               >
-                Xoá người ({selectedStudentIds.length})
+                Xoá ({selectedStudentIds.length})
               </Button>
             )}
 
@@ -417,16 +443,16 @@ const StudentsPage: React.FC = () => {
       <ConfirmDeleteMany
         open={isConfirmDeleteMany}
         onClose={() => setIsConfirmDeleteMany(false)}
-        title="Xác nhận xóa người dùng "
-        description={`Bạn có chắc xóa ${selectedStudentIds.length} tài khoản này không`}
+        title="Xác nhận sinh viên dùng "
+        description={`Bạn có chắc xóa ${selectedStudentIds.length} sinh viên này không`}
         onConfirm={() => handeDeletes({ ids: selectedStudentIds })}
       />
 
       <ConfirmDelete
         open={isConfirmDelete}
         onClose={() => setIsConfirmDelete(false)}
-        title="Xác nhận xóa người dùng "
-        description={`Bạn có chắc chắn xóa tài khoản này không`}
+        title="Xác nhận sinh viên dùng "
+        description={`Bạn có chắc chắn xóa sinh viên này không`}
         onConfirm={() => handleDelete(selectedStudentId)}
       />
     </Box>

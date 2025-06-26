@@ -15,17 +15,17 @@ import {
 import { Button } from "@mui/material";
 import { Pagination } from "@mui/material";
 
-import CreateAward from "../components/CreateAward";
-import ViewAward from "../components/ViewAward";
-import EditAward from "../components/EditAward";
-import AwardList from "../components/AwardList";
+import CreateMedia from "../components/CreateMedia";
+import ViewMedia from "../components/ViewMedia";
+import EditMedia from "../components/EditMedia";
+import MediaList from "../components/MediaList";
 import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDeleteMany from "../../../../components/Confirm";
 import ConfirmDelete from "../../../../components/Confirm";
 //import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 import { useParams } from "react-router-dom";
-import { useAwards } from "../hook/useAwards";
-import { useCreateAward } from "../hook/useCreate";
+import { useMedias } from "../hook/useMedias";
+import { useCreateMedia} from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
 //import { useActive } from "../hook/useActive";
 import { useDeleteMany } from "../hook/useDeleteMany";
@@ -33,20 +33,20 @@ import { useDelete } from "../hook/useDelete";
 import AddIcon from "@mui/icons-material/Add";
 
 import {
-  type Award,
-  type CreateAwardInput,
-  type UpdateAwardInput,
-  type AwardQuery,
+  type MediaItem,
+  type CreateMediaInput,
+  type UpdateMediaInput,
   type pagination,
-  type deleteAwardsType,
-} from "../types/award.shame";
+  type MediaQuery,
+  type DeleteMediasType,
+} from "../types/media.shame";
 import SearchIcon from "@mui/icons-material/Search";
 
-const AwardsPage: React.FC = () => {
+const MediaPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   
-  const [awards, setAwards] = useState<Award[]>([]);
-  const [selectedAwardId, setSelectedAwardId] = useState<number | null>(null);
+  const [, setMedias] = useState<MediaItem[]>([]);
+  const [selectedMediaId, setSelectedMediaId] = useState<number | null>(null);
   const [pagination, setPagination] = useState<pagination>({});
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -55,17 +55,17 @@ const AwardsPage: React.FC = () => {
   const [isConfirmDeleteMany, setIsConfirmDeleteMany] = useState(false);
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
 
-  const [filter, setFilter] = useState<AwardQuery>({});
-  const [selectedAwardIds, setSelectedAwardIds] = useState<number[]>([]);
+  const [filter, setFilter] = useState<MediaQuery>({});
+  const [selectedMediaIds, setSelectedMediaIds] = useState<number[]>([]);
   const { showToast } = useToast();
   const {
-    data: awardsQuery,
-    isLoading: isAwardsLoading,
-    isError: isAwardsError,
-    refetch: refetchAwards,
-  } = useAwards(slug || '', filter);
+    data: mediasQuery,
+    isLoading: isMediasLoading,
+    isError: isMediasError,
+    refetch: refetchMedias,
+  } = useMedias(slug || '', filter);
 
-  const { mutate: mutateCreate } = useCreateAward(slug || '');
+  const { mutate: mutateCreate } = useCreateMedia();
 
   const { mutate: mutateUpdate } = useUpdate();
 
@@ -76,75 +76,67 @@ const AwardsPage: React.FC = () => {
   const { mutate: mutateDelete } = useDelete();
 
   useEffect(() => {
-    if (awardsQuery) {
-      setAwards(awardsQuery?.data);
-      setPagination(awardsQuery?.data.pagination);
+    if (mediasQuery) {
+      setMedias(mediasQuery?.data);
+      setPagination(mediasQuery?.data.pagination);
     }
-  }, [awardsQuery]);
+  }, [mediasQuery]);
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
 
-  // const toggleActive = useCallback((id: number) => {
-  //   mutateActive(
-  //     { id: id },
-  //     {
-  //       onSuccess: data => {
-  //         showToast(`Cập nhật trạng thái thành công`, "success");
-
-  //         refetchAwards();
-  //         setSelectedAwardId(null);
-  //       },
-  //       onError: (err: any) => {
-  //         showToast(err.response?.data?.message, "error");
-  //       },
-  //     }
-  //   );
-  // }, []);
-
-  const handeDeletes = (ids: deleteAwardsType) => {
+  const handeDeletes = (ids: DeleteMediasType) => {
     mutateDeleteMany(ids, {
       onSuccess: () => {
         // Hook useDeleteMany đã xử lý invalidation và toast
         setIsConfirmDeleteMany(false);
-        setSelectedAwardIds([]);
+        setSelectedMediaIds([]);
       },
       onError: (err: unknown) => {
-        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi xóa giải thưởng";
+        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi xóa Media";
         showToast(message, "error");
       },
     });
   };
 
-  const handleCreate = (payload: CreateAwardInput) => {
-    mutateCreate(payload, {
-      onSuccess: () => {
-        // Hook useCreateAward đã xử lý invalidation và toast
-        setIsCreateOpen(false);
-      },
-      onError: (err: unknown) => {
-        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi tạo giải thưởng";
-        showToast(message, "error");
-      },
-    });
-  };  
-  const handleUpdate = (payload: UpdateAwardInput) => {
-    if (selectedAwardId) {
-      mutateUpdate(
-        { id: selectedAwardId, payload },
+      const handleCreate = (payload: CreateMediaInput) => {
+      mutateCreate(
         {
-          onSuccess: () => {
-            // Toast và invalidation được xử lý trong hook useUpdate
-            setIsEditOpen(false);
+          slug: slug || "",
+          data: payload,
+        },
+        {
+          onSuccess: data => {
+            if (data) showToast(`Tạo Media thành công`, "success");
+            refetchMedias();
           },
-          onError: (err: unknown) => {
-            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi cập nhật giải thưởng";
-            showToast(message, "error");
+          onError: (err: any) => {
+            if (err.response?.data?.message) {
+              showToast(err.response?.data?.message, "error");
+            }
           },
         }
       );
-    }
-  };
+    };
+
+  const handleUpdate = (payload: UpdateMediaInput) => {
+      if (selectedMediaId) {
+        mutateUpdate(
+          { id: selectedMediaId, payload },
+          {
+            onSuccess: () => {
+              showToast(`Cập nhật Media thành công`, "success");
+              refetchMedias();
+            },
+            onError: (err: any) => {
+              if (err.response?.data?.message)
+                showToast(err.response?.data?.message, "error");
+            },
+          }
+        );
+      }
+    };
+    
   const handleDelete = useCallback((id: number | null) => {
     if (!id) return;
     mutateDelete(id, {
@@ -153,14 +145,14 @@ const AwardsPage: React.FC = () => {
         setIsConfirmDelete(false);
       },
       onError: (error: unknown) => {
-        const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi xóa giải thưởng";
+        const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi xóa Media";
         showToast(message, "error");
       },
     });
   }, [mutateDelete, showToast]);
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
-      setSelectedAwardId(id);
+      setSelectedMediaId(id);
 
       if (type === "delete") {
         setIsConfirmDelete(true);
@@ -186,36 +178,41 @@ const AwardsPage: React.FC = () => {
     );
   }
 
-  if (isAwardsLoading) {
+  if (isMediasLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
-  if (isAwardsError) {
+  if (isMediasError) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchAwards()}>Thử lại</Button>}
+          action={<Button onClick={() => refetchMedias()}>Thử lại</Button>}
         >
           Không thể tải danh sách giải thưởng
         </Alert>
       </Box>
     );
   }
+  const combinedMedia = [
+  ...(mediasQuery?.data.images || []),
+  ...(mediasQuery?.data.logo ? [mediasQuery?.data.logo] : []),
+  ...(mediasQuery?.data.background ? [mediasQuery?.data.background] : []),
+];
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h5">Quản lý giải thưởng</Typography>
+        <Typography variant="h5">Quản lý Media</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={openCreate}
         >
-          Thêm giải thưởng
+          Thêm Media
         </Button>
       </Box>
 
@@ -273,7 +270,7 @@ const AwardsPage: React.FC = () => {
             />
 
             {/* Nút xoá người */}
-            {selectedAwardIds.length > 0 && (
+            {selectedMediaIds.length > 0 && (
               <Button
                 variant="contained"
                 color="error"
@@ -284,7 +281,7 @@ const AwardsPage: React.FC = () => {
                   whiteSpace: "nowrap",
                 }}
               >
-                Xoá ({selectedAwardIds.length})
+                Xoá ({selectedMediaIds.length})
               </Button>
             )}
 
@@ -301,15 +298,15 @@ const AwardsPage: React.FC = () => {
                 color="text.secondary"
                 alignSelf={{ xs: "flex-start", sm: "center" }}
               >
-                Tổng số: {pagination?.total} giải thưởng
+                Tổng số: {pagination?.total} Media
               </Typography>
             </Box>
           </Stack>
 
-          <AwardList
-            awards={awards}
-            selectedAwardIds={selectedAwardIds}
-            setSelectedAwardIds={setSelectedAwardIds}
+          <MediaList
+            media={combinedMedia}
+            selectedMediaIds={selectedMediaIds}
+            setSelectedMediaIds={setSelectedMediaIds}
             onView={id => handleAction("view", id)}
             onEdit={id => handleAction("edit", id)}
             onDelete={id => handleAction("delete", id)}
@@ -366,42 +363,42 @@ const AwardsPage: React.FC = () => {
             showLastButton
           />
         </Box>
-        <CreateAward
+        <CreateMedia
           isOpen={isCreateOpen}
           onClose={closeCreate}
           onSubmit={handleCreate}
         />
 
-        <ViewAward
+        <ViewMedia
           isOpen={isViewOpen}
           onClose={() => setIsViewOpen(false)}
-          id={selectedAwardId}
+          id={selectedMediaId}
         />
 
-        <EditAward
+        <EditMedia
           isOpen={isEditOpen}
           onClose={() => setIsEditOpen(false)}
-          id={selectedAwardId}
+          id={selectedMediaId}
           onSubmit={handleUpdate}
         />
       </Box>
       <ConfirmDeleteMany
         open={isConfirmDeleteMany}
         onClose={() => setIsConfirmDeleteMany(false)}
-        title="Xác nhận xóa giải thưởng "
-        description={`Bạn có chắc xóa ${selectedAwardIds.length} giải thưởng này không`}
-        onConfirm={() => handeDeletes({ ids: selectedAwardIds })}
+        title="Xác nhận xóa Media "
+        description={`Bạn có chắc xóa ${selectedMediaIds.length} Media này không`}
+        onConfirm={() => handeDeletes({ ids: selectedMediaIds })}
       />
 
       <ConfirmDelete
         open={isConfirmDelete}
         onClose={() => setIsConfirmDelete(false)}
-        title="Xác nhận xóa giải thưởng "
-        description={`Bạn có chắc chắn xóa giải thưởng này không`}
-        onConfirm={() => handleDelete(selectedAwardId)}
+        title="Xác nhận xóa Media "
+        description={`Bạn có chắc chắn xóa Media này không`}
+        onConfirm={() => handleDelete(selectedMediaId)}
       />
     </Box>
   );
 };
 
-export default memo(AwardsPage);
+export default memo(MediaPage);

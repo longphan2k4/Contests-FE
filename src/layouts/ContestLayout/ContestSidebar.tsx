@@ -148,7 +148,7 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       key: "3",
       icon: <FileIcon />,
       label: "Media",
-      path: "/Contest/about",
+      path: `/admin/cuoc-thi/${slug}/media`,
     },
     {
       key: "awards",

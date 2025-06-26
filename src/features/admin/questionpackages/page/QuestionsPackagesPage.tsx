@@ -316,7 +316,7 @@ const handleViewQuestions = useCallback((id: number) => {
                   whiteSpace: "nowrap",
                 }}
               >
-                Xoá người ({selectedQuestionPackageIds.length})
+                Xoá ({selectedQuestionPackageIds.length})
               </Button>
             )}
 
