@@ -201,7 +201,13 @@ const ContestantMatchPage: React.FC = () => {
       hasInitializedGroups
     });
 
-    if (existingGroups && existingGroups.length > 0 && !skipSyncFromAPI) {
+    // Skip sync nếu đang thao tác local
+    if (skipSyncFromAPI) {
+      console.log('Skipping sync from API due to local operations');
+      return;
+    }
+
+    if (existingGroups && existingGroups.length > 0) {
       console.log('Syncing data from API...');
       // Chuyển đổi dữ liệu từ API thành format local state
       const convertedGroups: { [key: number]: Contestant[] } = {};
@@ -245,8 +251,21 @@ const ContestantMatchPage: React.FC = () => {
       if (isGroupDivisionOpen) {
         setGroupDivisionStep(2);
       }
+    } else {
+      // Không có nhóm nào từ API - reset về trạng thái ban đầu
+      console.log('No groups from API - resetting to initial state');
+      setGroups({});
+      setAssignedJudges({});
+      setTotalGroups(0);
+      setActiveGroupTab(0);
+      setHasInitializedGroups(false);
+      
+      // Reset về bước 1 nếu đang mở group division
+      if (isGroupDivisionOpen) {
+        setGroupDivisionStep(1);
+      }
     }
-  }, [existingGroups, isGroupDivisionOpen, skipSyncFromAPI, activeGroupTab, hasInitializedGroups]);
+  }, [existingGroups, isGroupDivisionOpen, skipSyncFromAPI]);
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
