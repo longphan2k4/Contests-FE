@@ -49,3 +49,36 @@ export const useGroupDivision = (matchId: number | null) => {
     hasGroups: groups.length > 0
   };
 };
+
+// cập nhật tên nhóm: GroupDivisionService.updateGroupName
+export const useUpdateGroupName = (matchId: number | null) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
+
+  const updateGroupName = async (groupId: number, newName: string) => {
+    if (!matchId) return;
+
+    setIsUpdating(true);
+    setError(null);
+
+    try {
+      const updatedGroup = await GroupDivisionService.updateGroupName(groupId, newName);
+      showToast(`Đã cập nhật tên nhóm thành công: ${updatedGroup?.name}`, 'success');
+      return updatedGroup;
+    } catch (err: unknown) {
+      let errorMessage = 'Lỗi khi cập nhật tên nhóm';
+      if (err && typeof err === 'object' && 'response' in err) {
+        const response = (err as { response?: { data?: { message?: string } } }).response;
+        errorMessage = response?.data?.message || errorMessage;
+      }
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+      throw new Error(errorMessage);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return { updateGroupName, isUpdating, error };
+};

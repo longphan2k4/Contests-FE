@@ -60,7 +60,7 @@ import {
   type ClassInfo,
   type GroupInfo
 } from "../service/group-division.service";
-import { useGroupDivision } from "../hook/useGroupDivision";
+import { useGroupDivision, useUpdateGroupName } from "../hook/useGroupDivision";
 
 const ContestantMatchPage: React.FC = () => {
   const [contestant, setcontestant] = useState<Contestant[]>([]);
@@ -98,6 +98,10 @@ const ContestantMatchPage: React.FC = () => {
   const allowSyncFromAPI = useCallback(() => {
     setSkipSyncFromAPI(false);
   }, []);
+
+  // Group name editing states
+  const [editingGroupIndex, setEditingGroupIndex] = useState<number | null>(null);
+  const [editingGroupName, setEditingGroupName] = useState<string>('');
 
   // Group management states
   const [groups, setGroups] = useState<{ [key: number]: Contestant[] }>({});
@@ -150,6 +154,9 @@ const ContestantMatchPage: React.FC = () => {
     hasGroups,
     refetch: refetchGroups
   } = useGroupDivision(matchId);
+
+  // Hook để cập nhật tên nhóm
+  const { updateGroupName } = useUpdateGroupName(matchId);
 
   const {
     data: contestantData,
@@ -210,32 +217,55 @@ const ContestantMatchPage: React.FC = () => {
 
     if (existingGroups && existingGroups.length > 0) {
       console.log('Syncing data from API...');
+      
       // Chuyển đổi dữ liệu từ API thành format local state
+      // LUÔN giữ nguyên thứ tự từ API (existingGroups đã được sort theo created_at trên server)
       const convertedGroups: { [key: number]: Contestant[] } = {};
-      const convertedJudges: { [groupIndex: number]: JudgeInfo | null } = {}; existingGroups.forEach((group, index) => {
-        // Convert contestants from GroupInfo to Contestant format
+      const convertedJudges: { [groupIndex: number]: JudgeInfo | null } = {};
+      
+      existingGroups.forEach((group, index) => {
         convertedGroups[index] = group.contestantMatches.map(cm => ({
           id: cm.contestant.id,
           fullName: cm.contestant.student.fullName,
           roundName: cm.contestant.round.name,
           status: ' compete' as const,
-          // Add required fields for Contestant type - sẽ được lấy từ API khác
-          schoolName: '', // Tạm thời để trống, sẽ được cập nhật
-          className: '', // Tạm thời để trống, sẽ được cập nhật
-          schoolId: 0, // Tạm thời để 0, sẽ được cập nhật
-          classId: 0, // Tạm thời để 0, sẽ được cập nhật
+          schoolName: '',
+          className: '',
+          schoolId: 0,
+          classId: 0,
           studentCode: cm.contestant.student.studentCode || null,
           groupName: group.name,
           groupId: group.id,
         }));
-
-        // Assign judges
+        
         convertedJudges[index] = group.judge;
       });
 
       // Cập nhật state
       setGroups(convertedGroups);
-      setAssignedJudges(convertedJudges);
+      
+      // Đối với assignedJudges, chỉ cập nhật những nhóm chưa có thay đổi local
+      // hoặc những nhóm mới từ server (preserve local judge changes)
+      setAssignedJudges(prevAssignedJudges => {
+        const newAssignedJudges = { ...prevAssignedJudges };
+        
+        existingGroups.forEach((group, index) => {
+          // Chỉ cập nhật judge nếu:
+          // 1. Nhóm này chưa có judge được assign local, HOẶC
+          // 2. Judge hiện tại trong local state khác với judge từ server (có thể server đã update)
+          const currentLocalJudge = prevAssignedJudges[index];
+          const serverJudge = group.judge;
+          
+          if (!currentLocalJudge || currentLocalJudge.id === serverJudge.id) {
+            // Safe to update từ server
+            newAssignedJudges[index] = serverJudge;
+          }
+          // Nếu có local change (currentLocalJudge.id !== serverJudge.id), giữ nguyên local change
+        });
+        
+        return newAssignedJudges;
+      });
+      
       setTotalGroups(existingGroups.length);
 
       // Chỉ reset về tab 0 nếu:
@@ -266,7 +296,7 @@ const ContestantMatchPage: React.FC = () => {
         setGroupDivisionStep(1);
       }
     }
-  }, [existingGroups, isGroupDivisionOpen, skipSyncFromAPI]);
+  }, [existingGroups, isGroupDivisionOpen, skipSyncFromAPI, hasInitializedGroups, activeGroupTab]);
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
@@ -672,7 +702,7 @@ const ContestantMatchPage: React.FC = () => {
         }
       },
     });
-  }, []);
+  }, [mutateDelete, refetchs, showToast]);
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
       setSelectedId(id);
@@ -683,7 +713,7 @@ const ContestantMatchPage: React.FC = () => {
       if (type === "view") setIsViewOpen(true);
       if (type === "edit") setIsEditOpen(true);
     },
-    [handleDelete]
+    []
   );  // Handle adding selected contestants to current active group only
   useEffect(() => {
     // Chỉ chạy khi ở bước 2, có thí sinh được chọn, VÀ KHÔNG phải đang trong quá trình phân bổ tự động
@@ -834,10 +864,20 @@ const ContestantMatchPage: React.FC = () => {
 
   // Handle judge assignment
   const handleJudgeAssign = (groupIndex: number, judge: JudgeInfo | null) => {
+    console.log('Judge assignment:', { groupIndex, judge: judge?.username });
+    
+    // Set flag để tránh useEffect sync ghi đè thay đổi local
+    setSkipSyncFromAPI(true);
+    
     setAssignedJudges(prev => ({
       ...prev,
       [groupIndex]: judge
     }));
+    
+    // Cho phép sync lại sau 3 giây (đủ thời gian để user thao tác)
+    setTimeout(() => {
+      setSkipSyncFromAPI(false);
+    }, 3000);
   };
 
   // Handle adding new group
@@ -992,43 +1032,98 @@ const ContestantMatchPage: React.FC = () => {
 
     try {
       const group = existingGroups?.[groupToDelete.index];
-      if (!group) {
-        showToast('Không tìm thấy nhóm để xóa', 'error');
-        return;
+      if (group) {
+        // Set flag TRƯỚC khi xóa để tránh useEffect re-sync
+        setSkipSyncFromAPI(true);
+        
+        await GroupDivisionService.deleteGroup(group.id);
+        showToast(`Đã xóa nhóm "${groupToDelete.name}" thành công`, 'success');
+        
+        // Refetch groups after deletion để lấy data mới từ server
+        await refetchGroups();
+        
+        // Đơn giản: luôn reset về tab đầu tiên sau khi xóa nhóm
+        // Điều này đảm bảo không có inconsistency về thứ tự tab
+        setActiveGroupTab(0);
+        
+        // Cho phép sync lại sau 1 giây (để đảm bảo UI đã ổn định)
+        setTimeout(() => {
+          setSkipSyncFromAPI(false);
+        }, 1000);
       }
-
-      // Gọi API xóa nhóm
-      await GroupDivisionService.deleteGroup(group.id);
-
-      // Thay vì cập nhật local state phức tạp, chúng ta sẽ refresh toàn bộ data từ server
-      // để đảm bảo consistency và tránh lỗi reindex
-
-      // Refresh data từ server ngay lập tức
-      await refetchGroups();
-      await fetchCurrentGroups();
-
-      const message = groupToDelete.contestantCount > 0
-        ? `Xóa nhóm "${groupToDelete.name}" và ${groupToDelete.contestantCount} thí sinh thành công`
-        : `Xóa nhóm "${groupToDelete.name}" thành công`;
-
-      showToast(message, 'success');
-
-      // Reset về tab đầu tiên để tránh lỗi khi tab hiện tại bị xóa
-      setActiveGroupTab(0);
-
     } catch (error) {
       console.error('Error deleting group:', error);
-      let errorMessage = 'Lỗi khi xóa nhóm';
-      if (error && typeof error === 'object' && 'response' in error) {
-        const response = (error as { response?: { data?: { message?: string } } }).response;
-        errorMessage = response?.data?.message || errorMessage;
-      }
-      showToast(errorMessage, 'error');
+      showToast('Có lỗi khi xóa nhóm. Vui lòng thử lại.', 'error');
+      // Reset flag nếu có lỗi
+      setSkipSyncFromAPI(false);
     } finally {
       setIsConfirmDeleteGroupOpen(false);
       setGroupToDelete(null);
     }
-  }, [groupToDelete, existingGroups, fetchCurrentGroups, refetchGroups, showToast]);
+  }, [groupToDelete, existingGroups, showToast, refetchGroups]);
+
+  // Handle double click to edit group name
+  const handleGroupNameDoubleClick = useCallback((groupIndex: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const group = existingGroups?.[groupIndex];
+    if (!group) return;
+    
+    setEditingGroupIndex(groupIndex);
+    setEditingGroupName(group.name);
+  }, [existingGroups]);
+
+  // Handle group name change
+  const handleGroupNameChange = useCallback((value: string) => {
+    setEditingGroupName(value);
+  }, []);
+
+  // Handle save group name
+  const handleSaveGroupName = useCallback(async () => {
+    if (editingGroupIndex === null || !editingGroupName.trim()) return;
+    
+    const group = existingGroups?.[editingGroupIndex];
+    if (!group) return;
+
+    try {
+      // Gọi API cập nhật tên nhóm
+      await updateGroupName(group.id, editingGroupName.trim());
+      
+      // Refetch groups để lấy dữ liệu mới từ server
+      await refetchGroups();
+      
+      // Reset editing state
+      setEditingGroupIndex(null);
+      setEditingGroupName('');
+    } catch (error) {
+      console.error('Error updating group name:', error);
+      // Toast message đã được xử lý bởi hook
+    }
+  }, [editingGroupIndex, editingGroupName, existingGroups, updateGroupName, refetchGroups]);
+
+  // Handle cancel edit group name
+  const handleCancelEditGroupName = useCallback(() => {
+    setEditingGroupIndex(null);
+    setEditingGroupName('');
+  }, []);
+
+  // Handle key press for group name editing
+  const handleGroupNameKeyPress = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveGroupName();
+    } else if (e.key === 'Escape') {
+      handleCancelEditGroupName();
+    }
+  }, [handleSaveGroupName, handleCancelEditGroupName]);
+
+  // Get group display name
+  const getGroupDisplayName = useCallback((groupIndex: number) => {
+    const existingGroup = existingGroups?.[groupIndex];
+    
+    // Chỉ dùng tên từ server, không dùng local state để tránh lỗi đồng bộ
+    if (existingGroup) return existingGroup.name;
+    return `Nhóm ${groupIndex + 1}`;
+  }, [existingGroups]);
+
   // Reset all groups (hard clear) - xóa tất cả nhóm và reset về bước 1
   const resetAllGroups = useCallback(async () => {
     if (!existingGroups || existingGroups.length === 0) {
@@ -1074,7 +1169,7 @@ const ContestantMatchPage: React.FC = () => {
       fetchCurrentGroups();
       
       // Thông báo thành công
-      const totalDeleted = result.messages?.filter(msg => msg.status === 'success').length || groupIds.length;
+      const totalDeleted = result.deletedGroupsCount || groupIds.length;
       showToast(`Đã xóa tất cả ${totalDeleted} nhóm và reset về bước 1 thành công`, 'success');
       
       console.log('✅ Local state cleaned and reset to step 1 completed');
@@ -1807,7 +1902,8 @@ const ContestantMatchPage: React.FC = () => {
                   onMouseUp={handleMouseUp}
                   onMouseLeave={handleMouseLeave}
                 >
-                  {Array.from({ length: totalGroups }, (_, index) => (
+                  {existingGroups && existingGroups.length > 0 
+                    ? existingGroups.map((_, index) => (
                     <Box
                       key={index}
                       sx={{
@@ -1874,13 +1970,55 @@ const ContestantMatchPage: React.FC = () => {
                         sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography
-                            variant="body2"
-                            fontWeight={activeGroupTab === index ? 'bold' : 'medium'}
-                            color={activeGroupTab === index ? 'primary.main' : 'text.primary'}
-                          >
-                            Nhóm {index + 1}
-                          </Typography>
+                          {editingGroupIndex === index ? (
+                            // Input để đổi tên nhóm
+                            <TextField
+                              value={editingGroupName}
+                              onChange={(e) => handleGroupNameChange(e.target.value)}
+                              onKeyDown={handleGroupNameKeyPress}
+                              onBlur={handleCancelEditGroupName}
+                              size="small"
+                              autoFocus
+                              onClick={(e) => e.stopPropagation()}
+                              sx={{
+                                '& .MuiInputBase-input': {
+                                  fontSize: '14px',
+                                  fontWeight: activeGroupTab === index ? 'bold' : 'medium',
+                                  color: activeGroupTab === index ? 'primary.main' : 'text.primary',
+                                  padding: '2px 4px',
+                                  textAlign: 'center',
+                                  minWidth: '60px'
+                                },
+                                '& .MuiOutlinedInput-root': {
+                                  '& fieldset': {
+                                    borderColor: 'primary.main',
+                                    borderWidth: 1
+                                  }
+                                }
+                              }}
+                            />
+                          ) : (
+                            // Text hiển thị tên nhóm
+                            <Typography
+                              variant="body2"
+                              fontWeight={activeGroupTab === index ? 'bold' : 'medium'}
+                              color={activeGroupTab === index ? 'primary.main' : 'text.primary'}
+                              onDoubleClick={(e) => handleGroupNameDoubleClick(index, e)}
+                              sx={{
+                                cursor: 'pointer',
+                                minWidth: '60px',
+                                textAlign: 'center',
+                                '&:hover': {
+                                  backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                  borderRadius: '4px',
+                                  padding: '2px 4px'
+                                }
+                              }}
+                              title="Double click để đổi tên nhóm"
+                            >
+                              {getGroupDisplayName(index)}
+                            </Typography>
+                          )}
                           {assignedJudges[index] && (
                             <Box sx={{
                               width: 6,
@@ -1889,6 +2027,54 @@ const ContestantMatchPage: React.FC = () => {
                               backgroundColor: 'success.main'
                             }} />
                           )}
+                        </Box>
+                        <Chip
+                          label={`${groups[index]?.length || 0} thí sinh`}
+                          size="small"
+                          color={activeGroupTab === index ? "primary" : "default"}
+                          variant={activeGroupTab === index ? "filled" : "outlined"}
+                          sx={{ fontSize: '10px', height: 20 }}
+                        />
+                      </Box>
+                    </Box>
+                  ))
+                    : Array.from({ length: totalGroups }, (_, index) => (
+                    <Box
+                      key={`fallback-${index}`}
+                      sx={{
+                        minWidth: 120,
+                        p: 1,
+                        borderRadius: 1,
+                        border: activeGroupTab === index ? '2px solid #1976d2' : '1px solid #e0e0e0',
+                        backgroundColor: activeGroupTab === index ? '#e3f2fd' : 'white',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          backgroundColor: activeGroupTab === index ? '#e3f2fd' : '#f5f5f5',
+                          transform: 'translateY(-1px)',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        },
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        position: 'relative'
+                      }}
+                    >
+                      <Box
+                        onClick={() => {
+                          setActiveGroupTab(index);
+                        }}
+                        sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={activeGroupTab === index ? 'bold' : 'medium'}
+                            color={activeGroupTab === index ? 'primary.main' : 'text.primary'}
+                          >
+                            Nhóm {index + 1}
+                          </Typography>
                         </Box>
                         <Chip
                           label={`${groups[index]?.length || 0} thí sinh`}

@@ -151,10 +151,10 @@ export class GroupDivisionService {
   }
 
   /**
-   * Lấy danh sách nhóm hiện tại của trận đấu
+   * Lấy danh sách nhóm hiện tại của trận đấu (không sắp xếp - để frontend tự quản lý thứ tự)
    */
   static async getCurrentGroups(matchId: number): Promise<GroupInfo[]> {
-    const response = await axiosInstance.get(`${this.baseUrl}/matches/${matchId}/groups`);
+    const response = await axiosInstance.get(`${this.baseUrl}/matches/${matchId}/groups/unsorted`);
     return response.data.data.groups;
   }
 
@@ -166,11 +166,39 @@ export class GroupDivisionService {
     groupName: string,
     judgeId: number
   ): Promise<GroupInfo> {
-    const response = await axiosInstance.post(`/group`, {
-      name: groupName,
-      matchId: matchId,
-      userId: judgeId,
-      confirmCurrentQuestion: 1
+    const response = await axiosInstance.post(`${this.baseUrl}/matches/${matchId}/groups`, {
+      groupName: groupName,
+      judgeId: judgeId
+    });
+    return response.data.data;
+  }
+
+  /**
+   * Xóa nhóm (bao gồm cả thí sinh trong nhóm)
+   */
+  static async deleteGroup(groupId: number): Promise<void> {
+    await axiosInstance.delete(`${this.baseUrl}/groups/${groupId}`);
+  }
+
+  /**
+   * Xóa tất cả nhóm theo danh sách ID (hard reset)
+   */
+  static async deleteAllGroups(groupIds: number[]): Promise<{
+    deletedGroupsCount: number;
+    deletedContestantsCount: number;
+  }> {
+    const response = await axiosInstance.delete(`${this.baseUrl}/groups`, {
+      data: { groupIds }
+    });
+    return response.data.data;
+  }
+
+  /**
+   * Cập nhật tên nhóm
+   */
+  static async updateGroupName(groupId: number, newName: string): Promise<GroupInfo | null> {
+    const response = await axiosInstance.put(`${this.baseUrl}/groups/${groupId}/name`, {
+      name: newName
     });
     return response.data.data;
   }
@@ -203,22 +231,5 @@ export class GroupDivisionService {
   static async getClassesBySchool(schoolId: number): Promise<ClassInfo[]> {
     const response = await axiosInstance.get(`${this.baseUrl}/schools/${schoolId}/classes`);
     return response.data.data.classes;
-  }
-
-  /**
-   * Xóa nhóm (bao gồm cả thí sinh trong nhóm)
-   */
-  static async deleteGroup(groupId: number): Promise<void> {
-    await axiosInstance.delete(`/group/${groupId}`);
-  }
-
-  /**
-   * Xóa tất cả nhóm theo danh sách ID (hard reset)
-   */
-  static async deleteAllGroups(groupIds: number[]): Promise<DeleteGroupsResponse> {
-    const response = await axiosInstance.post('/group/delete-many', {
-      ids: groupIds
-    });
-    return response.data;
   }
 }
