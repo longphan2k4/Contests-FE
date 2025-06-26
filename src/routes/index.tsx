@@ -47,22 +47,21 @@ const AppRoutes: React.FC = () => {
         <Route path="/account/profile" element={<ProfilePage />} />
       </Route>
       {/* Routes dành cho trọng tài */}
-      <Route element={<PrivateRoute roles={["Judge"]} />}>
-        <Route path="/contests" element={<ContestList />} />
-        <Route path="/contests/:contestId/matches" element={<MatchList />} />
-      </Route>
-      {/* Public Routes */}
 
-      <Route
-        path="/judge/home/:match"
-        element={
-          <PrivateRoute roles={["Judge"]}>
+      <Route element={<PrivateRoute roles={["Judge"]} />}>
+        <Route path="/cuoc-thi" element={<ContestList />} />
+        <Route path="/cuoc-thi/:contestId/tran-dau" element={<MatchList />} />
+        <Route
+          path="/trong-tai/tran-dau/:match"
+          element={
             <SocketProvider>
               <JudgeHomePage />
             </SocketProvider>
-          </PrivateRoute>
-        }
-      />
+          }
+        />
+      </Route>
+      {/* Public Routes */}
+
       {/* <Route path="/judge/selected-match" element={<MatchSelectionPage />} /> */}
       <Route
         path="/tran-dau/:match"

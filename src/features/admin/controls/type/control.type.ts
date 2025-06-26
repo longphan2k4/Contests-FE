@@ -163,6 +163,7 @@ export type UpdateSceenControl = {
   controlKey?: ControlKey;
   controlValue?: ControlValue;
   media?: string;
+  value?: string;
 };
 
 export type MediaType = {

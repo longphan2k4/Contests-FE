@@ -1,4 +1,4 @@
-import z from "zod";
+import z, { number } from "zod";
 export const LoginSchema = z.object({
   identifier: z
     .string({
@@ -48,6 +48,7 @@ export const ResetPasswordSchema = VerifyOtpSchema.extend({
   path: ["confirmNewPassword"],
 });
 export const UserType = z.object({
+  id: number().int(),
   username: z.string(),
   email: z.string(),
   role: z.enum(["Admin", "Judge"]),
