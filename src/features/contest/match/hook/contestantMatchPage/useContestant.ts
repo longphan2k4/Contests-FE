@@ -26,15 +26,18 @@ import {
 } from "../../../contestant/service/api";
 
 import { contestantMatchApi } from "../../service/contestant-match.api";
+import type { ContestantMatchQueryInput } from "../../types/contestant-match.types";
 
 export const useGetAll = (
     filter: ContestantQueryInput,
-    slug: string | null
+    slug: string | null,
+    options?: { enabled?: boolean }
 ) => {
     return useQuery({
         queryKey: ["contestant-contest", filter],
         queryFn: () => GetAll(filter, slug),
         placeholderData: prevData => prevData,
+        enabled: options?.enabled !== false,
     });
 };
 
@@ -167,10 +170,40 @@ export const useClassSchoolId = (schooId: number | null) => {
     });
 };
 
+// lấy danh sách các trận trong cuộc thi theo slug cuộc thi: /contest/:slug/matches 
+export const useGetMatchesByContestSlug = (contestSlug: string) => {
+    return useQuery({
+        queryKey: ["matches-by-contest-slug", contestSlug],
+        queryFn: () => contestantMatchApi.getMatchesByContestSlug(contestSlug),
+        enabled: !!contestSlug,
+    });
+};
+
+// lấy danh sách thí sinh trong trận đấu theo slug cuộc thi và id trận đấu
+export const useGetContestantsInMatch = (
+    contestSlug: string,
+    matchId: number,
+    params: ContestantMatchQueryInput = {},
+    options?: { enabled?: boolean }
+) => {
+    return useQuery({
+        queryKey: ["contestants-in-match", contestSlug, matchId, params],
+        queryFn: () => contestantMatchApi.getContestantsInMatch(contestSlug, matchId, params),
+        enabled: options?.enabled !== false && !!contestSlug && !!matchId,
+        placeholderData: prevData => prevData,
+    });
+};
 
 // Định nghĩa kiểu dữ liệu cho trọng tài
 export interface JudgeInfo {
     id: number;
     username: string;
     email: string;
+}
+
+// Định nghĩa kiểu dữ liệu cho trận đấu
+export interface MatchInfo {
+    id: number;
+    name: string;
+    slug: string | null;
 }

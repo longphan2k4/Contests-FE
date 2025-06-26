@@ -76,4 +76,23 @@ export const contestantMatchApi = {
     );
     return response.data;
   },
+
+  // lấy danh sách các trận trong cuộc thi theo slug cuộc thi: /contest/:slug/matches
+  getMatchesByContestSlug: async (contestSlug: string) => {
+    const response = await axiosInstance.get(`/match/contest/${contestSlug}`);
+    return response.data;
+  },
+
+  //lấy danh sách thí sinh trong trận đấu theo slug cuộc thi và id trận đấu: /contest/:slug/match/:matchId/contestants
+  getContestantsInMatch: async (
+    contestSlug: string,
+    matchId: number,
+    params: ContestantMatchQueryInput = {}
+  ): Promise<ContestantMatchResponse> => {
+    const response = await axiosInstance.get(
+      `/contestant/contest/${contestSlug}/match/${matchId}/contestants`,
+      { params }
+    );
+    return response.data;
+  }
 };
