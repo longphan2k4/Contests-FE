@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import type { Match } from '../../types/selector/Match';
-import { getMatchesByContestId } from '../../services/selector/api';
-import { useAuth } from '../../../auth/hooks/authContext';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import type { Match } from "../../types/selector/Match";
+import { getMatchesByContestId } from "../../services/selector/api";
+import { useAuth } from "../../../auth/hooks/authContext";
 
 const MatchList: React.FC = () => {
   const { contestId } = useParams<{ contestId: string }>();
@@ -14,9 +14,9 @@ const MatchList: React.FC = () => {
 
   useEffect(() => {
     if (!user) {
-      setError('Vui lòng đăng nhập để xem danh sách trận đấu.');
+      setError("Vui lòng đăng nhập để xem danh sách trận đấu.");
       setLoading(false);
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
@@ -28,10 +28,10 @@ const MatchList: React.FC = () => {
         setMatches(matchList);
       } catch (err: any) {
         if (err.response?.status === 401) {
-          setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-          navigate('/login');
+          setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+          navigate("/login");
         } else {
-          setError('Không thể tải danh sách trận đấu.');
+          setError("Không thể tải danh sách trận đấu.");
         }
       } finally {
         setLoading(false);
@@ -41,22 +41,21 @@ const MatchList: React.FC = () => {
   }, [contestId, user, navigate]);
 
   const handleMatchSelect = (slug: string) => {
-    navigate(`/tran-dau/${slug}`);
+    navigate(`/trong-tai/tran-dau/${slug}`);
   };
-
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <div className="bg-white border-b border-slate-200 p-4 sm:p-6 sticky top-0 z-10 shadow-sm">
         {/* Back Button */}
-        <button 
-          onClick={() => navigate('/contests')} 
+        <button
+          onClick={() => navigate("/cuoc-thi")}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all duration-200 hover:-translate-x-0.5 mb-4"
         >
           <span className="text-base">←</span>
           Quay lại
         </button>
-        
+
         {/* Title */}
         <div className="text-center">
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 mb-3 flex items-center justify-center gap-3">
@@ -81,7 +80,9 @@ const MatchList: React.FC = () => {
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-6 m-4 sm:m-6 flex items-center gap-3">
           <div className="text-2xl flex-shrink-0">⚠️</div>
-          <p className="text-red-600 text-sm sm:text-base leading-relaxed">{error}</p>
+          <p className="text-red-600 text-sm sm:text-base leading-relaxed">
+            {error}
+          </p>
         </div>
       )}
 
@@ -94,7 +95,7 @@ const MatchList: React.FC = () => {
               {matches.length} trận đấu
             </h2>
           </div>
-          
+
           {/* Match Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {matches.map((match, index) => (
@@ -106,7 +107,7 @@ const MatchList: React.FC = () => {
                   animation: `slideUp 0.5s ease forwards`,
                   animationDelay: `${index * 0.1}s`,
                   opacity: 0,
-                  transform: 'translateY(20px)'
+                  transform: "translateY(20px)",
                 }}
               >
                 {/* Match Header */}
@@ -118,7 +119,7 @@ const MatchList: React.FC = () => {
                     ID: {match.id}
                   </div>
                 </div>
-                
+
                 {/* Match Body */}
                 <div className="p-3 sm:p-4 flex-1">
                   <h3 className="text-slate-800 font-semibold text-sm sm:text-base leading-tight mb-2 line-clamp-2">
@@ -128,7 +129,7 @@ const MatchList: React.FC = () => {
                     Slug: {match.slug}
                   </p>
                 </div>
-                
+
                 {/* Match Footer */}
                 <div className="p-3 sm:p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
                   <div className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
@@ -155,8 +156,8 @@ const MatchList: React.FC = () => {
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
             Cuộc thi này chưa có trận đấu nào được tạo.
           </p>
-          <button 
-            onClick={() => navigate('/contests')}
+          <button
+            onClick={() => navigate("/contests")}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-sm font-semibold transition-colors duration-200"
           >
             Chọn cuộc thi khác
@@ -172,14 +173,14 @@ const MatchList: React.FC = () => {
             transform: translateY(0);
           }
         }
-        
+
         .line-clamp-2 {
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
-        
+
         .animate-pulse {
           animation: none;
         }
