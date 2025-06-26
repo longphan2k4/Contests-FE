@@ -112,9 +112,11 @@ const AudienceOpinionPage: React.FC = () => {
               <InformationCircleIcon className="h-6 w-6 text-red-600" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Có lỗi xảy ra
+              Cứu trợ đã hết hạn
             </h3>
-            <p className="text-gray-600">{error}</p>
+            <p className="text-gray-600">
+              Không thể gửi đáp án
+            </p>
           </div>
         </div>
       </div>

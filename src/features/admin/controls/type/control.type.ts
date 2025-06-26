@@ -123,6 +123,8 @@ export type CurrentQuestion = {
   questionMedia: MediaFile[] | string | null;
   intro: string | null;
   correctAnswer: string;
+  questionOrder: number;
+  questionTopicName?: string;
 };
 
 export type ListRescue = {

@@ -5,7 +5,11 @@ import AdminRoutes from "../features/admin/AdminRoutes";
 import ContestRoutes from "../features/contest/ContestRouter";
 import AuthRoutes from "../features/auth/routes";
 import PublicRoutes from "./PublicRoutes";
-import { AudienceOpinionPage, AUDIENCE_ROUTES } from "../features/audience";
+import {
+  AudienceOpinionPage,
+  AudienceStatsPage,
+  AUDIENCE_ROUTES,
+} from "../features/audience";
 import MatchPage from "../features/match/pages/MatchPage";
 import TechBanner from "../features/match/components/MediaPopup/BackGround";
 import PrivateRoute from "./PrivateRoute";
@@ -57,6 +61,10 @@ const AppRoutes: React.FC = () => {
       <Route
         path={AUDIENCE_ROUTES.OPINION_PAGE}
         element={<AudienceOpinionPage />}
+      />
+      <Route
+        path={AUDIENCE_ROUTES.STATS_DISPLAY}
+        element={<AudienceStatsPage />}
       />
       <Route path="/match/eliminate" element={<EliminatePage />} />
       <Route path="/banner" element={<TechBanner />} />

@@ -6,6 +6,7 @@ import {
   ContestantsControl,
   QuestionHeader,
   SupplierVideo,
+  AudienceRescueControl,
 } from "../components";
 import QuestionDetails from "../components/QuestionDetails";
 import BackgroundControl from "../components/BackgroundControl";
@@ -26,6 +27,16 @@ import {
 } from "../type/control.type";
 import { useSocket } from "../../../../contexts/SocketContext";
 import { Box, CircularProgress } from "@mui/material";
+
+// Define types for socket responses
+interface SocketResponse {
+  success: boolean;
+  message?: string;
+}
+
+interface TimerUpdateData {
+  timeRemaining: number;
+}
 
 const ControlsPage: React.FC = () => {
   const { match } = useParams();
@@ -104,9 +115,11 @@ const ControlsPage: React.FC = () => {
       setCurrentQuestion({ ...data?.currentQuestion });
     };
 
-    const handleUpdateTime = (data: any) => {
+    const handleUpdateTime = (data: TimerUpdateData) => {
       const newTime = data?.timeRemaining;
-      setMatchInfo(prev => (prev ? { ...prev, remainingTime: newTime } : prev));
+      setMatchInfo((prev) =>
+        prev ? { ...prev, remainingTime: newTime } : prev
+      );
     };
 
     socket.on("screen:update", handleScreenUpdate);
@@ -120,6 +133,69 @@ const ControlsPage: React.FC = () => {
       socket.off("timer:update", handleUpdateTime);
     };
   }, [socket]);
+
+  // Handle audience rescue controls
+  const handleShowQR = (rescueId: number) => {
+    // Emit socket event để hiển thị QR trên màn hình chiếu
+    if (socket) {
+      socket.emit(
+        "audience:showQR",
+        {
+          match: match,
+          rescueId: rescueId,
+          matchSlug: match,
+        },
+        // (response: SocketResponse) => {
+        //   if (response?.success) {
+        //     console.log("✅ Show QR successful:", response.message);
+        //   } else {
+        //     console.error("❌ Show QR failed:", response?.message);
+        //   }
+        // }
+      );
+    }
+  };
+
+  const handleShowChart = (rescueId: number) => {
+    // Emit socket event để hiển thị chart trên màn hình chiếu
+    if (socket) {
+      socket.emit(
+        "audience:showChart",
+        {
+          match: match,
+          rescueId: rescueId,
+          matchSlug: match,
+        },
+        // (response: SocketResponse) => {
+        //   if (response?.success) {
+        //     console.log("✅ Show Chart successful:", response.message);
+        //   } else {
+        //     console.error("❌ Show Chart failed:", response?.message);
+        //   }
+        // }
+      );
+    }
+  };
+
+  const handleHideAll = () => {
+    // Emit socket event để ẩn audience display
+    if (socket) {
+      socket.emit(
+        "audience:hide",
+        {
+          match: match,
+          matchSlug: match,
+        },
+        (response: SocketResponse) => {
+          if (response?.success) {
+            console.log("✅ Hide All successful:", response.message);
+          } else {
+            console.error("❌ Hide All failed:", response?.message);
+          }
+        }
+      );
+    }
+  };
 
   const isLoading =
     isLoadingMatch ||
@@ -208,6 +284,15 @@ const ControlsPage: React.FC = () => {
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <ContestantsControl />
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+            <AudienceRescueControl
+              matchSlug={match}
+              currentQuestionOrder={currentQuestion?.questionOrder}
+              onShowQR={handleShowQR}
+              onShowChart={handleShowChart}
+              onHideAll={handleHideAll}
+            />
           </div>
           <div>
             <Link

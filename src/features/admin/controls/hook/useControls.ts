@@ -10,6 +10,7 @@ import {
   GetListContestant,
 } from "../service/api";
 
+
 export const useMatchInfo = (match: string | null) => {
   return useQuery({
     queryKey: ["MatchInfo", match],
@@ -73,3 +74,5 @@ export const useScreenControl = (match: string | null) => {
     enabled: !!match,
   });
 };
+
+

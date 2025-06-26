@@ -1,3 +1,4 @@
 export const AUDIENCE_ROUTES = {
-  OPINION_PAGE: '/audience/opinion/:matchSlug/:rescueId',
+  OPINION_PAGE: "/khan-gia/tro-giup/:matchSlug/:rescueId",
+  STATS_DISPLAY: "/khan-gia/thong-ke/:rescueId",
 };
