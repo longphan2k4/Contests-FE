@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../features/auth/hooks/useprofile";
 import { useNotification } from "../../contexts/NotificationContext";
-import Logo from "../../assets/image/logo/logo-caothang.png";
+import Logo from "../../assets/image/logo/logo-caothang.svg";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [activeItem, setActiveItem] = useState("hero");
+
+  const [activeItem, setActiveItem] = useState("home");
+
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const { data: userProfile, isLoading: profileLoading } = useProfile();
@@ -35,11 +37,11 @@ const Header: React.FC = () => {
   };
 
   const navItems = [
-    { name: "Trang chủ", id: "home", type: "navigate" },
-    { name: "Cuộc thi", id: "contest", type: "navigate" },
-    { name: "Đào tạo", id: "programs", type: "scroll" },
-    { name: "Tin tức", id: "news", type: "scroll" },
-    { name: "Liên hệ", id: "contact", type: "scroll" },
+    { name: "Trang chủ", id: "home", type: "scroll" },
+    { name: "Cuộc thi", id: "contest", type: "scroll" },
+    { name: "Thể lệ thi", id: "rules", type: "scroll" },
+    { name: "Lịch trình", id: "timeline", type: "scroll" },
+    { name: "Nhà tài trợ", id: "sponsors", type: "scroll" },
   ];
 
   const handleNavClick = (item: { id: string; type: string }) => {
@@ -114,9 +116,7 @@ const Header: React.FC = () => {
         >
           <div className="flex items-center space-x-4 group">
             <div className="w-12 h-12 flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-                <img src={Logo} alt="Logo" className="w-7 h-10 object-cover" />
-              </div>
+              <img src={Logo} alt="Logo" className="w-7 h-10 object-cover" />
             </div>
             <div className="relative">
               <h1
@@ -124,7 +124,7 @@ const Header: React.FC = () => {
                   isScrolled ? "text-lg" : "text-xl"
                 }`}
               >
-                Cao đẳng Kỹ Thuật Cao Thắng
+                Olympic Tin học 2025
               </h1>
               <p className="text-sm text-cyan-600/80 font-medium">
                 Khoa Công Nghệ Thông Tin
