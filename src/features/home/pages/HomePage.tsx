@@ -1,4 +1,5 @@
-import { useRef, useEffect } from 'react';
+
+import { useRef, useEffect, useState } from 'react';
 import Header from '../../../layouts/HomeLayout/HomeHeader';
 import BannerSlideshow from '../components/contest/Banner';
 import VideoSection from '../components/contest/Video';
@@ -9,15 +10,26 @@ import SponsorsSection from '../components/contest/SponsorsSection';
 import ContestRulesSection from '../components/contest/ContestRulesSection';
 import Footer from '../../../layouts/HomeLayout/HomeFooter';
 import BackgroundEffects from '../components/contest/Background';
+import LargeSpinner from '@components/LargeSpinner';
+
 const HomePage = () => {
-  // Thêm useEffect để set title cho trang
+  // Trạng thái để kiểm soát việc tải
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Thêm useEffect để set title cho trang và giả lập tải
   useEffect(() => {
     // Set title cho tab
     document.title = 'Cuộc thi - Olympic Tin học';
-    
-    // Cleanup function để reset title khi component unmount (tùy chọn)
+
+    // Giả lập thời gian tải (thay thế bằng logic tải thực tế nếu có)
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // Tải trong 2 giây
+
+    // Cleanup function
     return () => {
       document.title = 'My App'; // hoặc title mặc định của app
+      clearTimeout(timer);
     };
   }, []);
 
@@ -27,6 +39,13 @@ const HomePage = () => {
   const ruleRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
   const sponsorRef = useRef<HTMLDivElement>(null);
+
+  // Nếu đang tải, hiển thị LargeSpinner
+  if (isLoading) {
+    return <LargeSpinner size={80}/>;
+  }
+
+  // Nội dung chính khi tải xong
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 text-gray-800 overflow-hidden pt-20">
       <BackgroundEffects />
@@ -38,7 +57,7 @@ const HomePage = () => {
       <div ref={contestRef} id="contest">
         <HeroSection />
       </div>
-      <div >
+      <div>
         <StatsSection />
       </div>
       <div ref={ruleRef} id="rules">
