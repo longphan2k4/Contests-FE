@@ -1148,8 +1148,7 @@ const ContestantMatchPage: React.FC = () => {
             variant="outlined"
             startIcon={<GroupWorkIcon />}
             onClick={() => {
-              // Reset flag khi mở/đóng modal để cho phép sync lại dữ liệu
-              allowSyncFromAPI();
+              // KHÔNG gọi allowSyncFromAPI() để giữ trạng thái local hiện tại
               setIsGroupDivisionOpen(!isGroupDivisionOpen);
               // Nếu mở group division lần đầu và đã có nhóm, chuyển đến step 2
               if (!isGroupDivisionOpen && hasGroups) {
