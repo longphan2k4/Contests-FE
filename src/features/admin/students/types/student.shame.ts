@@ -42,6 +42,7 @@ export type StudentQuery = {
   limit?: number; // số item trên 1 trang, mặc định 10
   search?: string; // chuỗi tìm kiếm, có thể không truyền
   isActive?: boolean; // trạng thái active, true hoặc false hoặc undefined
+  classId?: number;
 };
 
 type ActiveOption = {

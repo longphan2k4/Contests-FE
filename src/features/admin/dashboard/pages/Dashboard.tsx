@@ -1,6 +1,6 @@
-
+// Dashboard.tsx
 import React, { memo } from "react";
-import { Box, Grid, Paper, Typography } from "@mui/material";
+import { Box, Paper, Typography } from "@mui/material";
 import SchoolIcon from '@mui/icons-material/School';
 import GroupIcon from '@mui/icons-material/Group';
 import ClassIcon from '@mui/icons-material/Class';
@@ -26,14 +26,6 @@ const StatCard = ({ title, value, icon, color }: StatCardProps) => (
     </Box>
   </Paper>
 );
-const chartData = [
-  { title: "Thống kê số SV theo lớp", data: [120, 90, 75, 140] },
-  { title: "Số SV theo môn", data: [80, 95, 110, 130] },
-  { title: "Số SV theo khóa", data: [70, 100, 85, 120] },
-  { title: "Số SV theo ngành", data: [150, 100, 90, 110] },
-  { title: "Số SV theo giới tính", data: [600, 600] },
-  { title: "Số SV theo năm", data: [300, 400, 500] },
-];
 
 const Dashboard: React.FC = () => {
   const stats = [
@@ -46,43 +38,82 @@ const Dashboard: React.FC = () => {
     { title: 'Sinh viên', value: 1200, icon: <PeopleAltIcon />, color: "#00bcd4" },
   ];
 
+  const studentByClassData = [
+    { id: 0, value: 120, label: '12A1' },
+    { id: 1, value: 90, label: '12A2' },
+    { id: 2, value: 75, label: '11B1' },
+    { id: 3, value: 140, label: '11B2' },
+  ];
+
+  
+  const userRole = [
+    { id: 0, value: 150, label: 'Admin' },
+    { id: 1, value: 100, label: 'Trọng tài' },
+  ];
+
+  const topicQuestionData = [
+    { id: 0, value: 150, label: 'Toán' },
+    { id: 1, value: 100, label: 'Lịch sử' },
+    { id: 2, value: 120, label: 'Anh' },
+    { id: 3, value: 80, label: 'Khoa học' },
+  ];
+
+  const contestsByYear = [
+    { id: 0, value: 3, label: '2022' },
+    { id: 1, value: 5, label: '2023' },
+    { id: 2, value: 7, label: '2024' },
+  ];
+
   return (
     <Box p={3}>
       <Typography variant="h4" gutterBottom>
         Dashboard Thống Kê
       </Typography>
 
-      <Box
-        display="grid"
-        gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr" }}
-        gap={3}
-        >
+      <Box display="grid" gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr" }} gap={3}>
         {stats.map((item, index) => (
-            <Box key={index}>
+          <Box key={index}>
             <StatCard {...item} />
-            </Box>
+          </Box>
         ))}
-        </Box>
-             <Box mt={5}>
-        <Grid container spacing={3}>
-            {chartData.map((chart, index) => (
-                <Grid item xs={12} sm={6} key={index}>
-                <Typography variant="h6" gutterBottom>{chart.title}</Typography>
-                <BarChart
-                    height={300}
-                    series={[{ data: chart.data, label: "Số SV" }]}
-                    xAxis={[{
-                    data: chart.data.map((_, i) => `Nhóm ${i + 1}`),
-                    scaleType: "band",
-                    }]}
-                />
-                </Grid>
-            ))}
-            </Grid>
+      </Box>
 
+      <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={3} mt={5}>
+        <Box>
+          <Typography variant="h6" gutterBottom>SV theo lớp</Typography>
+          <BarChart
+            height={300}
+            series={[{ data: studentByClassData.map(d => d.value), label: 'Số SV' }]}
+            xAxis={[{ data: studentByClassData.map(d => d.label), scaleType: 'band' }]}
+          />
+        </Box>
+
+        <Box>
+          <Typography variant="h6" gutterBottom>Câu hỏi theo chuyên đề</Typography>
+          <BarChart
+            height={300}
+            series={[{ data: topicQuestionData.map(d => d.value), label: 'Số câu hỏi' }]}
+            xAxis={[{ data: topicQuestionData.map(d => d.label), scaleType: 'band' }]}
+          />
+        </Box>
+        <Box>
+          <Typography variant="h6" gutterBottom>Số người dùng theo role</Typography>
+          <BarChart
+            height={300}
+            series={[{ data: userRole.map(d => d.value), label: 'Số người dùng' }]}
+            xAxis={[{ data: userRole.map(d => d.label), scaleType: 'band' }]}
+          />
+        </Box>
+        <Box>
+          <Typography variant="h6" gutterBottom>Cuộc thi theo năm</Typography>
+          <BarChart
+            height={300}
+            series={[{ data: contestsByYear.map(d => d.value), label: 'Số cuộc thi' }]}
+            xAxis={[{ data: contestsByYear.map(d => d.label), scaleType: 'band' }]}
+          />
+        </Box>
       </Box>
     </Box>
-            
   );
 };
 
