@@ -114,12 +114,10 @@ export default function ListStudent({
   } = useClassSchoolId(schoolId);
 
   useEffect(() => {
-    if (slug) {
-      refetch();
-      refetchSchool();
-      refetchClass();
-    }
-  }, [slug, refetch, refetchSchool, refetchClass, open]);
+    refetch();
+    refetchSchool();
+    refetchClass();
+  }, [refetch, refetchSchool, refetchClass, open]);
 
   const {
     control,

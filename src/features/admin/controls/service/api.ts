@@ -40,7 +40,6 @@ export const GetListContestant = async (match: string | null) => {
   return res.data;
 };
 
-// Cập nhật questionOrder cho rescue khi hiển thị QR
 export const updateRescueQuestionOrder = async (
   rescueId: number,
   questionOrder: number
@@ -60,4 +59,15 @@ export const updateRescueStatus = async (
     status: status,
   });
   return res.data;
-}; 
+};
+export const GetListSponsorMedia = async (slug: string | null) => {
+  const res = await axiosInstance.get(`/sponsors/contest/list-video/${slug}`);
+  return res.data;
+};
+
+export const GetListClassVideo = async (slug: string | null) => {
+  const res = await axiosInstance.get(
+    `/class-video/contest/list-video/${slug}`
+  );
+  return res.data;
+};

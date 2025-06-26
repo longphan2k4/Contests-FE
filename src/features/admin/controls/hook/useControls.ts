@@ -8,8 +8,9 @@ import {
   GetCurrentQuestion,
   GetMatchInfo,
   GetListContestant,
+  GetListSponsorMedia,
+  GetListClassVideo,
 } from "../service/api";
-
 
 export const useMatchInfo = (match: string | null) => {
   return useQuery({
@@ -75,4 +76,18 @@ export const useScreenControl = (match: string | null) => {
   });
 };
 
+export const useListSponsorMedia = (slug: string | null) => {
+  return useQuery({
+    queryKey: ["ListSponsorMedia", slug],
+    queryFn: () => GetListSponsorMedia(slug),
+    enabled: !!slug,
+  });
+};
 
+export const useListClassVideo = (slug: string | null) => {
+  return useQuery({
+    queryKey: ["ListClassVideo", slug],
+    queryFn: () => GetListClassVideo(slug),
+    enabled: !!slug,
+  });
+};

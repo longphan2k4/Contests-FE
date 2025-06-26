@@ -15,7 +15,13 @@ export default function ViewUser({
   isOpen,
   onClose,
 }: ViewUserProps): React.ReactElement {
-  const { data: user, isLoading, isError } = useUserById(id);
+  const { data: user, isLoading, isError, refetch } = useUserById(id);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      refetch();
+    }
+  }, [isOpen, refetch]);
   const fields = [
     { label: "ID", value: user?.id },
     { label: "Tên tài khoản", value: user?.username },
@@ -40,7 +46,7 @@ export default function ViewUser({
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Cập nhật ${user?.username}`}
+        title={`Xem người dùng: ${user?.username}`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>

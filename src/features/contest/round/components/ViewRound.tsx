@@ -2,6 +2,7 @@ import AppFormDialog from "../../../../components/AppFormDialog";
 import { Box, CircularProgress } from "@mui/material";
 
 import { useGetById } from "../hook/useRound";
+import React from "react";
 
 interface ViewClassProps {
   id: number | null;
@@ -14,7 +15,14 @@ export default function ViewClass({
   isOpen,
   onClose,
 }: ViewClassProps): React.ReactElement {
-  const { data: round, isLoading, isError } = useGetById(id);
+  const { data: round, isLoading, isError, refetch } = useGetById(id);
+  // Refetch data when the dialog is opened
+  React.useEffect(() => {
+    if (isOpen) {
+      refetch();
+    }
+  }, [isOpen, refetch]);
+
   if (isLoading)
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
@@ -38,7 +46,7 @@ export default function ViewClass({
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Cập nhật ${round?.name}`}
+        title={`Xem vòng: ${round?.name}`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>

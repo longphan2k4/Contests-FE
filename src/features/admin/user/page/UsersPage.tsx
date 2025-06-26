@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo } from "react";
+import React, { useState, useEffect, useCallback, memo, use } from "react";
 import {
   Box,
   Typography,
@@ -75,6 +75,10 @@ const UsersPage: React.FC = () => {
   const { mutate: mutateDeleteMany } = useDeleteMany();
 
   const { mutate: mutateDelete } = useDelete();
+
+  useEffect(() => {
+    refetchUsers();
+  }, [refetchUsers]);
 
   useEffect(() => {
     if (usersQuery) {

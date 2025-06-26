@@ -7,13 +7,18 @@ import {
 import { useSocket } from "../../../../contexts/SocketContext";
 import { useToast } from "../../../../contexts/toastContext";
 import { useParams } from "react-router-dom";
+import { controlKey } from "../type/control.type";
 
 interface QuestionControlProp {
   currentQuestion?: CurrentQuestion;
   remainingTime?: number;
+  controlKey?: string;
 }
 
-const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
+const QuestionControl: React.FC<QuestionControlProp> = ({
+  remainingTime,
+  controlKey,
+}) => {
   // QuestionControl.tsx (Component con)
   const [localTime, setLocalTime] = useState<number | undefined>(undefined);
 
@@ -32,12 +37,22 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
   const EmitScreenUpdate = (payload: UpdateSceenControl, msg: string) => {
     if (!socket || !match) return;
 
-    socket.emit("screen:update", { match, ...payload }, (response: any) => {});
-    showToast(msg, "success");
+    socket.emit("screen:update", { match, ...payload }, (err: any) => {
+      if (err) {
+        showToast(err.message, "error");
+      } else {
+        showToast(msg, "success");
+      }
+    });
   };
 
   const handlePlay = () => {
     if (!socket || !match) return;
+
+    if (controlKey !== "question") {
+      showToast("Vui lòng hiển thị câu hỏi trước", "error");
+      return;
+    }
 
     socket.emit("timer:play", { match }, (err: any, res: any) => {
       if (err) {
@@ -50,10 +65,14 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
 
   const handlePause = () => {
     if (!socket || !match) return;
+    if (controlKey !== "question") {
+      showToast("Vui lòng hiển thị câu hỏi trước", "error");
+      return;
+    }
 
     socket.emit("timer:pause", { match }, (err: any, res: any) => {
       if (err) {
-        showToast("Đếm thời gian thất bại", "error");
+        showToast(err.message, "error");
       } else {
         showToast(res.message, "success");
       }
@@ -62,6 +81,10 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
 
   const handleReset = () => {
     if (!socket || !match) return;
+    if (controlKey !== "question") {
+      showToast("Vui lòng hiển thị câu hỏi trước", "error");
+      return;
+    }
 
     socket.emit("timer:reset", { match }, (err: any, res: any) => {
       if (err) {
@@ -77,7 +100,7 @@ const QuestionControl: React.FC<QuestionControlProp> = ({ remainingTime }) => {
 
     socket.emit(
       "timer:update",
-      { match, newTime: inputTime },
+      { match, newTime: Number(inputTime) },
       (err: any, res: any) => {
         if (err) {
           showToast(err.message, "error");

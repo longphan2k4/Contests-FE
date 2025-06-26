@@ -146,7 +146,7 @@ export default function MatchPage() {
     const handleCurrentQuestion = (data: any) => {
       setMatchInfo(data?.matchInfo);
       setCurrentQuestion(data?.currentQuestion);
-      setScreenControl((prev) => {
+      setScreenControl(prev => {
         if (!prev) return null;
 
         return {
@@ -158,7 +158,7 @@ export default function MatchPage() {
 
     const handleUpdateTime = (data: any) => {
       const newTime = data?.timeRemaining;
-      setMatchInfo((prev) => {
+      setMatchInfo(prev => {
         if (!prev) return null;
 
         return {
@@ -204,7 +204,7 @@ export default function MatchPage() {
   return (
     <>
       {/* Audience Display Component - hiển thị QR hoặc Chart khi được điều khiển */}
-      
+
       <AudienceDisplayManager
         matchSlug={match}
         currentQuestionId={currentQuestion?.id}

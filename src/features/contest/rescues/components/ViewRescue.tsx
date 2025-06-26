@@ -2,6 +2,7 @@ import AppFormDialog from "../../../../components/AppFormDialog";
 import { Box, CircularProgress } from "@mui/material";
 
 import { useGetById } from "../hook/useRescue";
+import { useEffect } from "react";
 
 interface ViewClassProps {
   id: number | null;
@@ -14,7 +15,14 @@ export default function ViewRescue({
   isOpen,
   onClose,
 }: ViewClassProps): React.ReactElement {
-  const { data: rescue, isLoading, isError } = useGetById(id);
+  const { data: rescue, isLoading, isError, refetch } = useGetById(id);
+
+  useEffect(() => {
+    if (isOpen) {
+      refetch();
+    }
+  }, [isOpen, refetch]);
+
   if (isLoading)
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
@@ -30,7 +38,6 @@ export default function ViewRescue({
       value:
         rescue?.rescueType === "resurrected" ? "Hồi sinh" : "Phao cứu sinh",
     },
-    { label: "Câu bắt đầu", value: rescue?.questionFrom },
     { label: "Câu bắt đầu", value: rescue?.questionFrom },
     { label: "Câu kết thúc", value: rescue?.questionTo },
     { label: "Số thí sinh còn lại", value: rescue?.remainingContestants },
@@ -62,7 +69,7 @@ export default function ViewRescue({
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Cập nhật ${rescue?.name}`}
+        title={`Xem cứu trợ : ${rescue?.name}`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
