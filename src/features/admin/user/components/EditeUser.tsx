@@ -39,7 +39,13 @@ export default function EditeUser({
     resolver: zodResolver(UpdateUserSchema),
   });
 
-  const { data: user, isLoading, isError } = useUserById(id);
+  const { data: user, isLoading, isError, refetch } = useUserById(id);
+
+  useEffect(() => {
+    if (isOpen) {
+      refetch();
+    }
+  }, [isOpen, refetch]);
 
   useEffect(() => {
     if (user) {

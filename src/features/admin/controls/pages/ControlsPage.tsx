@@ -6,6 +6,8 @@ import {
   ContestantsControl,
   QuestionHeader,
   SupplierVideo,
+  VideoControl,
+  StatusControl,
 } from "../components";
 import QuestionDetails from "../components/QuestionDetails";
 import BackgroundControl from "../components/BackgroundControl";
@@ -16,6 +18,8 @@ import {
   useMatchInfo,
   useScreenControl,
   useCountContestant,
+  useListClassVideo,
+  useListSponsorMedia,
 } from "../hook/useControls";
 import {
   type MatchInfo,
@@ -23,12 +27,13 @@ import {
   type countContestant,
   type SceenControl,
   type CurrentQuestion,
+  type MediaType,
 } from "../type/control.type";
 import { useSocket } from "../../../../contexts/SocketContext";
 import { Box, CircularProgress } from "@mui/material";
 
 const ControlsPage: React.FC = () => {
-  const { match } = useParams();
+  const { match, slug } = useParams();
   const { socket, isConnected } = useSocket();
 
   // 1. State
@@ -40,31 +45,60 @@ const ControlsPage: React.FC = () => {
   const [listQuestion, setListQuestion] = useState<Question[]>([]);
   const [screenControl, setScreenControl] = useState<SceenControl | null>(null);
 
+  const [sponsorMedia, setSponsorMedia] = useState<MediaType[]>([]);
+  const [classVideo, setClassVideo] = useState<MediaType[]>([]);
   const {
     data: matchInfoRes,
     isLoading: isLoadingMatch,
     isSuccess: isSuccessMatch,
+    isError,
   } = useMatchInfo(match ?? null);
   const {
     data: currentQuestionRes,
     isLoading: isLoadingCurrentQuestion,
     isSuccess: isSuccessCurrentQuestion,
+    isError: isErrorCurrentQuestion,
   } = useCurrentQuestion(match ?? null);
   const {
     data: countContestantRes,
     isLoading: isLoadingCount,
     isSuccess: isSuccessCount,
+    isError: isErrorCount,
   } = useCountContestant(match ?? null);
   const {
     data: listQuestionRes,
     isLoading: isLoadingQuestions,
     isSuccess: isSuccessQuestions,
+    isError: isErrorQuestions,
   } = useListQuestion(match ?? null);
   const {
     data: screenControlRes,
     isLoading: isLoadingControl,
     isSuccess: isSuccessControl,
+    isError: isErrorControl,
   } = useScreenControl(match ?? null);
+
+  const {
+    data: sponsorMediaRes,
+    isLoading: isLoadingSponsorMedia,
+    isSuccess: isSuccessSponsorMedia,
+    isError: isErrorSponsorMedia,
+  } = useListSponsorMedia(slug ?? null);
+
+  const {
+    data: classVideoRes,
+    isLoading: isLoadingClassVideo,
+    isSuccess: isSuccessClassVideo,
+    isError: isErrorClassVideo,
+  } = useListClassVideo(slug ?? null);
+
+  useEffect(() => {
+    if (isSuccessSponsorMedia) setSponsorMedia(sponsorMediaRes.data);
+  }, [isSuccessSponsorMedia, sponsorMediaRes]);
+
+  useEffect(() => {
+    if (isSuccessClassVideo) setClassVideo(classVideoRes.data);
+  }, [isSuccessClassVideo, classVideoRes]);
 
   useEffect(() => {
     if (isSuccessMatch) setMatchInfo(matchInfoRes.data);
@@ -126,7 +160,9 @@ const ControlsPage: React.FC = () => {
     isLoadingCurrentQuestion ||
     isLoadingCount ||
     isLoadingQuestions ||
-    isLoadingControl;
+    isLoadingControl ||
+    isLoadingSponsorMedia ||
+    isLoadingClassVideo;
 
   if (isLoading) {
     return (
@@ -138,6 +174,24 @@ const ControlsPage: React.FC = () => {
       >
         <CircularProgress />
       </Box>
+    );
+  }
+
+  if (
+    isError ||
+    isErrorCurrentQuestion ||
+    isErrorCount ||
+    isErrorQuestions ||
+    isErrorControl ||
+    isErrorSponsorMedia ||
+    isErrorClassVideo
+  ) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-red-500 font-bold text-lg">
+          Đã có lỗi xảy ra, vui lòng thử lại sau.
+        </div>
+      </div>
     );
   }
 
@@ -156,33 +210,10 @@ const ControlsPage: React.FC = () => {
             totalTime={currentQuestion?.defaultTime}
             matchNumber={matchInfo?.name}
           />
-          <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
-            <h2 className="text-xl font-semibold text-gray-800 tracking-tight mb-4">
-              Trạng thái điều khiển
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="bg-blue-100 p-4 rounded-lg border border-blue-200">
-                <h3 className="text-blue-800 font-medium mb-1">
-                  Màn hình chiếu
-                </h3>
-                <p className="text-blue-700 text-sm">
-                  <Link to={`/tran-dau/${match}`}>Màn hình chiếu</Link>
-                </p>
-              </div>
-              <div className="bg-green-100 p-4 rounded-lg border border-green-200">
-                <h3 className="text-green-800 font-medium mb-1">Socket.IO</h3>
-                <p className="text-green-700 text-sm">
-                  {isConnected === true ? `Đã kết nối ` : "Chưa kết nối"}
-                </p>
-              </div>
-              <div className="bg-indigo-100 p-4 rounded-lg border border-indigo-200">
-                <h3 className="text-indigo-800 font-medium mb-1">Đang chiếu</h3>
-                <p className="text-indigo-700 text-sm font-semibold">
-                  {screenControl?.controlKey}
-                </p>
-              </div>
-            </div>
-          </div>
+          <StatusControl
+            isConnected={isConnected}
+            screenControl={screenControl}
+          />
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <BackgroundControl />
           </div>
@@ -204,7 +235,17 @@ const ControlsPage: React.FC = () => {
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
-            <SupplierVideo currentQuestion={currentQuestion} />
+            <SupplierVideo
+              currentQuestion={currentQuestion}
+              controlKey={screenControl?.controlKey}
+            />
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+            <VideoControl
+              sponsorMedia={sponsorMedia}
+              classVideo={classVideo}
+              controlKey={screenControl?.controlKey}
+            />
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <ContestantsControl />

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,9 +46,32 @@ export default function EditeMatch({
 
   const { slug } = useParams();
 
-  const { data: listStatus } = useStatus();
+  const {
+    data: listStatus,
+    refetch: refetchStatus,
+    isError: isStatusError,
+    isLoading: isStatusLoading,
+  } = useStatus();
 
-  const { data: listRound } = useListRound(slug ?? null);
+  const {
+    data: listRound,
+    refetch: refetchRound,
+    isError: isRoundError,
+    isLoading: isRoundLoading,
+  } = useListRound(slug ?? null);
+
+  const {
+    data: listQuestionPackage,
+    refetch: refetchQuestionPackage,
+    isError: isQuestionPackageError,
+    isLoading: isQuestionPackageLoading,
+  } = useListQuestionPackage();
+
+  useEffect(() => {
+    refetchRound();
+    refetchStatus();
+    refetchQuestionPackage();
+  }, [refetchRound, refetchStatus, refetchQuestionPackage, isOpen]);
 
   // Memo hóa danh sách trường học để tránh re-render thừa
   const round = useMemo(() => {
@@ -61,18 +84,16 @@ export default function EditeMatch({
     return [];
   }, [listRound]);
 
-  const { data: listQuestionPackAge } = useListQuestionPackage();
-
   // Memo hóa danh sách trường học để tránh re-render thừa
   const questionPackage = useMemo(() => {
-    if (listQuestionPackAge?.success) {
-      return listQuestionPackAge.data.map((item: any) => ({
+    if (listQuestionPackage?.success) {
+      return listQuestionPackage.data.map((item: any) => ({
         label: item.name,
         value: item.id,
       }));
     }
     return [];
-  }, [listQuestionPackAge]);
+  }, [listQuestionPackage]);
 
   const status = useMemo(() => {
     if (listStatus?.success && Array.isArray(listStatus.data.options)) {
@@ -90,7 +111,7 @@ export default function EditeMatch({
         name: matchData.name,
         roundId: matchData.roundId,
         status: matchData.status,
-        currentQuestion: matchData.currentQuestion,
+currentQuestion: matchData.currentQuestion,
         questionPackageId: matchData.questionPackageId,
         isActive: matchData.isActive,
         startTime: dayjs(matchData.startTime).format("YYYY-MM-DDTHH:mm"),
@@ -105,11 +126,23 @@ export default function EditeMatch({
     onClose();
   };
 
+  if (isStatusLoading || isRoundLoading || isQuestionPackageLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isStatusError || isRoundError || isQuestionPackageError) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
+
   return (
     <AppFormDialog
       open={isOpen}
       onClose={onClose}
-      title={`Cập nhật vòng đấu: ${matchData?.name || ""}`}
+      title={`Cập nhật trận đấu: ${matchData?.name || ""}`}
       maxWidth="sm"
     >
       <form id="create-class-form" onSubmit={handleSubmit(handleFormSubmit)}>
@@ -181,7 +214,7 @@ export default function EditeMatch({
           error={errors.status}
         />
         <Controller
-          name="isActive"
+name="isActive"
           control={control}
           render={({ field }) => (
             <FormSwitch
