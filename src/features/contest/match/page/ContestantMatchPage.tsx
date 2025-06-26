@@ -21,6 +21,7 @@ import {
 } from "@mui/material";
 import { Button } from "@mui/material";
 import { Pagination } from "@mui/material";
+import ResizablePanel from "../../../../components/ResizablePanel";
 
 import {
   type UpdateContestantInput,
@@ -73,7 +74,8 @@ const ContestantMatchPage: React.FC = () => {
   const [isViewOpen, setIsViewOpen] = useState(false); const [isEditOpen, setIsEditOpen] = useState(false);
   const [isComfirmDelete, setIsComfirmDelete] = useState(false);
   // const [isComfirmDeleteMany, setIsComfirmDeleteMany] = useState(false);
-  const [isGroupDivisionOpen, setIsGroupDivisionOpen] = useState(false);  // Group division states
+  const [isGroupDivisionOpen, setIsGroupDivisionOpen] = useState(false);
+  const [groupDivisionPanelWidth, setGroupDivisionPanelWidth] = useState(400);  // Group division states
   const [groupDivisionStep, setGroupDivisionStep] = useState(1);
   const [selectedMethod, setSelectedMethod] = useState<string>('');
   const [numberOfGroups, setNumberOfGroups] = useState<number>(0);
@@ -1712,35 +1714,15 @@ const ContestantMatchPage: React.FC = () => {
           onConfirm={() => handleDelete(selectedId)}
         />
       </Box>      {/* Right Sidebar for Group Division */}
-      {isGroupDivisionOpen && (
-        <Box
-          sx={{
-            width: 400,
-            backgroundColor: "#f5f5f5",
-            borderLeft: "2px solid #e0e0e0",
-            ml: 3,
-            p: 3,
-            height: "100vh",
-            overflow: "auto",
-            transition: "width 0.3s ease",
-            flexShrink: 0,
-            display: "flex",
-            flexDirection: "column",
-            '&::-webkit-scrollbar': {
-              width: '4px',
-            },
-            '&::-webkit-scrollbar-track': {
-              backgroundColor: '#f1f1f1',
-              borderRadius: '4px'
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: '#c1c1c1',
-              borderRadius: '4px',
-              '&:hover': {
-          backgroundColor: '#a8a8a8'
-              }
-            }
-          }}        >          {/* Header */}
+      <ResizablePanel
+        isOpen={isGroupDivisionOpen}
+        defaultWidth={groupDivisionPanelWidth}
+        minWidth={300}
+        maxWidth={800}
+        position="right"
+        onWidthChange={setGroupDivisionPanelWidth}
+        storageKey="contestantMatchPage_groupDivisionPanelWidth"
+      >          {/* Header */}
           <Box sx={{ mb: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="h6" fontWeight="bold">
@@ -2551,8 +2533,7 @@ const ContestantMatchPage: React.FC = () => {
               </Button>
             )}
           </Box>
-        </Box>
-      )}
+        </ResizablePanel>
 
       {/* Create Judge Modal */}
       <CreateUser
