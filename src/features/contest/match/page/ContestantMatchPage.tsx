@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import {
   Box,
@@ -101,7 +101,9 @@ const ContestantMatchPage: React.FC = () => {
 
   // Group name editing states
   const [editingGroupIndex, setEditingGroupIndex] = useState<number | null>(null);
-  const [editingGroupName, setEditingGroupName] = useState<string>('');
+  // Sử dụng ref để tránh re-render khi gõ tên nhóm
+  const editingGroupNameRef = useRef<string>('');
+  const editingInputRef = useRef<HTMLInputElement>(null);
 
   // Group management states
   const [groups, setGroups] = useState<{ [key: number]: Contestant[] }>({});
@@ -1069,42 +1071,71 @@ const ContestantMatchPage: React.FC = () => {
     if (!group) return;
     
     setEditingGroupIndex(groupIndex);
-    setEditingGroupName(group.name);
+    editingGroupNameRef.current = group.name;
+    // Focus input sau khi render
+    setTimeout(() => {
+      if (editingInputRef.current) {
+        editingInputRef.current.focus();
+        editingInputRef.current.select();
+      }
+    }, 0);
   }, [existingGroups]);
-
-  // Handle group name change
-  const handleGroupNameChange = useCallback((value: string) => {
-    setEditingGroupName(value);
-  }, []);
-
-  // Handle save group name
-  const handleSaveGroupName = useCallback(async () => {
-    if (editingGroupIndex === null || !editingGroupName.trim()) return;
-    
-    const group = existingGroups?.[editingGroupIndex];
-    if (!group) return;
-
-    try {
-      // Gọi API cập nhật tên nhóm
-      await updateGroupName(group.id, editingGroupName.trim());
-      
-      // Refetch groups để lấy dữ liệu mới từ server
-      await refetchGroups();
-      
-      // Reset editing state
-      setEditingGroupIndex(null);
-      setEditingGroupName('');
-    } catch (error) {
-      console.error('Error updating group name:', error);
-      // Toast message đã được xử lý bởi hook
-    }
-  }, [editingGroupIndex, editingGroupName, existingGroups, updateGroupName, refetchGroups]);
 
   // Handle cancel edit group name
   const handleCancelEditGroupName = useCallback(() => {
     setEditingGroupIndex(null);
-    setEditingGroupName('');
+    editingGroupNameRef.current = '';
   }, []);
+
+  // Handle save group name
+  const handleSaveGroupName = useCallback(async () => {
+    if (editingGroupIndex === null) {
+      handleCancelEditGroupName();
+      return;
+    }
+    
+    // Lấy giá trị hiện tại từ input
+    const currentValue = editingInputRef.current?.value?.trim() || '';
+    
+    if (!currentValue) {
+      handleCancelEditGroupName();
+      return;
+    }
+    
+    const group = existingGroups?.[editingGroupIndex];
+    if (!group) {
+      handleCancelEditGroupName();
+      return;
+    }
+
+    // Nếu tên không thay đổi, chỉ cần cancel editing
+    if (currentValue === group.name.trim()) {
+      handleCancelEditGroupName();
+      return;
+    }
+
+    try {
+      // Set flag để không sync từ API trong khi đang save
+      setSkipSyncFromAPI(true);
+      
+      // Gọi API cập nhật tên nhóm
+      await updateGroupName(group.id, currentValue);
+      
+      // Reset editing state trước
+      setEditingGroupIndex(null);
+      editingGroupNameRef.current = '';
+      
+      // Refetch groups để lấy dữ liệu mới từ server
+      await refetchGroups();
+      
+    } catch (error) {
+      console.error('Error updating group name:', error);
+      // Toast message đã được xử lý bởi hook
+    } finally {
+      // Reset flag sau khi hoàn thành
+      setTimeout(() => setSkipSyncFromAPI(false), 100);
+    }
+  }, [editingGroupIndex, existingGroups, updateGroupName, refetchGroups, handleCancelEditGroupName]);
 
   // Handle key press for group name editing
   const handleGroupNameKeyPress = useCallback((e: React.KeyboardEvent) => {
@@ -1973,10 +2004,10 @@ const ContestantMatchPage: React.FC = () => {
                           {editingGroupIndex === index ? (
                             // Input để đổi tên nhóm
                             <TextField
-                              value={editingGroupName}
-                              onChange={(e) => handleGroupNameChange(e.target.value)}
+                              inputRef={editingInputRef}
+                              defaultValue={existingGroups?.[index]?.name || `Nhóm ${index + 1}`}
                               onKeyDown={handleGroupNameKeyPress}
-                              onBlur={handleCancelEditGroupName}
+                              onBlur={handleSaveGroupName}
                               size="small"
                               autoFocus
                               onClick={(e) => e.stopPropagation()}
@@ -2007,12 +2038,7 @@ const ContestantMatchPage: React.FC = () => {
                               sx={{
                                 cursor: 'pointer',
                                 minWidth: '60px',
-                                textAlign: 'center',
-                                '&:hover': {
-                                  backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                                  borderRadius: '4px',
-                                  padding: '2px 4px'
-                                }
+                                textAlign: 'center'
                               }}
                               title="Double click để đổi tên nhóm"
                             >
@@ -2117,21 +2143,24 @@ const ContestantMatchPage: React.FC = () => {
                       }}
                     />
                   )}
-                  renderOption={(props, option) => (
-                    <Box component="li" {...props}>
-                      <Avatar sx={{ width: 24, height: 24, mr: 1, fontSize: '0.75rem' }}>
-                        {option.username.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="body2" fontWeight="medium">
-                          {option.username}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {option.email}
-                        </Typography>
+                  renderOption={(props, option) => {
+                    const { key, ...otherProps } = props;
+                    return (
+                      <Box component="li" key={key} {...otherProps}>
+                        <Avatar sx={{ width: 24, height: 24, mr: 1, fontSize: '0.75rem' }}>
+                          {option.username.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="body2" fontWeight="medium">
+                            {option.username}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {option.email}
+                          </Typography>
+                        </Box>
                       </Box>
-                    </Box>
-                  )}
+                    );
+                  }}
                   noOptionsText="Không tìm thấy trọng tài phù hợp"
                   clearText="Xóa lựa chọn"
                   openText="Mở danh sách"
