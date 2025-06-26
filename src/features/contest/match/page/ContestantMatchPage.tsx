@@ -1652,6 +1652,20 @@ const ContestantMatchPage: React.FC = () => {
             flexShrink: 0,
             display: "flex",
             flexDirection: "column",
+            '&::-webkit-scrollbar': {
+              width: '4px',
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: '#f1f1f1',
+              borderRadius: '4px'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: '#c1c1c1',
+              borderRadius: '4px',
+              '&:hover': {
+          backgroundColor: '#a8a8a8'
+              }
+            }
           }}        >          {/* Header */}
           <Box sx={{ mb: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
