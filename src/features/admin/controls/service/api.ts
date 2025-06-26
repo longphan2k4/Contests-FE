@@ -40,6 +40,26 @@ export const GetListContestant = async (match: string | null) => {
   return res.data;
 };
 
+export const updateRescueQuestionOrder = async (
+  rescueId: number,
+  questionOrder: number
+) => {
+  const res = await axiosInstance.patch(`/rescue/${rescueId}`, {
+    questionOrder: questionOrder,
+  });
+  return res.data;
+};
+
+// Cập nhật status của rescue thành "used"
+export const updateRescueStatus = async (
+  rescueId: number,
+  status: string = "used"
+) => {
+  const res = await axiosInstance.patch(`/rescue/${rescueId}`, {
+    status: status,
+  });
+  return res.data;
+};
 export const GetListSponsorMedia = async (slug: string | null) => {
   const res = await axiosInstance.get(`/sponsors/contest/list-video/${slug}`);
   return res.data;

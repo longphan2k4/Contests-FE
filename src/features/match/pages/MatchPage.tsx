@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import MatchHeader from "../components/MatchHeader/MatchHeader";
 import Background from "../components/QuestionDisplay/Background";
 import FullScreenImage from "../components/Media/FullScreenImage";
+import { AudienceDisplayManager } from "../components/AudienceDisplay";
 
 import { Box, CircularProgress } from "@mui/material";
 import {
@@ -202,7 +203,13 @@ export default function MatchPage() {
 
   return (
     <>
-      {/*  Ma */}
+      {/* Audience Display Component - hiển thị QR hoặc Chart khi được điều khiển */}
+
+      <AudienceDisplayManager
+        matchSlug={match}
+        currentQuestionId={currentQuestion?.id}
+      />
+
       {screenControl?.controlKey === "question" && (
         <div key="question">
           <MatchHeader
@@ -262,10 +269,7 @@ export default function MatchPage() {
 
       {screenControl?.controlKey === "video" && screenControl?.media && (
         <div key="video">
-          <FullScreenVideo
-            videoUrl={screenControl?.media}
-            control={screenControl?.controlValue ?? null}
-          />
+          <FullScreenVideo videoUrl={screenControl?.media} />
         </div>
       )}
 
