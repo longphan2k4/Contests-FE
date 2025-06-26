@@ -1,55 +1,96 @@
-import React, { useState, useEffect } from 'react';
-import MultipleChoiceInput from '../components/MultipleChoiceInput';
-import OpenEndedInput from '../components/OpenEndedInput';
-import { useQuestions } from '../hooks/useQuestions';
-import { useTimer } from '../hooks/useTimer';
-import { 
-  ClockIcon, 
-  UserGroupIcon, 
-  TrophyIcon, 
-  FireIcon, 
-//   LightBulbIcon, *bỏ ghi chú nếu muôn sử dụng
-  ArrowRightIcon,
-//   CheckBadgeIcon, *bỏ ghi chú nếu muôn sử dụng
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import MultipleChoiceInput from "../components/MultipleChoiceInput";
+import OpenEndedInput from "../components/OpenEndedInput";
+import { useTimer } from "../hooks/useTimer";
+import { useRescue } from "../hooks/useRescue";
+import { isMultipleChoice, isOpenEnded, isEssay } from "../types/rescue";
+import { useToast } from "../../../contexts/toastContext";
+import {
+  ClockIcon,
+  UserGroupIcon,
+  TrophyIcon,
   InformationCircleIcon,
   PhotoIcon,
-  AcademicCapIcon
-} from '@heroicons/react/24/outline';
+  VideoCameraIcon,
+  SpeakerWaveIcon,
+  AcademicCapIcon,
+} from "@heroicons/react/24/outline";
 
 const AudienceOpinionPage: React.FC = () => {
+  // Lấy params từ URL
+  const { matchSlug, rescueId: rescueIdParam } = useParams<{
+    matchSlug: string;
+    rescueId: string;
+  }>();
+
+  // Chuyển đổi rescueId từ string sang number
+  const rescueId = rescueIdParam ? parseInt(rescueIdParam, 10) : 0;
+
+  // Toast notification
+  const { showToast } = useToast();
+
   useEffect(() => {
-    document.title = 'Trợ giúp của khán giả - Olympic tin học.';
+    document.title = "Trợ giúp của khán giả - Olympic tin học.";
   }, []);
 
-  const { questions, isLoading, error } = useQuestions();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+  const {
+    question,
+    isLoading,
+    error,
+    selectedAnswer,
+    setSelectedAnswer,
+    submitVote,
+    hasVoted,
+  } = useRescue({
+    matchSlug: matchSlug || "",
+    rescueId,
+    autoRefreshChart: false,
+  });
+
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
-  const { timeLeft, setTimeLeft } = useTimer(questions[currentQuestionIndex]?.defaultTime || 60, isSubmitted);
+  const { timeLeft } = useTimer(60, isSubmitted);
 
-  const handleAnswerSubmit = () => {
+  const handleAnswerSelect = (answer: string) => {
+    setSelectedAnswer(answer);
+  };
+
+  const handleAnswerSubmit = async (isCorrect: boolean) => {
     setIsSubmitted(true);
-  };
+    console.log(`Đáp án ${isCorrect ? "chính xác" : "không chính xác"}`);
 
-  const handleNextQuestion = () => {
-    setCurrentQuestionIndex((prev) => (prev + 1) % questions.length);
-    setIsSubmitted(false);
-    setTimeLeft(questions[(currentQuestionIndex + 1) % questions.length]?.defaultTime || 60);
-  };
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty.toLowerCase()) {
-      case 'dễ': return 'bg-green-100 text-green-800 border-green-200';
-      case 'trung bình': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'khó': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    if (!hasVoted && selectedAnswer) {
+      await submitVote();
+      showToast("Bạn đã gửi trợ giúp thành công!", "success");
     }
   };
 
   const getTimeColor = (time: number) => {
-    if (time > 30) return 'text-green-600';
-    if (time > 10) return 'text-yellow-600';
-    return 'text-red-600';
+    if (time > 30) return "text-green-600";
+    if (time > 10) return "text-yellow-600";
+    return "text-red-600";
   };
+
+  // Kiểm tra params hợp lệ
+  if (!matchSlug || !rescueId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-xl border border-red-200 max-w-md">
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+              <InformationCircleIcon className="h-6 w-6 text-red-600" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Tham số không hợp lệ
+            </h3>
+            <p className="text-gray-600">
+              URL cần có định dạng: /audience/opinion/[matchSlug]/[rescueId]
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -70,27 +111,33 @@ const AudienceOpinionPage: React.FC = () => {
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
               <InformationCircleIcon className="h-6 w-6 text-red-600" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Có lỗi xảy ra</h3>
-            <p className="text-gray-600">{error}</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Cứu trợ đã hết hạn
+            </h3>
+            <p className="text-gray-600">
+              Không thể gửi đáp án
+            </p>
           </div>
         </div>
       </div>
     );
   }
 
-  if (questions.length === 0) {
+  if (!question) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex items-center justify-center">
         <div className="bg-white p-8 rounded-2xl shadow-xl border max-w-md text-center">
           <AcademicCapIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Không có câu hỏi</h3>
-          <p className="text-gray-600">Hiện tại chưa có câu hỏi nào trong hệ thống.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Không có câu hỏi
+          </h3>
+          <p className="text-gray-600">
+            Hiện tại chưa có câu hỏi nào trong hệ thống.
+          </p>
         </div>
       </div>
     );
   }
-
-  const question = questions[currentQuestionIndex];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -101,15 +148,19 @@ const AudienceOpinionPage: React.FC = () => {
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2 bg-blue-100 px-4 py-2 rounded-full">
                 <UserGroupIcon className="w-5 h-5 text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">Trợ giúp khán giả</span>
+                <span className="text-sm font-medium text-blue-800">
+                  Trợ giúp khán giả
+                </span>
               </div>
-              <div className="text-sm text-gray-500">
-                Câu {currentQuestionIndex + 1}/{questions.length}
-              </div>
+              <div className="text-sm text-gray-500">ID: {question.id}</div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
-              <div className={`flex items-center space-x-2 px-3 py-2 rounded-full ${getTimeColor(timeLeft)} bg-white border-2`}>
+              <div
+                className={`flex items-center space-x-2 px-3 py-2 rounded-full ${getTimeColor(
+                  timeLeft
+                )} bg-white border-2`}
+              >
                 <ClockIcon className="w-5 h-5" />
                 <span className="font-bold text-lg">{timeLeft}s</span>
               </div>
@@ -125,118 +176,145 @@ const AudienceOpinionPage: React.FC = () => {
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <p className="text-blue-100 mb-2 text-sm font-medium">{question.intro}</p>
-                <h1 className="text-2xl lg:text-3xl font-bold leading-tight">{question.text}</h1>
+                <h1
+                  className="text-2xl lg:text-3xl font-bold leading-tight"
+                  dangerouslySetInnerHTML={{ __html: question.content }}
+                />
               </div>
             </div>
-            
+
             {/* Question Stats */}
             <div className="flex flex-wrap gap-3 mt-4">
-              <div className="flex items-center space-x-2 bg-white/20 px-3 py-1 rounded-full">
-                <AcademicCapIcon className="w-4 h-4" />
-                <span className="text-sm font-medium">{question.topic}</span>
-              </div>
-              
-              <div className={`flex items-center space-x-2 px-3 py-1 rounded-full border ${getDifficultyColor(question.difficulty || '')} bg-white`}>
-                <FireIcon className="w-4 h-4" />
-                <span className="text-sm font-medium">{question.difficulty}</span>
-              </div>
-              
+              {question.questionTopic && (
+                <div className="flex items-center space-x-2 bg-white/20 px-3 py-1 rounded-full">
+                  <AcademicCapIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium">
+                    {question.questionTopic}
+                  </span>
+                </div>
+              )}
+
               <div className="flex items-center space-x-2 bg-white/20 px-3 py-1 rounded-full">
                 <TrophyIcon className="w-4 h-4" />
-                <span className="text-sm font-medium">{question.score} điểm</span>
+                <span className="text-sm font-medium">Trợ giúp khán giả</span>
               </div>
             </div>
           </div>
 
           {/* Question Media */}
-          {question.questionMedia?.type === 'image' && (
-            <div className="px-6 pt-6">
-              <div className="relative rounded-xl overflow-hidden bg-gray-50 border border-gray-200">
-                <img
-                  src={question.questionMedia.url}
-                  alt="Question Media"
-                  className="w-full h-64 object-contain"
-                />
-                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
-                  <PhotoIcon className="w-4 h-4 text-gray-600" />
+          {question.questionMedia &&
+            Array.isArray(question.questionMedia) &&
+            question.questionMedia.length > 0 && (
+              <div className="px-6 pt-6">
+                <div
+                  className={`grid gap-4 ${
+                    question.questionMedia.length === 1
+                      ? "grid-cols-1"
+                      : question.questionMedia.length === 2
+                      ? "grid-cols-2"
+                      : question.questionMedia.length === 3
+                      ? "grid-cols-2 md:grid-cols-3"
+                      : "grid-cols-2 md:grid-cols-4"
+                  }`}
+                >
+                  {question.questionMedia.map((media, index) => (
+                    <div
+                      key={index}
+                      className={`relative rounded-xl overflow-hidden bg-gray-50 border border-gray-200 ${
+                        media.type === "audio" ? "col-span-full" : ""
+                      }`}
+                    >
+                      {media.type === "image" && (
+                        <>
+                          <img
+                            src={media.url}
+                            alt={`Question Media ${index + 1}`}
+                            className="w-full h-64 object-contain"
+                          />
+                          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
+                            <PhotoIcon className="w-4 h-4 text-gray-600" />
+                          </div>
+                          {question.questionMedia &&
+                            question.questionMedia.length > 1 && (
+                              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
+                                <span className="text-xs font-medium text-gray-700">
+                                  {index + 1}/{question.questionMedia.length}
+                                </span>
+                              </div>
+                            )}
+                        </>
+                      )}
+                      {media.type === "video" && (
+                        <>
+                          <video
+                            src={media.url}
+                            className="w-full h-64 object-contain"
+                            controls
+                          />
+                          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
+                            <VideoCameraIcon className="w-4 h-4 text-gray-600" />
+                          </div>
+                          {question.questionMedia &&
+                            question.questionMedia.length > 1 && (
+                              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
+                                <span className="text-xs font-medium text-gray-700">
+                                  {index + 1}/{question.questionMedia.length}
+                                </span>
+                              </div>
+                            )}
+                        </>
+                      )}
+                      {media.type === "audio" && (
+                        <>
+                          <div className="flex items-center justify-center h-64 bg-gradient-to-br from-blue-50 to-indigo-50">
+                            <div className="text-center">
+                              <SpeakerWaveIcon className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+                              <p className="text-gray-600 mb-4">
+                                Tập tin âm thanh
+                              </p>
+                              <audio
+                                src={media.url}
+                                className="w-full max-w-md"
+                                controls
+                              />
+                            </div>
+                          </div>
+                          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
+                            <SpeakerWaveIcon className="w-4 h-4 text-gray-600" />
+                          </div>
+                          {question.questionMedia &&
+                            question.questionMedia.length > 1 && (
+                              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
+                                <span className="text-xs font-medium text-gray-700">
+                                  {index + 1}/{question.questionMedia.length}
+                                </span>
+                              </div>
+                            )}
+                        </>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Question Input */}
           <div className="p-6">
-            {question.type === 'multiple-choice' && question.options && (
-              <MultipleChoiceInput
-                options={question.options}
-                correctAnswer={question.correctAnswer || ''}
-                onSubmit={handleAnswerSubmit}
-              />
-            )}
-            {question.type === 'open-ended' && question.correctAnswer && (
-              <OpenEndedInput
-                correctAnswer={question.correctAnswer}
-                onSubmit={handleAnswerSubmit}
-              />
-            )}
-          </div>
-
-          {/* Result Section - bỏ ghi chú nếu muôn hiển thị đáp án và giải thích của đáp án*/}
-          {/* {isSubmitted && (
-            <div className="border-t border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50">
-              <div className="p-6">
-                <div className="flex items-start space-x-3 mb-4">
-                  <CheckBadgeIcon className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      Đáp án chính xác: {question.correctAnswer}
-                    </h3>
-                    <p className="text-gray-700 leading-relaxed mb-4">{question.explanation}</p>
-                  </div>
-                </div>
-
-                {/* Answer Media */}
-                {/* {question.mediaAnswer?.type === 'image' && (
-                  <div className="mb-4">
-                    <div className="relative rounded-xl overflow-hidden bg-white border border-gray-200">
-                      <img
-                        src={question.mediaAnswer.url}
-                        alt="Answer Media"
-                        className="w-full h-64 object-contain"
-                      />
-                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
-                        <LightBulbIcon className="w-4 h-4 text-yellow-600" />
-                      </div>
-                    </div>
-                  </div>
-                )} */}
-
-                {/* Additional Notes */}
-                {/* {question.additionalNotes && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-start space-x-2">
-                      <InformationCircleIcon className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="font-medium text-blue-900 mb-1">Ghi chú thêm:</h4>
-                        <p className="text-blue-800 text-sm">{question.additionalNotes}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )} */} 
-
-          {/* Next Question Button */}
-          <div className="border-t border-gray-200 p-6 bg-gray-50">
-            <button
-              onClick={handleNextQuestion}
-              className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              <span>Câu hỏi tiếp theo</span>
-              <ArrowRightIcon className="w-5 h-5" />
-            </button>
+            {question &&
+              (isMultipleChoice(question) ? (
+                <MultipleChoiceInput
+                  options={question.options}
+                  correctAnswer={question.correctAnswer}
+                  onAnswerSelect={handleAnswerSelect}
+                  onSubmit={handleAnswerSubmit}
+                />
+              ) : isOpenEnded(question) || isEssay(question) ? (
+                <OpenEndedInput
+                  correctAnswer={question.correctAnswer}
+                  onAnswerChange={handleAnswerSelect}
+                  onSubmit={handleAnswerSubmit}
+                />
+              ) : null)}
           </div>
         </div>
       </div>
