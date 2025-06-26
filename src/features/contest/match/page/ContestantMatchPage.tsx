@@ -111,10 +111,10 @@ const ContestantMatchPage: React.FC = () => {
   const [totalGroups, setTotalGroups] = useState<number>(0);
   const [hasInitializedGroups, setHasInitializedGroups] = useState<boolean>(false);
 
-  // Drag scroll states
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
+  // Drag scroll refs (sử dụng ref để tránh re-render khi drag)
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftRef = useRef(0);
 
   const [filter, setFilter] = useState<ContestantQueryInput>({});
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -969,29 +969,29 @@ const ContestantMatchPage: React.FC = () => {
     }
   }, [fetchJudges, showToast]);
 
-  // Drag scroll handlers
+  // Drag scroll handlers (tối ưu để không re-render khi drag)
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    setIsDragging(true);
-    setStartX(e.pageX - (e.currentTarget as HTMLElement).offsetLeft);
-    setScrollLeft((e.currentTarget as HTMLElement).scrollLeft);
+    isDraggingRef.current = true;
+    startXRef.current = e.pageX - (e.currentTarget as HTMLElement).offsetLeft;
+    scrollLeftRef.current = (e.currentTarget as HTMLElement).scrollLeft;
     (e.currentTarget as HTMLElement).style.cursor = 'grabbing';
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDraggingRef.current) return;
     e.preventDefault();
     const x = e.pageX - (e.currentTarget as HTMLElement).offsetLeft;
-    const walk = (x - startX) * 2; // scroll-fast
-    (e.currentTarget as HTMLElement).scrollLeft = scrollLeft - walk;
-  }, [isDragging, startX, scrollLeft]);
+    const walk = (x - startXRef.current) * 2; // scroll-fast
+    (e.currentTarget as HTMLElement).scrollLeft = scrollLeftRef.current - walk;
+  }, []);
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
-    setIsDragging(false);
+    isDraggingRef.current = false;
     (e.currentTarget as HTMLElement).style.cursor = 'grab';
   }, []);
 
   const handleMouseLeave = useCallback((e: React.MouseEvent) => {
-    setIsDragging(false);
+    isDraggingRef.current = false;
     (e.currentTarget as HTMLElement).style.cursor = 'grab';
   }, []);
 
