@@ -28,6 +28,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       const timer = setTimeout(() => setIsVisible(false), 200);
       return () => clearTimeout(timer);
     }
+    return () => {};
   }, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {

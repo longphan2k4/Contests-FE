@@ -7,7 +7,6 @@ import {
 import { useSocket } from "../../../../contexts/SocketContext";
 import { useToast } from "../../../../contexts/toastContext";
 import { useParams } from "react-router-dom";
-import { controlKey } from "../type/control.type";
 
 interface QuestionControlProp {
   currentQuestion?: CurrentQuestion;

@@ -8,12 +8,7 @@ import { useAuth } from "../../auth/hooks/authContext";
 import { useToast } from "@contexts/toastContext";
 import { useSocket } from "@contexts/SocketContext";
 
-import {
-  type Contestant,
-  type TabType,
-  type MatchInfo,
-  type groupInfo,
-} from "../types/type";
+import { type Contestant, type TabType, type MatchInfo } from "../types/type";
 
 import {
   useContestantList,
@@ -22,7 +17,6 @@ import {
 } from "../hooks/useJudge";
 import { useParams } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
-import type { Match } from "date-fns";
 
 const JudgeHomePage: React.FC = () => {
   const { match } = useParams();

@@ -4,7 +4,6 @@ import EliminateGrid from "../components/Eliminate/EliminateGrid";
 import ActionButtons from "../components/Eliminate/ActionButtons";
 import EliminateSidebar from "../components/Eliminate/EliminateSidebar";
 import { useEliminate } from "../hooks/useEliminate";
-import MatchHeader from "../components/MatchHeader/MatchHeader";
 
 export default function EliminatePage() {
   const {

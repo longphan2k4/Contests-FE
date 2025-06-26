@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 import {
   Box,
   Button,
@@ -16,7 +16,7 @@ import {
   Select,
   MenuItem,
   FormHelperText,
-} from '@mui/material';
+} from "@mui/material";
 import {
   CloudUpload as CloudUploadIcon,
   Delete as DeleteIcon,
@@ -24,13 +24,17 @@ import {
   Videocam as VideocamIcon,
   AudioFile as AudioFileIcon,
   InsertDriveFile as FileIcon,
-} from '@mui/icons-material';
-import { LIMITS } from '../types';
-import type { SelectChangeEvent } from '@mui/material';
+} from "@mui/icons-material";
+import { LIMITS } from "../types";
+import type { SelectChangeEvent } from "@mui/material";
 
 interface MediaUploaderProps {
   questionId: number;
-  onUpload: (questionId: number, mediaType: 'questionMedia' | 'mediaAnswer', files: File[]) => Promise<unknown>;
+  onUpload: (
+    questionId: number,
+    mediaType: "questionMedia" | "mediaAnswer",
+    files: File[]
+  ) => Promise<unknown>;
   isLoading?: boolean;
 }
 
@@ -40,96 +44,101 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   isLoading = false,
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [mediaType, setMediaType] = useState<'questionMedia' | 'mediaAnswer'>('questionMedia');
+  const [mediaType, setMediaType] = useState<"questionMedia" | "mediaAnswer">(
+    "questionMedia"
+  );
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
-    
+
     const files = Array.from(event.target.files);
-    
+
     // Kiểm tra số lượng file
     if (files.length > 10) {
-      setError('Chỉ được phép tải lên tối đa 10 file');
+      setError("Chỉ được phép tải lên tối đa 10 file");
       return;
     }
-    
+
     // Kiểm tra kích thước và định dạng file
     const invalidFiles = files.filter(file => {
-      const fileType = file.type.split('/')[0];
-      
-      if (fileType === 'image' && file.size > LIMITS.image) {
+      const fileType = file.type.split("/")[0];
+
+      if (fileType === "image" && file.size > LIMITS.image) {
         return true;
       }
-      
-      if (fileType === 'video' && file.size > LIMITS.video) {
+
+      if (fileType === "video" && file.size > LIMITS.video) {
         return true;
       }
-      
-      if (fileType === 'audio' && file.size > LIMITS.audio) {
+
+      if (fileType === "audio" && file.size > LIMITS.audio) {
         return true;
       }
-      
+
       return false;
     });
-    
+
     if (invalidFiles.length > 0) {
-      setError('Một số file không hợp lệ về kích thước hoặc định dạng');
+      setError("Một số file không hợp lệ về kích thước hoặc định dạng");
       return;
     }
-    
+
     setSelectedFiles(files);
     setError(null);
   };
-  
-  const handleMediaTypeChange = (event: SelectChangeEvent<'questionMedia' | 'mediaAnswer'>) => {
-    setMediaType(event.target.value as 'questionMedia' | 'mediaAnswer');
+
+  const handleMediaTypeChange = (
+    event: SelectChangeEvent<"questionMedia" | "mediaAnswer">
+  ) => {
+    setMediaType(event.target.value as "questionMedia" | "mediaAnswer");
   };
-  
+
   const handleRemoveFile = (index: number) => {
     const newFiles = [...selectedFiles];
     newFiles.splice(index, 1);
     setSelectedFiles(newFiles);
   };
-  
+
   const handleUpload = async () => {
     if (selectedFiles.length === 0) {
-      setError('Vui lòng chọn ít nhất một file');
+      setError("Vui lòng chọn ít nhất một file");
       return;
     }
-    
+
     try {
       setError(null);
       const result = await onUpload(questionId, mediaType, selectedFiles);
-      setSuccess('Tải lên media thành công');
+      setSuccess("Tải lên media thành công");
       setSelectedFiles([]);
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
       return result;
     } catch (error) {
-      console.error('Lỗi khi tải lên media:', error);
-      setError('Có lỗi xảy ra khi tải lên media');
+      console.error("Lỗi khi tải lên media:", error);
+      setError("Có lỗi xảy ra khi tải lên media");
     }
+    return;
   };
-  
+
   const getFileIcon = (file: File) => {
-    const fileType = file.type.split('/')[0];
-    
+    const fileType = file.type.split("/")[0];
+
     switch (fileType) {
-      case 'image':
+      case "image":
         return <ImageIcon />;
-      case 'video':
+      case "video":
         return <VideocamIcon />;
-      case 'audio':
+      case "audio":
         return <AudioFileIcon />;
       default:
         return <FileIcon />;
     }
   };
-  
+
   const getFileSize = (size: number) => {
     if (size < 1024) {
       return `${size} B`;
@@ -145,7 +154,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
       <Typography variant="h6" gutterBottom>
         Tải lên media cho câu hỏi
       </Typography>
-      
+
       <FormControl fullWidth margin="normal">
         <InputLabel>Loại media</InputLabel>
         <Select
@@ -156,16 +165,14 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
           <MenuItem value="questionMedia">Media câu hỏi</MenuItem>
           <MenuItem value="mediaAnswer">Media đáp án</MenuItem>
         </Select>
-        <FormHelperText>
-          Chọn loại media bạn muốn tải lên
-        </FormHelperText>
+        <FormHelperText>Chọn loại media bạn muốn tải lên</FormHelperText>
       </FormControl>
-      
+
       <Box sx={{ mt: 2, mb: 3 }}>
         <input
           ref={fileInputRef}
           accept="image/*,video/*,audio/*"
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
           id="media-file-input"
           type="file"
           multiple
@@ -182,37 +189,43 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
             Chọn file
           </Button>
         </label>
-        <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 1 }}>
+        <Typography
+          variant="caption"
+          color="textSecondary"
+          display="block"
+          sx={{ mt: 1 }}
+        >
           Giới hạn: Ảnh (5MB), Video (100MB), Audio (20MB). Tối đa 10 file.
         </Typography>
       </Box>
-      
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
-      
+
       {success && (
         <Alert severity="success" sx={{ mb: 2 }}>
           {success}
         </Alert>
       )}
-      
+
       {selectedFiles.length > 0 && (
         <Paper variant="outlined" sx={{ mb: 3 }}>
           <List dense>
             {selectedFiles.map((file, index) => (
               <ListItem key={index}>
-                <Box sx={{ mr: 1 }}>
-                  {getFileIcon(file)}
-                </Box>
+                <Box sx={{ mr: 1 }}>{getFileIcon(file)}</Box>
                 <ListItemText
                   primary={file.name}
                   secondary={`${file.type} - ${getFileSize(file.size)}`}
                 />
                 <ListItemSecondaryAction>
-                  <IconButton edge="end" onClick={() => handleRemoveFile(index)}>
+                  <IconButton
+                    edge="end"
+                    onClick={() => handleRemoveFile(index)}
+                  >
                     <DeleteIcon />
                   </IconButton>
                 </ListItemSecondaryAction>
@@ -221,7 +234,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
           </List>
         </Paper>
       )}
-      
+
       <Button
         variant="contained"
         color="primary"
@@ -230,10 +243,10 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
         fullWidth
         startIcon={isLoading ? <CircularProgress size={24} /> : null}
       >
-        {isLoading ? 'Đang tải lên...' : 'Tải lên'}
+        {isLoading ? "Đang tải lên..." : "Tải lên"}
       </Button>
     </Box>
   );
 };
 
-export default MediaUploader; 
+export default MediaUploader;

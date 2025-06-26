@@ -47,7 +47,6 @@ const ControlsPage: React.FC = () => {
   const { match, slug } = useParams();
   const { socket, isConnected } = useSocket();
 
-  // 1. State
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
   const [currentQuestion, setCurrentQuestion] =
     useState<CurrentQuestion | null>(null);

@@ -1,5 +1,3 @@
-import type { Contestant } from "../types/contestant";
-
 // export const fetchContestants = async (): Promise<Contestant[]> => {
 //   // Thay bằng API call thực tế
 //   return [

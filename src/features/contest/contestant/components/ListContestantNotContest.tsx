@@ -33,7 +33,7 @@ import {
   useListRound,
 } from "../hook/useContestant";
 import { useToast } from "@contexts/toastContext";
-import { set, z } from "zod";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import FormSelect from "@components/FormSelect";
