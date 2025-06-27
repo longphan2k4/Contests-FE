@@ -28,12 +28,12 @@ export interface ContestantInfo {
 export interface GroupInfo {
   id: number;
   name: string;
-  userId: number;
+  userId: number | null;
   judge: {
     id: number;
     username: string;
     email: string;
-  };
+  } | null;
   contestantMatches: Array<{
     contestant: {
       id: number;
@@ -98,6 +98,18 @@ export interface DeleteGroupsResponse {
     status: 'success' | 'error';
     msg: string;
   }>;
+}
+
+export interface CreateBulkGroupsRequest {
+  matchId: number;
+  groupCount?: number;
+  groupNamePrefix?: string;
+  groupNames?: string[]; // Optional - nếu muốn tự định nghĩa tên
+}
+
+export interface CreateBulkGroupsResponse {
+  groups: GroupInfo[];
+  createdCount: number;
 }
 
 export class GroupDivisionService {
@@ -231,5 +243,15 @@ export class GroupDivisionService {
   static async getClassesBySchool(schoolId: number): Promise<ClassInfo[]> {
     const response = await axiosInstance.get(`${this.baseUrl}/schools/${schoolId}/classes`);
     return response.data.data.classes;
+  }
+
+  /**
+   * Tạo nhiều nhóm cùng lúc cho trận đấu
+   */
+  static async createBulkGroups(
+    data: CreateBulkGroupsRequest
+  ): Promise<CreateBulkGroupsResponse> {
+    const response = await axiosInstance.post('/group/bulk', data);
+    return response.data.data;
   }
 }

@@ -361,8 +361,16 @@ const ContestantMatchPage: React.FC = () => {
     if (selectedMethod === 'byMaxMembers' && maxMembersPerGroup <= 0) return false;
 
     return true;
-  };  // Initialize groups when moving to step 2
-  const initializeGroups = () => {
+  };  // Initialize groups by calling API to create bulk groups
+  const initializeGroups = async (): Promise<void> => {
+    console.log('🔧 initializeGroups called with:', {
+      selectedMethod,
+      numberOfGroups,
+      maxMembersPerGroup,
+      selectedIds: selectedIds.length,
+      matchId
+    });
+    
     let requiredGroupCount = 0;
 
     if (selectedMethod === 'byNumberOfGroups') {
@@ -371,30 +379,79 @@ const ContestantMatchPage: React.FC = () => {
       // Tính toán dựa trên số thí sinh ĐÃ CHỌN, chứ không phải tổng số
       requiredGroupCount = Math.ceil(selectedIds.length / maxMembersPerGroup);
     } else if (selectedMethod === 'random') {
-      requiredGroupCount = 4; // Hoặc một con số bạn cho phép người dùng nhập
+      requiredGroupCount = numberOfGroups || 4; // Use numberOfGroups if set, otherwise default to 4
     }
 
-    console.log('Initializing local groups:', { requiredGroupCount, selectedMethod });
+    console.log('📊 Calculated requiredGroupCount:', requiredGroupCount);
 
-    // Chuyển sang local mode và tạo cấu trúc nhóm local
-    setIsLocalMode(true);
-    setSkipSyncFromAPI(true); // Tránh API sync override
-    
-    setTotalGroups(requiredGroupCount);
-    const initialGroups: { [key: number]: Contestant[] } = {};
-    const initialJudges: { [groupIndex: number]: JudgeInfo | null } = {};
-    
-    for (let i = 0; i < requiredGroupCount; i++) {
-      initialGroups[i] = [];
-      initialJudges[i] = null; // Khởi tạo null cho tất cả judges
+    if (!matchId) {
+      console.error('❌ No matchId found');
+      showToast('Không tìm thấy ID trận đấu', 'error');
+      throw new Error('Match ID not found');
     }
+
+    if (requiredGroupCount <= 0) {
+      console.error('❌ Invalid group count:', requiredGroupCount);
+      showToast('Số lượng nhóm phải lớn hơn 0', 'error');
+      throw new Error('Invalid group count');
+    }
+
+    console.log('🌐 Creating bulk groups via API:', { groupCount: requiredGroupCount, matchId });
     
-    setGroups(initialGroups);
-    setAssignedJudges(initialJudges);
-    setActiveGroupTab(0);
-    setHasInitializedGroups(true);
-    
-    console.log('Local groups initialized:', { totalGroups: requiredGroupCount, mode: 'local' });
+    try {
+      // Gọi API tạo nhóm hàng loạt theo số lượng (KHÔNG có trọng tài và thí sinh)
+      const response = await GroupDivisionService.createBulkGroups({
+        matchId: matchId,
+        groupCount: requiredGroupCount,
+        groupNamePrefix: 'Nhóm'
+        // Không truyền groupNames => sẽ tự động tạo tên "Nhóm 1", "Nhóm 2", ...
+      });
+
+      console.log('✅ Bulk groups created successfully:', response);
+      
+      // Set total groups từ response
+      setTotalGroups(response.createdCount);
+      
+      // Initialize local state từ dữ liệu API (chỉ cấu trúc nhóm, không có thí sinh)
+      const initialGroups: { [key: number]: Contestant[] } = {};
+      const initialJudges: { [key: number]: JudgeInfo | null } = {};
+      
+      for (let i = 0; i < response.createdCount; i++) {
+        initialGroups[i] = []; // Nhóm trống, chưa có thí sinh
+        // Không gán trọng tài - để null
+        initialJudges[i] = null;
+      }
+      
+      console.log('📊 Setting local state:', {
+        initialGroups,
+        initialJudges,
+        totalGroups: response.createdCount
+      });
+      
+      setGroups(initialGroups);
+      setAssignedJudges(initialJudges);
+      setActiveGroupTab(0);
+      setHasInitializedGroups(true);
+      
+      // Chuyển sang API mode ngay lập tức
+      setIsLocalMode(false);
+      
+      // Set skipSyncFromAPI để tránh việc refetch ghi đè lên thí sinh đã phân bổ
+      setSkipSyncFromAPI(true);
+      
+      showToast(`Đã tạo ${response.createdCount} nhóm thành công (chưa có trọng tài)`, 'success');
+      
+      console.log('✅ Groups initialized via API successfully');
+    } catch (error) {
+      console.error('❌ Error creating bulk groups:', error);
+      let errorMessage = 'Lỗi khi tạo nhóm';
+      if (error && typeof error === 'object' && 'response' in error) {
+        const response = (error as { response?: { data?: { message?: string } } }).response;
+        errorMessage = response?.data?.message || errorMessage;
+      }
+      showToast(errorMessage, 'error');
+      throw error; // Re-throw để handleNext có thể catch
+    }
   };
   const distributeContestantsEvenly = useCallback((selectedContestants: Contestant[]) => {
     console.log('Distributing contestants evenly:', { 
@@ -646,24 +703,52 @@ const ContestantMatchPage: React.FC = () => {
   }, [groups, showToast]);
 
   // Handle next button click
-  const handleNext = () => {
+  const handleNext = async () => {
+    console.log('🔄 handleNext called - Step:', groupDivisionStep);
+    
     if (groupDivisionStep === 1) {
       // 1. Kiểm tra xem người dùng đã chọn thí sinh để chia chưa
+      console.log('📊 Validation check:', {
+        selectedIds: selectedIds.length,
+        selectedMethod,
+        canGoNext: canGoNext()
+      });
+      
       if (selectedIds.length === 0) {
+        console.log('❌ No contestants selected');
         showToast("Vui lòng chọn ít nhất một thí sinh từ danh sách để chia nhóm.", "warning");
         return; // Dừng lại nếu chưa có thí sinh nào được chọn
       }
 
-      // 2. Vẫn gọi initializeGroups để tạo cấu trúc nhóm trống
-      initializeGroups();
+      try {
+        console.log('🚀 Starting group creation process...');
+        
+        // 2. Gọi initializeGroups để tạo nhóm TRỐNG qua API (không có thí sinh)
+        await initializeGroups();
+        
+        console.log('✅ Groups created successfully, now proceeding to step 2...');
 
-      // 3. Đặt cờ để useEffect thực hiện việc phân bổ
-      setShouldAutoDistribute(true);
-
-      // 4. Chuyển sang bước 2
-      setGroupDivisionStep(2);
+        // 3. Chuyển sang bước 2 ngay lập tức
+        console.log('📍 Setting groupDivisionStep to 2...');
+        setGroupDivisionStep(2);
+        
+        // 4. Đặt cờ để useEffect thực hiện việc phân bổ LOCAL
+        console.log('📍 Setting shouldAutoDistribute to true...');
+        setShouldAutoDistribute(true);
+        
+        console.log('✅ Successfully moved to step 2 after creating groups');
+        
+        // 5. Thông báo chuyển bước thành công
+        showToast("Đã tạo nhóm thành công! Thí sinh sẽ được phân bổ tạm thời (chưa lưu DB).", "success");
+        
+      } catch (error) {
+        console.error('❌ Failed to create groups:', error);
+        // Không chuyển bước nếu có lỗi - người dùng vẫn ở bước 1
+        showToast("Không thể tạo nhóm. Vui lòng thử lại.", "error");
+      }
     } else {
       // Logic cho các bước tiếp theo nếu có (ví dụ: Bước 3: Hoàn thành)
+      console.log('📍 Moving to next step from:', groupDivisionStep);
       setGroupDivisionStep(prev => prev + 1);
     }
   };
@@ -1969,7 +2054,8 @@ const ContestantMatchPage: React.FC = () => {
                     </Button>
 
                     {/* Reset All Button */}
-                    {(existingGroups && existingGroups.length > 0) && (
+                                        {(existingGroups && existingGroups.length > 0) && (
+
                       <Button
                         variant="outlined"
                         color="warning"
