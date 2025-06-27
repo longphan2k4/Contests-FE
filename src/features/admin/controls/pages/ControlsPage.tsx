@@ -252,6 +252,31 @@ const ControlsPage: React.FC = () => {
     }
   };
 
+  // Transform function để convert CurrentQuestion thành CurrentQuestionData
+  const transformCurrentQuestionData = (question: CurrentQuestion | null) => {
+    if (!question) return undefined;
+
+    return {
+      order: question.questionOrder,
+      question: {
+        id: question.id,
+        content: question.content,
+        intro: question.intro || undefined,
+        questionType: question.questionType,
+        difficulty: question.difficulty,
+        score: question.score,
+        defaultTime: question.defaultTime,
+        options: Array.isArray(question.options)
+          ? question.options.map((opt) => String(opt))
+          : [],
+        correctAnswer:
+          typeof question.correctAnswer === "string"
+            ? parseInt(question.correctAnswer)
+            : undefined,
+      },
+    };
+  };
+
   const isLoading =
     isLoadingMatch ||
     isLoadingCurrentQuestion ||
@@ -335,7 +360,9 @@ const ControlsPage: React.FC = () => {
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <OnlineExamControl
-              currentQuestionData={currentQuestion}
+              currentQuestionData={transformCurrentQuestionData(
+                currentQuestion
+              )}
               isGameStarted={
                 matchInfo?.currentQuestion
                   ? matchInfo.currentQuestion > 0
