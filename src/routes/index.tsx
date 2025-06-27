@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import AdminRoutes from "../features/admin/AdminRoutes";
 import ContestRoutes from "../features/contest/ContestRouter";
 import AuthRoutes from "../features/auth/routes";
+import StudentRoutes from "../features/student/routes";
 import PublicRoutes from "./PublicRoutes";
 import {
   AudienceOpinionPage,
@@ -29,6 +30,8 @@ const AppRoutes: React.FC = () => {
       {PublicRoutes()}
       {/* Auth Routes - Đăng nhập, Đăng ký */}
       {AuthRoutes()}
+      {/* Student Routes */}
+      {StudentRoutes()}
       <Route element={<PrivateRoute roles={["Admin"]} />}>
         {ContestRoutes()}
         {AdminRoutes()}

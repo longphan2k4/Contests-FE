@@ -10,6 +10,7 @@ const PublicRoutes = () => {
         <Route path="403" element={<Forbidden403 />} />
         <Route path="404" element={<NotFound404 />} />
         <Route path="*" element={<NotFound404 />} />
+
       </Route>
   );
 };

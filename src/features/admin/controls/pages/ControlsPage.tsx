@@ -10,6 +10,7 @@ import {
   VideoControl,
   StatusControl,
 } from "../components";
+import { OnlineExamControl } from "../../controlsOnline";
 import QuestionDetails from "../components/QuestionDetails";
 import BackgroundControl from "../components/BackgroundControl";
 import CurrentContestants from "../components/CurrentContestants";
@@ -43,6 +44,10 @@ interface SocketResponse {
 
 interface TimerUpdateData {
   timeRemaining: number;
+}
+
+interface ContestantStatusUpdate {
+  ListContestant?: ListContestant[];
 }
 
 const ControlsPage: React.FC = () => {
@@ -161,9 +166,11 @@ const ControlsPage: React.FC = () => {
 
     const handleUpdateTime = (data: TimerUpdateData) => {
       const newTime = data?.timeRemaining;
-      setMatchInfo(prev => (prev ? { ...prev, remainingTime: newTime } : prev));
+      setMatchInfo((prev) =>
+        prev ? { ...prev, remainingTime: newTime } : prev
+      );
     };
-    const handleUpdateStatus = (data: any) => {
+    const handleUpdateStatus = (data: ContestantStatusUpdate) => {
       if (data.ListContestant) {
         setListContestant(data.ListContestant);
       }
@@ -325,6 +332,19 @@ const ControlsPage: React.FC = () => {
                 <AnswerControl currentQuestion={currentQuestion} />
               </div>
             </div>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+            <OnlineExamControl
+              currentQuestionData={currentQuestion}
+              isGameStarted={
+                matchInfo?.currentQuestion
+                  ? matchInfo.currentQuestion > 0
+                  : false
+              }
+              remainingTime={matchInfo?.remainingTime || 0}
+              isLoading={isLoadingCurrentQuestion}
+              isTimerPaused={false}
+            />
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <SupplierVideo
