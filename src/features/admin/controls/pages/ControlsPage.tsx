@@ -21,6 +21,7 @@ import {
   useCountContestant,
   useListClassVideo,
   useListSponsorMedia,
+  useListContestant,
 } from "../hook/useControls";
 import {
   type MatchInfo,
@@ -29,8 +30,9 @@ import {
   type SceenControl,
   type CurrentQuestion,
   type MediaType,
+  type ListContestant,
 } from "../type/control.type";
-import { useSocket } from "../../../../contexts/SocketContext";
+import { useSocket } from "@contexts/SocketContext";
 import { Box, CircularProgress } from "@mui/material";
 
 // Define types for socket responses
@@ -54,7 +56,7 @@ const ControlsPage: React.FC = () => {
     useState<countContestant | null>(null);
   const [listQuestion, setListQuestion] = useState<Question[]>([]);
   const [screenControl, setScreenControl] = useState<SceenControl | null>(null);
-
+  const [listContestant, setListContestant] = useState<ListContestant[]>([]);
   const [sponsorMedia, setSponsorMedia] = useState<MediaType[]>([]);
   const [classVideo, setClassVideo] = useState<MediaType[]>([]);
   const {
@@ -101,6 +103,12 @@ const ControlsPage: React.FC = () => {
     isSuccess: isSuccessClassVideo,
     isError: isErrorClassVideo,
   } = useListClassVideo(slug ?? null);
+  const {
+    data: listContestantRes,
+    isLoading: isLoadingContestants,
+    isSuccess: isSuccessContestants,
+    isError: isErrorContestants,
+  } = useListContestant(match ?? null);
 
   useEffect(() => {
     if (isSuccessSponsorMedia) setSponsorMedia(sponsorMediaRes.data);
@@ -129,6 +137,9 @@ const ControlsPage: React.FC = () => {
   useEffect(() => {
     if (isSuccessControl) setScreenControl(screenControlRes.data);
   }, [isSuccessControl, screenControlRes]);
+  useEffect(() => {
+    if (isSuccessContestants) setListContestant(listContestantRes.data);
+  }, [isSuccessContestants, listContestantRes]);
 
   // Di chuyển useEffect của socket lên trước isLoading
   useEffect(() => {
@@ -152,15 +163,21 @@ const ControlsPage: React.FC = () => {
       const newTime = data?.timeRemaining;
       setMatchInfo(prev => (prev ? { ...prev, remainingTime: newTime } : prev));
     };
+    const handleUpdateStatus = (data: any) => {
+      if (data.ListContestant) {
+        setListContestant(data.ListContestant);
+      }
+    };
 
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
+    socket.on("contestant:status-update", handleUpdateStatus);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
       socket.off("currentQuestion:get", handleCurrentQuestion);
-
+      socket.off("contestant:status-update", handleUpdateStatus);
       socket.off("timer:update", handleUpdateTime);
     };
   }, [socket]);
@@ -235,7 +252,8 @@ const ControlsPage: React.FC = () => {
     isLoadingQuestions ||
     isLoadingControl ||
     isLoadingSponsorMedia ||
-    isLoadingClassVideo;
+    isLoadingClassVideo ||
+    isLoadingContestants;
 
   if (isLoading) {
     return (
@@ -257,7 +275,8 @@ const ControlsPage: React.FC = () => {
     isErrorQuestions ||
     isErrorControl ||
     isErrorSponsorMedia ||
-    isErrorClassVideo
+    isErrorClassVideo ||
+    isErrorContestants
   ) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -321,7 +340,10 @@ const ControlsPage: React.FC = () => {
             />
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
-            <ContestantsControl />
+            <ContestantsControl
+              ListContestant={listContestant}
+              questionOrder={currentQuestion?.questionOrder || 0}
+            />
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <AudienceRescueControl

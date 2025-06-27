@@ -130,13 +130,6 @@ export type ListRescue = {
   status: RescueStatus;
 };
 
-export type ListContestant = {
-  contestantId: number;
-  matchId: number;
-  registrationNumber: number;
-  status: ContestantMatchStatus;
-};
-
 export type countContestant = {
   countIn_progress: number;
   countEliminated: number;
@@ -170,4 +163,19 @@ export type MediaType = {
   id: number;
   name: string | null;
   videos: string | null;
+};
+
+export type contestant = {
+  registrationNumber: number;
+  status: ContestantMatchStatus;
+};
+
+export type ListContestant = {
+  id: number;
+  name: string;
+  confirmCurrentQuestion: number;
+  user: {
+    username: string;
+  };
+  contestantMatches: contestant[];
 };

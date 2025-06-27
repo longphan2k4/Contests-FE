@@ -60,7 +60,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   const areFilesOfSameType = (files: File[]): boolean => {
     if (files.length <= 1) return true;
     const firstFileType = files[0].type.split("/")[0];
-    return files.every(file => file.type.split("/")[0] === firstFileType);
+    return files.every((file) => file.type.split("/")[0] === firstFileType);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,12 +85,16 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
         video: "video",
         audio: "âm thanh",
       };
-      setError(`Chỉ được phép tải lên tối đa ${maxFiles} file ${typeNames[fileType as keyof typeof typeNames]}`);
+      setError(
+        `Chỉ được phép tải lên tối đa ${maxFiles} file ${
+          typeNames[fileType as keyof typeof typeNames]
+        }`
+      );
       return;
     }
 
     // Kiểm tra kích thước và định dạng file
-    const invalidFiles = files.filter(file => {
+    const invalidFiles = files.filter((file) => {
       const fileType = file.type.split("/")[0];
 
       if (fileType === "image" && file.size > LIMITS.image) {
@@ -222,7 +226,8 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
           display="block"
           sx={{ mt: 1 }}
         >
-          Giới hạn: Ảnh (30MB), Video (100MB), Audio (50MB). Tối đa 4 file ảnh/video hoặc 1 file âm thanh.
+          Giới hạn: Ảnh (30MB), Video (100MB), Audio (50MB). Tối đa 4 file
+          ảnh/video hoặc 1 file âm thanh.
         </Typography>
       </Box>
 
