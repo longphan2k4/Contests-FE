@@ -199,6 +199,35 @@ const QuestionDialogForm = forwardRef<HTMLFormElement, QuestionDialogFormProps>(
       return previews.length === 0 && files.length === 0;
     };
 
+    // Kiểm tra giới hạn số lượng file theo loại media
+    const getMaxFilesByMediaType = (mediaType: MediaType): number => {
+      return mediaType === "audio" ? 1 : 4;
+    };
+
+    // Kiểm tra xem có thể upload thêm file không
+    const canUploadMore = (
+      mediaType: MediaType,
+      existingFiles: MediaFilePreview[],
+      files: File[]
+    ): boolean => {
+      const maxFiles = getMaxFilesByMediaType(mediaType);
+      return existingFiles.length + files.length < maxFiles;
+    };
+
+    // Lấy thông báo giới hạn theo loại media
+    const getLimitMessage = (mediaType: MediaType): string => {
+      const maxFiles = getMaxFilesByMediaType(mediaType);
+      const typeText =
+        mediaType === "image"
+          ? "Ảnh"
+          : mediaType === "video"
+          ? "Video"
+          : "Âm thanh";
+      return `${typeText} (${
+        ALLOWED_TYPES[mediaType].maxSize / (1024 * 1024)
+      }MB). Tối đa ${maxFiles} file.`;
+    };
+
     const renderMediaSection = (
       title: string,
       files: File[],
@@ -212,6 +241,8 @@ const QuestionDialogForm = forwardRef<HTMLFormElement, QuestionDialogFormProps>(
       // Xác định loại media hiện tại từ file đã tồn tại hoặc file mới
       const currentMediaType = getCurrentMediaType(existingFiles, files);
       const canChange = canChangeMediaType(existingFiles, files);
+      const maxFiles = getMaxFilesByMediaType(mediaType);
+      const canUpload = canUploadMore(mediaType, existingFiles, files);
 
       // Nếu đã có file và loại media khác với loại hiện tại, cập nhật state
       if (currentMediaType && mediaType !== currentMediaType) {
@@ -220,13 +251,6 @@ const QuestionDialogForm = forwardRef<HTMLFormElement, QuestionDialogFormProps>(
 
       // Lấy accept attribute dựa trên loại media
       const acceptAttribute = ALLOWED_TYPES[mediaType].accept;
-
-      // Hiển thị thông báo giới hạn kích thước
-      const sizeLimit = {
-        image: "30MB",
-        video: "100MB",
-        audio: "50MB",
-      }[mediaType];
 
       return (
         <Box sx={{ mb: 3 }}>
@@ -307,7 +331,7 @@ const QuestionDialogForm = forwardRef<HTMLFormElement, QuestionDialogFormProps>(
           <Box sx={{ mb: 2 }}>
             <input
               type="file"
-              multiple
+              multiple={mediaType !== "audio"} // Audio chỉ cho phép chọn 1 file
               onChange={onChange}
               style={{ display: "none" }}
               id={`${title.toLowerCase().replace(/\s+/g, "-")}-input`}
@@ -321,9 +345,7 @@ const QuestionDialogForm = forwardRef<HTMLFormElement, QuestionDialogFormProps>(
                 variant="outlined"
                 component="span"
                 startIcon={<CloudUploadIcon />}
-                disabled={
-                  isReadOnly || files.length + existingFiles.length >= 5
-                }
+                disabled={isReadOnly || !canUpload}
               >
                 Tải lên{" "}
                 {mediaType === "image"
@@ -338,14 +360,23 @@ const QuestionDialogForm = forwardRef<HTMLFormElement, QuestionDialogFormProps>(
               color="textSecondary"
               sx={{ display: "block", mt: 1 }}
             >
-              Giới hạn:{" "}
-              {mediaType === "image"
-                ? "Ảnh"
-                : mediaType === "video"
-                ? "Video"
-                : "Âm thanh"}{" "}
-              ({sizeLimit}). Tối đa 5 file cùng loại.
+              Giới hạn: {getLimitMessage(mediaType)}
             </Typography>
+            {!canUpload && (
+              <Typography
+                variant="caption"
+                color="error"
+                sx={{ display: "block", mt: 0.5 }}
+              >
+                Đã đạt giới hạn tối đa {maxFiles} file cho loại{" "}
+                {mediaType === "image"
+                  ? "ảnh"
+                  : mediaType === "video"
+                  ? "video"
+                  : "âm thanh"}
+                .
+              </Typography>
+            )}
           </Box>
 
           {/* Hiển thị media đã tồn tại */}

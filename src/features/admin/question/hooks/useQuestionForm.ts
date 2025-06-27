@@ -121,6 +121,25 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
     return true; // Nếu chưa có file nào thì cho phép
   };
 
+  // Kiểm tra giới hạn số lượng file theo loại media
+  const getMaxFilesByMediaType = (fileType: string): number => {
+    return fileType === "audio" ? 1 : 4;
+  };
+
+  // Lấy loại media từ file hoặc previews
+  const getMediaTypeFromFiles = (
+    existingPreviews: MediaFilePreview[],
+    newFiles: File[]
+  ): string | null => {
+    if (existingPreviews.length > 0) {
+      return existingPreviews[0].type.split("/")[0];
+    }
+    if (newFiles.length > 0) {
+      return newFiles[0].type.split("/")[0];
+    }
+    return null;
+  };
+
   useEffect(() => {
     if (question && (mode === "view" || mode === "edit")) {
       const initialFormData: QuestionFormValues = {
@@ -311,12 +330,7 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
         )
     );
     if (incompatibleFiles.length > 0) {
-      const currentType =
-        questionMediaPreviews.length > 0
-          ? questionMediaPreviews[0].type.split("/")[0]
-          : questionMediaFiles.length > 0
-          ? questionMediaFiles[0].type.split("/")[0]
-          : null;
+      const currentType = getMediaTypeFromFiles(questionMediaPreviews, questionMediaFiles);
 
       const typeNames = {
         image: "ảnh",
@@ -333,12 +347,29 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
       return;
     }
 
-    // Kiểm tra số lượng file
-    if (
-      files.length + questionMediaFiles.length + questionMediaPreviews.length >
-      5
-    ) {
-      showToast("Không thể thêm quá 5 file media", "warning");
+    // Xác định loại media hiện tại
+    const currentMediaType = files[0].type.split("/")[0];
+    const maxFiles = getMaxFilesByMediaType(currentMediaType);
+    const currentTotalFiles = questionMediaFiles.length + questionMediaPreviews.length;
+
+    // Kiểm tra số lượng file theo loại media
+    if (files.length + currentTotalFiles > maxFiles) {
+      const typeNames = {
+        image: "ảnh",
+        video: "video", 
+        audio: "âm thanh",
+      };
+      
+      showToast(
+        `Không thể thêm quá ${maxFiles} file ${typeNames[currentMediaType as keyof typeof typeNames]}`,
+        "warning"
+      );
+      return;
+    }
+
+    // Đặc biệt kiểm tra cho audio (chỉ cho phép chọn 1 file)
+    if (currentMediaType === "audio" && files.length > 1) {
+      showToast("Chỉ có thể chọn 1 file âm thanh", "warning");
       return;
     }
 
@@ -377,12 +408,7 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
         )
     );
     if (incompatibleFiles.length > 0) {
-      const currentType =
-        mediaAnswerPreviews.length > 0
-          ? mediaAnswerPreviews[0].type.split("/")[0]
-          : mediaAnswerFiles.length > 0
-          ? mediaAnswerFiles[0].type.split("/")[0]
-          : null;
+      const currentType = getMediaTypeFromFiles(mediaAnswerPreviews, mediaAnswerFiles);
 
       const typeNames = {
         image: "ảnh",
@@ -399,12 +425,29 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
       return;
     }
 
-    // Kiểm tra số lượng file
-    if (
-      files.length + mediaAnswerFiles.length + mediaAnswerPreviews.length >
-      5
-    ) {
-      showToast("Không thể thêm quá 5 file media", "warning");
+    // Xác định loại media hiện tại
+    const currentMediaType = files[0].type.split("/")[0];
+    const maxFiles = getMaxFilesByMediaType(currentMediaType);
+    const currentTotalFiles = mediaAnswerFiles.length + mediaAnswerPreviews.length;
+
+    // Kiểm tra số lượng file theo loại media
+    if (files.length + currentTotalFiles > maxFiles) {
+      const typeNames = {
+        image: "ảnh",
+        video: "video",
+        audio: "âm thanh",
+      };
+      
+      showToast(
+        `Không thể thêm quá ${maxFiles} file ${typeNames[currentMediaType as keyof typeof typeNames]}`,
+        "warning"
+      );
+      return;
+    }
+
+    // Đặc biệt kiểm tra cho audio (chỉ cho phép chọn 1 file)
+    if (currentMediaType === "audio" && files.length > 1) {
+      showToast("Chỉ có thể chọn 1 file âm thanh", "warning");
       return;
     }
 
