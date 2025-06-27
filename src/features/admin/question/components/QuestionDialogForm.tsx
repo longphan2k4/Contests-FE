@@ -30,6 +30,10 @@ import { Editor } from "@tinymce/tinymce-react";
 import MediaPreview from "./MediaPreview";
 import ExistingMediaPreview from "./ExistingMediaPreview";
 
+// Import TinyMCE local config
+import "../../../../config/tinymce";
+import { baseTinyMCEConfig } from "../../../../config/tinymce";
+
 // Định nghĩa các loại file được phép
 const ALLOWED_TYPES = {
   image: {
@@ -564,43 +568,11 @@ const QuestionDialogForm = forwardRef<HTMLFormElement, QuestionDialogFormProps>(
                 }}
               >
                 <Editor
-                  apiKey="27tx6fph0lki6eefz8gfsu5jz74x6clpth0dnq0k02a9wz4b"
                   value={formData.content || ""}
+                  licenseKey="gpl"
                   init={{
+                    ...baseTinyMCEConfig,
                     height: 300,
-                    menubar: false,
-                    plugins: [
-                      "advlist",
-                      "autolink",
-                      "lists",
-                      "link",
-                      "image",
-                      "charmap",
-                      "anchor",
-                      "searchreplace",
-                      "visualblocks",
-                      "code",
-                      "fullscreen",
-                      "insertdatetime",
-                      "media",
-                      "table",
-                      "preview",
-                      "help",
-                      "wordcount",
-                    ],
-                    toolbar:
-                      "undo redo | blocks | " +
-                      "bold italic forecolor | alignleft aligncenter " +
-                      "alignright alignjustify | bullist numlist outdent indent | " +
-                      "removeformat | help",
-                    content_style:
-                      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-                    branding: false,
-                    promotion: false,
-                    statusbar: false,
-                    resize: false,
-                    language: "vi",
-                    language_url: "/tinymce/langs/vi.js",
                   }}
                   onEditorChange={onContentChange}
                   disabled={isReadOnly}
@@ -807,43 +779,11 @@ const QuestionDialogForm = forwardRef<HTMLFormElement, QuestionDialogFormProps>(
               </Typography>
               <Box sx={{ border: "1px solid #ccc", borderRadius: 1 }}>
                 <Editor
-                  apiKey="27tx6fph0lki6eefz8gfsu5jz74x6clpth0dnq0k02a9wz4b"
                   value={formData.explanation || ""}
+                  licenseKey="gpl"
                   init={{
+                    ...baseTinyMCEConfig,
                     height: 200,
-                    menubar: false,
-                    plugins: [
-                      "advlist",
-                      "autolink",
-                      "lists",
-                      "link",
-                      "image",
-                      "charmap",
-                      "anchor",
-                      "searchreplace",
-                      "visualblocks",
-                      "code",
-                      "fullscreen",
-                      "insertdatetime",
-                      "media",
-                      "table",
-                      "preview",
-                      "help",
-                      "wordcount",
-                    ],
-                    toolbar:
-                      "undo redo | blocks | " +
-                      "bold italic forecolor | alignleft aligncenter " +
-                      "alignright alignjustify | bullist numlist outdent indent | " +
-                      "removeformat | help",
-                    content_style:
-                      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-                    branding: false,
-                    promotion: false,
-                    statusbar: false,
-                    resize: false,
-                    language: "vi",
-                    language_url: "/tinymce/langs/vi.js",
                   }}
                   onEditorChange={onExplanationChange}
                   disabled={isReadOnly}
