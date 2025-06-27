@@ -51,19 +51,50 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   const [success, setSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Kiểm tra giới hạn số lượng file theo loại media
+  const getMaxFilesByMediaType = (fileType: string): number => {
+    return fileType === "audio" ? 1 : 4;
+  };
+
+  // Kiểm tra xem các file có cùng loại không
+  const areFilesOfSameType = (files: File[]): boolean => {
+    if (files.length <= 1) return true;
+    const firstFileType = files[0].type.split("/")[0];
+    return files.every((file) => file.type.split("/")[0] === firstFileType);
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
 
     const files = Array.from(event.target.files);
 
-    // Kiểm tra số lượng file
-    if (files.length > 10) {
-      setError("Chỉ được phép tải lên tối đa 10 file");
+    // Kiểm tra xem các file có cùng loại không
+    if (!areFilesOfSameType(files)) {
+      setError("Tất cả các file phải cùng loại (ảnh, video hoặc âm thanh)");
+      return;
+    }
+
+    // Xác định loại media
+    const fileType = files[0].type.split("/")[0];
+    const maxFiles = getMaxFilesByMediaType(fileType);
+
+    // Kiểm tra số lượng file theo loại
+    if (files.length > maxFiles) {
+      const typeNames = {
+        image: "ảnh",
+        video: "video",
+        audio: "âm thanh",
+      };
+      setError(
+        `Chỉ được phép tải lên tối đa ${maxFiles} file ${
+          typeNames[fileType as keyof typeof typeNames]
+        }`
+      );
       return;
     }
 
     // Kiểm tra kích thước và định dạng file
-    const invalidFiles = files.filter(file => {
+    const invalidFiles = files.filter((file) => {
       const fileType = file.type.split("/")[0];
 
       if (fileType === "image" && file.size > LIMITS.image) {
@@ -195,7 +226,8 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
           display="block"
           sx={{ mt: 1 }}
         >
-          Giới hạn: Ảnh (5MB), Video (100MB), Audio (20MB). Tối đa 10 file.
+          Giới hạn: Ảnh (30MB), Video (100MB), Audio (50MB). Tối đa 4 file
+          ảnh/video hoặc 1 file âm thanh.
         </Typography>
       </Box>
 
