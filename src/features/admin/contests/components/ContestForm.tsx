@@ -23,6 +23,11 @@ import { ZodError } from "zod";
 import { Fullscreen, FullscreenExit } from "@mui/icons-material";
 
 import { Editor } from "@tinymce/tinymce-react";
+
+// Import TinyMCE local config
+import "../../../../config/tinymce";
+import { baseTinyMCEConfig } from "../../../../config/tinymce";
+
 interface ValidationError {
   field: string;
   message: string;
@@ -204,46 +209,14 @@ const ContestForm: React.FC<ContestFormProps> = ({
               />
               <Box sx={{ mt: 2 }}>
                 <Editor
-                  apiKey="27tx6fph0lki6eefz8gfsu5jz74x6clpth0dnq0k02a9wz4b"
                   value={formData.rule || ""}
+                  licenseKey="gpl"
                   init={{
+                    ...baseTinyMCEConfig,
                     height: 400,
-                    menubar: false,
-                    plugins: [
-                      "advlist",
-                      "autolink",
-                      "lists",
-                      "link",
-                      "image",
-                      "charmap",
-                      "preview",
-                      "anchor",
-                      "searchreplace",
-                      "visualblocks",
-                      "code",
-                      "fullscreen",
-                      "insertdatetime",
-                      "media",
-                      "table",
-                      "help",
-                      "wordcount",
-                    ],
-                    toolbar:
-                      "undo redo | blocks | " +
-                      "bold italic forecolor | alignleft aligncenter " +
-                      "alignright alignjustify | bullist numlist outdent indent | " +
-                      "removeformat | help",
                     auto_list: true,
                     advlist_bullet_styles: "default",
                     advlist_number_styles: "default",
-                    content_style:
-                      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-                    branding: false,
-                    promotion: false,
-                    statusbar: false,
-                    resize: false,
-                    language: "vi",
-                    language_url: "/tinymce/langs/vi.js",
                   }}
                   disabled={isSubmitting}
                   onEditorChange={(content) => {

@@ -1,10 +1,22 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 import path from "path";
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(), 
+    tailwindcss(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'node_modules/tinymce/skins',
+          dest: 'tinymce'       // sẽ copy vào dist/tinymce/skins
+        }
+      ]
+    })
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -39,5 +51,13 @@ export default defineConfig({
         rewrite: path => path,
       },
     },
+    fs: {
+      // Cho phép serve files từ node_modules
+      allow: ['..']
+    }
+  },
+  // Tối ưu cho TinyMCE
+  optimizeDeps: {
+    include: ['tinymce']
   },
 });
