@@ -52,12 +52,60 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
   const getTimerProgress = () => {
     if (remainingTime <= 0 || !currentQuestionData) return 0;
     const maxTime = currentQuestionData.question.defaultTime;
-    return Math.max(0, (remainingTime / maxTime) * 100);
+    return Math.max(0, Math.min(100, (remainingTime / maxTime) * 100));
   };
 
   const formatTime = (seconds: number) => {
-    return Math.max(0, Math.floor(seconds));
+    const timeValue = Math.max(0, Math.floor(seconds));
+    const mins = Math.floor(timeValue / 60);
+    const secs = timeValue % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
+
+  const getTimerColor = () => {
+    if (remainingTime <= 10) return "error";
+    if (remainingTime <= 30) return "warning";
+    return "primary";
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty.toLowerCase()) {
+      case "alpha":
+        return "success";
+      case "beta":
+        return "warning";
+      case "gamma":
+        return "error";
+      default:
+        return "default";
+    }
+  };
+
+  // Debug logging cho props
+  React.useEffect(() => {
+    console.log("🔄 [CURRENT QUESTION] Props updated:", {
+      hasCurrentQuestionData: !!currentQuestionData,
+      isGameStarted,
+      remainingTime,
+      isLoading,
+      isTimerPaused,
+      questionOrder: currentQuestionData?.order,
+      questionId: currentQuestionData?.question?.id,
+      defaultTime: currentQuestionData?.question?.defaultTime,
+      progress: currentQuestionData
+        ? (
+            (remainingTime / currentQuestionData.question.defaultTime) *
+            100
+          ).toFixed(1) + "%"
+        : "N/A",
+    });
+  }, [
+    currentQuestionData,
+    isGameStarted,
+    remainingTime,
+    isLoading,
+    isTimerPaused,
+  ]);
 
   if (!isGameStarted) {
     return (
@@ -95,11 +143,12 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
   }
 
   const { order, question } = currentQuestionData;
+  const timerProgress = getTimerProgress();
 
   return (
     <Card elevation={3} className="w-full border-l-4 border-l-blue-500">
       <CardContent className="p-6">
-        {/* Question Header */}
+        {/* Question Header - Tương tự QuestionAnswer */}
         <Box className="flex items-center justify-between mb-4">
           <Box className="flex items-center gap-3">
             <Box className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-lg">
@@ -115,16 +164,12 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
           <Box className="flex items-center gap-2">
             <Chip
               icon={<Timer />}
-              label={`${formatTime(remainingTime)}s`}
-              color={
-                remainingTime <= 10
-                  ? "error"
-                  : remainingTime <= 30
-                  ? "warning"
-                  : "primary"
-              }
-              className="font-mono text-base px-4 py-2"
+              label={formatTime(remainingTime)}
+              color={getTimerColor()}
               size="medium"
+              className={`font-mono text-base px-4 py-2 ${
+                remainingTime <= 10 ? "animate-pulse" : ""
+              }`}
             />
             {isTimerPaused && (
               <Chip
@@ -137,28 +182,25 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
           </Box>
         </Box>
 
-        {/* Timer Progress Bar */}
+        {/* Timer Progress Bar - Tương tự QuestionAnswer */}
         <Box className="mb-4">
           <LinearProgress
             variant="determinate"
-            value={getTimerProgress()}
-            color={
-              remainingTime <= 10
-                ? "error"
-                : remainingTime <= 30
-                ? "warning"
-                : "primary"
-            }
+            value={timerProgress}
+            color={getTimerColor()}
             className="h-3 rounded-full shadow-inner"
           />
-          <Box className="flex justify-end items-center mt-2">
+          <Box className="flex justify-between items-center mt-2">
             <Typography variant="caption" className="text-gray-500">
-              Tổng thời gian: {question.defaultTime}s
+              Tiến độ: {timerProgress.toFixed(1)}%
+            </Typography>
+            <Typography variant="caption" className="text-gray-500">
+              Tổng thời gian: {question.defaultTime || 0}s
             </Typography>
           </Box>
         </Box>
 
-        {/* Question Info Tags */}
+        {/* Question Info Tags - Cải thiện */}
         <Box className="flex flex-wrap gap-2 mb-4">
           <Chip
             icon={<Category />}
@@ -174,7 +216,7 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
           <Chip
             icon={<Star />}
             label={`Độ khó: ${question.difficulty}`}
-            variant="outlined"
+            color={getDifficultyColor(question.difficulty)}
             size="small"
             className="px-3 py-1"
           />
@@ -228,7 +270,7 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
           />
         </Paper>
 
-        {/* Question Options */}
+        {/* Question Options - Cải thiện hiển thị */}
         {question.options && question.options.length > 0 && (
           <Paper className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200">
             <Box className="space-y-3">
@@ -237,15 +279,15 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
                 return (
                   <Box
                     key={index}
-                    className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                    className={`flex items-start gap-3 p-3 rounded-lg border-2 transition-colors ${
                       isCorrect
-                        ? "bg-blue-50 border-blue-200 hover:border-blue-300"
+                        ? "bg-green-50 border-green-300 hover:border-green-400"
                         : "bg-white border-gray-200 hover:border-gray-300"
                     }`}
                   >
                     <Box
                       className={`flex-shrink-0 w-8 h-8 text-white rounded-full flex items-center justify-center font-bold text-sm ${
-                        isCorrect ? "bg-blue-500" : "bg-gray-500"
+                        isCorrect ? "bg-green-500" : "bg-gray-500"
                       }`}
                     >
                       {String.fromCharCode(65 + index)}
@@ -268,15 +310,32 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
                       }}
                     />
                     {isCorrect && (
-                      <CheckCircle
-                        className="text-blue-600 flex-shrink-0"
-                        fontSize="small"
-                      />
+                      <Box className="flex items-center gap-2">
+                        <CheckCircle
+                          className="text-green-600 flex-shrink-0"
+                          fontSize="small"
+                        />
+                        <Chip
+                          label="ĐÚNG"
+                          size="small"
+                          className="bg-green-600 text-white font-bold"
+                        />
+                      </Box>
                     )}
                   </Box>
                 );
               })}
             </Box>
+          </Paper>
+        )}
+
+        {/* Debug Info - Chỉ hiện khi development */}
+        {process.env.NODE_ENV === "development" && (
+          <Paper className="p-3 mt-4 bg-yellow-50 border border-yellow-200">
+            <Typography variant="caption" className="text-yellow-800 font-mono">
+              🔧 Debug: Progress {timerProgress.toFixed(1)}% | Remaining:{" "}
+              {remainingTime}s | Default: {question.defaultTime}s
+            </Typography>
           </Paper>
         )}
       </CardContent>

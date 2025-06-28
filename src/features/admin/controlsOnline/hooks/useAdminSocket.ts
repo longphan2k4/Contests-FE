@@ -2,6 +2,7 @@ import { useEffect, useCallback, useState } from 'react';
 import { useOnlineControlSocket } from '@contexts/OnlineControlSocketContext';
 import { useParams } from 'react-router-dom';
 import { useMatchInfo } from './useControls'; // 🔥 NEW: Import useMatchInfo hook
+import { useQueryClient } from '@tanstack/react-query'; // 🔥 NEW: Import useQueryClient
 
 // Định nghĩa types cho socket responses
 interface SocketResponse {
@@ -10,7 +11,7 @@ interface SocketResponse {
   data?: unknown;
 }
 
-// �� NEW: Interface cho join room response
+// 🔥 NEW: Interface cho join room response
 interface JoinRoomResponse {
   success: boolean;
   message: string;
@@ -61,10 +62,10 @@ interface ExamState {
 
 export const useAdminSocket = () => {
   const { socket, isConnected } = useOnlineControlSocket();
-  const { match } = useParams();
+  const { match } = useParams<{ match: string }>();
   
   // 🔥 NEW: Fetch match data để lấy match ID
-  const { data: matchResponse } = useMatchInfo(match ?? null);
+  const { data: matchResponse } = useMatchInfo(match || '');
   const matchData = matchResponse?.data;
   
   const [examState, setExamState] = useState<ExamState>({
@@ -75,6 +76,9 @@ export const useAdminSocket = () => {
     timeRemaining: 0,
     defaultTime: 0,
   });
+
+  // 🔥 NEW: Use queryClient for invalidating queries
+  const queryClient = useQueryClient();
 
   // 🔥 NEW: Timer countdown
   useEffect(() => {
@@ -542,16 +546,26 @@ export const useAdminSocket = () => {
   }, [socket, match, matchData]);
 
   const nextQuestion = useCallback(async (): Promise<SocketResponse> => {
-    if (!socket || !match || !matchData) {
-      return { success: false, message: 'Socket không kết nối, thiếu match slug hoặc match data' };
+    console.log('🔥 nextQuestion called with:', { 
+      matchData: matchData,
+      isConnected: socket?.connected 
+    });
+
+    if (!socket?.connected) {
+      console.error('❌ Socket không được kết nối');
+      return { success: false, message: 'Socket không được kết nối' };
+    }
+
+    if (!matchData?.id) {
+      console.error('❌ Không có match data');
+      return { success: false, message: 'Không có match data' };
     }
 
     setExamState(prev => ({ ...prev, isLoading: true }));
 
     return new Promise((resolve) => {
       socket.emit('match:nextQuestion', { matchId: matchData.id }, (response: SocketResponse) => {
-        console.log('➡️ Next question response:', response);
-        
+        console.log('🔥 nextQuestion response:', response);
         if (response.success) {
           console.log('✅ [ADMIN] Next question thành công - cập nhật state admin control');
           
@@ -585,6 +599,11 @@ export const useAdminSocket = () => {
               console.log('🔄 Refresh sidebar response:', refreshResponse);
             });
           }, 300); // 🔥 FIX: Giảm delay xuống 300ms để nhanh hơn
+
+          // 🔥 NEW: Invalidate CurrentQuestion query để refresh sidebar
+          queryClient.invalidateQueries({ 
+            queryKey: ["CurrentQuestion", match] 
+          });
         } else {
           setExamState(prev => ({ ...prev, isLoading: false }));
         }
@@ -592,7 +611,7 @@ export const useAdminSocket = () => {
         resolve(response);
       });
     });
-  }, [socket, match, matchData, examState.currentQuestion]);
+  }, [socket, matchData, queryClient, match]);
 
   return {
     // State
