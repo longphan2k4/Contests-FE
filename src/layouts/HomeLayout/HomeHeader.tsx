@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProfile } from "../../features/auth/hooks/useprofile";
+
 import { useNotification } from "../../contexts/NotificationContext";
 import Logo from "../../assets/image/logo/logo-caothang.svg";
+
+import { useAuth } from "../../features/auth/hooks/authContext";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const { user, loading } = useAuth();
+
   const [activeItem, setActiveItem] = useState("home");
 
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const { data: userProfile, isLoading: profileLoading } = useProfile();
   const { showSuccessNotification } = useNotification();
 
   const handleHomeClick = () => {
@@ -32,7 +35,7 @@ const Header: React.FC = () => {
       "feAccessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
     localStorage.removeItem("feAccessToken");
     showSuccessNotification("Đăng xuất thành công");
-    navigate("/");
+    navigate("/trang-chu");
     window.location.reload();
   };
 
@@ -80,11 +83,6 @@ const Header: React.FC = () => {
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
-
-  const isLoggedIn = userProfile?.success && userProfile?.data;
-  const userName =
-    userProfile?.data?.name || userProfile?.data?.username || "Người dùng";
-  const userRole = userProfile?.data?.role?.toLowerCase(); // Chuẩn hóa role thành lowercase để so sánh
 
   return (
     <header
@@ -156,23 +154,23 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
-            {!profileLoading && (
+            {!loading && (
               <>
-                {isLoggedIn ? (
+                {user ? (
                   <div className="relative user-menu-container">
                     <button
                       onClick={() => setShowUserMenu(!showUserMenu)}
                       className="flex items-center space-x-3 bg-gradient-to-r from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100 px-4 py-2 rounded-xl border border-cyan-200 hover:border-cyan-300 transition-all duration-300 group"
                     >
                       <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                        {userName.charAt(0).toUpperCase()}
+                        {user?.username.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex flex-col items-start">
                         <span className="text-sm font-medium text-gray-700 group-hover:text-cyan-700">
                           Xin chào
                         </span>
                         <span className="text-sm font-semibold text-cyan-700">
-                          {userName}
+                          {user?.username || "Người dùng"}
                         </span>
                       </div>
                       <svg
@@ -200,11 +198,11 @@ const Header: React.FC = () => {
                             Đăng nhập với tư cách
                           </p>
                           <p className="text-sm font-semibold text-gray-700">
-                            {userName}
+                            {user?.username || "Người dùng"}
                           </p>
-                          {userRole && (
+                          {user?.role && (
                             <p className="text-xs text-cyan-600 capitalize">
-                              {userRole}
+                              {user?.role}
                             </p>
                           )}
                         </div>
@@ -236,12 +234,12 @@ const Header: React.FC = () => {
                         </button>
 
                         {/* Menu Item: Trang quản lý hoặc Trang giám khảo dựa trên role */}
-                        {(userRole === "admin" || userRole === "judge") && (
+                        {(user?.role === "Admin" || user?.role === "Judge") && (
                           <button
                             onClick={() => {
-                              if (userRole === "admin") {
+                              if (user?.role === "Admin") {
                                 navigate("/admin/dashboard");
-                              } else if (userRole === "judge") {
+                              } else if (user?.role === "Judge") {
                                 navigate("/cuoc-thi"); // Đường dẫn cho trang giám khảo
                               }
                               setShowUserMenu(false);
@@ -263,7 +261,7 @@ const Header: React.FC = () => {
                                 />
                               </svg>
                               <span>
-                                {userRole === "admin"
+                                {user?.role === "Admin"
                                   ? "Trang quản lý"
                                   : "Trang giám khảo"}
                               </span>

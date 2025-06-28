@@ -1,21 +1,21 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { viteStaticCopy } from "vite-plugin-static-copy";
 import path from "path";
 
 export default defineConfig({
   plugins: [
-    react(), 
+    react(),
     tailwindcss(),
     viteStaticCopy({
       targets: [
         {
-          src: 'node_modules/tinymce/skins',
-          dest: 'tinymce'       // sẽ copy vào dist/tinymce/skins
-        }
-      ]
-    })
+          src: "node_modules/tinymce/skins",
+          dest: "tinymce", // sẽ copy vào dist/tinymce/skins
+        },
+      ],
+    }),
   ],
   resolve: {
     alias: {
@@ -39,13 +39,13 @@ export default defineConfig({
     proxy: {
       // Cấu hình proxy cho API
       "/api": {
-        target: "http://localhost:3000",
+        target: "http://103.90.226.191:3000",
         changeOrigin: true,
         secure: false,
       },
       // Cấu hình proxy cho uploads
       "/uploads": {
-        target: "http://localhost:3000",
+        target: "http://103.90.226.191:3000",
         changeOrigin: true,
         secure: false,
         rewrite: path => path,
@@ -53,11 +53,11 @@ export default defineConfig({
     },
     fs: {
       // Cho phép serve files từ node_modules
-      allow: ['..']
-    }
+      allow: [".."],
+    },
   },
   // Tối ưu cho TinyMCE
   optimizeDeps: {
-    include: ['tinymce']
+    include: ["tinymce"],
   },
 });
