@@ -106,7 +106,7 @@ export const useBulkCreateGroups = (matchId: number | null) => {
           groupNames,
         });
 
-        showToast(`Tạo ${res.createdCount} nhóm thành công`, 'success');
+        // showToast(`Tạo ${res.createdCount} nhóm thành công`, 'success');
         return res.groups;
       } catch (err: unknown) {
         let errorMessage = 'Lỗi khi tạo nhóm hàng loạt';
