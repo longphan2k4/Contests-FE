@@ -121,18 +121,13 @@ export type CurrentQuestion = {
   questionMedia: MediaFile[] | string | null;
   intro: string | null;
   correctAnswer: string;
+  questionOrder: number;
+  questionTopicName?: string;
 };
 
 export type ListRescue = {
   id: number;
   status: RescueStatus;
-};
-
-export type ListContestant = {
-  contestantId: number;
-  matchId: number;
-  registrationNumber: number;
-  status: ContestantMatchStatus;
 };
 
 export type countContestant = {
@@ -161,10 +156,26 @@ export type UpdateSceenControl = {
   controlKey?: ControlKey;
   controlValue?: ControlValue;
   media?: string;
+  value?: string;
 };
 
 export type MediaType = {
   id: number;
   name: string | null;
   videos: string | null;
+};
+
+export type contestant = {
+  registrationNumber: number;
+  status: ContestantMatchStatus;
+};
+
+export type ListContestant = {
+  id: number;
+  name: string;
+  confirmCurrentQuestion: number;
+  user: {
+    username: string;
+  };
+  contestantMatches: contestant[];
 };

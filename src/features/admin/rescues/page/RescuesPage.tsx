@@ -281,7 +281,7 @@ const RescuesPage: React.FC = () => {
                   whiteSpace: "nowrap",
                 }}
               >
-                Xoá người ({selectedRescueIds.length})
+                Xoá ({selectedRescueIds.length})
               </Button>
             )}
 

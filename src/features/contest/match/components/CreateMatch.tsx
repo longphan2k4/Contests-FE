@@ -38,6 +38,7 @@ export default function CreateMatch({
     resolver: zodResolver(CreateMatchSchema),
     defaultValues: {
       isActive: true,
+      currentQuestion: 1,
     },
   });
 

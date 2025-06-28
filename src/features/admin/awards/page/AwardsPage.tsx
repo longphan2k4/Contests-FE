@@ -284,7 +284,7 @@ const AwardsPage: React.FC = () => {
                   whiteSpace: "nowrap",
                 }}
               >
-                Xoá người ({selectedAwardIds.length})
+                Xoá ({selectedAwardIds.length})
               </Button>
             )}
 

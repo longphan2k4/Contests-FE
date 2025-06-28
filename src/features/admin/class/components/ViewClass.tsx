@@ -2,7 +2,7 @@ import AppFormDialog from "../../../../components/AppFormDialog";
 import { Box, CircularProgress } from "@mui/material";
 
 import { useClassById } from "../hook/useClassById";
-import { use, useEffect } from "react";
+import { useEffect } from "react";
 
 interface ViewClassProps {
   id: number | null;

@@ -21,7 +21,6 @@ const CommonDataGrid = <T,>({
   rows,
   columns,
   getRowId,
-  selectedIds,
   onSelectChange,
   checkboxSelection = true,
   disabledRowIds = [],

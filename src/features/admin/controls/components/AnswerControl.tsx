@@ -1,5 +1,4 @@
 import React from "react";
-import { PlayIcon, PauseIcon } from "@heroicons/react/24/solid";
 import {
   type CurrentQuestion,
   type UpdateSceenControl,

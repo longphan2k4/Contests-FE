@@ -4,7 +4,11 @@ import AdminRoutes from "../features/admin/AdminRoutes";
 import ContestRoutes from "../features/contest/ContestRouter";
 import AuthRoutes from "../features/auth/routes";
 import PublicRoutes from "./PublicRoutes";
-import { AudienceOpinionPage, AUDIENCE_ROUTES } from "../features/audience";
+import {
+  AudienceOpinionPage,
+  AudienceStatsPage,
+  AUDIENCE_ROUTES,
+} from "../features/audience";
 import MatchPage from "../features/match/pages/MatchPage";
 import TechBanner from "../features/match/components/MediaPopup/BackGround";
 import PrivateRoute from "./PrivateRoute";
@@ -43,22 +47,21 @@ const AppRoutes: React.FC = () => {
         <Route path="/account/profile" element={<ProfilePage />} />
       </Route>
       {/* Routes dành cho trọng tài */}
-      <Route element={<PrivateRoute roles={["Judge"]} />}>
-        <Route path="/contests" element={<ContestList />} />
-        <Route path="/contests/:contestId/matches" element={<MatchList />} />
-      </Route>
-      {/* Public Routes */}
 
-      <Route
-        path="/judge/home/:match"
-        element={
-          <PrivateRoute roles={["Judge"]}>
+      <Route element={<PrivateRoute roles={["Judge"]} />}>
+        <Route path="/cuoc-thi" element={<ContestList />} />
+        <Route path="/cuoc-thi/:contestId/tran-dau" element={<MatchList />} />
+        <Route
+          path="/trong-tai/tran-dau/:match"
+          element={
             <SocketProvider>
               <JudgeHomePage />
             </SocketProvider>
-          </PrivateRoute>
-        }
-      />
+          }
+        />
+      </Route>
+      {/* Public Routes */}
+
       {/* <Route path="/judge/selected-match" element={<MatchSelectionPage />} /> */}
       <Route
         path="/tran-dau/:match"
@@ -73,6 +76,12 @@ const AppRoutes: React.FC = () => {
         path={AUDIENCE_ROUTES.OPINION_PAGE}
         element={<AudienceOpinionPage />}
       />
+
+      <Route
+        path={AUDIENCE_ROUTES.STATS_DISPLAY}
+        element={<AudienceStatsPage />}
+      />
+
       <Route path="/match/eliminate" element={<EliminatePage />} />
       <Route path="/banner" element={<TechBanner />} />
       <Route path="/403" element={<Forbidden403 />} />

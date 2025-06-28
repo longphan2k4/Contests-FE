@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import type { Contest } from '../../types/selector/Contest';
-import { getContests } from '../../services/selector/api';
-import { useAuth } from '../../../auth/hooks/authContext';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import type { Contest } from "../../types/selector/Contest";
+import { getContests } from "../../services/selector/api";
+import { useAuth } from "../../../auth/hooks/authContext";
 
 const ContestList: React.FC = () => {
   const [contests, setContests] = useState<Contest[]>([]);
@@ -13,9 +13,9 @@ const ContestList: React.FC = () => {
 
   useEffect(() => {
     if (!user) {
-      setError('Vui lòng đăng nhập để xem danh sách cuộc thi.');
+      setError("Vui lòng đăng nhập để xem danh sách cuộc thi.");
       setLoading(false);
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
@@ -26,10 +26,10 @@ const ContestList: React.FC = () => {
         setContests(contestList);
       } catch (err: any) {
         if (err.response?.status === 401) {
-          setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-          navigate('/login');
+          setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+          navigate("/login");
         } else {
-          setError('Không thể tải danh sách cuộc thi.');
+          setError("Không thể tải danh sách cuộc thi.");
         }
       } finally {
         setLoading(false);
@@ -39,7 +39,7 @@ const ContestList: React.FC = () => {
   }, [user, navigate]);
 
   const handleContestSelect = (contestId: number) => {
-    navigate(`/contests/${contestId}/matches`);
+    navigate(`/cuoc-thi/${contestId}/tran-dau `);
   };
 
   return (
@@ -67,14 +67,16 @@ const ContestList: React.FC = () => {
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-6 mx-auto max-w-md sm:max-w-lg flex items-center gap-3 my-5">
           <div className="text-2xl flex-shrink-0">⚠️</div>
-          <p className="text-red-600 text-sm sm:text-base leading-relaxed">{error}</p>
+          <p className="text-red-600 text-sm sm:text-base leading-relaxed">
+            {error}
+          </p>
         </div>
       )}
 
       {/* Contest Grid */}
       {!loading && !error && contests.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto">
-          {contests.map((contest) => (
+          {contests.map(contest => (
             <div
               key={contest.id}
               className="bg-white rounded-2xl shadow-sm border border-slate-200 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-100 overflow-hidden min-h-[140px] flex flex-col"
@@ -93,7 +95,7 @@ const ContestList: React.FC = () => {
                 <p className="text-slate-500 text-xs sm:text-sm font-mono mb-4 truncate">
                   Slug: {contest.slug}
                 </p>
-                
+
                 {/* Card Footer */}
                 <div className="flex justify-end">
                   <span className="text-blue-600 text-xs sm:text-sm font-semibold">

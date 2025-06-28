@@ -54,16 +54,16 @@ export const CreateMatchSchema = z.object({
 
   questionPackageId: z.coerce
     .number({
-      invalid_type_error: "ID gói câu hỏi phải là số",
+      invalid_type_error: "Vui lòng chọn gói câu hỏi",
       required_error: "Vui lòng chọn gói câu hỏi",
     })
     .int("ID gói câu hỏi phải là số nguyên"),
   roundId: z.coerce
     .number({
-      invalid_type_error: "ID vòng thi phải là số",
-      required_error: "Vui lòng chọn vòng thi",
+      invalid_type_error: "Vui lòng chọn vòng đấu",
+      required_error: "Vui lòng chọn vòng đấu",
     })
-    .int("ID vòng thi phải là số nguyên"),
+    .int("ID vòng đấu phải là số nguyên"),
 
   studentId: z.coerce
     .number({
@@ -71,7 +71,10 @@ export const CreateMatchSchema = z.object({
     })
     .int("ID sinh viên phải là số nguyên")
     .optional(),
-  status: z.enum(["upcoming", "ongoing", "finished"]),
+  status: z.enum(["upcoming", "ongoing", "finished"], {
+    errorMap: () => ({ message: "Vui lòng chọn trạng thái" }),
+  }),
+
   isActive: z.boolean().optional(),
 });
 
@@ -112,7 +115,6 @@ export const UpdateMatchSchema = z.object({
 
   questionPackageId: z.coerce
     .number({
-      invalid_type_error: "ID gói câu hỏi phải là số",
       required_error: "Vui lòng chọn gói câu hỏi",
     })
     .int("ID gói câu hỏi phải là số nguyên")

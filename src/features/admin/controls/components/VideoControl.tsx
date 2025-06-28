@@ -3,7 +3,6 @@ import { type MediaType, type UpdateSceenControl } from "../type/control.type";
 import { useParams } from "react-router-dom";
 import { useSocket } from "@contexts/SocketContext";
 import { useToast } from "@contexts/toastContext";
-import { m } from "framer-motion";
 
 interface VideoControlProps {
   sponsorMedia: MediaType[];

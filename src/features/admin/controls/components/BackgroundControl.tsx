@@ -13,7 +13,7 @@ const BackgroundControl: React.FC = () => {
   const EmitScreenUpdate = (payload: UpdateSceenControl) => {
     if (!socket || !match) return;
 
-    socket.emit("screen:update", { match, ...payload }, (response: any) => {});
+    socket.emit("screen:update", { match, ...payload }, (_response: any) => {});
     showToast("Cập nhật màn hình thành công", "success");
   };
 

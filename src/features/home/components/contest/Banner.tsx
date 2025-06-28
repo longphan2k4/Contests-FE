@@ -6,21 +6,21 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
       id: 1,
       title: "Cuộc Thi Lập Trình 2025",
       subtitle: "Thách thức coding hấp dẫn nhất năm",
-      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1200&h=400&fit=crop",
+      image: "https://scontent.fsgn2-4.fna.fbcdn.net/v/t39.30808-6/492537042_1238852174906685_7413700368025108558_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=cc71e4&_nc_eui2=AeGYwuWS2EPq20J7j3jndx6V6ZtZoo9cSQ3pm1mij1xJDS39nR3ecQ_aSUdsd7ngWWHwjrDsmSwkr0NUbkqeRfqy&_nc_ohc=ACy8-bc2_00Q7kNvwG7yCNM&_nc_oc=AdnNan77c1lWy0aZgnc8jFPrsQjSmlHmrtWTQlnRxizBuBszVmSTEkSzdUqweL54hBvYdXd2CqZixXf5-hTs_25h&_nc_zt=23&_nc_ht=scontent.fsgn2-4.fna&_nc_gid=rCNxYXsifdJ1QaIt2U0m0g&oh=00_AfPlwyspMYSMudTMKInjYbFWOllydkeLeII48ikI3hwFVw&oe=68629277",
       cta: "Đăng ký ngay"
     },
     {
       id: 2,
-      title: "Giải Thưởng 100 Triệu VNĐ",
+      title: "Giải Thưởng >10 Triệu VNĐ",
       subtitle: "Cơ hội nhận học bổng và quà tặng giá trị",
-      image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=1200&h=400&fit=crop",
+      image: "https://cdn-i2.congthuong.vn/stores/news_dataimages/2025/042025/18/08/in_article/a220250418084500.jpg?rt=20250418172414",
       cta: "Xem chi tiết"
     },
     {
       id: 3,
       title: "Kết Nối Cộng Đồng Dev",
       subtitle: "Gặp gỡ và học hỏi từ các lập trình viên hàng đầu",
-      image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=400&fit=crop",
+      image: "https://scontent.fsgn2-9.fna.fbcdn.net/v/t39.30808-6/498029065_1255968949861674_8110738499065592051_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeEd_rR098NRaIovUyseB4MkVcqIYsZvxt5Vyohixm_G3rdfoSF53HhP5Ja3-p_M4FM3dgF9XBmlov6EFXcgZXRA&_nc_ohc=zfcUMML86CwQ7kNvwFcDvNN&_nc_oc=Adlr77JOcQyJ8ITEiMiKlE0H_2Gp-NBzINRKZFSgCa76EkXKOnJWopFHQMkqUnE6S0uQiHdgXU9YRt2ufn_qtmIe&_nc_zt=23&_nc_ht=scontent.fsgn2-9.fna&_nc_gid=87UhjXsN8023Trc-az4o7g&oh=00_AfN2Yq2Qeunl_iM_7X3AHUjAz4H_GXuF4ZxqSxLvHGBMFg&oe=6862A143",
       cta: "Tham gia"
     },
     {
@@ -67,7 +67,7 @@ const BannerSlideshow = () => {
                 className="w-full h-full bg-cover bg-center relative"
                 style={{ backgroundImage: `url(${banner.image})` }}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-900/70 to-blue-800/50"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-900/50 to-blue-800/30"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center max-w-4xl px-6">
                     <h2 className="text-2xl md:text-5xl font-bold mb-4 text-white drop-shadow-2xl">
@@ -76,9 +76,6 @@ const BannerSlideshow = () => {
                     <p className="text-base md:text-xl text-blue-100 mb-6 drop-shadow-xl">
                       {banner.subtitle}
                     </p>
-                    <button className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-2 md:px-8 md:py-3 rounded-full text-sm md:text-base font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-xl">
-                      {banner.cta}
-                    </button>
                   </div>
                 </div>
               </div>

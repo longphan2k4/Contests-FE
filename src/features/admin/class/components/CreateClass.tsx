@@ -78,7 +78,20 @@ export default function CreateClass({
       </Box>
     );
   }
-
+  if (isErrorSchool) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "200px",
+        }}
+      >
+        <p>Không thể tải danh sách trường học</p>
+      </Box>
+    );
+  }
   return (
     <AppFormDialog
       open={isOpen}

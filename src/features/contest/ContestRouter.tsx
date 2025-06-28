@@ -9,10 +9,12 @@ import ResultsPage from "../admin/result/pages/ResultsPage";
 import RescuePage from "./rescues/page/RescuePage";
 import ContestantMatchPage from "./match/page/ContestantMatchPage";
 
-const Dashboard = () => <div>Trang Dashboard Cuộc Thi</div>;
-import SponsorsPage from "../admin/sponsors/page/SponsorsPage";
+// const Dashboard = () => <div>Trang Dashboard Cuộc Thi</div>;
+import ClassVideosPage from "@features/admin/class-videos/page/ClassVideosPage";
+import Dashboard from "@features/admin/dashboard_slug/pages/Dashboard";
+import SponsorsPage from "@features/admin/sponsors/page/SponsorsPage";
 import AwardsPage from "../admin/awards/page/AwardsPage";
-const ClassVideos = () => <div>Trang Videos Lớp</div>;
+import MediaPage from "@features/admin/media/page/MediaPage";
 const ContestRoutes = () => {
   return (
     <Route path="/admin/cuoc-thi/:slug" element={<ContestLayout />}>
@@ -23,7 +25,8 @@ const ContestRoutes = () => {
       <Route path="tran-dau" element={<MatchPage />} />
       <Route path="sponsors" element={<SponsorsPage />} />
       <Route path="awards" element={<AwardsPage />} />
-      <Route path="class-videos" element={<ClassVideos />} />
+      <Route path="class-videos" element={<ClassVideosPage />} />
+      <Route path="media" element={<MediaPage />} />
       <Route path="cuu-tro" element={<RescuePage />} />
       <Route index element={<Navigate to="dashboard" replace />} />
       <Route path="results" element={<ResultsPage />} />

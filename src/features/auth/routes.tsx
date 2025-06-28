@@ -1,5 +1,4 @@
 import { Route } from "react-router-dom";
-import PublicRoute from "../../routes/PublicRoute";
 import LoginPage from "./pages/login";
 import ForgotPasswordPage from "./pages/forgot-password";
 

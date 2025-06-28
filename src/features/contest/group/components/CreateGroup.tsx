@@ -34,7 +34,7 @@ export default function CreateGroup({
   } = useForm<CreateGroupInput>({
     resolver: zodResolver(CreateGroupsSchema),
     defaultValues: {
-      confirmCurrentQuestion: 1,
+      confirmCurrentQuestion: 0,
     },
   });
 
