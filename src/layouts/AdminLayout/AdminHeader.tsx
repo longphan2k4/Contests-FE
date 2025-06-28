@@ -13,10 +13,10 @@ import {
   useTheme,
 } from "@mui/material";
 import { Menu as MenuIcon, AccountCircle, Logout } from "@mui/icons-material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useLogout } from "../../features/auth/hooks/useLogout";
 import { useAuth } from "../../features/auth/hooks/authContext";
-import { useNotification } from "../../contexts/NotificationContext";
+import { useToast } from "@contexts/toastContext";
 
 interface AdminHeaderProps {
   onToggle: () => void;
@@ -31,8 +31,9 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggle }) => {
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { setUser } = useAuth();
-  const { showSuccessNotification, showErrorNotification } = useNotification();
+  const { showToast } = useToast();
   const { mutate } = useLogout();
+  const navigator = useNavigate();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -48,12 +49,12 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggle }) => {
         handleMenuClose();
         document.cookie =
           "feAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        showSuccessNotification("Đăng xuất thành công", "Thông báo");
+        showToast("Đăng xuất thành công", "success");
         setTimeout(() => setUser(null), 500);
       },
       onError: error => {
         console.error("Logout failed:", error);
-        showErrorNotification("Đăng xuất thất bại", "Thông báo");
+        showToast("Đăng xuất thất bại", "error");
       },
     });
   };
