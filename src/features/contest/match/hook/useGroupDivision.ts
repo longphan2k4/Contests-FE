@@ -82,3 +82,48 @@ export const useUpdateGroupName = (matchId: number | null) => {
 
   return { updateGroupName, isUpdating, error };
 };
+
+export const useBulkCreateGroups = (matchId: number | null) => {
+  const { showToast } = useToast();
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const bulkCreateGroups = useCallback(
+    async (groupCount: number) => {
+      if (!matchId || groupCount <= 0) {
+        throw new Error("Match ID không hợp lệ hoặc số lượng nhóm bằng 0.");
+      }
+      setIsCreating(true);
+      setError(null);
+      try {
+        // Tạo tên nhóm tự động: "Nhóm 1", "Nhóm 2", ...
+        const groupNames = Array.from({ length: groupCount }, (_, i) => `Nhóm ${i + 1}`);
+        
+        console.log(`Đang gọi API bulkCreateGroups với matchId: ${matchId} và tên nhóm:`, groupNames);
+
+        const res = await GroupDivisionService.createBulkGroups({
+          matchId,
+          groupNames,
+        });
+
+        showToast(`Tạo ${res.createdCount} nhóm thành công`, 'success');
+        return res.groups;
+      } catch (err: unknown) {
+        let errorMessage = 'Lỗi khi tạo nhóm hàng loạt';
+        if (err && typeof err === 'object' && 'response' in err) {
+          const response = (err as { response?: { data?: { message?: string } } }).response;
+          errorMessage = response?.data?.message || errorMessage;
+        }
+        setError(errorMessage);
+        showToast(errorMessage, 'error');
+        // Ném lỗi ra ngoài để hàm gọi có thể bắt được
+        throw new Error(errorMessage);
+      } finally {
+        setIsCreating(false);
+      }
+    },
+    [matchId, showToast]
+  );
+
+  return { bulkCreateGroups, isCreating, error };
+};

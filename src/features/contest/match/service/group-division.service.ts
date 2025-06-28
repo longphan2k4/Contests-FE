@@ -102,9 +102,8 @@ export interface DeleteGroupsResponse {
 
 export interface CreateBulkGroupsRequest {
   matchId: number;
-  groupCount?: number;
-  groupNamePrefix?: string;
-  groupNames?: string[]; // Optional - nếu muốn tự định nghĩa tên
+  groupNames: string[];
+  // judgeIds?: number[]; // Optional - nếu không truyền thì tất cả nhóm sẽ có trọng tài null
 }
 
 export interface CreateBulkGroupsResponse {
@@ -253,5 +252,15 @@ export class GroupDivisionService {
   ): Promise<CreateBulkGroupsResponse> {
     const response = await axiosInstance.post('/group/bulk', data);
     return response.data.data;
+  }
+
+  /**
+   * Phân bổ thí sinh vào các nhóm đã có sẵn (theo groupId, contestantIds)
+   */
+  static async assignContestantsToGroups(
+    matchId: number,
+    data: { groups: { groupId: number; contestantIds: number[] }[] }
+  ) {
+    return axiosInstance.post(`/group-division/matches/${matchId}/assign-contestants-to-groups`, data);
   }
 }
