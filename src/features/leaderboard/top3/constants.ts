@@ -1,0 +1,1 @@
+export const DISPLAY_ORDER: number[] = [1, 0, 2];
