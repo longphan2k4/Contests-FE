@@ -41,6 +41,7 @@ import CreateUser from "../../../admin/user/components/CreateUser";
 import { CreateUser as CreateUserAPI } from "../../../admin/user/service/api";
 import { type CreateUserInput } from "../../../admin/user/types/user.shame";
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
+import ResizablePanel from '../../../../components/ResizablePanel';
 
 import {
   useGetAll,
@@ -117,12 +118,16 @@ const ContestantMatchPage: React.FC = () => {
 
   // Judge-related states
   const [availableJudges, setAvailableJudges] = useState<JudgeInfo[]>([]);
-  const [judgeSearchTerm, setJudgeSearchTerm] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [judgeSearchTerm, _setJudgeSearchTerm] = useState<string>('');
   const [assignedJudges, setAssignedJudges] = useState<{ [groupIndex: number]: JudgeInfo | null }>({});
   const [isLoadingJudges, setIsLoadingJudges] = useState(false);
 
   // quản lý tiến trình 
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // quản lý withd right side bar
+  const [groupDivisionPanelWidth, setGroupDivisionPanelWidth] = useState(470);
 
   // New filter states
   const [listSchools, setListSchools] = useState<SchoolInfo[]>([]);
@@ -599,9 +604,10 @@ const ContestantMatchPage: React.FC = () => {
       if (type === "edit") setIsEditOpen(true);
     },
     [handleDelete]
-  );  // Handle adding selected contestants to current active group only
+  );
+
+  // Handle adding selected contestants to current active group only
   useEffect(() => {
-    // Chỉ chạy khi ở bước 2, có thí sinh được chọn, VÀ KHÔNG phải đang trong quá trình phân bổ tự động
     if (groupDivisionStep === 2 && selectedIds.length > 0 && !shouldAutoDistribute) {
       const selectedContestants = selectedIds
         .map(id => contestant.find(c => c.id === id))
@@ -614,8 +620,6 @@ const ContestantMatchPage: React.FC = () => {
         );
 
         if (newContestants.length > 0) {
-          console.log('Adding contestants to group:', { activeGroupTab, newContestants: newContestants.length });
-          // Set flag để tránh useEffect override - KHÔNG tự động reset
           setSkipSyncFromAPI(true);
 
           setGroups(prev => {
@@ -623,18 +627,26 @@ const ContestantMatchPage: React.FC = () => {
               ...prev,
               [activeGroupTab]: [...(prev[activeGroupTab] || []), ...newContestants]
             };
-            console.log('Groups after adding contestants:', updated);
             return updated;
           });
 
-          // Không reset flag tự động nữa - để user tự quyết định khi nào sync lại
+          // Cập nhật groupName/groupId cho thí sinh trong danh sách tổng
+          setcontestant(prev =>
+            prev.map(c =>
+              newContestants.some(nc => nc.id === c.id)
+                ? { ...c, groupName: existingGroups?.[activeGroupTab]?.name || `Nhóm ${activeGroupTab + 1}`, groupId: existingGroups?.[activeGroupTab]?.id }
+                : c
+            )
+          );
+
           showToast(`Đã thêm ${newContestants.length} thí sinh vào Nhóm ${activeGroupTab + 1}`, 'success');
         }
       }
 
       setSelectedIds([]);
     }
-  }, [selectedIds, groupDivisionStep, contestant, groups, activeGroupTab, shouldAutoDistribute, showToast]);
+  }, [selectedIds, groupDivisionStep, contestant, groups, activeGroupTab, shouldAutoDistribute, showToast, existingGroups]);
+
   // Fetch judges when component mounts or when search term changes
   const fetchJudges = useCallback(async (search: string = '') => {
     try {
@@ -867,29 +879,12 @@ const ContestantMatchPage: React.FC = () => {
         return;
       }
 
-      // Kiểm tra có trọng tài nào chưa được assign không
-      const assignedJudgeIds = Object.values(assignedJudges)
-        .filter(judge => judge !== null)
-        .map(judge => judge!.id);
-
-      const unassignedJudges = availableJudges.filter(judge =>
-        !assignedJudgeIds.includes(judge.id)
-      );
-
-      if (unassignedJudges.length === 0) {
-        showToast('Không có trọng tài nào khả dụng để tạo nhóm mới', 'warning');
-        return;
-      }
-
-      // Lấy trọng tài đầu tiên chưa được assign
-      const selectedJudge = unassignedJudges[0];
       const newGroupName = `Nhóm ${totalGroups + 1}`;
 
-      // Gọi API tạo nhóm mới
+      // Gọi API tạo nhóm mới (không truyền judgeId nữa)
       await GroupDivisionService.createGroup(
         matchId,
-        newGroupName,
-        selectedJudge.id
+        newGroupName
       );
 
       // Cập nhật local state
@@ -901,7 +896,7 @@ const ContestantMatchPage: React.FC = () => {
       }));
       setAssignedJudges(prev => ({
         ...prev,
-        [newGroupIndex]: selectedJudge
+        [newGroupIndex]: null
       }));
 
       // Chuyển đến tab nhóm mới
@@ -923,7 +918,7 @@ const ContestantMatchPage: React.FC = () => {
       }
       showToast(errorMessage, 'error');
     }
-  }, [matchId, availableJudges, assignedJudges, totalGroups, fetchCurrentGroups, refetchGroups, showToast]);
+  }, [matchId, totalGroups, fetchCurrentGroups, refetchGroups, showToast]);
 
   // Handle create new judge
   const handleCreateJudge = useCallback(async (data: CreateUserInput) => {
@@ -985,6 +980,12 @@ const ContestantMatchPage: React.FC = () => {
           ...prev,
           [groupIndex]: prev[groupIndex].map(c => ({ ...c, groupName: newName }))
         }));
+        // Cập nhật groupName cho thí sinh trong danh sách tổng
+        setcontestant(prev =>
+          prev.map(c =>
+            c.groupId === group.id ? { ...c, groupName: newName } : c
+          )
+        );
         showToast(`Đã cập nhật tên nhóm thành "${newName}"`, 'success');
       })
       .catch(error => {
@@ -1048,6 +1049,15 @@ const ContestantMatchPage: React.FC = () => {
 
       // Gọi API xóa nhóm
       await GroupDivisionService.deleteGroup(group.id);
+
+      // Cập nhật lại groupName/groupId cho thí sinh thuộc nhóm vừa xóa
+      setcontestant(prev =>
+        prev.map(c =>
+          c.groupId === group.id
+            ? { ...c, groupName: undefined, groupId: undefined }
+            : c
+        )
+      );
 
       // Thay vì cập nhật local state phức tạp, chúng ta sẽ refresh toàn bộ data từ server
       // để đảm bảo consistency và tránh lỗi reindex
@@ -1560,45 +1570,18 @@ const ContestantMatchPage: React.FC = () => {
           description="Bạn có chắc chắn xóa thí sinh học này không"
           onConfirm={() => handleDelete(selectedId)}
         />
-      </Box>      {/* Right Sidebar for Group Division */}
+      </Box>
+      {/* Right Sidebar for Group Division */}
       {isGroupDivisionOpen && (
-        <Box
-          sx={{
-            width: 400,
-            backgroundColor: "#f5f5f5",
-            borderLeft: "2px solid #e0e0e0",
-            ml: 3,
-            p: '18px',
-            height: "100vh",
-            overflow: "auto",
-            transition: "width 0.3s ease",
-            flexShrink: 0,
-            display: "flex",
-            flexDirection: "column",
-            '&:active': {
-              cursor: 'grabbing'
-            },
-            '&::-webkit-scrollbar': {
-              height: '3px',
-              width: '5px',
-            },
-            '&::-webkit-scrollbar-track': {
-              backgroundColor: 'rgba(0,0,0,0.1)',
-              borderRadius: '2px'
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'rgba(0,0,0,0.3)',
-              borderRadius: '2px',
-              transition: 'background-color 0.2s ease',
-              '&:hover': {
-                backgroundColor: 'rgba(0,0,0,0.5)'
-              },
-              '&:active': {
-                backgroundColor: 'rgba(0,0,0,0.7)'
-              }
-            }
-          }}
-        > {/* Header */}
+        <ResizablePanel
+          isOpen={isGroupDivisionOpen}
+          defaultWidth={groupDivisionPanelWidth}
+          minWidth={300}
+          maxWidth={800}
+          position="right"
+          onWidthChange={setGroupDivisionPanelWidth}
+          storageKey="contestantMatchPage_groupDivisionPanelWidth"
+        >
           <Box sx={{ mb: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="h6" fontWeight="bold">
@@ -2386,7 +2369,7 @@ const ContestantMatchPage: React.FC = () => {
               </Button>
             )}
           </Box>
-        </Box>
+        </ResizablePanel>
       )
       }
 

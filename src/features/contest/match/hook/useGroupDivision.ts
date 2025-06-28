@@ -127,3 +127,42 @@ export const useBulkCreateGroups = (matchId: number | null) => {
 
   return { bulkCreateGroups, isCreating, error };
 };
+
+export const useCreateGroup = (matchId: number | null) => {
+  const { showToast } = useToast();
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createGroup = useCallback(
+    async (groupName: string, judgeId?: number) => {
+      if (!matchId) return;
+
+      setIsCreating(true);
+      setError(null);
+
+      try {
+        const newGroup = await GroupDivisionService.createGroup(
+          matchId,
+          groupName,
+          judgeId
+        );
+        showToast(`Đã tạo nhóm thành công: ${newGroup.name}`, 'success');
+        return newGroup;
+      } catch (err: unknown) {
+        let errorMessage = 'Lỗi khi tạo nhóm';
+        if (err && typeof err === 'object' && 'response' in err) {
+          const response = (err as { response?: { data?: { message?: string } } }).response;
+          errorMessage = response?.data?.message || errorMessage;
+        }
+        setError(errorMessage);
+        showToast(errorMessage, 'error');
+        throw new Error(errorMessage);
+      } finally {
+        setIsCreating(false);
+      }
+    },
+    [matchId, showToast]
+  );
+
+  return { createGroup, isCreating, error };
+};

@@ -125,7 +125,7 @@ export class GroupDivisionService {
     pagination: PaginationInfo;
   }> {
     const params = new URLSearchParams();
-    
+
     if (filters.roundId) params.append('roundId', filters.roundId.toString());
     if (filters.status) params.append('status', filters.status);
     if (filters.schoolId) params.append('schoolId', filters.schoolId.toString());
@@ -150,7 +150,7 @@ export class GroupDivisionService {
     pagination: PaginationInfo;
   }> {
     const params = new URLSearchParams();
-    
+
     if (filters.search) params.append('search', filters.search);
     params.append('page', filters.page.toString());
     params.append('limit', filters.limit.toString());
@@ -175,11 +175,11 @@ export class GroupDivisionService {
   static async createGroup(
     matchId: number,
     groupName: string,
-    judgeId: number
+    judgeId?: number // <-- sửa thành optional
   ): Promise<GroupInfo> {
     const response = await axiosInstance.post(`${this.baseUrl}/matches/${matchId}/groups`, {
       groupName: groupName,
-      judgeId: judgeId
+      ...(judgeId !== undefined ? { judgeId } : {}) // chỉ gửi judgeId nếu có
     });
     return response.data.data;
   }
