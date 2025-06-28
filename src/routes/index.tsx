@@ -22,6 +22,7 @@ import { SocketProvider } from "../contexts/SocketContext";
 import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import ContestList from "../features/judge/components/selector/ContestList";
 import MatchList from "../features/judge/components/selector/MatchList";
+import { OnlineControlSocketProvider } from "../contexts/OnlineControlSocketContext";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -41,7 +42,9 @@ const AppRoutes: React.FC = () => {
           path="/admin/cuoc-thi/:slug/dieu-kien-tran-dau/:match"
           element={
             <SocketProvider>
-              <ControlsPage />
+              <OnlineControlSocketProvider>
+                <ControlsPage />
+              </OnlineControlSocketProvider>
             </SocketProvider>
           }
         />

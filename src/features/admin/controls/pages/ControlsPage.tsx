@@ -124,11 +124,15 @@ const ControlsPage: React.FC = () => {
   }, [isSuccessClassVideo, classVideoRes]);
 
   useEffect(() => {
-    if (isSuccessMatch) setMatchInfo(matchInfoRes.data);
+    if (isSuccessMatch) {
+      setMatchInfo(matchInfoRes.data);
+    }
   }, [isSuccessMatch, matchInfoRes]);
 
   useEffect(() => {
-    if (isSuccessCurrentQuestion) setCurrentQuestion(currentQuestionRes.data);
+    if (isSuccessCurrentQuestion) {
+      setCurrentQuestion(currentQuestionRes.data);
+    }
   }, [isSuccessCurrentQuestion, currentQuestionRes]);
 
   useEffect(() => {
@@ -254,9 +258,11 @@ const ControlsPage: React.FC = () => {
 
   // Transform function để convert CurrentQuestion thành CurrentQuestionData
   const transformCurrentQuestionData = (question: CurrentQuestion | null) => {
-    if (!question) return undefined;
+    if (!question) {
+      return undefined;
+    }
 
-    return {
+    const transformedData = {
       order: question.questionOrder,
       question: {
         id: question.id,
@@ -272,9 +278,11 @@ const ControlsPage: React.FC = () => {
         correctAnswer:
           typeof question.correctAnswer === "string"
             ? parseInt(question.correctAnswer)
-            : undefined,
+            : question.correctAnswer,
       },
     };
+
+    return transformedData;
   };
 
   const isLoading =
@@ -360,9 +368,11 @@ const ControlsPage: React.FC = () => {
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <OnlineExamControl
-              currentQuestionData={transformCurrentQuestionData(
-                currentQuestion
-              )}
+              currentQuestionData={(() => {
+                const transformed =
+                  transformCurrentQuestionData(currentQuestion);
+                return transformed;
+              })()}
               isGameStarted={
                 matchInfo?.currentQuestion
                   ? matchInfo.currentQuestion > 0

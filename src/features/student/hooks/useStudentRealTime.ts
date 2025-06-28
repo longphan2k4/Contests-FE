@@ -41,6 +41,9 @@ interface MatchStartedEvent {
   matchName: string;
   contestName: string;
   status: string;
+  currentQuestion?: number;
+  remainingTime?: number;
+  currentQuestionData?: CurrentQuestionData;
 }
 
 interface QuestionChangedEvent {
@@ -148,17 +151,34 @@ export const useStudentRealTime = (matchId?: number): StudentRealTimeReturn => {
 
     console.log('🎧 [REALTIME HỌC SINH] Đăng ký listeners cho student namespace...');
 
-    // Event: Match started - chuyển từ dashboard sang waiting room
+    // Event: Match started - chuyển từ dashboard sang waiting room VÀ hiển thị câu hỏi đầu tiên
     const handleMatchStarted = (data: MatchStartedEvent) => {
       console.log('🔥 [HỌC SINH] Nhận sự kiện match:started từ student namespace:', data);
       
       if (data.matchId === matchId) {
-        console.log('🔥 [HỌC SINH] Trận đấu đã bắt đầu - cập nhật state...');
+        console.log('🔥 [HỌC SINH] Trận đấu đã bắt đầu - cập nhật state và hiển thị câu hỏi đầu tiên...');
         
-        updateState({
+        // 🔥 NEW: Cập nhật state bao gồm câu hỏi đầu tiên nếu có
+        const newState: Partial<StudentRealTimeState> = {
           matchStatus: 'ongoing',
           isMatchStarted: true
-        });
+        };
+
+        // Nếu có câu hỏi đầu tiên trong event match:started
+        if (data.currentQuestionData && data.currentQuestion && data.remainingTime !== undefined) {
+          console.log('🎯 [HỌC SINH] Nhận được câu hỏi đầu tiên cùng với match:started:', {
+            questionOrder: data.currentQuestion,
+            questionId: data.currentQuestionData.question.id,
+            remainingTime: data.remainingTime
+          });
+          
+          newState.currentQuestion = data.currentQuestionData;
+          newState.remainingTime = data.remainingTime;
+        } else {
+          console.log('⏳ [HỌC SINH] Chưa có câu hỏi đầu tiên, đang chờ event match:questionChanged...');
+        }
+        
+        updateState(newState);
       }
     };
 
@@ -280,6 +300,8 @@ export const useStudentRealTime = (matchId?: number): StudentRealTimeReturn => {
     };
 
     // Đăng ký tất cả event listeners cho student namespace (chỉ 1 socket duy nhất)
+    socket.on('match:started', handleMatchStarted);
+    socket.on('match:questionChanged', handleQuestionChanged);
     socket.on('match:timerUpdated', handleTimerUpdated);
     socket.on('match:ended', handleMatchEnded);
     socket.on('match:timerPaused', handleTimerPaused);
@@ -310,6 +332,8 @@ export const useStudentRealTime = (matchId?: number): StudentRealTimeReturn => {
     return () => {
       // Cleanup event listeners
       console.log('🧹 [REALTIME HỌC SINH] Dọn dẹp event listeners...');
+      socket.off('match:started', handleMatchStarted);
+      socket.off('match:questionChanged', handleQuestionChanged);
       socket.off('match:timerUpdated', handleTimerUpdated);
       socket.off('match:ended', handleMatchEnded);
       socket.off('match:timerPaused', handleTimerPaused);

@@ -3,6 +3,9 @@ import ControlsOnline from "./ControlsOnline";
 import CurrentQuestion from "./CurrentQuestion";
 import { Box, Typography, Card } from "@mui/material";
 import { AcademicCapIcon } from "@heroicons/react/24/outline";
+import { useAdminSocket } from "./hooks/useAdminSocket";
+import { useParams } from "react-router-dom";
+import { useMatchInfo } from "./hooks/useControls";
 
 interface QuestionData {
   id: number;
@@ -31,11 +34,28 @@ interface OnlineExamControlProps {
 
 const OnlineExamControl: React.FC<OnlineExamControlProps> = ({
   currentQuestionData,
-  isGameStarted = false,
-  remainingTime = 0,
-  isLoading = false,
-  isTimerPaused = false,
+  isGameStarted: propIsGameStarted,
+  remainingTime: propRemainingTime,
+  isLoading: propIsLoading,
+  isTimerPaused: propIsTimerPaused,
 }) => {
+  const { match } = useParams();
+
+  // Fetch match data từ API
+  const { data: matchResponse } = useMatchInfo(match ?? null);
+
+  console.log("🎮 [ONLINE CONTROL] Match response:", matchResponse);
+  console.log("🎮 [ONLINE CONTROL] Match data:", matchResponse?.data);
+
+  // Sử dụng dữ liệu từ socket hook
+  const { examState } = useAdminSocket();
+
+  // Ưu tiên dữ liệu từ socket hook
+  const isGameStarted = examState.isStarted || propIsGameStarted || false;
+  const remainingTime = examState.timeRemaining || propRemainingTime || 0;
+  const isLoading = examState.isLoading || propIsLoading || false;
+  const isTimerPaused = examState.isPaused || propIsTimerPaused || false;
+
   return (
     <Box className="space-y-6">
       {/* Header */}
@@ -61,7 +81,7 @@ const OnlineExamControl: React.FC<OnlineExamControlProps> = ({
         </Card>
 
         <Card elevation={3} className="h-fit mt-4">
-          <ControlsOnline />
+          <ControlsOnline matchData={matchResponse?.data || null} />
         </Card>
       </Box>
     </Box>

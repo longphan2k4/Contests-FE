@@ -86,6 +86,7 @@ export const useStudentMatch = () => {
   const [results, setResults] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   console.log('🔍 [STUDENT MATCH] Socket status:', { 
     connected: isConnected, 
@@ -154,10 +155,13 @@ export const useStudentMatch = () => {
       timestamp: new Date().toISOString()
     });
 
+    setIsSubmitting(true);
+
     return new Promise<SubmitAnswerResponse>((resolve, reject) => {
       if (!socket) {
         const error = 'Socket not connected';
         console.error('❌ [FE - SUBMIT DEBUG] Socket chưa kết nối');
+        setIsSubmitting(false);
         reject(new Error(error));
         return;
       }
@@ -182,11 +186,13 @@ export const useStudentMatch = () => {
       // Timeout để tránh treo
       const timeout = setTimeout(() => {
         console.error('⏰ [FE - SUBMIT DEBUG] Timeout - BE không response trong 10s');
+        setIsSubmitting(false);
         reject(new Error('Timeout waiting for response'));
       }, 10000);
 
       socket.emit('student:submitAnswer', answerData, (response: SubmitAnswerResponse) => {
         clearTimeout(timeout);
+        setIsSubmitting(false);
         
         console.log('📬 [FE - SUBMIT DEBUG] Nhận response từ BE:', {
           success: response?.success,
@@ -312,6 +318,7 @@ export const useStudentMatch = () => {
     joinMatch,
     getMatchStatus,
     submitAnswer,
+    isSubmitting,
     // Expose socket connection status
     isConnected
   };

@@ -43,32 +43,20 @@ interface CurrentQuestionProps {
 }
 
 const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
+  currentQuestionData,
   isGameStarted,
   remainingTime,
   isLoading,
   isTimerPaused = false,
 }) => {
-  // Mock data thay vì logic thực tế
-  const mockQuestionData: CurrentQuestionData = {
-    order: 5,
-    question: {
-      id: 1,
-      content:
-        "Trong lập trình Java, từ khóa nào được sử dụng để kế thừa từ một lớp khác?",
-      intro: "Câu hỏi về Java OOP",
-      questionType: "multiple_choice",
-      difficulty: "Alpha",
-      score: 10,
-      defaultTime: 60,
-      options: ["extends", "implements", "inherit", "super"],
-      correctAnswer: 0,
-    },
+  const getTimerProgress = () => {
+    if (remainingTime <= 0 || !currentQuestionData) return 0;
+    const maxTime = currentQuestionData.question.defaultTime;
+    return Math.max(0, (remainingTime / maxTime) * 100);
   };
 
-  const getTimerProgress = () => {
-    if (remainingTime <= 0) return 0;
-    const maxTime = mockQuestionData.question.defaultTime;
-    return Math.max(0, (remainingTime / maxTime) * 100);
+  const formatTime = (seconds: number) => {
+    return Math.max(0, Math.floor(seconds));
   };
 
   if (!isGameStarted) {
@@ -91,7 +79,7 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
     );
   }
 
-  if (isLoading) {
+  if (isLoading || !currentQuestionData) {
     return (
       <Card elevation={3} className="w-full border-l-4 border-l-blue-500">
         <CardContent className="p-6">
@@ -106,7 +94,7 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
     );
   }
 
-  const { order, question } = mockQuestionData;
+  const { order, question } = currentQuestionData;
 
   return (
     <Card elevation={3} className="w-full border-l-4 border-l-blue-500">
@@ -127,7 +115,7 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
           <Box className="flex items-center gap-2">
             <Chip
               icon={<Timer />}
-              label={`${remainingTime}s`}
+              label={`${formatTime(remainingTime)}s`}
               color={
                 remainingTime <= 10
                   ? "error"
@@ -174,7 +162,11 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
         <Box className="flex flex-wrap gap-2 mb-4">
           <Chip
             icon={<Category />}
-            label="Trắc nghiệm"
+            label={
+              question.questionType === "multiple_choice"
+                ? "Trắc nghiệm"
+                : question.questionType
+            }
             variant="outlined"
             size="small"
             className="px-3 py-1"
@@ -216,49 +208,77 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
             <Box className="w-1 h-5 bg-blue-500 rounded-full" />
             📋 Nội dung câu hỏi
           </Typography>
-          <Typography className="text-gray-700 text-base leading-relaxed">
-            {question.content}
-          </Typography>
+          <Box
+            className="text-gray-700 text-base leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: question.content }}
+            sx={{
+              "& p": { margin: "0.5em 0" },
+              "& strong": { fontWeight: "bold" },
+              "& em": { fontStyle: "italic" },
+              "& ul, & ol": { paddingLeft: "1.5em", margin: "0.5em 0" },
+              "& li": { margin: "0.25em 0" },
+              "& img": { maxWidth: "100%", height: "auto" },
+              "& code": {
+                backgroundColor: "#f3f4f6",
+                padding: "0.125em 0.25em",
+                borderRadius: "0.25em",
+                fontFamily: "monospace",
+              },
+            }}
+          />
         </Paper>
 
         {/* Question Options */}
-        <Paper className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200">
-          <Box className="space-y-3">
-            {question.options.map((option, index) => {
-              const isCorrect = question.correctAnswer === index;
-              return (
-                <Box
-                  key={index}
-                  className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                    isCorrect
-                      ? "bg-blue-50 border-blue-200 hover:border-blue-300"
-                      : "bg-white border-gray-200 hover:border-gray-300"
-                  }`}
-                >
+        {question.options && question.options.length > 0 && (
+          <Paper className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200">
+            <Box className="space-y-3">
+              {question.options.map((option, index) => {
+                const isCorrect = question.correctAnswer === index;
+                return (
                   <Box
-                    className={`flex-shrink-0 w-8 h-8 text-white rounded-full flex items-center justify-center font-bold text-sm ${
-                      isCorrect ? "bg-blue-500" : "bg-gray-500"
+                    key={index}
+                    className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                      isCorrect
+                        ? "bg-blue-50 border-blue-200 hover:border-blue-300"
+                        : "bg-white border-gray-200 hover:border-gray-300"
                     }`}
                   >
-                    {String.fromCharCode(65 + index)}
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    className="text-gray-700 flex-1 leading-relaxed"
-                  >
-                    {option}
-                  </Typography>
-                  {isCorrect && (
-                    <CheckCircle
-                      className="text-blue-600 flex-shrink-0"
-                      fontSize="small"
+                    <Box
+                      className={`flex-shrink-0 w-8 h-8 text-white rounded-full flex items-center justify-center font-bold text-sm ${
+                        isCorrect ? "bg-blue-500" : "bg-gray-500"
+                      }`}
+                    >
+                      {String.fromCharCode(65 + index)}
+                    </Box>
+                    <Box
+                      className="text-gray-700 flex-1 leading-relaxed text-sm"
+                      dangerouslySetInnerHTML={{ __html: option }}
+                      sx={{
+                        "& p": { margin: "0.25em 0" },
+                        "& strong": { fontWeight: "bold" },
+                        "& em": { fontStyle: "italic" },
+                        "& img": { maxWidth: "100%", height: "auto" },
+                        "& code": {
+                          backgroundColor: "#f3f4f6",
+                          padding: "0.125em 0.25em",
+                          borderRadius: "0.25em",
+                          fontFamily: "monospace",
+                          fontSize: "0.9em",
+                        },
+                      }}
                     />
-                  )}
-                </Box>
-              );
-            })}
-          </Box>
-        </Paper>
+                    {isCorrect && (
+                      <CheckCircle
+                        className="text-blue-600 flex-shrink-0"
+                        fontSize="small"
+                      />
+                    )}
+                  </Box>
+                );
+              })}
+            </Box>
+          </Paper>
+        )}
       </CardContent>
     </Card>
   );
