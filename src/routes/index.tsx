@@ -22,7 +22,7 @@ import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import ContestList from "../features/judge/components/selector/ContestList";
 import MatchList from "../features/judge/components/selector/MatchList";
 //leaderboard
-import TopThreeReveal from "../features/leaderboard/top3/TopThreeReveal";
+import TopThreeReveal from "@features/leaderboard/top3/pages/TopThreeReveal";
 import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
 const AppRoutes: React.FC = () => {
   return (

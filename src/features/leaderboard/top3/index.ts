@@ -1,0 +1,1 @@
+export { default as TopThreeReveal } from './components/TopThreeBoard';
