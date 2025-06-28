@@ -21,7 +21,9 @@ import { SocketProvider } from "../contexts/SocketContext";
 import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import ContestList from "../features/judge/components/selector/ContestList";
 import MatchList from "../features/judge/components/selector/MatchList";
-
+//leaderboard
+import TopThreeReveal from "../features/leaderboard/top3/TopThreeReveal";
+import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
@@ -81,8 +83,10 @@ const AppRoutes: React.FC = () => {
         path={AUDIENCE_ROUTES.STATS_DISPLAY}
         element={<AudienceStatsPage />}
       />
-
       <Route path="/match/eliminate" element={<EliminatePage />} />
+      <Route path="/match/top3" element={<TopThreeReveal />} />
+      <Route path="/match/gold" element={<GoldWinnerDisplay match_id="1" />} />
+      {/* Tech Banner Route */}
       <Route path="/banner" element={<TechBanner />} />
       <Route path="/403" element={<Forbidden403 />} />
       <Route path="*" element={<div>Trang không tồn tại</div>} />
