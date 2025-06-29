@@ -24,7 +24,7 @@ import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import ContestList from "../features/judge/components/selector/ContestList";
 import MatchList from "../features/judge/components/selector/MatchList";
 import { OnlineControlSocketProvider } from "../contexts/OnlineControlSocketContext";
-
+import OlympicIT2025Rules from "@features/rule/RulePage";
 //leaderboard
 import TopThreeReveal from "@features/leaderboard/top3/pages/TopThreeReveal";
 import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
