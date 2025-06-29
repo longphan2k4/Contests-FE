@@ -100,6 +100,7 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
     validateForm,
     prepareFormData,
     resetForm,
+    resetMediaFiles,
     handleFormChange,
     handleContentChange,
     handleExplanationChange,
@@ -115,6 +116,9 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
   } = useQuestionForm({ question, mode, topics });
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("=== DEBUG QuestionDialog handleSubmit ===");
+    console.log("Mode:", mode, "isReadOnly:", isReadOnly);
+
     e.preventDefault();
     if (isReadOnly) {
       onClose();
@@ -122,21 +126,35 @@ const QuestionDialog: React.FC<QuestionDialogProps> = ({
     }
 
     if (!validateForm()) {
+      console.log("Form validation failed");
       return;
     }
 
     try {
       setIsSubmitting(true);
+      console.log("Preparing form data for submission...");
       const formDataToSubmit = prepareFormData(formData);
+      console.log("Calling onSubmit with form data...");
+      console.log("=== DEBUG: Calling onSubmit ===");
       await onSubmit(formDataToSubmit);
+      console.log("=== DEBUG: onSubmit completed successfully ===");
+
+      // Reset media files sau khi submit thành công để tránh duplicate
+      console.log(
+        "=== DEBUG: Calling resetMediaFiles after successful submission ==="
+      );
+      resetMediaFiles();
+
       // Đóng dialog sẽ được xử lý trong onClose callback hoặc bởi parent component
     } catch (error) {
+      console.error("Submit error:", error);
       showToast(
         error instanceof Error ? error.message : "Lỗi khi gửi dữ liệu câu hỏi"
       );
     } finally {
       // Reset submitting state trong finally để đảm bảo luôn được reset
       setIsSubmitting(false);
+      console.log("=== END QuestionDialog handleSubmit ===");
     }
   };
 

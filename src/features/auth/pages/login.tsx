@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Container, Paper, alpha } from "@mui/material";
 import { LoginForm } from "../components";
 import { CAO_THANG_COLORS } from "../../../common/theme";
@@ -9,7 +9,8 @@ import { useForm } from "react-hook-form";
 import { useLogin } from "../hooks/useLogin";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../hooks/useprofile";
-import { useNotification } from "../../../contexts/NotificationContext";
+import { useToast } from "@contexts/toastContext";
+
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const form = useForm<LoginSchemaType>({
@@ -22,7 +23,11 @@ const LoginPage = () => {
   const { mutate } = useLogin();
   const { refetch } = useProfile();
   const navigate = useNavigate();
-  const { showSuccessNotification, showErrorNotification } = useNotification();
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    document.title = "Đăng nhập ";
+  }, []);
   const onSubmit = async (data: LoginSchemaType) => {
     setLoading(true);
     mutate(data, {
@@ -30,7 +35,7 @@ const LoginPage = () => {
         setLoading(false);
 
         if (data.success) {
-          showSuccessNotification("Đăng nhập thành công");
+          showToast("Đăng nhập thành công", "success");
         }
         // Lưu accessToken vào cookie và localStorage nếu có
         if (data.data?.accessToken) {
@@ -43,10 +48,10 @@ const LoginPage = () => {
         }
         // Đảm bảo context user được cập nhật trước khi chuyển trang
         await refetch();
-        if (data.data?.role === "admin" || data.data?.role === "Admin") {
+        if (data.data?.role === "Admin") {
           navigate("/admin/dashboard");
-        } else if (data.data?.role === "Judge") {
-          navigate("/");
+        } else {
+          navigate("/trang-chu");
         }
       },
       onError: error => {
@@ -62,11 +67,11 @@ const LoginPage = () => {
               }
             }
           );
-          showErrorNotification("Đăng nhập thất bại:");
+          showToast("Đăng nhập thất bại:", "error");
         } else if (errWithResponse?.response?.data?.message) {
-          showErrorNotification(errWithResponse.response.data.message);
+          showToast(errWithResponse.response.data.message, "error");
         } else {
-          showErrorNotification("Đăng nhập thất bại, vui lòng thử lại sau.");
+          showToast("Đăng nhập thất bại, vui lòng thử lại sau.", "error");
         }
       },
     });

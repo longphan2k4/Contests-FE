@@ -1,0 +1,163 @@
+@keyframes circuit-flow {
+  0% { background-position: 0 0; }
+  100% { background-position: 100px 100px; }
+}
+.circuit-line {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent 49%, rgba(0, 255, 255, 0.15) 50%, transparent 51%);
+  background-size: 100px 100px;
+  opacity: 0.2;
+}
+.animate-circuit-flow { animation: circuit-flow 10s linear infinite; }
+@keyframes glow {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.5; }
+}
+.animate-glow { animation: glow 2s infinite; }
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+.animate-wiggle { animation: wiggle 0.8s ease-in-out; }
+@keyframes countdown {
+  0% { transform: scale(0.5); opacity: 0; }
+  10% { transform: scale(1.2); opacity: 1; }
+  90% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+.animate-countdown { animation: countdown 2s ease-in-out; }
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-bounce { animation: bounce 1s infinite; }
+@keyframes ping-slow {
+  0% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.5); opacity: 0.2; }
+  100% { transform: scale(1); opacity: 0.3; }
+}
+.animate-ping-slow { animation: ping-slow 3s ease-in-out infinite; }
+@keyframes aura {
+  0% { box-shadow: 0 0 20px 5px rgba(255, 215, 0, 0.5); }
+  50% { box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.7); }
+  100% { box-shadow: 0 0 20px 5px rgba(255, 215, 0, 0.5); }
+}
+.animate-aura { animation: aura 2s ease-in-out infinite; }
+@keyframes lens-flare {
+ Drink 0% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+  50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+}
+.animate-lens-flare { animation: lens-flare 3s ease-in-out infinite; }
+.tech-background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+@keyframes shine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+.shine-effect {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.5) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  animation: shine 2s infinite;
+}
+.hexagon-grid {
+  background: 
+    linear-gradient(60deg, transparent 25%, rgba(255, 215, 0, 0.05) 25.5%, rgba(255, 215, 0, 0.05) 75%, transparent 75%),
+    linear-gradient(120deg, transparent 25%, rgba(255, 215, 0, 0.05) 25.5%, rgba(255, 215, 0, 0.05) 75%, transparent 75%);
+  background-size: 60px 100px;
+}
+#digital-container {
+  overflow: hidden;
+}
+#digital-container.active {
+  opacity: 0.1;
+  background-image: 
+    repeating-linear-gradient(0deg, rgba(255, 215, 0, 0.05) 0px, rgba(255, 215, 0, 0.05) 1px, transparent 1px, transparent 30px),
+    repeating-linear-gradient(90deg, rgba(255, 215, 0, 0.05) 0px, rgba(255, 215, 0, 0.05) 1px, transparent 1px, transparent 30px);
+}
+.floating-icons {
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(255, 215, 0, 0.05) 5px, transparent 5px),
+    radial-gradient(circle at 20% 40%, rgba(192, 192, 192, 0.05) 4px, transparent 4px),
+    radial-gradient(circle at 30% 60%, rgba(205, 127, 50, 0.05) 6px, transparent 6px),
+    radial-gradient(circle at 40% 80%, rgba(255, 215, 0, 0.05) 3px, transparent 3px),
+    radial-gradient(circle at 50% 10%, rgba(192, 192, 192, 0.05) 5px, transparent 5px),
+    radial-gradient(circle at 60% 30%, rgba(205, 127, 50, 0.05) 4px, transparent 4px),
+    radial-gradient(circle at 70% 50%, rgba(255, 215, 0, 0.05) 6px, transparent 6px),
+    radial-gradient(circle at 80% 70%, rgba(192, 192, 192, 0.05) 3px, transparent 3px),
+    radial-gradient(circle at 90% 90%, rgba(205, 127, 50, 0.05) 5px, transparent 5px);
+  animation: floating-icons 15s linear infinite;
+}
+@keyframes floating-icons {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+@keyframes spotlight {
+  0% { opacity: 0; transform: translateX(-50%) rotate(0deg); }
+  50% { opacity: 0.4; transform: translateX(-50%) rotate(15deg); }
+  100% { opacity: 0; transform: translateX(-50%) rotate(0deg); }
+}
+.animate-spotlight {
+  animation: spotlight 5s ease-in-out infinite;
+}
+.bg-glow {
+  transition: all 1s ease-in-out;
+}
+.gold-glow {
+  box-shadow: inset 0 0 150px 30px rgba(255, 215, 0, 0.15);
+}
+.silver-glow {
+  box-shadow: inset 0 0 150px 30px rgba(192, 192, 192, 0.15);
+}
+.bronze-glow {
+  box-shadow: inset 0 0 150px 30px rgba(205, 127, 50, 0.15); 
+}
+.ripple-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 999;
+}
+.ripple-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: ripple 2s ease-out;
+}
+@keyframes ripple {
+  0% { 
+    transform: scale(0); 
+    opacity: 0.4; 
+  }
+  100% { 
+    transform: scale(100); 
+    opacity: 0; 
+  }
+}
+.yellow-ripple::before { background-color: rgba(255, 215, 0, 0.2); }
+.gray-ripple::before { background-color: rgba(192, 192, 192, 0.2); }
+.amber-ripple::before { background-color: rgba(205, 127, 50, 0.2); }

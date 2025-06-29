@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import AdminRoutes from "../features/admin/AdminRoutes";
 import ContestRoutes from "../features/contest/ContestRouter";
+import PublicRoute from "./PublicRoute";
 import AuthRoutes from "../features/auth/routes";
 import StudentRoutes from "../features/student/routes";
 import PublicRoutes from "./PublicRoutes";
@@ -24,20 +25,28 @@ import ContestList from "../features/judge/components/selector/ContestList";
 import MatchList from "../features/judge/components/selector/MatchList";
 import { OnlineControlSocketProvider } from "../contexts/OnlineControlSocketContext";
 
+//leaderboard
+import TopThreeReveal from "@features/leaderboard/top3/pages/TopThreeReveal";
+import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
+
+import NotFound404 from "@components/404";
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Public Routes */}
       {PublicRoutes()}
+
       {/* Auth Routes - Đăng nhập, Đăng ký */}
       {AuthRoutes()}
       {/* Student Routes */}
       {StudentRoutes()}
+
+
+      <Route element={<PublicRoute restricted={true} />}>{AuthRoutes()}</Route>
+
       <Route element={<PrivateRoute roles={["Admin"]} />}>
         {ContestRoutes()}
         {AdminRoutes()}
-      </Route>
-      <Route element={<PrivateRoute roles={["Admin"]} />}>
         <Route
           path="/admin/cuoc-thi/:slug/dieu-kien-tran-dau/:match"
           element={
@@ -49,6 +58,7 @@ const AppRoutes: React.FC = () => {
           }
         />
       </Route>
+
       <Route element={<PrivateRoute />}>
         <Route path="/account/profile" element={<ProfilePage />} />
       </Route>
@@ -77,7 +87,7 @@ const AppRoutes: React.FC = () => {
           </SocketProvider>
         }
       />
-      {/*Route của khán giả*/}
+
       <Route
         path={AUDIENCE_ROUTES.OPINION_PAGE}
         element={<AudienceOpinionPage />}
@@ -87,11 +97,16 @@ const AppRoutes: React.FC = () => {
         path={AUDIENCE_ROUTES.STATS_DISPLAY}
         element={<AudienceStatsPage />}
       />
-
       <Route path="/match/eliminate" element={<EliminatePage />} />
+
+      <Route path="/match/top3" element={<TopThreeReveal />} />
+      <Route path="/match/gold" element={<GoldWinnerDisplay match_id="1" />} />
+      {/* Tech Banner Route */}
       <Route path="/banner" element={<TechBanner />} />
+
       <Route path="/403" element={<Forbidden403 />} />
-      <Route path="*" element={<div>Trang không tồn tại</div>} />
+      <Route path="/404" element={<NotFound404 />} />
+      <Route path="*" element={<NotFound404 />} />
     </Routes>
   );
 };

@@ -1,5 +1,6 @@
 // src/lib/axiosInstance.ts
 import axios from "axios";
+
 // Lấy URL từ biến môi trường
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -28,12 +29,19 @@ axiosInstance.interceptors.response.use(
       !originalRequest._retry
     ) {
       // Nếu lỗi do token không khớp trong DB (backend trả message cụ thể)
-      const message = error.response.data?.message;
-      if (message === "Vui lòng đăng nhập lại") {
-        // Xoá cookie frontend (nếu có)
+      const code = error.response.data?.code;
+      if (code === "USER_NOT_FOUND_OR_INACTIVE") {
         document.cookie =
           "feAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         // Chuyển hướng login
+        alert("Tài khoản đã bị khóa");
+        window.location.href = "/login";
+        return Promise.reject(error);
+      } else if (code === "INVALID_OR_EXPIRED_TOKEN") {
+        document.cookie =
+          "feAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // Chuyển hướng login
+        alert("Tài khoản đã đăng nhập trên thiết bị khác");
         window.location.href = "/login";
         return Promise.reject(error);
       }

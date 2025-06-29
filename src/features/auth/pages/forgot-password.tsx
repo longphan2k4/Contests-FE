@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -19,7 +19,7 @@ import useForgotPassword from "../hooks/useFogotPassWord";
 import useVerifyOtp from "../hooks/useVerifyOtp";
 import useResetPassword from "../hooks/useResetPassword";
 
-import { useNotification } from "../../../contexts/NotificationContext";
+import { useToast } from "@contexts/toastContext";
 
 const ForgotPasswordStep = {
   EMAIL: 0,
@@ -40,9 +40,14 @@ const ForgotPasswordPage = () => {
   const [otp, setOtp] = useState("");
   const resetPasswordMutation = useResetPassword();
 
+  useEffect(() => {
+    document.title = "Quên mật khẩu";
+  }, []);
+
+  const { showToast } = useToast();
+
   const { mutate } = useForgotPassword();
   const verifyOtpMutation = useVerifyOtp();
-  const { showSuccessNotification, showErrorNotification } = useNotification();
 
   // Xử lý khi người dùng nhập email và chuyển sang bước xác thực OTP
   const handleEmailSubmit = (email: string) => {
@@ -52,14 +57,15 @@ const ForgotPasswordPage = () => {
         onSuccess: () => {
           setEmail(email);
           setActiveStep(ForgotPasswordStep.OTP);
-          showSuccessNotification("Đã gửi email xác thực OTP!");
+          showToast("Đã gửi email xác thực OTP!", "success");
         },
         onError: error => {
           // Lấy message từ response nếu có
           const errWithResponse = error as Error & { response?: any };
           const apiMessage = errWithResponse?.response?.data?.message;
-          showErrorNotification(
-            apiMessage || error.message || "Gửi email thất bại!"
+          showToast(
+            apiMessage || error.message || "Gửi email thất bại!",
+            "error"
           );
         },
       }
@@ -85,14 +91,12 @@ const ForgotPasswordPage = () => {
         onSuccess: () => {
           setOtp(otpValue);
           setActiveStep(ForgotPasswordStep.RESET_PASSWORD);
-          showSuccessNotification("Xác thực OTP thành công!");
+          showToast("Xác thực OTP thành công!", "success");
         },
         onError: error => {
           const errWithResponse = error as Error & { response?: any };
           const apiMessage = errWithResponse?.response?.data?.message;
-          showErrorNotification(
-            apiMessage || error.message || "Xác thực OTP thất bại!"
-          );
+          showToast(apiMessage || error.message || "Xác thực OTP thất bại!");
         },
       }
     );
@@ -118,12 +122,12 @@ const ForgotPasswordPage = () => {
       {
         onSuccess: () => {
           setActiveStep(ForgotPasswordStep.SUCCESS);
-          showSuccessNotification("Đặt lại mật khẩu thành công!");
+          showToast("Đặt lại mật khẩu thành công!", "success");
         },
         onError: error => {
           const errWithResponse = error as Error & { response?: any };
           const apiMessage = errWithResponse?.response?.data?.message;
-          showErrorNotification(
+          showToast(
             apiMessage || error.message || "Đặt lại mật khẩu thất bại!"
           );
         },
