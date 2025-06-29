@@ -10,7 +10,7 @@ import ContestRulesSection from "../components/contest/ContestRulesSection";
 import Footer from "../../../layouts/HomeLayout/HomeFooter";
 import BackgroundEffects from "../components/contest/Background";
 import { Box, CircularProgress } from "@mui/material";
-
+import OlympicChatbotWidget from "../../chatbot/components/Chatbot";
 const HomePage = () => {
   // Trạng thái để kiểm soát việc tải
   const [isLoading, setIsLoading] = useState(true);
@@ -83,6 +83,7 @@ const HomePage = () => {
         <SponsorsSection />
       </div>
       <Footer />
+      <OlympicChatbotWidget/>
     </div>
   );
 };

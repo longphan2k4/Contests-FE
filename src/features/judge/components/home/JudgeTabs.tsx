@@ -28,7 +28,7 @@ const JudgeTabs: React.FC<JudgeTabsProps> = ({ activeTab, setActiveTab, counts }
           key={tab}
           className={`px-3 sm:px-6 py-1 sm:py-3 font-semibold rounded-xl transition-all duration-300 flex items-center space-x-1 sm:space-x-2 min-w-[100px] sm:min-w-[120px] ${
             activeTab === tab
-              ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg scale-105'
+              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg scale-105'
               : 'text-white/70 hover:text-white hover:bg-white/10'
           }`}
           onClick={() => setActiveTab(tab)}

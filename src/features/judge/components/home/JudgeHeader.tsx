@@ -9,7 +9,7 @@ interface JudgeHeaderProps {
 
 const JudgeHeader: React.FC<JudgeHeaderProps> = ({ username, questionOrder, matchName, totalContestants }) => {
   return (
-    <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 text-white p-4 sm:p-6 rounded-2xl shadow-2xl mb-4 sm:mb-6 border border-white/10">
+    <header className="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-800 text-white p-4 sm:p-6 rounded-2xl shadow-2xl mb-4 sm:mb-6 border border-white/10">
       <div className="flex items-center justify-between flex-col sm:flex-row">
         <div className="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-0">
           <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center text-xl sm:text-2xl">
