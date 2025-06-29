@@ -1,3 +1,4 @@
+import axiosStudent from "../../../config/axiosStudent";
 import axiosInstance from "../../../config/axiosInstance";
 import type { LoginRequest, LoginResponse, ContestantInfo } from "../types";
 
@@ -12,103 +13,31 @@ interface ApiError {
   message?: string;
 }
 
-// Tạo instance riêng cho student từ axiosInstance chung
-const studentApiClient = axiosInstance.create();
-
-// Override request interceptor để thêm Bearer token cho student
-studentApiClient.interceptors.request.clear(); // Clear interceptors cũ
-studentApiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Override response interceptor cho student-specific logic
-studentApiClient.interceptors.response.clear(); // Clear interceptors cũ
-studentApiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    // Nếu bị 401 và chưa retry
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        // Thử refresh token cho student (token-based)
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (refreshToken) {
-          const refreshResponse = await axiosInstance.post("/auth/student-refresh-token", {
-            refreshToken
-          });
-
-          if (refreshResponse.data.success) {
-            // Cập nhật token mới
-            localStorage.setItem("accessToken", refreshResponse.data.data.accessToken);
-            if (refreshResponse.data.data.refreshToken) {
-              localStorage.setItem("refreshToken", refreshResponse.data.data.refreshToken);
-            }
-
-            // Thử lại request gốc với token mới
-            originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.data.accessToken}`;
-            return studentApiClient(originalRequest);
-          }
-        }
-      } catch (refreshError) {
-        console.error("Student refresh token failed:", refreshError);
-      }
-
-      // Chỉ redirect nếu không phải đang ở trang login
-      if (window.location.pathname !== "/student/login") {
-        window.location.href = "/student/login";
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
-
 export class StudentApiService {
   /**
    * Đăng nhập thí sinh
    */
   static async login(loginData: LoginRequest): Promise<LoginResponse> {
     try {
-      const response = await studentApiClient.post<LoginResponse>(
+      // Sử dụng axiosInstance với withCredentials để nhận httpOnly cookies
+      const response = await axiosInstance.post<LoginResponse>(
         "/auth/student-login",
-        loginData
+        loginData,
+        { withCredentials: true } // Quan trọng: để nhận httpOnly cookies từ backend
       );
       
       // Lưu token và thông tin contestant
       if (response.data.success) {
-        // ✅ Lưu vào cookie để socket có thể đọc được (giống như Admin)
-        const expires = new Date();
-        expires.setTime(expires.getTime() + (60 * 60 * 1000)); // 1 hour
-        
-        document.cookie = `accessToken=${response.data.data.accessToken}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
-        
-        // Lưu refresh token nếu có
-        if (response.data.data.refreshToken) {
-          const refreshExpires = new Date();
-          refreshExpires.setTime(refreshExpires.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 days
-          document.cookie = `refreshToken=${response.data.data.refreshToken}; path=/; expires=${refreshExpires.toUTCString()}; SameSite=Lax`;
-        }
-        
-        // Lưu toàn bộ object data vào localStorage
+        // ✅ Lưu toàn bộ object data vào localStorage
         localStorage.setItem("contestantInfo", JSON.stringify(response.data.data));
         
-        // ✅ Cũng lưu token vào localStorage để tương thích với code cũ
+        // ✅ Lưu token vào localStorage để có thể thêm vào Authorization header
         localStorage.setItem("accessToken", response.data.data.accessToken);
-        if (response.data.data.refreshToken) {
-          localStorage.setItem("refreshToken", response.data.data.refreshToken);
-        }
+        
+        // ⚠️ Không cần set cookie bằng JavaScript vì backend đã set httpOnly cookie
+        // Backend sẽ tự động set:
+        // - accessToken cookie (httpOnly, 1 hour)
+        // - refreshToken cookie (httpOnly, 30 days)
       }
       
       return response.data;
@@ -152,25 +81,19 @@ export class StudentApiService {
    * Kiểm tra xem thí sinh đã đăng nhập chưa
    */
   static isAuthenticated(): boolean {
-    // ✅ Kiểm tra token từ cookie trước (ưu tiên)
-    const cookieToken = this.getTokenFromCookie();
+    // ✅ Chỉ kiểm tra localStorage vì httpOnly cookie không đọc được từ JS
     const localToken = this.getAccessToken();
     const contestantInfo = this.getContestantInfo();
     
-    return !!((cookieToken || localToken) && contestantInfo);
+    return !!(localToken && contestantInfo);
   }
 
   /**
-   * Lấy token từ cookie
+   * Lấy token từ cookie - DEPRECATED vì backend dùng httpOnly cookie
    */
   private static getTokenFromCookie(): string | null {
-    const cookies = document.cookie.split(';');
-    for (const cookie of cookies) {
-      const [name, value] = cookie.trim().split('=');
-      if (name === 'accessToken') {
-        return value;
-      }
-    }
+    // ⚠️ Không thể đọc httpOnly cookie từ JavaScript
+    // Chức năng này chỉ để tương thích với code cũ
     return null;
   }
 
@@ -179,7 +102,8 @@ export class StudentApiService {
    */
   static async getMatchInfo(matchId: number) {
     try {
-      const response = await studentApiClient.get(`/matches/${matchId}`);
+      // Sử dụng axiosStudent cho các API cần authentication
+      const response = await axiosStudent.get(`/matches/${matchId}`);
       return response.data;
     } catch (error: unknown) {
       const apiError = error as ApiError;
@@ -207,7 +131,7 @@ export class StudentApiService {
         return false;
       }
 
-      const response = await axiosInstance.post("/auth/student-refresh-token", {
+      const response = await axiosInstance.post("/auth/refresh-token", {
         refreshToken
       });
 
