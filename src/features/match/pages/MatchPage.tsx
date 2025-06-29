@@ -250,6 +250,7 @@ export default function MatchPage() {
           />
           <QuestionContent
             content={currentQuestion?.content}
+            controlValue={screenControl?.controlValue}
             questionMedia={currentQuestion?.questionMedia ?? null}
             options={currentQuestion?.options}
             type={currentQuestion?.questionType ?? null}
@@ -266,6 +267,7 @@ export default function MatchPage() {
             countQuestion={listContestant.length}
           />
           <AnswerContent
+            controlValue={screenControl?.controlValue ?? null}
             answermedia={currentQuestion?.mediaAnswer ?? null}
             correctAnswer={currentQuestion?.correctAnswer ?? null}
           />
@@ -299,7 +301,10 @@ export default function MatchPage() {
 
       {screenControl?.controlKey === "video" && screenControl?.media && (
         <div key="video">
-          <FullScreenVideo videoUrl={screenControl?.media} />
+          <FullScreenVideo
+            videoUrl={screenControl?.media}
+            control={screenControl.controlValue}
+          />
         </div>
       )}
 
