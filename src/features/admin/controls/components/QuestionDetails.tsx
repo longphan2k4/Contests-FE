@@ -64,7 +64,7 @@ const QuestionDetails: React.FC<QuestionDetailsProp> = ({
 
       <div className="flex-grow overflow-hidden">
         <ul className="flex flex-col h-full gap-[0.35rem]">
-          {questions.map(q => {
+          {questions.map((q) => {
             const isCurrent = q.questionOrder === currentQuestion;
             const difficulty = difficultyMap[
               q.difficulty as keyof typeof difficultyMap

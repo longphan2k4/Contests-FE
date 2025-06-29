@@ -9,3 +9,4 @@ export { default as QRCodeDisplay } from "./QRCodeDisplay";
 
 export { default as VideoControl } from "./VideoControl";
 export { default as StatusControl } from "./StatusControl";
+export { default as ControlsOnline } from "../../controlsOnline/ControlsOnline";

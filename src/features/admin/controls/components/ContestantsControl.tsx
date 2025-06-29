@@ -23,8 +23,8 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
   const { match } = useParams<{ match: string }>();
   const { showToast } = useToast();
   const toggleSelect = (id: number) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
   };
 
@@ -75,7 +75,7 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
       <h2 className="text-xl font-bold mb-4 text-center">Danh sách thí sinh</h2>
 
       <div className="flex flex-wrap gap-4">
-        {ListContestant.map(group => (
+        {ListContestant.map((group) => (
           <div
             key={group.id}
             className={`border-2 ${
@@ -85,7 +85,7 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
             } rounded-lg p-3 w-full`}
           >
             <div className="grid grid-cols-10 gap-2">
-              {group.contestantMatches.map(contestant => (
+              {group.contestantMatches.map((contestant) => (
                 <button
                   key={contestant.registrationNumber}
                   onClick={() => toggleSelect(contestant.registrationNumber)}
@@ -105,7 +105,7 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
       </div>
       <div className="flex gap-2 mt-4 flex-wrap ">
         <div className="flex flex-wrap gap-2 flex-row w-full justify-center">
-          {ListContestant.map(group => (
+          {ListContestant.map((group) => (
             <button
               key={group.id}
               className={`border-2 ${
@@ -186,9 +186,9 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
           <button
             onClick={() =>
               setSelectedIds(
-                ListContestant.flatMap(group =>
+                ListContestant.flatMap((group) =>
                   group.contestantMatches.map(
-                    contestant => contestant.registrationNumber
+                    (contestant) => contestant.registrationNumber
                   )
                 )
               )
