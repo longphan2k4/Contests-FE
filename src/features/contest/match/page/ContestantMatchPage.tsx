@@ -25,11 +25,15 @@ import { Pagination } from "@mui/material";
 import {
   type UpdateContestantInput,
   type ContestantQueryInput,
-  type Contestant,
+  // type Contestant,
   type pagination,
   type listStatus,
   type listRound,
 } from "../../contestant/types/contestant.shame";
+
+import {
+  type Contestant
+} from "../types/contestant-match.types";
 
 import CreateContestant from "../components/contestantMatchPage/CreateContestant";
 import ViewContestant from "../components/contestantMatchPage/ViewContestant";
@@ -226,7 +230,8 @@ const ContestantMatchPage: React.FC = () => {
       console.log('Syncing data from API...');
       // Chuyển đổi dữ liệu từ API thành format local state
       const convertedGroups: { [key: number]: Contestant[] } = {};
-      const convertedJudges: { [groupIndex: number]: JudgeInfo | null } = {}; existingGroups.forEach((group, index) => {
+      const convertedJudges: { [groupIndex: number]: JudgeInfo | null } = {};
+      existingGroups.forEach((group, index) => {
         // Convert contestants from GroupInfo to Contestant format
         convertedGroups[index] = group.contestantMatches.map(cm => ({
           id: cm.contestant.id,
@@ -241,6 +246,7 @@ const ContestantMatchPage: React.FC = () => {
           studentCode: cm.contestant.student.studentCode || null,
           groupName: group.name,
           groupId: group.id,
+          registrationNumber: cm.registrationNumber, // Thêm trường registrationNumber
         }));
 
         // Assign judges
@@ -1480,6 +1486,9 @@ const ContestantMatchPage: React.FC = () => {
             onView={id => handleAction("view", id)}
             onEdit={id => handleAction("edit", id)}
             onDelete={id => handleAction("delete", id)}
+            removeFromGroup={removeContestantFromGroup}
+            activeGroupTab={activeGroupTab}
+            groups={groups}
           />
         </Box>
 
@@ -2156,10 +2165,22 @@ const ContestantMatchPage: React.FC = () => {
                               border: '1px solid #e0e0e0',
                             }}
                           >
-                            <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>
+                            <Avatar
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                fontWeight: 'bold',
+                                fontSize: 22,
+                                bgcolor: 'primary.main',
+                                color: 'white',
+                              }}
+                            >
+                              {contestant.registrationNumber || '-'}
+                            </Avatar>
+                            {/* <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>
 
                               {contestant.fullName?.charAt(0)?.toUpperCase()}
-                            </Avatar>
+                            </Avatar> */}
                             <Box sx={{ flex: 1 }}>
                               <Typography variant="body2" fontWeight="medium">
                                 {contestant.fullName}

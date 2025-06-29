@@ -90,3 +90,21 @@ export type ContestantMatchResponse = {
     pagination: Pagination;
   };
 };
+
+
+export const ContestantSchema = z.object({
+  id: z.number().int(),
+  roundName: z.string(),
+  fullName: z.string(),
+  status: z.enum([" compete", "eliminate", "advanced"]),
+  studentCode: z.string().optional().nullable(),
+  schoolName: z.string(),
+  className: z.string(),
+  groupName: z.string().optional(),
+  schoolId: z.number(),
+  classId: z.number(),
+  groupId: z.number().optional(),
+  registrationNumber: z.number().optional(),
+});
+
+export type Contestant = z.infer<typeof ContestantSchema>;

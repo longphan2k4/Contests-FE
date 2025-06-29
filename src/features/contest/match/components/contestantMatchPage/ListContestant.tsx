@@ -6,7 +6,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
-import { type Contestant } from "../../../contestant/types/contestant.shame";
+import { type Contestant } from "../../types/contestant-match.types";
 
 interface ListcontestantProps {
   contestants: Contestant[];
@@ -16,9 +16,13 @@ interface ListcontestantProps {
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
   onToggle?: (id: number) => void;
-  
+
   // New props for disabled rows
   assignedContestantIds?: number[];
+
+  removeFromGroup?: (groupIndex: number, contestantId: number) => void;
+  activeGroupTab?: number;
+  groups?: { [key: number]: Contestant[] };
 }
 
 export default function Listcontestant({
@@ -29,8 +33,45 @@ export default function Listcontestant({
   onEdit,
   onDelete,
   assignedContestantIds = [],
+  removeFromGroup,
+  activeGroupTab,
+  groups,
 }: ListcontestantProps): React.ReactElement {
   const columns: GridColDef[] = [
+    {
+      field: "remove",
+      headerName: "Vị trí",
+      width: 80,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      renderCell: params =>
+        removeFromGroup &&
+          activeGroupTab !== undefined &&
+          groups?.[activeGroupTab]?.some(c => c.id === params.row.id) ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton
+              color="error"
+              size="small"
+              title="Xóa khỏi nhóm này"
+              disableRipple
+              disableFocusRipple
+              sx={{ '&:hover': { backgroundColor: 'transparent' } }}
+              onClick={e => {
+                e.stopPropagation();
+                removeFromGroup(activeGroupTab, params.row.id);
+              }}
+            >
+              ✕
+            </IconButton>
+            <Box sx={{ fontWeight: 'bold', fontSize: 20 }}>
+              {
+                groups?.[activeGroupTab]?.find(c => c.id === params.row.id)?.registrationNumber || '-'
+              }
+            </Box>
+          </Box>
+        ) : null,
+    },
     {
       field: "index",
       headerName: "STT",
@@ -87,8 +128,8 @@ export default function Listcontestant({
         </>
       ),
     },
-  ];  return (
-    <Box sx={{ 
+  ]; return (
+    <Box sx={{
       overflow: "auto",
       '&::-webkit-scrollbar': {
         width: '4px',
@@ -105,13 +146,14 @@ export default function Listcontestant({
           backgroundColor: '#a8a8a8'
         }
       }
-    }}>      <DataGrid
+    }}>
+      <DataGrid
         rows={contestants}
         columns={columns}
         getRowId={row => row.id}
         selectedIds={selectedIds}
         disabledRowIds={assignedContestantIds}
-        getRowClassName={(params) => 
+        getRowClassName={(params) =>
           assignedContestantIds.includes(params.row.id) ? 'disabled-row' : ''
         }
         onSelectChange={selection => {

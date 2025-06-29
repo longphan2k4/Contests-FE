@@ -18,7 +18,8 @@ export const useGroupDivision = (matchId: number | null) => {
     
     try {
       const data = await GroupDivisionService.getCurrentGroups(matchId);
-      setGroups(data);    } catch (err: unknown) {
+      setGroups(data);    
+    } catch (err: unknown) {
       let errorMessage = 'Lỗi khi tải danh sách nhóm';
       if (err && typeof err === 'object' && 'response' in err) {
         const response = (err as { response?: { data?: { message?: string } } }).response;
