@@ -315,27 +315,12 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
                           className="text-green-600 flex-shrink-0"
                           fontSize="small"
                         />
-                        <Chip
-                          label="ĐÚNG"
-                          size="small"
-                          className="bg-green-600 text-white font-bold"
-                        />
                       </Box>
                     )}
                   </Box>
                 );
               })}
             </Box>
-          </Paper>
-        )}
-
-        {/* Debug Info - Chỉ hiện khi development */}
-        {process.env.NODE_ENV === "development" && (
-          <Paper className="p-3 mt-4 bg-yellow-50 border border-yellow-200">
-            <Typography variant="caption" className="text-yellow-800 font-mono">
-              🔧 Debug: Progress {timerProgress.toFixed(1)}% | Remaining:{" "}
-              {remainingTime}s | Default: {question.defaultTime}s
-            </Typography>
           </Paper>
         )}
       </CardContent>

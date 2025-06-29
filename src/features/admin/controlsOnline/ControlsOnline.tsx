@@ -186,22 +186,7 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
               size="small"
               className="font-semibold"
             />
-            {/* Hiển thị thông tin câu hỏi và thời gian */}
-            {((matchData && matchData.status === "ongoing") ||
-              examState.isStarted) && (
-              <div className="text-sm text-gray-600">
-                Câu hỏi{" "}
-                {matchData?.currentQuestion || examState.currentQuestion} | Thời
-                gian còn lại:{" "}
-                {Math.floor(
-                  (matchData?.remainingTime || examState.timeRemaining) / 60
-                )}
-                :
-                {((matchData?.remainingTime || examState.timeRemaining) % 60)
-                  .toString()
-                  .padStart(2, "0")}
-              </div>
-            )}
+
           </div>
         </div>
 
