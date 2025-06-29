@@ -21,20 +21,25 @@ import {
 } from "@mui/material";
 import { Button } from "@mui/material";
 import { Pagination } from "@mui/material";
+import FilterListIcon from '@mui/icons-material/FilterList';
 
 import {
   type UpdateContestantInput,
-  type ContestantQueryInput,
+
   // type Contestant,
   type pagination,
   type listStatus,
   type listRound,
 } from "../../contestant/types/contestant.shame";
 
+import { type ContestantQueryInput } from "../types/contestant-match.types";
+
 import {
-  type Contestant
+  type Contestant,
+  // type FilterState,
 } from "../types/contestant-match.types";
 
+import SchoolClassFilter from "../components/contestantMatchPage/SchoolClassFilter";
 import CreateContestant from "../components/contestantMatchPage/CreateContestant";
 import ViewContestant from "../components/contestantMatchPage/ViewContestant";
 import Editecontestant from "../components/contestantMatchPage/EditeContestant";
@@ -137,10 +142,15 @@ const ContestantMatchPage: React.FC = () => {
   const [listSchools, setListSchools] = useState<SchoolInfo[]>([]);
   const [listClasses, setListClasses] = useState<ClassInfo[]>([]);
   const [listGroups, setListGroups] = useState<GroupInfo[]>([]);
-  const [isLoadingSchools, setIsLoadingSchools] = useState(false);
-  const [isLoadingClasses, setIsLoadingClasses] = useState(false);
+
   const [editingGroupIndex, setEditingGroupIndex] = useState<number | null>(null);
   const [editingGroupName, setEditingGroupName] = useState<string>('');
+
+  // Quản lý trạng thái mở của bộ lọc
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_schoolClassFilter, setSchoolClassFilter] = useState<{ schoolIds: number[]; classIds: number[] }>({ schoolIds: [], classIds: [] });
 
   const [judgeInfoOpen, setJudgeInfoOpen] = useState(false);
   const toggleJudgeInfo = () => {
@@ -171,7 +181,13 @@ const ContestantMatchPage: React.FC = () => {
     isLoading: issLoading,
     isError: issError,
     refetch: refetchs,
-  } = useGetAll({ ...filter, matchId: matchId || undefined }, slug ?? null);
+  } = useGetAll(
+    {
+      ...filter,
+      matchId: matchId || undefined,
+    },
+    slug ?? null
+  );
 
   // const { mutate: mutateCreates } = useCreates();
 
@@ -691,28 +707,23 @@ const ContestantMatchPage: React.FC = () => {
   // Fetch schools data
   const fetchSchools = useCallback(async () => {
     try {
-      setIsLoadingSchools(true);
       const schools = await GroupDivisionService.getSchools();
       setListSchools(schools);
     } catch (error) {
       console.error('Error fetching schools:', error);
       showToast('Không thể tải danh sách trường học', 'error');
-    } finally {
-      setIsLoadingSchools(false);
     }
   }, [showToast]);
 
   // Fetch classes by school
   const fetchClassesBySchool = useCallback(async (schoolId: number) => {
     try {
-      setIsLoadingClasses(true);
       const classes = await GroupDivisionService.getClassesBySchool(schoolId);
-      setListClasses(classes);
+      return classes; // Trả về mảng Class[]
     } catch (error) {
       console.error('Error fetching classes:', error);
       showToast('Không thể tải danh sách lớp học', 'error');
-    } finally {
-      setIsLoadingClasses(false);
+      return []; // Trả về mảng rỗng nếu lỗi
     }
   }, [showToast]);
 
@@ -1004,7 +1015,6 @@ const ContestantMatchPage: React.FC = () => {
         showToast(errorMessage, 'error');
       });
   }, [existingGroups, showToast]);
-
   /**
    * END HANDLE
    */
@@ -1314,7 +1324,7 @@ const ContestantMatchPage: React.FC = () => {
           />
 
           {/* Trường học */}
-          <FormAutocompleteFilter
+          {/* <FormAutocompleteFilter
             label="Trường học"
             options={[
               { label: "Tất cả", value: "all" },
@@ -1333,10 +1343,10 @@ const ContestantMatchPage: React.FC = () => {
             }
             sx={{ flex: 1, minWidth: 200 }}
             loading={isLoadingSchools}
-          />
+          /> */}
 
           {/* Lớp học */}
-          <FormAutocompleteFilter
+          {/* <FormAutocompleteFilter
             label="Lớp học"
             options={[
               { label: "Tất cả", value: "all" },
@@ -1355,7 +1365,7 @@ const ContestantMatchPage: React.FC = () => {
             sx={{ flex: 1, minWidth: 200 }}
             disabled={!filter.schoolId}
             loading={isLoadingClasses}
-          />
+          /> */}
 
           {/* Nhóm - chỉ hiển thị khi có matchId */}
           {matchId && (
@@ -1391,6 +1401,73 @@ const ContestantMatchPage: React.FC = () => {
                 Xoá ({selectedIds.length})
               </Button>
             )} */}
+
+          { /* thêm nút filter mở SchoolClassFilter*/}
+          <Button
+            variant="outlined"
+            startIcon={<FilterListIcon />}
+            onClick={() => setIsFilterOpen(true)}
+            sx={{ minWidth: 120, alignSelf: "center" }}
+          >
+            Bộ lọc nâng cao
+          </Button>
+          {isFilterOpen && (
+            <Box
+              sx={{
+                position: "fixed",
+                top: 80,
+                left: "59%",
+                transform: "translateX(-50%)",
+                zIndex: 1300,
+                bgcolor: "background.paper",
+                borderRadius: 2,
+                minWidth: 400,
+                width: "1000px",
+              }}
+            >
+              <SchoolClassFilter
+                setIsFilterOpen={setIsFilterOpen}
+                schools={listSchools}
+                getClassesBySchool={fetchClassesBySchool}
+                onApply={async filterData => { // Đổi tên biến để tránh nhầm lẫn với state 'filter'
+                  // Đóng bộ lọc và cập nhật filter state
+                  setIsFilterOpen(false);
+                  setFilter(prev => ({
+                    ...prev,
+                    schoolIds: filterData.schoolIds,
+                    classIds: filterData.classIds,
+                    page: 1, // Reset về trang 1 khi áp dụng bộ lọc mới
+                  }));
+
+                  // --- BẮT ĐẦU THAY ĐỔI TẠI ĐÂY ---
+
+                  // Fetch và làm giàu dữ liệu lớp học
+                  let allClasses: ClassInfo[] = [];
+                  for (const schoolId of filterData.schoolIds) {
+                    const classes = await fetchClassesBySchool(schoolId);
+
+                    // QUAN TRỌNG: Thêm 'schoolId' vào mỗi đối tượng lớp trả về từ API
+                    const classesWithSchoolId = classes.map(c => ({
+                      ...c,
+                      schoolId: schoolId,
+                    }));
+
+                    allClasses = allClasses.concat(classesWithSchoolId);
+                  }
+
+                  // Loại bỏ các lớp trùng lặp (nếu có) và cập nhật state
+                  const uniqueClasses = allClasses.filter(
+                    (cls, idx, arr) => arr.findIndex(c => c.id === cls.id) === idx
+                  );
+                  setListClasses(uniqueClasses);
+
+                  // --- KẾT THÚC THAY ĐỔI ---
+
+                  // Logic cũ để setFilter đã được chuyển lên trên để phản hồi nhanh hơn
+                }}
+              />
+            </Box>
+          )}
         </Stack>
 
         {/* Tổng số và thống kê filter */}
@@ -1403,7 +1480,7 @@ const ContestantMatchPage: React.FC = () => {
           }}
         >
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-            {filter.schoolId && (
+            {/* {filter.schoolId && (
               <Chip
                 label={`Trường: ${listSchools.find(s => s.id === filter.schoolId)?.name}`}
                 onDelete={() => setFilter(prev => ({ ...prev, schoolId: undefined, classId: undefined }))}
@@ -1418,7 +1495,7 @@ const ContestantMatchPage: React.FC = () => {
                 size="small"
                 color="primary"
               />
-            )}
+            )} */}
             {matchId && filter.groupId !== undefined && filter.groupId !== 0 && (
               <Chip
                 label={filter.groupId === -1 ? "Chưa phân nhóm" : `Nhóm: ${listGroups.find(g => g.id === filter.groupId)?.name}`}
@@ -1427,14 +1504,45 @@ const ContestantMatchPage: React.FC = () => {
                 color="primary"
               />
             )}
-            {(filter.schoolId || filter.classId || (matchId && filter.groupId !== undefined && filter.groupId !== 0)) && (
+            {filter.schoolIds && filter.schoolIds.length > 0 && filter.schoolIds.map(schoolId => {
+              const school = listSchools.find(s => s.id === schoolId);
+              const classNames = filter.classIds
+                ? listClasses
+                  .filter(c => c.schoolId === schoolId && filter.classIds?.includes(c.id))
+                  .map(c => c.name)
+                : [];
+              return (
+                <Chip
+                  key={schoolId}
+                  label={
+                    classNames.length > 0
+                      ? `Trường: ${school?.name} (${classNames.join(", ")})`
+                      : `Trường: ${school?.name}`
+                  }
+                  onDelete={() => {
+                    // Xoá trường này khỏi filter, đồng thời xoá các classIds thuộc trường này
+                    setFilter(prev => ({
+                      ...prev,
+                      schoolIds: prev.schoolIds?.filter(id => id !== schoolId),
+                      classIds: prev.classIds?.filter(
+                        cid => listClasses.find(c => c.id === cid)?.schoolId !== schoolId
+                      ),
+                    }));
+                  }}
+                  size="small"
+                  color="primary"
+                  sx={{ mr: 1 }}
+                />
+              );
+            })}
+            {(filter.schoolIds || filter.classIds) && (
               <Button
                 size="small"
                 variant="outlined"
                 onClick={() => setFilter(prev => ({
                   ...prev,
-                  schoolId: undefined,
-                  classId: undefined,
+                  schoolIds: undefined,
+                  classIds: undefined,
                   groupId: undefined
                 }))}
               >
@@ -1489,6 +1597,8 @@ const ContestantMatchPage: React.FC = () => {
             removeFromGroup={removeContestantFromGroup}
             activeGroupTab={activeGroupTab}
             groups={groups}
+            page={filter.page || 1}
+            limit={filter.limit || 10}
           />
         </Box>
 

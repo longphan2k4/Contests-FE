@@ -77,6 +77,14 @@ export const ContestantQuerySchema = z.object({
   classId: z.number().positive().optional(),
   groupId: z.number().optional(), // Có thể là -1 cho "unassigned"
   matchId: z.number().positive().optional(),
+  schoolIds: z.preprocess(
+    val => typeof val === "string" ? val.split(",").map(Number) : val,
+    z.array(z.number()).optional()
+  ),
+  classIds: z.preprocess(
+    val => typeof val === "string" ? val.split(",").map(Number) : val,
+    z.array(z.number()).optional()
+  ),
 });
 
 export const deleteContestantesSchema = z.object({

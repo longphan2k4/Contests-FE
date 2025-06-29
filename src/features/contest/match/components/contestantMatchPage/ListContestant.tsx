@@ -24,6 +24,8 @@ interface ListcontestantProps {
   removeFromGroup?: (groupIndex: number, contestantId: number) => void;
   activeGroupTab?: number;
   groups?: { [key: number]: Contestant[] };
+  page: number;
+  limit: number;
 }
 
 export default function Listcontestant({
@@ -37,6 +39,8 @@ export default function Listcontestant({
   removeFromGroup,
   activeGroupTab,
   groups,
+  page,
+  limit,
 }: ListcontestantProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
@@ -79,8 +83,11 @@ export default function Listcontestant({
       width: 70,
       sortable: false,
       filterable: false,
-      renderCell: params =>
-        params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      renderCell: params => {
+        // Công thức tính STT liên tục
+        const rowIndex = params.api.getRowIndexRelativeToVisibleRows(params.id);
+        return (page - 1) * limit + rowIndex + 1;
+      },
     },
     { field: "fullName", headerName: "Họ và tên", flex: 1.5 },
     { field: "studentCode", headerName: "Mã SV", flex: 1 },

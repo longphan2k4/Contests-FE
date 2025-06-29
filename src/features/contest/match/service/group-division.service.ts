@@ -59,6 +59,7 @@ export interface SchoolInfo {
 export interface ClassInfo {
   id: number;
   name: string;
+  schoolId: number;
 }
 
 export interface PaginationInfo {

@@ -91,6 +91,12 @@ export type ContestantMatchResponse = {
   };
 };
 
+export type FilterState = {
+  selectedSchoolIds: number[];
+  selectedClassIdsBySchool: { [schoolId: number]: number[] };
+  searchSchool: string;
+};
+
 
 export const ContestantSchema = z.object({
   id: z.number().int(),
@@ -108,3 +114,50 @@ export const ContestantSchema = z.object({
 });
 
 export type Contestant = z.infer<typeof ContestantSchema>;
+
+export const ContestantQuerySchema = z.object({
+  page: z
+    .string()
+    .transform(val => parseInt(val))
+    .refine(val => !isNaN(val) && val > 0, "Page phải là số nguyên dương")
+    .default("1")
+    .optional(),
+  limit: z
+    .string()
+    .transform(val => parseInt(val))
+    .refine(val => !isNaN(val) && val > 0, "Limit phải là số nguyên dương")
+    .default("10")
+    .optional(),
+  search: z.string().max(100, "Từ khóa tìm kiếm tối đa 100 ký tự").optional(),
+  contestId: z
+    .string()
+    .transform(val => parseInt(val))
+    .refine(
+      val => !isNaN(val) && val > 0,
+      "Id cuộc thi phải là số nguyên dương"
+    )
+    .optional(),
+  roundId: z
+    .string()
+    .transform(val => parseInt(val))
+    .refine(
+      val => !isNaN(val) && val > 0,
+      "Id cuộc thi phải là số nguyên dương"
+    )
+    .optional(),
+  status: z.enum(["compete", "eliminate", "advanced"]).optional(),
+  schoolId: z.number().positive().optional(),
+  classId: z.number().positive().optional(),
+  groupId: z.number().optional(), // Có thể là -1 cho "unassigned"
+  matchId: z.number().positive().optional(),
+  schoolIds: z.preprocess(
+    val => typeof val === "string" ? val.split(",").map(Number) : val,
+    z.array(z.number()).optional()
+  ),
+  classIds: z.preprocess(
+    val => typeof val === "string" ? val.split(",").map(Number) : val,
+    z.array(z.number()).optional()
+  ),
+});
+
+export type ContestantQueryInput = z.infer<typeof ContestantQuerySchema>;
