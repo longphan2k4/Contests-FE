@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, IconButton, Chip } from "@mui/material";
-import DataGrid from "../../../../../components/DataGrid";
+// import DataGrid from "../../../../../components/DataGrid";
+import DataGrid2 from "../../../../../components/DataGrid/index2";
 import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -147,7 +148,7 @@ export default function Listcontestant({
         }
       }
     }}>
-      <DataGrid
+      {/* <DataGrid
         rows={contestants}
         columns={columns}
         getRowId={row => row.id}
@@ -162,6 +163,27 @@ export default function Listcontestant({
             : Array.from((selection as unknown as { ids: number[] }).ids || []);
           setSelectedIds(idsArray.map(id => Number(id)));
         }}
+      /> */}
+
+      <DataGrid2 // Đây thực chất là CommonDataGrid của bạn
+        rows={contestants}
+        columns={columns} // Truyền các cột dữ liệu
+        getRowId={row => row.id}
+
+        // Bật checkboxSelection tùy chỉnh của chúng ta
+        checkboxSelection={true}
+
+        // Truyền và nhận lại model lựa chọn
+        selectionModel={selectedIds}
+        onSelectChange={(newSelection) => {
+          setSelectedIds(newSelection.map(id => Number(id)));
+        }}
+
+        // Các props còn lại
+        disabledRowIds={assignedContestantIds}
+        getRowClassName={(params) =>
+          assignedContestantIds.includes(params.row.id) ? 'disabled-row' : ''
+        }
       />
     </Box>
   );
