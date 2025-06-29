@@ -98,8 +98,18 @@ export const questionService = {
    */
   updateQuestion: async (id: number, formData: FormData): Promise<ApiResponse<Question>> => {
     try {
+      console.log("=== DEBUG: Frontend updateQuestion API call ===");
+      console.log("Question ID:", id);
+      console.log("FormData entries:");
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}: File - ${value.name} (${value.size} bytes)`);
+        } else {
+          console.log(`  ${key}:`, value);
+        }
+      }
 
-
+      console.log("=== Sending PATCH request to backend ===");
       const response = await axiosInstance.patch<ApiResponse<Question>>(
         `/questions/${id}`,
         formData,
@@ -113,6 +123,11 @@ export const questionService = {
         }
       );
       
+      console.log("=== DEBUG: Backend response received ===");
+      console.log("Response status:", response.status);
+      console.log("Response data:", response.data);
+      console.log("Question media count:", (response.data.data.questionMedia as any)?.length || 0);
+      console.log("Media answer count:", (response.data.data.mediaAnswer as any)?.length || 0);
       
       return response.data;
     } catch (error) {

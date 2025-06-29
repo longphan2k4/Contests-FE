@@ -10,6 +10,7 @@ import {
   VideoControl,
   StatusControl,
 } from "../components";
+import { OnlineExamControl } from "../../controlsOnline";
 import QuestionDetails from "../components/QuestionDetails";
 import BackgroundControl from "../components/BackgroundControl";
 import CurrentContestants from "../components/CurrentContestants";
@@ -43,6 +44,10 @@ interface SocketResponse {
 
 interface TimerUpdateData {
   timeRemaining: number;
+}
+
+interface ContestantStatusUpdate {
+  ListContestant?: ListContestant[];
 }
 
 const ControlsPage: React.FC = () => {
@@ -119,11 +124,15 @@ const ControlsPage: React.FC = () => {
   }, [isSuccessClassVideo, classVideoRes]);
 
   useEffect(() => {
-    if (isSuccessMatch) setMatchInfo(matchInfoRes.data);
+    if (isSuccessMatch) {
+      setMatchInfo(matchInfoRes.data);
+    }
   }, [isSuccessMatch, matchInfoRes]);
 
   useEffect(() => {
-    if (isSuccessCurrentQuestion) setCurrentQuestion(currentQuestionRes.data);
+    if (isSuccessCurrentQuestion) {
+      setCurrentQuestion(currentQuestionRes.data);
+    }
   }, [isSuccessCurrentQuestion, currentQuestionRes]);
 
   useEffect(() => {
@@ -161,9 +170,11 @@ const ControlsPage: React.FC = () => {
 
     const handleUpdateTime = (data: TimerUpdateData) => {
       const newTime = data?.timeRemaining;
-      setMatchInfo(prev => (prev ? { ...prev, remainingTime: newTime } : prev));
+      setMatchInfo((prev) =>
+        prev ? { ...prev, remainingTime: newTime } : prev
+      );
     };
-    const handleUpdateStatus = (data: any) => {
+    const handleUpdateStatus = (data: ContestantStatusUpdate) => {
       if (data.ListContestant) {
         setListContestant(data.ListContestant);
       }
@@ -243,6 +254,35 @@ const ControlsPage: React.FC = () => {
         }
       );
     }
+  };
+
+  // Transform function để convert CurrentQuestion thành CurrentQuestionData
+  const transformCurrentQuestionData = (question: CurrentQuestion | null) => {
+    if (!question) {
+      return undefined;
+    }
+
+    const transformedData = {
+      order: question.questionOrder,
+      question: {
+        id: question.id,
+        content: question.content,
+        intro: question.intro || undefined,
+        questionType: question.questionType,
+        difficulty: question.difficulty,
+        score: question.score,
+        defaultTime: question.defaultTime,
+        options: Array.isArray(question.options)
+          ? question.options.map((opt) => String(opt))
+          : [],
+        correctAnswer:
+          typeof question.correctAnswer === "string"
+            ? parseInt(question.correctAnswer)
+            : question.correctAnswer,
+      },
+    };
+
+    return transformedData;
   };
 
   const isLoading =
@@ -325,6 +365,23 @@ const ControlsPage: React.FC = () => {
                 <AnswerControl currentQuestion={currentQuestion} />
               </div>
             </div>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+            <OnlineExamControl
+              currentQuestionData={(() => {
+                const transformed =
+                  transformCurrentQuestionData(currentQuestion);
+                return transformed;
+              })()}
+              isGameStarted={
+                matchInfo?.currentQuestion
+                  ? matchInfo.currentQuestion > 0
+                  : false
+              }
+              remainingTime={matchInfo?.remainingTime || 0}
+              isLoading={isLoadingCurrentQuestion}
+              isTimerPaused={false}
+            />
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <SupplierVideo

@@ -4,6 +4,7 @@ import AdminRoutes from "../features/admin/AdminRoutes";
 import ContestRoutes from "../features/contest/ContestRouter";
 import PublicRoute from "./PublicRoute";
 import AuthRoutes from "../features/auth/routes";
+import StudentRoutes from "../features/student/routes";
 import PublicRoutes from "./PublicRoutes";
 import {
   AudienceOpinionPage,
@@ -22,6 +23,7 @@ import { SocketProvider } from "../contexts/SocketContext";
 import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import ContestList from "../features/judge/components/selector/ContestList";
 import MatchList from "../features/judge/components/selector/MatchList";
+import { OnlineControlSocketProvider } from "../contexts/OnlineControlSocketContext";
 
 //leaderboard
 import TopThreeReveal from "@features/leaderboard/top3/pages/TopThreeReveal";
@@ -34,6 +36,12 @@ const AppRoutes: React.FC = () => {
       {/* Public Routes */}
       {PublicRoutes()}
 
+      {/* Auth Routes - Đăng nhập, Đăng ký */}
+      {AuthRoutes()}
+      {/* Student Routes */}
+      {StudentRoutes()}
+
+
       <Route element={<PublicRoute restricted={true} />}>{AuthRoutes()}</Route>
 
       <Route element={<PrivateRoute roles={["Admin"]} />}>
@@ -43,7 +51,9 @@ const AppRoutes: React.FC = () => {
           path="/admin/cuoc-thi/:slug/dieu-kien-tran-dau/:match"
           element={
             <SocketProvider>
-              <ControlsPage />
+              <OnlineControlSocketProvider>
+                <ControlsPage />
+              </OnlineControlSocketProvider>
             </SocketProvider>
           }
         />
