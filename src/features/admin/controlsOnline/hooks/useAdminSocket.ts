@@ -140,35 +140,40 @@ export const useAdminSocket = () => {
       console.log('🔍 [ADMIN] Match ID từ event:', data.matchId);
       console.log('🔍 [ADMIN] Match ID từ params:', match);
       
-      // Kiểm tra matchId có khớp không (convert string to number nếu cần)
+      // 🔥 FIX: Sử dụng matchData.id thay vì parse từ URL
+      const currentMatchId = matchData?.id;
       const eventMatchId = typeof data.matchId === 'string' ? parseInt(data.matchId) : data.matchId;
-      const currentMatchId = typeof match === 'string' ? parseInt(match) : match;
       
-      if (eventMatchId === currentMatchId) {
-        console.log('🎯 [ADMIN] Match ID khớp - cập nhật trạng thái admin control');
-        setExamState(prev => ({
-          ...prev,
-          isStarted: true,
-          isPaused: false,
-          currentQuestion: data.currentQuestion,
-          timeRemaining: data.timeRemaining,
-          defaultTime: data.defaultTime || 60, // 🔥 FIX: Fallback cho defaultTime
-          isLoading: false,
-        }));
-      } else {
-        console.log('⚠️ [ADMIN] Match ID không khớp - bỏ qua event');
+      if (!currentMatchId || eventMatchId !== currentMatchId) {
+        console.log('⚠️ [ADMIN] Match ID không khớp - bỏ qua event', {
+          eventMatchId,
+          currentMatchId,
+          urlMatch: match
+        });
+        return;
       }
+      
+      console.log('🎯 [ADMIN] Match ID khớp - cập nhật trạng thái admin control');
+      setExamState(prev => ({
+        ...prev,
+        isStarted: true,
+        isPaused: false,
+        currentQuestion: data.currentQuestion,
+        timeRemaining: data.timeRemaining,
+        defaultTime: data.defaultTime || 60, // 🔥 FIX: Fallback cho defaultTime
+        isLoading: false,
+      }));
     };
 
     const handleMatchPaused = (data: { isPaused: boolean; matchId?: string | number }) => {
       console.log('⏸️ [ADMIN] Match đã tạm dừng:', data);
       
-      // Kiểm tra matchId nếu có
+      // 🔥 FIX: Sử dụng matchData.id
       if (data.matchId) {
+        const currentMatchId = matchData?.id;
         const eventMatchId = typeof data.matchId === 'string' ? parseInt(data.matchId) : data.matchId;
-        const currentMatchId = typeof match === 'string' ? parseInt(match) : match;
         
-        if (eventMatchId !== currentMatchId) {
+        if (!currentMatchId || eventMatchId !== currentMatchId) {
           console.log('⚠️ [ADMIN] Match ID không khớp cho pause event - bỏ qua');
           return;
         }
@@ -184,12 +189,12 @@ export const useAdminSocket = () => {
     const handleMatchResumed = (data?: { matchId?: string | number }) => {
       console.log('▶️ [ADMIN] Match đã tiếp tục:', data);
       
-      // Kiểm tra matchId nếu có
+      // 🔥 FIX: Sử dụng matchData.id
       if (data?.matchId) {
+        const currentMatchId = matchData?.id;
         const eventMatchId = typeof data.matchId === 'string' ? parseInt(data.matchId) : data.matchId;
-        const currentMatchId = typeof match === 'string' ? parseInt(match) : match;
         
-        if (eventMatchId !== currentMatchId) {
+        if (!currentMatchId || eventMatchId !== currentMatchId) {
           console.log('⚠️ [ADMIN] Match ID không khớp cho resume event - bỏ qua');
           return;
         }
@@ -205,12 +210,12 @@ export const useAdminSocket = () => {
     const handleMatchStopped = (data?: { matchId?: string | number }) => {
       console.log('🛑 [ADMIN] Match đã kết thúc:', data);
       
-      // Kiểm tra matchId nếu có
+      // 🔥 FIX: Sử dụng matchData.id
       if (data?.matchId) {
+        const currentMatchId = matchData?.id;
         const eventMatchId = typeof data.matchId === 'string' ? parseInt(data.matchId) : data.matchId;
-        const currentMatchId = typeof match === 'string' ? parseInt(match) : match;
         
-        if (eventMatchId !== currentMatchId) {
+        if (!currentMatchId || eventMatchId !== currentMatchId) {
           console.log('⚠️ [ADMIN] Match ID không khớp cho stop event - bỏ qua');
           return;
         }
@@ -227,12 +232,12 @@ export const useAdminSocket = () => {
     const handleQuestionChanged = (data: QuestionChangeData) => {
       console.log('➡️ [ADMIN] Chuyển câu hỏi:', data);
       
-      // Kiểm tra matchId nếu có
+      // 🔥 FIX: Sử dụng matchData.id
       if (data.matchId) {
+        const currentMatchId = matchData?.id;
         const eventMatchId = typeof data.matchId === 'string' ? parseInt(data.matchId) : data.matchId;
-        const currentMatchId = typeof match === 'string' ? parseInt(match) : match;
         
-        if (eventMatchId !== currentMatchId) {
+        if (!currentMatchId || eventMatchId !== currentMatchId) {
           console.log('⚠️ [ADMIN] Match ID không khớp cho question change event - bỏ qua');
           return;
         }
@@ -263,12 +268,12 @@ export const useAdminSocket = () => {
     };
 
     const handleTimerUpdate = (data: TimerData & { matchId?: string | number }) => {
-      // Kiểm tra matchId nếu có
+      // 🔥 FIX: Sử dụng matchData.id
       if (data.matchId) {
+        const currentMatchId = matchData?.id;
         const eventMatchId = typeof data.matchId === 'string' ? parseInt(data.matchId) : data.matchId;
-        const currentMatchId = typeof match === 'string' ? parseInt(match) : match;
         
-        if (eventMatchId !== currentMatchId) {
+        if (!currentMatchId || eventMatchId !== currentMatchId) {
           return; // Bỏ qua timer update của match khác
         }
       }
@@ -285,6 +290,79 @@ export const useAdminSocket = () => {
       }));
     };
 
+    // 🔥 NEW: Handler riêng cho match:timerUpdated từ backend
+    const handleBackendTimerUpdate = (data: { 
+      matchId: number; 
+      remainingTime: number; 
+      updatedAt: string;
+      matchSlug?: string;
+    }) => {
+      // 🔥 DEBUG: Log chi tiết để debug
+      console.log('🔍 [DEBUG] Timer update received:', {
+        eventMatchId: data.matchId,
+        eventMatchIdType: typeof data.matchId,
+        urlMatch: match,
+        urlMatchType: typeof match,
+        matchData: matchData,
+        matchDataId: matchData?.id,
+        matchDataIdType: typeof matchData?.id
+      });
+
+      // 🔥 FIX: Sử dụng matchData.id thay vì parse từ URL
+      const currentMatchId = matchData?.id;
+      
+      if (!currentMatchId || data.matchId !== currentMatchId) {
+        console.log('⚠️ [ADMIN] Timer update không khớp match ID - bỏ qua', {
+          eventMatchId: data.matchId,
+          currentMatchId: currentMatchId,
+          urlMatch: match
+        });
+        return;
+      }
+      
+      console.log('✅ [ADMIN] Backend timer update - Match ID khớp:', {
+        matchId: data.matchId,
+        remainingTime: data.remainingTime,
+        updatedAt: data.updatedAt
+      });
+      
+      setExamState(prev => ({
+        ...prev,
+        timeRemaining: data.remainingTime,
+      }));
+    };
+
+    // 🔥 NEW: Handler cho match:timeUp event
+    const handleTimeUp = (data: {
+      matchId: number;
+      questionOrder: number;
+      timeUpAt: string;
+      matchSlug?: string;
+    }) => {
+      // 🔥 FIX: Sử dụng matchData.id thay vì parse từ URL
+      const currentMatchId = matchData?.id;
+      
+      if (!currentMatchId || data.matchId !== currentMatchId) {
+        console.log('⚠️ [ADMIN] Time up event không khớp match ID - bỏ qua', {
+          eventMatchId: data.matchId,
+          currentMatchId: currentMatchId,
+          urlMatch: match
+        });
+        return;
+      }
+      
+      console.log('⏰ [ADMIN] Time up event:', {
+        matchId: data.matchId,
+        questionOrder: data.questionOrder,
+        timeUpAt: data.timeUpAt
+      });
+      
+      setExamState(prev => ({
+        ...prev,
+        timeRemaining: 0,
+      }));
+    };
+
     // 🔥 NEW: Thêm backup listeners cho các event có thể có tên khác
     const handleMatchStateChanged = (data: {
       matchId?: string | number;
@@ -295,8 +373,15 @@ export const useAdminSocket = () => {
     }) => {
       console.log('🔄 [ADMIN] Match state changed:', data);
       
-      if (data.matchId && data.matchId !== parseInt(match || '0')) {
-        return; // Bỏ qua nếu không phải match hiện tại
+      // 🔥 FIX: Sử dụng matchData.id thay vì parse từ URL
+      if (data.matchId) {
+        const currentMatchId = matchData?.id;
+        const eventMatchId = typeof data.matchId === 'string' ? parseInt(data.matchId) : data.matchId;
+        
+        if (!currentMatchId || eventMatchId !== currentMatchId) {
+          console.log('⚠️ [ADMIN] Match state change không khớp match ID - bỏ qua');
+          return; // Bỏ qua nếu không phải match hiện tại
+        }
       }
       
       // Cập nhật state dựa trên data nhận được
@@ -334,7 +419,8 @@ export const useAdminSocket = () => {
     socket.on('match:ended', handleMatchStopped); // 🔥 NEW: Thêm event ended
     socket.on('match:questionChanged', handleQuestionChanged);
     socket.on('timer:update', handleTimerUpdate);
-    socket.on('match:timerUpdated', handleTimerUpdate); // 🔥 NEW: Backup timer event
+    socket.on('match:timerUpdated', handleBackendTimerUpdate); // 🔥 NEW: Backup timer event
+    socket.on('match:timeUp', handleTimeUp); // 🔥 NEW: Thêm event timeUp
     
     // 🔥 NEW: Backup listeners với tên event khác có thể
     socket.on('admin:matchStarted', handleMatchStarted);
@@ -353,7 +439,6 @@ export const useAdminSocket = () => {
     
     // Log tất cả events được emit
     socket.emit = function(event: string, ...args: unknown[]) {
-      console.log('📤 [ADMIN SOCKET] Emit event:', event, args);
       return originalEmit.call(this, event, ...args);
     };
 
@@ -392,7 +477,8 @@ export const useAdminSocket = () => {
       socket.off('match:ended', handleMatchStopped);
       socket.off('match:questionChanged', handleQuestionChanged);
       socket.off('timer:update', handleTimerUpdate);
-      socket.off('match:timerUpdated', handleTimerUpdate);
+      socket.off('match:timerUpdated', handleBackendTimerUpdate);
+      socket.off('match:timeUp', handleTimeUp);
       socket.off('admin:matchStarted', handleMatchStarted);
       socket.off('admin:matchStateChanged', handleMatchStateChanged);
       socket.off('match:stateChanged', handleMatchStateChanged);
@@ -429,8 +515,8 @@ export const useAdminSocket = () => {
             isStarted: true,
             isPaused: false,
             isLoading: false,
-            currentQuestion: 1, // Default là câu hỏi đầu tiên
-            timeRemaining: 60, // 🔥 TODO: Sẽ được update khi nhận event với time thực tế
+            currentQuestion: 1, // 🔥 FIX: Bắt đầu từ 0, chờ admin tự chọn câu hỏi
+            timeRemaining: 0, // 🔥 FIX: Không có thời gian ban đầu
           }));
 
           // 🔥 NEW: Tự động gọi câu hỏi đầu tiên sau 1 giây

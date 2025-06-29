@@ -29,6 +29,7 @@ import {
 import { useStudentSocket } from "../hooks/useStudentSocket";
 import { useStudentMatch } from "../hooks/useStudentMatch";
 import { SubmitAnswerService } from "../services/submitAnswerService";
+import { useNotification } from "../../../contexts/NotificationContext";
 import type { SubmitAnswerResponse } from "../services/submitAnswerService";
 
 interface QuestionData {
@@ -121,6 +122,9 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
   // 🚀 NEW: State cho API submission
   const [isApiSubmitting, setIsApiSubmitting] = useState(false);
 
+  // 🔥 NEW: State để kiểm soát việc hiển thị kết quả (chỉ khi hết thời gian)
+  const [canShowResult, setCanShowResult] = useState(false);
+
   const {
     socket: studentSocket,
     isConnected: isStudentSocketConnected,
@@ -129,6 +133,13 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
 
   // Chỉ lấy isSubmitting từ useStudentMatch, không dùng submitAnswer
   const { isSubmitting } = useStudentMatch();
+
+  // 🔥 NEW: Sử dụng notification context
+  const {
+    showSuccessNotification,
+    showErrorNotification,
+    showWarningNotification,
+  } = useNotification();
 
   // Join match để có thể submit answer (set socket.matchId) - chạy ngay khi component mount
   useEffect(() => {
@@ -188,6 +199,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
       setOtherStudentAnswers([]); // Reset thông báo thí sinh khác
       setLatestAnswer(null);
       setShowNotification(false);
+      setCanShowResult(false); // 🔥 NEW: Reset trạng thái hiển thị kết quả
       // 🔥 NEW: Reset elimination state khi chuyển câu hỏi (nếu không bị loại)
       if (!isEliminated) {
         console.log(
@@ -197,6 +209,14 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
       }
     }
   }, [currentQuestion, isEliminated]);
+
+  // 🔥 NEW: Set canShowResult khi hết thời gian
+  useEffect(() => {
+    if (remainingTime === 0 && !canShowResult) {
+      console.log("⏰ [COMPONENT] Cho phép hiển thị kết quả vì hết thời gian");
+      setCanShowResult(true);
+    }
+  }, [remainingTime, canShowResult]);
 
   // 🔥 NEW: Listen for elimination events
   useEffect(() => {
@@ -241,17 +261,50 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
 
   // NEW: Logic hiển thị kết quả khi thời gian < 1 giây
   useEffect(() => {
-    if (pendingResult && remainingTime < 1 && !answerResult) {
-      console.log("⏰ [RESULT] Hiển thị kết quả vì thời gian < 1 giây");
+    if (pendingResult && canShowResult && !answerResult) {
+      console.log("⏰ [RESULT] Hiển thị kết quả vì canShowResult = true");
       setAnswerResult(pendingResult);
       setPendingResult(null);
 
-      // 🔥 NEW: Update elimination status từ result
+      // 🔥 NEW: Thông báo kết quả
+      if (pendingResult.isCorrect) {
+        showSuccessNotification(
+          `🎉 Chính xác! Bạn được +${pendingResult.score} điểm`,
+          "Câu trả lời đúng!",
+          4000
+        );
+      } else {
+        showErrorNotification(
+          `❌ Câu trả lời chưa đúng. Đáp án đúng: "${pendingResult.correctAnswer}"`,
+          "Câu trả lời sai",
+          4000
+        );
+      }
+
+      // 🔥 NEW: Update elimination status từ result với delay để user thấy kết quả trước
       if (pendingResult.eliminated) {
-        setIsEliminated(true);
+        setTimeout(() => {
+          setIsEliminated(true);
+          // 🔥 NEW: Thông báo bị loại với delay
+          showWarningNotification(
+            "⚠️ Bạn đã bị loại khỏi trận đấu! Bạn vẫn có thể theo dõi các câu hỏi tiếp theo.",
+            "Bị loại",
+            6000
+          );
+          console.log(
+            "🚫 [ELIMINATION] Hiển thị thông báo loại sau khi show kết quả"
+          );
+        }, 4000); // Delay 4 giây để user đọc kết quả trước
       }
     }
-  }, [pendingResult, remainingTime, answerResult]);
+  }, [
+    pendingResult,
+    canShowResult,
+    answerResult,
+    showSuccessNotification,
+    showErrorNotification,
+    showWarningNotification,
+  ]);
 
   // Tự động submit khi hết thời gian
   useEffect(() => {
@@ -416,15 +469,6 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
       const correctAnswers =
         correctAnswerIndex !== -1 ? [correctAnswerIndex] : [];
 
-      console.log("📊 [API SUBMIT] Dữ liệu gửi:", {
-        selectedOptions,
-        correctAnswers,
-        selectedAnswer: finalAnswer,
-        correctAnswer: currentQuestion.question.correctAnswer,
-        matchId,
-        questionOrder: currentQuestion.order,
-        isNoAnswerCase: finalAnswer === "[KHÔNG CHỌN ĐÁP ÁN]", // 🔧 Flag đặc biệt
-      });
 
       const response: SubmitAnswerResponse =
         await SubmitAnswerService.submitAnswer(
@@ -435,8 +479,6 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
           correctAnswers
         );
 
-      console.log("📨 [API SUBMIT] Phản hồi từ API:", response);
-      console.log("📨 [API SUBMIT] Phản hồi từ API:", response.data.result);
       if (response.success) {
         const result = {
           isCorrect: response.data.result.isCorrect,
@@ -450,26 +492,43 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
 
         // Lưu kết quả vào pendingResult thay vì answerResult để đợi thời gian < 1s
         console.log(
-          "📋 [API SUBMIT] Lưu kết quả vào pendingResult, đợi thời gian < 1s để hiển thị"
+          "📋 [API SUBMIT] Lưu kết quả vào pendingResult, đợi hết thời gian để hiển thị"
         );
         setPendingResult(result);
 
+        // 🔥 NEW: Thông báo đã gửi câu trả lời thành công
+        showSuccessNotification(
+          finalAnswer === "[KHÔNG CHỌN ĐÁP ÁN]"
+            ? "Đã bỏ qua câu hỏi này!"
+            : `Đã gửi đáp án: "${finalAnswer}"`,
+          "Gửi thành công",
+          3000
+        );
+
         if (result.isCorrect) {
           console.log(
-            `✅ [API SUBMIT] Câu trả lời chính xác! Điểm: ${result.score} (sẽ hiển thị khi thời gian < 1s)`
+            `✅ [API SUBMIT] Câu trả lời chính xác! Điểm: ${result.score} (sẽ hiển thị khi hết thời gian)`
           );
         } else {
           console.log(
-            `❌ [API SUBMIT] Câu trả lời sai. Đáp án đúng: ${result.correctAnswer} (sẽ hiển thị khi thời gian < 1s)`
+            `❌ [API SUBMIT] Câu trả lời sai. Đáp án đúng: ${result.correctAnswer} (sẽ hiển thị khi hết thời gian)`
           );
-          setIsEliminated(true);
         }
       } else {
         console.error("❌ [API SUBMIT] Gửi đáp án thất bại:", response.message);
-        alert(`Không thể gửi đáp án: ${response.message}`);
+        // 🔥 NEW: Thông báo lỗi khi gửi thất bại
+        showErrorNotification(
+          `Không thể gửi đáp án: ${response.message}`,
+          "Lỗi gửi đáp án"
+        );
       }
     } catch (error) {
       console.error("💥 [API SUBMIT] Lỗi khi submit answer:", error);
+      // 🔥 NEW: Thông báo lỗi kết nối
+      showErrorNotification(
+        "Không thể kết nối đến server. Vui lòng kiểm tra kết nối internet!",
+        "Lỗi kết nối"
+      );
       alert("Lỗi kết nối. Vui lòng thử lại!");
     } finally {
       setIsApiSubmitting(false);
@@ -477,7 +536,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
   };
 
   const getOptionClass = (option: string) => {
-    if (!isSubmitted) {
+    if (!canShowResult) {
       return selectedAnswer === option
         ? "bg-blue-100 border-blue-500 text-blue-800 shadow-md"
         : "bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300";
@@ -499,7 +558,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
   };
 
   const getResultIcon = (option: string) => {
-    if (!isSubmitted || !answerResult) return null;
+    if (!canShowResult || !answerResult) return null;
 
     const isCorrectAnswer = option === answerResult.correctAnswer;
     const isUserSelection = option === selectedAnswer;
@@ -825,31 +884,28 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
           )}
 
           {/* Thông báo đã gửi, đang chờ hiển thị kết quả */}
-          {isSubmitted &&
-            pendingResult &&
-            !answerResult &&
-            remainingTime >= 1 && (
-              <Alert severity="info" className="mt-3 border-2 border-blue-200">
-                <Box className="flex items-center gap-2">
-                  <Typography
-                    variant="body1"
-                    className="font-medium text-blue-800"
-                  >
-                    Đã gửi{" "}
-                    {selectedAnswer === "[KHÔNG CHỌN ĐÁP ÁN]"
-                      ? "yêu cầu bỏ qua câu hỏi" // 🔧 Thông báo khác khi không chọn
-                      : "đáp án"}{" "}
-                    thành công!
-                  </Typography>
-                </Box>
-                <Typography variant="body2" className="text-blue-600 mt-1">
-                  Kết quả sẽ được hiển thị khi thời gian còn lại dưới 1 giây...
+          {isSubmitted && pendingResult && !answerResult && !canShowResult && (
+            <Alert severity="info" className="mt-3 border-2 border-blue-200">
+              <Box className="flex items-center gap-2">
+                <Typography
+                  variant="body1"
+                  className="font-medium text-blue-800"
+                >
+                  Đã gửi{" "}
+                  {selectedAnswer === "[KHÔNG CHỌN ĐÁP ÁN]"
+                    ? "yêu cầu bỏ qua câu hỏi" // 🔧 Thông báo khác khi không chọn
+                    : "đáp án"}{" "}
+                  thành công!
                 </Typography>
-              </Alert>
-            )}
+              </Box>
+              <Typography variant="body2" className="text-blue-600 mt-1">
+                Kết quả sẽ được hiển thị khi hết thời gian...
+              </Typography>
+            </Alert>
+          )}
 
           {/* Kết quả */}
-          {isSubmitted && answerResult && (
+          {canShowResult && answerResult && (
             <Box className="mt-6 space-y-4">
               {/* Alert kết quả chính */}
               <Alert
