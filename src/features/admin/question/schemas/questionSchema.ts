@@ -97,7 +97,7 @@ export const optionsSchema = z.array(stringOptionSchema)
 // Schema validation form data với media files
 export const questionFormSchema = z.object({
   intro: z.string().optional(),
-  defaultTime: z.number({
+  defaultTime: z.coerce.number({
     required_error: "Thời gian làm bài là bắt buộc",
     invalid_type_error: "Thời gian phải là số"
   })
@@ -122,7 +122,7 @@ export const questionFormSchema = z.object({
   correctAnswer: z.string()
     .min(1, "Đáp án không được để trống"),
   mediaAnswerFiles: mediaFilesArraySchema,
-  score: z.number({
+  score: z.coerce.number({
     required_error: "Điểm số là bắt buộc",
     invalid_type_error: "Điểm số phải là số"
   })
@@ -131,7 +131,7 @@ export const questionFormSchema = z.object({
     .max(100, "Điểm số tối đa là 100"),
   difficulty: DifficultyEnum,
   explanation: z.string().optional(),
-  questionTopicId: z.number({
+  questionTopicId: z.coerce.number({
     required_error: "Chủ đề là bắt buộc",
     invalid_type_error: "Chủ đề phải được chọn"
   })
