@@ -18,7 +18,7 @@ import Forbidden403 from "../components/403";
 import ProfilePage from "../features/account/pages/ProfilePage";
 import JudgeHomePage from "../features/judge/pages/JudgeHomePage";
 // import MatchSelectionPage from "../features/judge/pages/MatchSelectionPage";
-import EliminatePage from "../features/match/pages/EliminatePage";
+// import EliminatePage from "../features/match/pages/EliminatePage";
 import { SocketProvider } from "../contexts/SocketContext";
 import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import ContestList from "../features/judge/components/selector/ContestList";
@@ -96,7 +96,7 @@ const AppRoutes: React.FC = () => {
         path={AUDIENCE_ROUTES.STATS_DISPLAY}
         element={<AudienceStatsPage />}
       />
-      <Route path="/match/eliminate" element={<EliminatePage />} />
+      {/* <Route path="/match/eliminate" element={<EliminatePage />} /> */}
       <Route path="/match/top3" element={<TopThreeReveal />} />
       {/* Tech Banner Route */}
       <Route path="/banner" element={<TechBanner />} />

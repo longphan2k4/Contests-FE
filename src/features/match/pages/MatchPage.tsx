@@ -4,6 +4,9 @@ import Background from "../components/QuestionDisplay/Background";
 import FullScreenImage from "../components/Media/FullScreenImage";
 import { AudienceDisplayManager } from "../components/AudienceDisplay";
 import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
+import EliminateDisplay from "../components/Eliminate/EliminateDisplay";
+
+import { mockContestants } from "../constants";
 
 import { Box, CircularProgress } from "@mui/material";
 import {
@@ -243,12 +246,10 @@ export default function MatchPage() {
   return (
     <>
       {/* Audience Display Component - hiển thị QR hoặc Chart khi được điều khiển */}
-
       <AudienceDisplayManager
         matchSlug={match}
         currentQuestionId={currentQuestion?.id}
       />
-
       {screenControl?.controlKey === "question" && (
         <div key="question">
           <MatchHeader
@@ -266,7 +267,23 @@ export default function MatchPage() {
           />
         </div>
       )}
-
+      {screenControl?.controlKey === "question" && (
+        <div key="question">
+          <MatchHeader
+            countContestant={countContestant}
+            remainingTime={matchInfo?.remainingTime}
+            currentQuestion={currentQuestion}
+            countQuestion={listQuestion.length}
+          />
+          <QuestionContent
+            content={currentQuestion?.content}
+            controlValue={screenControl?.controlValue}
+            questionMedia={currentQuestion?.questionMedia ?? null}
+            options={currentQuestion?.options}
+            type={currentQuestion?.questionType ?? null}
+          />
+        </div>
+      )}
       {screenControl?.controlKey === "answer" && (
         <div key="answer">
           <MatchHeader
@@ -282,9 +299,22 @@ export default function MatchPage() {
           />
         </div>
       )}
-
+      {screenControl?.controlKey === "matchDiagram" && (
+        <div key="matchDiagram" className="max-h-[100vh] overflow-y-auto">
+          <MatchHeader
+            countContestant={countContestant}
+            remainingTime={matchInfo?.remainingTime}
+            currentQuestion={currentQuestion}
+            countQuestion={listContestant.length}
+          />
+          <EliminateDisplay
+            ListContestant={listContestant ?? []}
+            currentQuestionOrder={currentQuestion?.questionOrder ?? 0}
+            totalIcons={mockContestants.length}
+          />
+        </div>
+      )}
       {screenControl?.controlKey === "background" && <Background />}
-
       {screenControl?.controlKey === "explanation" && (
         <div key="explanation ">
           <MatchHeader
@@ -301,13 +331,11 @@ export default function MatchPage() {
           />
         </div>
       )}
-
       {screenControl?.controlKey === "image" && screenControl?.media && (
         <div key="image">
           <FullScreenImage imageUrl={screenControl?.media} />
         </div>
       )}
-
       {screenControl?.controlKey === "video" && screenControl?.media && (
         <div key="video">
           <FullScreenVideo
@@ -316,13 +344,11 @@ export default function MatchPage() {
           />
         </div>
       )}
-
       {screenControl?.controlKey === "wingold" && (
         <div key="wingold">
           <GoldWinnerDisplay studentName={matchInfo?.studentName ?? null} />
         </div>
       )}
-
       {screenControl?.controlKey === "questionInfo" && (
         <div key="questionInfo">
           <MatchHeader

@@ -167,6 +167,8 @@ export type MediaType = {
 
 export type contestant = {
   registrationNumber: number;
+  eliminatedAtQuestionOrder: number | null;
+  rescuedAtQuestionOrder: number | null;
   status: ContestantMatchStatus;
   contestant: {
     student: {

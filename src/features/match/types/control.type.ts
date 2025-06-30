@@ -41,7 +41,7 @@ export const controlKey = {
   question: "question",
   questionInfo: "questionInfo",
   answer: "answer",
-  matchdiagram: "matchdiagram",
+  matchDiagram: "matchDiagram",
   explanation: "explanation",
   firstprize: "firstprize",
   secondprize: "secondprize",
@@ -134,11 +134,27 @@ export type ListRescue = {
   status: RescueStatus;
 };
 
-export type ListContestant = {
-  contestantId: number;
-  matchId: number;
+export type contestant = {
   registrationNumber: number;
+  eliminatedAtQuestionOrder: number | null;
+  rescuedAtQuestionOrder: number | null;
   status: ContestantMatchStatus;
+  contestant: {
+    student: {
+      id: number;
+      fullName: string;
+    };
+  };
+};
+
+export type ListContestant = {
+  id: number;
+  name: string;
+  confirmCurrentQuestion: number;
+  user: {
+    username: string;
+  };
+  contestantMatches: Contestant[];
 };
 
 export type countContestant = {
@@ -162,3 +178,16 @@ export type Question = {
   difficulty: difficultyType;
   questionType: QuestionType;
 };
+
+export interface Contestant {
+  registrationNumber: number;
+  eliminatedAtQuestionOrder: number | null;
+  rescuedAtQuestionOrder: number | null;
+  status: ContestantMatchStatus;
+  contestant: {
+    student: {
+      id: number;
+      fullName: string;
+    };
+  };
+}
