@@ -14,6 +14,7 @@ import { OnlineExamControl } from "../../controlsOnline";
 import QuestionDetails from "../components/QuestionDetails";
 import BackgroundControl from "../components/BackgroundControl";
 import CurrentContestants from "../components/CurrentContestants";
+import AwardControl from "../components/AwardControl";
 import {
   useCurrentQuestion,
   useListQuestion,
@@ -35,6 +36,9 @@ import {
 } from "../type/control.type";
 import { useSocket } from "@contexts/SocketContext";
 import { Box, CircularProgress } from "@mui/material";
+import { set } from "zod";
+import { se } from "date-fns/locale";
+import { da } from "@faker-js/faker";
 
 // Define types for socket responses
 interface SocketResponse {
@@ -178,16 +182,40 @@ const ControlsPage: React.FC = () => {
       }
     };
 
+    const handleUpdateGold = (data: any) => {
+      if (data?.matchInfo) {
+        setMatchInfo(data.matchInfo);
+      }
+    };
+
+    const handleUpdateEliminate = (data: any) => {
+      setListContestant(data?.ListContestant);
+      setScreenControl(data?.updatedScreen);
+      setCountContestant(prev => ({
+        ...prev!,
+        countIn_progress: data?.countInProgress ?? 0,
+      }));
+    };
+
+    // const handleUpdateRescued = (data: any) => {
+    //   console.log("Update Rescued:", data);
+    // };
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
     socket.on("contestant:status-update", handleUpdateStatus);
+    socket.on("update:winGold", handleUpdateGold);
+    socket.on("update:Eliminated", handleUpdateEliminate);
+    // socket.on("update:Rescued", handleUpdateRescued);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
       socket.off("currentQuestion:get", handleCurrentQuestion);
       socket.off("contestant:status-update", handleUpdateStatus);
       socket.off("timer:update", handleUpdateTime);
+      socket.off("update:winGold", handleUpdateGold);
+      socket.off("update:Eliminated", handleUpdateEliminate);
+      // socket.off("update:Rescued", handleUpdateRescued);
     };
   }, [socket]);
 
@@ -401,6 +429,7 @@ const ControlsPage: React.FC = () => {
             <ContestantsControl
               ListContestant={listContestant}
               questionOrder={currentQuestion?.questionOrder || 0}
+              controlKey={screenControl?.controlKey}
             />
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
@@ -410,6 +439,12 @@ const ControlsPage: React.FC = () => {
               onShowQR={handleShowQR}
               onShowChart={handleShowChart}
               onHideAll={handleHideAll}
+            />
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+            <AwardControl
+              ListContestant={listContestant}
+              MatchInfo={matchInfo || null}
             />
           </div>
           <div>

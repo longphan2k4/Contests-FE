@@ -7,9 +7,12 @@ import ContestantPage from "./contestant/page/Contestant";
 import MatchPage from "./match/page/MatchPage";
 import ResultsPage from "../admin/result/pages/ResultsPage";
 import RescuePage from "./rescues/page/RescuePage";
+import ContestantMatchPage from "./match/page/ContestantMatchPage";
+
+// const Dashboard = () => <div>Trang Dashboard Cuộc Thi</div>;
 import ClassVideosPage from "@features/admin/class-videos/page/ClassVideosPage";
 import Dashboard from "@features/admin/dashboard_slug/pages/Dashboard";
-import SponsorsPage from "../admin/sponsors/page/SponsorsPage";
+import SponsorsPage from "@features/admin/sponsors/page/SponsorsPage";
 import AwardsPage from "../admin/awards/page/AwardsPage";
 import MediaPage from "@features/admin/media/page/MediaPage";
 const ContestRoutes = () => {
@@ -27,6 +30,7 @@ const ContestRoutes = () => {
       <Route path="cuu-tro" element={<RescuePage />} />
       <Route index element={<Navigate to="dashboard" replace />} />
       <Route path="results" element={<ResultsPage />} />
+      <Route path="thi-sinh-tran-dau/:matchId" element={<ContestantMatchPage />} />
     </Route>
   );
 };

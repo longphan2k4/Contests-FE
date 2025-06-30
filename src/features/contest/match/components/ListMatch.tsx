@@ -8,6 +8,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import ForumIcon from "@mui/icons-material/Forum";
+// them icon de tuowng tac voi danh sach thi sinh
+import GroupsIcon from "@mui/icons-material/Groups";
+
 
 import { type Match } from "../types/match.shame";
 import IsSwitch from "../../../../components/IsSwitch";
@@ -60,7 +63,6 @@ export default function ListMatch({
       field: "actions",
       headerName: "Thao tác",
       flex: 1,
-      minWidth: 200,
       renderCell: params => (
         <>
           <IconButton color="primary" onClick={() => onView(params.row.id)}>
@@ -69,6 +71,15 @@ export default function ListMatch({
           <IconButton color="primary" onClick={() => onEdit(params.row.id)}>
             <EditIcon />
           </IconButton>
+          <Link
+            to={`/admin/cuoc-thi/${slug}/thi-sinh-tran-dau/${params.row.id}`}
+            style={{ textDecoration: 'none' }}
+          >
+            <IconButton color="info" title="Danh sách thí sinh">
+              <GroupsIcon />
+            </IconButton>
+          </Link>
+
           <Link
             to={`/admin/cuoc-thi/${slug}/dieu-kien-tran-dau/${params.row.slug}`}
           >
@@ -87,11 +98,11 @@ export default function ListMatch({
         rows={matchs}
         columns={columns}
         getRowId={row => row.id}
-        selectedIds={selectedIds}
-        onSelectChange={selection => {
+        selectedIds={selectedIds} onSelectChange={selection => {
+
           const idsArray = Array.isArray(selection)
             ? selection
-            : Array.from((selection as any).ids || []);
+            : Array.from((selection as Set<number>).values() || []);
           setSelectedIds(idsArray.map(id => Number(id)));
         }}
       />

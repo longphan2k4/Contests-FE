@@ -5,8 +5,10 @@ import sound from "../../gold/assets/sounds/Sound GiaiThuong.mp3";
 import type { GoldWinnerProps } from "../types/GoldWinnerProps";
 import { useFireworkAnimation } from "../hooks/useFireworkAnimation";
 
-const GoldWinnerDisplay: React.FC<GoldWinnerProps> = ({ match_id }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null) as React.RefObject<HTMLCanvasElement>;
+const GoldWinnerDisplay: React.FC<GoldWinnerProps> = ({ studentName }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(
+    null
+  ) as React.RefObject<HTMLCanvasElement>;
   const [win, setWin] = useState<string>("");
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -16,17 +18,17 @@ const GoldWinnerDisplay: React.FC<GoldWinnerProps> = ({ match_id }) => {
     // Mock data for gold winner
     const mockData = {
       constestant: {
-        fullname: "John Doe"
-      }
+        fullname: studentName || "",
+      },
     };
-    
+
     setWin(mockData.constestant.fullname);
     if (audioRef.current) {
       audioRef.current
         .play()
-        .catch((error) => console.error("Lỗi phát audio:", error));
+        .catch(error => console.error("Lỗi phát audio:", error));
     }
-  }, [match_id]);
+  }, [studentName]);
 
   return (
     <div>
@@ -60,7 +62,7 @@ const GoldWinnerDisplay: React.FC<GoldWinnerProps> = ({ match_id }) => {
           />
         </button>
         <img className="laurel" src={Laurel} alt="laurel" />
-        <div className="congrats">
+        <div className="congrats text-center ">
           <h1>{win}</h1>
         </div>
       </div>

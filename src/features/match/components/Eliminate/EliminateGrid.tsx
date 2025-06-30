@@ -1,7 +1,7 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import type { Icon } from '../../types';
-import type { Variants, Easing } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
+import type { Icon } from "../../types";
+import type { Variants, Easing } from "framer-motion";
 
 interface EliminateGridProps {
   icons: Icon[];
@@ -38,7 +38,10 @@ const iconVariants: Variants = {
   disintegrating: { opacity: 0, scale: 0.9, transition: { duration: 1 } },
 };
 
-const EliminateGrid: React.FC<EliminateGridProps> = ({ icons, recentlyRestored }) => {
+const EliminateGrid: React.FC<EliminateGridProps> = ({
+  icons,
+  recentlyRestored,
+}) => {
   const groupedIcons: Icon[][] = [];
   for (let i = 0; i < icons.length; i += 20) {
     groupedIcons.push(icons.slice(i, i + 20));
@@ -60,18 +63,26 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({ icons, recentlyRestored }
                   <motion.div
                     variants={iconVariants}
                     initial="hidden"
-                    animate={icon.isFading ? 'disintegrating' : icon.isDisintegrated ? 'hidden' : 'visible'}
-                    className={`w-16 md:w-20 aspect-square rounded-lg flex flex-col items-center justify-center shadow-lg ${
+                    animate={
+                      icon.isFading
+                        ? "disintegrating"
+                        : icon.isDisintegrated
+                        ? "hidden"
+                        : "visible"
+                    }
+                    className={`w-12 md:w-20 aspect-square rounded-lg flex flex-col items-center justify-center shadow-lg ${
                       icon.isDisintegrated
-                        ? 'bg-red-700'
+                        ? "bg-red-500 text-white"
                         : recentlyRestored.includes(icon.registrationNumber)
-                        ? 'bg-green-800 animate-rescuedContestant'
+                        ? "bg-green-500 text-white animate-rescuedContestant"
                         : icon.isRescued
-                        ? 'bg-green-800 animate-rescuedContestant'
-                        : 'bg-blue-800 hover:shadow-glow hover:bg-blue-700 transition-all'
+                        ? "bg-green-500 text-white animate-rescuedContestant"
+                        : "bg-blue-500 text-white hover:shadow-glow hover:bg-blue-700 transition-all"
                     }`}
                   >
-                    <span className="text-white text-xl md:text-6xl font-bold">{icon.registrationNumber}</span>
+                    <span className="text-white text-xl md:text-6xl font-bold">
+                      {icon.registrationNumber}
+                    </span>
                   </motion.div>
                 )}
                 {icon.particles.length > 0 &&
@@ -85,10 +96,10 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({ icons, recentlyRestored }
                           height: `${particle.size}px`,
                           left: particle.left,
                           top: particle.top,
-                          animation: 'particle-float 1s ease-out forwards',
-                          ['--tw-rotate' as string]: particle.rotate,
-                          ['--tx' as string]: particle.tx,
-                          ['--ty' as string]: particle.ty,
+                          animation: "particle-float 1s ease-out forwards",
+                          ["--tw-rotate" as string]: particle.rotate,
+                          ["--tx" as string]: particle.tx,
+                          ["--ty" as string]: particle.ty,
                         } as React.CSSProperties
                       }
                     />

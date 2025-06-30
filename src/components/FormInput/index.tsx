@@ -22,8 +22,7 @@ const FormInput = ({
   icon,
   value,
   type = "text",
-}: FormInputProps) => {
-  return (
+}: FormInputProps) => {  return (
     <TextField
       margin="none" // ❌ bỏ margin mặc định
       fullWidth
@@ -35,8 +34,8 @@ const FormInput = ({
       autoFocus
       {...register}
       error={!!error}
-      value={value}
-      helperText={error?.message}
+      {...(value !== undefined && { value })}
+      {...(error?.message && { helperText: error.message })}
       variant="outlined"
       InputLabelProps={{ shrink: true }}
       sx={{
