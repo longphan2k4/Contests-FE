@@ -11,8 +11,6 @@ const FullScreenVideo: FC<FullScreenVideoProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  console.log("FullScreenVideo control:", control);
-
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;

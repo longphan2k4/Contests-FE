@@ -12,7 +12,9 @@ export const useQuestionTopics = (searchTerm: string = '', enabled = true) => {
       });
       return response.data || [];
     },
-    staleTime: 5 * 60 * 1000, // 5 phút
+    staleTime: 30 * 1000, // 30 giây (giảm từ 5 phút để data được refresh nhanh hơn)
+    refetchOnMount: true, // Luôn refetch khi component mount lại
+    refetchOnWindowFocus: false, // Không refetch khi focus lại window để tránh spam
     enabled
   });
 }; 

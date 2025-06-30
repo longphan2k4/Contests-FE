@@ -39,16 +39,15 @@ export default defineConfig({
     proxy: {
       // Cấu hình proxy cho API
       "/api": {
-        target: "http://103.90.226.191:3000",
+        target: "http://localhost:3000",
         changeOrigin: true,
         secure: false,
       },
       // Cấu hình proxy cho uploads
       "/uploads": {
-        target: "http://103.90.226.191:3000",
+        target: "http://localhost:3000",
         changeOrigin: true,
         secure: false,
-        rewrite: path => path,
       },
     },
     fs: {

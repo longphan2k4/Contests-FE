@@ -12,8 +12,15 @@ export const GetAll = async (
   params: ContestantQueryInput,
   slug: string | null
 ) => {
+  // Convert schoolIds and classIds to comma-separated strings if they exist
+  const queryParams = {
+    ...params,
+    // truyền string vào để axios tự động chuyển đổi thành query string
+    schoolIds: params.schoolIds ? params.schoolIds.join(",") : undefined,
+    classIds: params.classIds ? params.classIds.join(",") : undefined,
+  };
   const res = await axiosInstance.get(`/contestant/contest/${slug}`, {
-    params,
+    params: queryParams,
   });
   return res.data;
 };

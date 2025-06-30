@@ -4,6 +4,7 @@ import AdminRoutes from "../features/admin/AdminRoutes";
 import ContestRoutes from "../features/contest/ContestRouter";
 import PublicRoute from "./PublicRoute";
 import AuthRoutes from "../features/auth/routes";
+import StudentRoutes from "../features/student/routes";
 import PublicRoutes from "./PublicRoutes";
 import {
   AudienceOpinionPage,
@@ -22,7 +23,8 @@ import { SocketProvider } from "../contexts/SocketContext";
 import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import ContestList from "../features/judge/components/selector/ContestList";
 import MatchList from "../features/judge/components/selector/MatchList";
-
+import { OnlineControlSocketProvider } from "../contexts/OnlineControlSocketContext";
+import OlympicIT2025Rules from "@features/rule/RulePage";
 //leaderboard
 import TopThreeReveal from "@features/leaderboard/top3/pages/TopThreeReveal";
 import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
@@ -34,6 +36,12 @@ const AppRoutes: React.FC = () => {
       {/* Public Routes */}
       {PublicRoutes()}
 
+      {/* Auth Routes - Đăng nhập, Đăng ký */}
+      {AuthRoutes()}
+      {/* Student Routes */}
+      {StudentRoutes()}
+
+
       <Route element={<PublicRoute restricted={true} />}>{AuthRoutes()}</Route>
 
       <Route element={<PrivateRoute roles={["Admin"]} />}>
@@ -43,7 +51,9 @@ const AppRoutes: React.FC = () => {
           path="/admin/cuoc-thi/:slug/dieu-kien-tran-dau/:match"
           element={
             <SocketProvider>
-              <ControlsPage />
+              <OnlineControlSocketProvider>
+                <ControlsPage />
+              </OnlineControlSocketProvider>
             </SocketProvider>
           }
         />
@@ -88,12 +98,11 @@ const AppRoutes: React.FC = () => {
         element={<AudienceStatsPage />}
       />
       <Route path="/match/eliminate" element={<EliminatePage />} />
-
       <Route path="/match/top3" element={<TopThreeReveal />} />
       <Route path="/match/gold" element={<GoldWinnerDisplay match_id="1" />} />
       {/* Tech Banner Route */}
       <Route path="/banner" element={<TechBanner />} />
-
+      <Route path="/rule" element={<OlympicIT2025Rules/>}/>
       <Route path="/403" element={<Forbidden403 />} />
       <Route path="/404" element={<NotFound404 />} />
       <Route path="*" element={<NotFound404 />} />

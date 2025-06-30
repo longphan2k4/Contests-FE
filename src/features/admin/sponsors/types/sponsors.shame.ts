@@ -8,67 +8,96 @@ const imageMimeTypes = [
   "image/gif",
 ];
 
+const videoMimeTypes = [
+  "video/mp4",
+  "video/avi", 
+  "video/mov",
+  "video/wmv",
+  "video/webm"
+];
+
 export const CreateSponsorSchema = z.object({
   name: z.string().min(1, "Tên không được để trống"),
   logo: z
     .any()
-    .refine((files) => files?.[0], { message: "Logo là bắt buộc" })
-    .refine((files) => imageMimeTypes.includes(files?.[0]?.type), {
-      message: "Logo phải là ảnh (jpg, png, webp, gif...)",
-    }),
+    .optional()
+    .refine(
+      (files) => !files?.[0] || imageMimeTypes.includes(files?.[0]?.type),
+      {
+        message: "Logo phải là ảnh (jpg, png, webp, gif...)",
+      }
+    ),
   images: z
     .any()
     .optional()
     .refine(
-      (files) =>
-        !files?.[0] || imageMimeTypes.includes(files?.[0]?.type),
+      (files) => !files?.[0] || imageMimeTypes.includes(files?.[0]?.type),
       {
         message: "Ảnh phải đúng định dạng (jpg, png, webp, gif...)",
       }
     ),
-  videos: z.any().optional(),
-  contestId: z.any().nullable().optional(),
+  videos: z
+    .any()
+    .optional()
+    .refine(
+      (files) => !files?.[0] || videoMimeTypes.includes(files?.[0]?.type),
+      {
+        message: "Video phải đúng định dạng (mp4, avi, mov, wmv, webm...)",
+      }
+    ),
 });
+
 export const SponsorIdShema = z.object({
   id: z.number().nullable(),
 });
 
-
-// export type CreateSponsorInput = {
-//   name: string;
-//   videos?: string;
-//   logo: File;
-//   slug: string;
-// };
-
 export const SponsorShema = z.object({
   id: z.number(),
   name: z.string(),
-  logo: z.any().nullable().optional(),
-  images: z.any().nullable().optional(),
-  videos: z.any().nullable().optional(),
-  contestId: z.any().nullable(),
+  logo: z.string().nullable(),
+  images: z.string().nullable(),
+  videos: z.string().nullable(),
+  contestId: z.number().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  contest: z.any().nullable().optional(), // hoặc bạn có thể tạo `ContestSchema` riêng nếu cần
+  contest: z
+    .object({
+      id: z.number(),
+      name: z.string(),
+    })
+    .optional(),
 });
 
-export type UploadSponsorMediaInput = {
-  id: number; // sponsor ID
+// Input types for API calls
+export type CreateSponsorForContestInput = {
+  name: string;
   logo?: File;
+  images?: File; 
   videos?: File;
+};
+
+export type UpdateSponsorInput = z.infer<typeof UpdateSponsorSchema>;
+
+export type UploadSponsorMediaInput = {
+  id: number;
+  logo?: File;
   images?: File;
+  videos?: File;
 };
 
 export const UpdateSponsorSchema = z.object({
-   name: z
+  name: z
     .string()
     .min(2, "Tên nhà tài trợ phải có ít nhất 2 ký tự")
-    .max(100, "Tên nhà tài trợ không được vượt quá 100 ký tự"),
-  logo: z.any().optional(), 
-  images: z.any().optional(),  
-  videos: z.any().optional(), 
-  contestId: z.any().nullable().optional(),
+    .max(100, "Tên nhà tài trợ không được vượt quá 100 ký tự")
+    .optional(),
+  logo: z.any().optional().nullable(), 
+  images: z.any().optional().nullable(),  
+  videos: z.any().optional().nullable(),
+  // Flags to indicate file removal
+  removeLogo: z.boolean().optional(),
+  removeImages: z.boolean().optional(),
+  removeVideos: z.boolean().optional(),
 });
 
 export type SponsorQuery = {
@@ -94,6 +123,5 @@ export const deleteSponsorsSchema = z.object({
 
 export type Sponsor = z.infer<typeof SponsorShema>;
 export type CreateSponsorInput = z.infer<typeof CreateSponsorSchema>;
-export type UpdateSponsorInput = z.infer<typeof UpdateSponsorSchema>;
 export type SponsorIdParam = z.infer<typeof SponsorIdShema>;
 export type deleteSponsorsType = z.infer<typeof deleteSponsorsSchema>;

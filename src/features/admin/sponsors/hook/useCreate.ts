@@ -1,13 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createSponsorForContest } from "../service/api";
 import { toast } from "react-toastify";
-
-export interface CreateSponsorForContestInput {
-  name: string;
-  logo?: File;
-  images?: File;
-  videos?: string;
-}
+import type { CreateSponsorForContestInput } from "../types/sponsors.shame";
 
 export const useCreateSponsorForContest = (slug: string) => {
   const queryClient = useQueryClient();
@@ -18,7 +12,7 @@ export const useCreateSponsorForContest = (slug: string) => {
     },
     onSuccess: () => {
       toast.success("Thêm nhà tài trợ thành công");
-      queryClient.invalidateQueries({ queryKey: ["sponsors"] });
+      queryClient.invalidateQueries({ queryKey: ["sponsors", slug] });
     },
     onError: (error) => {
       console.error(error);
