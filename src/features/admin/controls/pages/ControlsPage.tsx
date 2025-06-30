@@ -170,9 +170,7 @@ const ControlsPage: React.FC = () => {
 
     const handleUpdateTime = (data: TimerUpdateData) => {
       const newTime = data?.timeRemaining;
-      setMatchInfo((prev) =>
-        prev ? { ...prev, remainingTime: newTime } : prev
-      );
+      setMatchInfo(prev => (prev ? { ...prev, remainingTime: newTime } : prev));
     };
     const handleUpdateStatus = (data: ContestantStatusUpdate) => {
       if (data.ListContestant) {
@@ -273,7 +271,7 @@ const ControlsPage: React.FC = () => {
         score: question.score,
         defaultTime: question.defaultTime,
         options: Array.isArray(question.options)
-          ? question.options.map((opt) => String(opt))
+          ? question.options.map(opt => String(opt))
           : [],
         correctAnswer:
           typeof question.correctAnswer === "string"
@@ -351,7 +349,10 @@ const ControlsPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
-              <QuestionControl remainingTime={matchInfo?.remainingTime} />
+              <QuestionControl
+                remainingTime={matchInfo?.remainingTime}
+                controlKey={screenControl?.controlKey}
+              />
             </div>
             <div className="grid grid-col-1">
               <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">

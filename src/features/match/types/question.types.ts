@@ -1,3 +1,4 @@
+import { controlValue } from "../../admin/controls/type/control.type";
 // types/question.types.ts
 
 export interface QuestionData {
@@ -29,11 +30,13 @@ export interface QuestionContentProps {
   type: "multiple_choice" | "essay" | null;
   questionMedia: Media[] | null;
   options?: string[];
+  controlValue?: string | null;
 }
 
 export interface AnswerContentProps {
   answermedia: Media[] | null;
   correctAnswer: string | null;
+  controlValue?: string | null;
 }
 
 export interface AnswerDisplayProps {

@@ -24,7 +24,7 @@ import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import ContestList from "../features/judge/components/selector/ContestList";
 import MatchList from "../features/judge/components/selector/MatchList";
 import { OnlineControlSocketProvider } from "../contexts/OnlineControlSocketContext";
-
+import OlympicIT2025Rules from "@features/rule/RulePage";
 //leaderboard
 import TopThreeReveal from "@features/leaderboard/top3/pages/TopThreeReveal";
 import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
@@ -98,12 +98,11 @@ const AppRoutes: React.FC = () => {
         element={<AudienceStatsPage />}
       />
       <Route path="/match/eliminate" element={<EliminatePage />} />
-
       <Route path="/match/top3" element={<TopThreeReveal />} />
       <Route path="/match/gold" element={<GoldWinnerDisplay match_id="1" />} />
       {/* Tech Banner Route */}
       <Route path="/banner" element={<TechBanner />} />
-
+      <Route path="/rule" element={<OlympicIT2025Rules/>}/>
       <Route path="/403" element={<Forbidden403 />} />
       <Route path="/404" element={<NotFound404 />} />
       <Route path="*" element={<NotFound404 />} />
