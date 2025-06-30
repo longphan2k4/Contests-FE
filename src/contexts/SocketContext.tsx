@@ -48,8 +48,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
     socketRef.current = socketInstance;
 
-    
-    
     return () => {
       socketInstance.disconnect();
     };

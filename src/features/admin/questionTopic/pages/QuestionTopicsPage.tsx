@@ -1,23 +1,31 @@
-import React, { useState } from 'react';
-import { 
-  Box, 
+import React, { useState } from "react";
+import {
+  Box,
   Typography,
   Paper,
   Button,
   CircularProgress,
-  Dialog
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import QuestionTopicList from '../components/QuestionTopicList';
-import QuestionTopicForm from '../components/QuestionTopicForm';
-import { useQuestionTopicList } from '../hooks';
-import type { QuestionTopic } from '../types/questionTopic';
-import { useToast } from '../../../../contexts/toastContext';
-import { useCreateQuestionTopic, useUpdateQuestionTopic, useDeleteQuestionTopic } from '../hooks/crud';
-import type { CreateQuestionTopicInput, UpdateQuestionTopicInput } from '../schemas/questionTopic.schema';
-import QuestionTopicDetailPopup from '../components/QuestionTopicDetailPopup';
-import ConfirmDeleteDialog from '../../../../components/ConfirmDeleteDialog';
-import type { BatchDeleteResponse } from '../services/questionTopicService';
+  Dialog,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import QuestionTopicList from "../components/QuestionTopicList";
+import QuestionTopicForm from "../components/QuestionTopicForm";
+import { useQuestionTopicList } from "../hooks";
+import type { QuestionTopic } from "../types/questionTopic";
+import { useToast } from "../../../../contexts/toastContext";
+import {
+  useCreateQuestionTopic,
+  useUpdateQuestionTopic,
+  useDeleteQuestionTopic,
+} from "../hooks/crud";
+import type {
+  CreateQuestionTopicInput,
+  UpdateQuestionTopicInput,
+} from "../schemas/questionTopic.schema";
+import QuestionTopicDetailPopup from "../components/QuestionTopicDetailPopup";
+import ConfirmDeleteDialog from "../../../../components/ConfirmDeleteDialog";
+import type { BatchDeleteResponse } from "../services/questionTopicService";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface FailedItem {
   id: number;
@@ -33,22 +41,26 @@ interface Message {
 
 const QuestionTopicsPage: React.FC = () => {
   const { loading, error, refresh } = useQuestionTopicList();
-  const [selectedQuestionTopic, setSelectedQuestionTopic] = useState<QuestionTopic | null>(null);
+  const [selectedQuestionTopic, setSelectedQuestionTopic] =
+    useState<QuestionTopic | null>(null);
   const [isDetailPopupOpen, setDetailPopupOpen] = useState(false);
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
   const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { handleCreate: createQuestionTopic, isCreating } = useCreateQuestionTopic();
-  const { handleUpdate: updateQuestionTopic, isUpdating } = useUpdateQuestionTopic();
+  const { handleCreate: createQuestionTopic, isCreating } =
+    useCreateQuestionTopic();
+  const { handleUpdate: updateQuestionTopic, isUpdating } =
+    useUpdateQuestionTopic();
   const { handleDeleteSelected } = useDeleteQuestionTopic();
 
   // Hiển thị lỗi từ api nếu có
   React.useEffect(() => {
     if (error) {
-      showToast(error, 'error');
+      showToast(error, "error");
     }
   }, [error, showToast]);
 
@@ -89,25 +101,28 @@ const QuestionTopicsPage: React.FC = () => {
       const response = await handleDeleteSelected(selectedIds);
       console.log("nhận response", response);
 
-      if (response && typeof response === 'object' && 'data' in response) {
+      if (response && typeof response === "object" && "data" in response) {
         const res = response as BatchDeleteResponse;
         if (res.data.failedIds.length > 0) {
           res.data.failedIds.forEach((item: FailedItem) => {
-            showToast(`ID ${item.id}: ${item.reason}`, 'error');
+            showToast(`ID ${item.id}: ${item.reason}`, "error");
           });
         }
         if (res.data.successfulIds.length > 0) {
           res.data.successfulIds.forEach((id: number) => {
-            showToast(`ID ${id}: Xóa thành công`, 'success');
+            showToast(`ID ${id}: Xóa thành công`, "success");
           });
         }
       } else if (response === true) {
-        showToast('Xóa chủ đề thành công', 'success');
+        showToast("Xóa chủ đề thành công", "success");
       }
-      
+
       refresh();
+
+      // Invalidate question topics cache để other pages có thể nhận data mới
+      queryClient.invalidateQueries({ queryKey: ["questionTopics"] });
     } catch (error) {
-      if (error && typeof error === 'object' && 'messages' in error) {
+      if (error && typeof error === "object" && "messages" in error) {
         const messages = (error as { messages: Message[] }).messages;
         messages.forEach((item) => {
           if (item.status === "error") {
@@ -129,11 +144,14 @@ const QuestionTopicsPage: React.FC = () => {
   const handleCreateSubmit = async (data: CreateQuestionTopicInput) => {
     try {
       await createQuestionTopic(data);
-      showToast('Tạo chủ đề mới thành công', 'success');
+      showToast("Tạo chủ đề mới thành công", "success");
       handleCloseDialog();
       refresh();
+
+      // Invalidate question topics cache để other pages có thể nhận data mới
+      queryClient.invalidateQueries({ queryKey: ["questionTopics"] });
     } catch {
-      showToast('Có lỗi xảy ra khi tạo chủ đề mới', 'error');
+      showToast("Có lỗi xảy ra khi tạo chủ đề mới", "error");
     }
   };
 
@@ -142,17 +160,27 @@ const QuestionTopicsPage: React.FC = () => {
     if (!selectedQuestionTopic) return;
     try {
       await updateQuestionTopic(selectedQuestionTopic.id, data);
-      showToast('Cập nhật chủ đề thành công', 'success');
+      showToast("Cập nhật chủ đề thành công", "success");
       handleCloseDialog();
       refresh();
+
+      // Invalidate question topics cache để other pages có thể nhận data mới
+      queryClient.invalidateQueries({ queryKey: ["questionTopics"] });
     } catch {
-      showToast('Có lỗi xảy ra khi cập nhật chủ đề', 'error');
+      showToast("Có lỗi xảy ra khi cập nhật chủ đề", "error");
     }
   };
 
   return (
     <Box>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box
+        sx={{
+          mb: 4,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Typography variant="h4" component="h1">
           Quản lý chủ đề câu hỏi
         </Typography>
@@ -167,7 +195,7 @@ const QuestionTopicsPage: React.FC = () => {
 
       <Paper sx={{ p: 3 }}>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
             <CircularProgress />
           </Box>
         ) : (
@@ -179,8 +207,8 @@ const QuestionTopicsPage: React.FC = () => {
         )}
       </Paper>
 
-      <Dialog 
-        open={isDetailPopupOpen} 
+      <Dialog
+        open={isDetailPopupOpen}
         onClose={handleCloseDialog}
         maxWidth="md"
         fullWidth
@@ -194,8 +222,8 @@ const QuestionTopicsPage: React.FC = () => {
         )}
       </Dialog>
 
-      <Dialog 
-        open={isCreateDialogOpen} 
+      <Dialog
+        open={isCreateDialogOpen}
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
@@ -208,8 +236,8 @@ const QuestionTopicsPage: React.FC = () => {
         />
       </Dialog>
 
-      <Dialog 
-        open={isEditDialogOpen} 
+      <Dialog
+        open={isEditDialogOpen}
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
@@ -236,4 +264,4 @@ const QuestionTopicsPage: React.FC = () => {
   );
 };
 
-export default QuestionTopicsPage; 
+export default QuestionTopicsPage;
