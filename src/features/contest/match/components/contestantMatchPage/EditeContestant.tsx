@@ -1,23 +1,23 @@
 import React, { useEffect, useMemo } from "react";
-import { Box, Button, CircularProgress } from "@mui/material";
+import { Button } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import AppFormDialog from "../../../../components/AppFormDialog";
+import AppFormDialog from "../../../../../components/AppFormDialog";
 
-import FormSelect from "../../../../components/FormSelect";
+import FormSelect from "../../../../../components/FormSelect";
 
 import {
   type UpdateContestantInput,
   UpdateContestantSchema,
-} from "../types/contestant.shame";
+} from "../../../contestant/types/contestant.shame";
 
 import {
   useContestStatus,
   useListRound,
   useGetById,
-} from "../hook/useContestant";
+} from "../../hook/contestantMatchPage/useContestant";
 
 interface EditecontestantProps {
   id: number | null;
@@ -41,36 +41,13 @@ export default function EditeContestant({
     resolver: zodResolver(UpdateContestantSchema),
   });
 
+  const { data: contestantData } = useGetById(id);
+
   const { slug } = useParams();
 
-  const {
-    data: contestantData,
-    isLoading: isLoadingContestant,
-    isError: isErrorContestant,
-    refetch: refetchContestant,
-  } = useGetById(id);
+  const { data: listStatus } = useContestStatus();
 
-  const {
-    data: listStatus,
-    isLoading: isLoadingStatus,
-    isError: isErrorStatus,
-    refetch: refetchStatus,
-  } = useContestStatus();
-
-  const {
-    data: listRound,
-    isLoading: isLoadingRound,
-    isError: isErrorRound,
-    refetch: refetchRound,
-  } = useListRound(slug ?? null);
-
-  useEffect(() => {
-    if (isOpen) {
-      refetchContestant();
-      refetchStatus();
-      refetchRound();
-    }
-  }, [isOpen, refetchContestant, refetchStatus, refetchRound]);
+  const { data: listRound } = useListRound(slug ?? null);
 
   const round = useMemo(() => {
     if (listRound?.success && Array.isArray(listRound.data)) {
@@ -106,17 +83,6 @@ export default function EditeContestant({
     onClose();
   };
 
-  if (isLoadingContestant || isLoadingStatus || isLoadingRound) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-  if (isErrorContestant || isErrorStatus || isErrorRound) {
-    return <div>Không thể tải dữ liệu</div>;
-  }
-
   return (
     <AppFormDialog
       open={isOpen}
@@ -137,7 +103,7 @@ export default function EditeContestant({
         <FormSelect
           id="status"
           name="status"
-          label="Trạng thái"
+          label="Tên vòng đấu"
           options={status}
           control={control}
           error={errors.status}
