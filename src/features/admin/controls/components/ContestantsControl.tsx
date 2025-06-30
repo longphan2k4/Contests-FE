@@ -1,11 +1,16 @@
 import React, { useState } from "react";
-import { type ListContestant } from "../type/control.type";
+import {
+  type ListContestant,
+  type ControlKey,
+  type UpdateSceenControl,
+} from "../type/control.type";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { useSocket } from "@contexts/SocketContext";
 import { useParams } from "react-router-dom";
 import { useToast } from "@contexts/toastContext";
 interface ContestantProps {
   questionOrder: number;
+  controlKey?: ControlKey;
   ListContestant: ListContestant[];
 }
 
@@ -17,14 +22,15 @@ interface UpdateContestantPayload {
 const ContestantsControlUI: React.FC<ContestantProps> = ({
   questionOrder,
   ListContestant,
+  controlKey,
 }) => {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const { socket } = useSocket();
   const { match } = useParams<{ match: string }>();
   const { showToast } = useToast();
   const toggleSelect = (id: number) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
 
@@ -65,7 +71,50 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
       if (err) {
         showToast(err.message, "error");
       } else {
-        showToast(`Cập nhật trạng thái ${status} thành công`, "success");
+        showToast(`Cập nhật trạng thái thành công`, "success");
+      }
+    });
+  };
+
+  const EmitScreenUpdate = (payload: UpdateSceenControl) => {
+    if (!socket || !match) return;
+
+    socket.emit("screen:update", { match, ...payload }, (err: any) => {
+      if (err) {
+        showToast(err.message, "error");
+      } else {
+        showToast("Đã chuyển sang màn sơ đồ trận đấu ", "success");
+      }
+    });
+  };
+
+  const EmitUpdateEliminate = () => {
+    if (!socket || !match) return;
+
+    if (controlKey !== "matchDiagram") {
+      showToast("Vui lòng hiển thị sơ đồ trận đấu trước", "error");
+      return;
+    }
+    socket.emit(
+      "update:Eliminated",
+      { match, questionOrder },
+      (err: any, response: any) => {
+        if (err) {
+          showToast(err.message, "error");
+        } else {
+          showToast(response.message, "success");
+        }
+      }
+    );
+  };
+
+  const EmitUpdateRescued = () => {
+    if (!socket || !match) return;
+    socket.emit("update:Rescued", { match }, (err: any, response: any) => {
+      if (err) {
+        showToast(err.message, "error");
+      } else {
+        showToast(response.message, "success");
       }
     });
   };
@@ -75,7 +124,7 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
       <h2 className="text-xl font-bold mb-4 text-center">Danh sách thí sinh</h2>
 
       <div className="flex flex-wrap gap-4">
-        {ListContestant.map((group) => (
+        {ListContestant.map(group => (
           <div
             key={group.id}
             className={`border-2 ${
@@ -85,7 +134,7 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
             } rounded-lg p-3 w-full`}
           >
             <div className="grid grid-cols-10 gap-2">
-              {group.contestantMatches.map((contestant) => (
+              {group.contestantMatches.map(contestant => (
                 <button
                   key={contestant.registrationNumber}
                   onClick={() => toggleSelect(contestant.registrationNumber)}
@@ -105,7 +154,7 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
       </div>
       <div className="flex gap-2 mt-4 flex-wrap ">
         <div className="flex flex-wrap gap-2 flex-row w-full justify-center">
-          {ListContestant.map((group) => (
+          {ListContestant.map(group => (
             <button
               key={group.id}
               className={`border-2 ${
@@ -186,9 +235,9 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
           <button
             onClick={() =>
               setSelectedIds(
-                ListContestant.flatMap((group) =>
+                ListContestant.flatMap(group =>
                   group.contestantMatches.map(
-                    (contestant) => contestant.registrationNumber
+                    contestant => contestant.registrationNumber
                   )
                 )
               )
@@ -196,6 +245,28 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
             className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
           >
             Chọn tất cả
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => EmitScreenUpdate({ controlKey: "matchDiagram" })}
+            className="bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold text-sm"
+          >
+            Hiện sơ đồ
+          </button>
+
+          <button
+            onClick={() => EmitUpdateEliminate()}
+            className="bg-blue-500 text-white px-4 py-2 rounded font-semibold text-sm"
+          >
+            Hiển thị thí sinh bị loại
+          </button>
+
+          <button
+            onClick={() => EmitUpdateRescued()}
+            className="bg-yellow-400 text-yellow-900 px-4 py-2 rounded font-semibold text-sm"
+          >
+            Hiển thị thí sinh được cứu
           </button>
         </div>
       </div>

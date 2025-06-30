@@ -18,7 +18,7 @@ import Forbidden403 from "../components/403";
 import ProfilePage from "../features/account/pages/ProfilePage";
 import JudgeHomePage from "../features/judge/pages/JudgeHomePage";
 // import MatchSelectionPage from "../features/judge/pages/MatchSelectionPage";
-import EliminatePage from "../features/match/pages/EliminatePage";
+// import EliminatePage from "../features/match/pages/EliminatePage";
 import { SocketProvider } from "../contexts/SocketContext";
 import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import ContestList from "../features/judge/components/selector/ContestList";
@@ -40,7 +40,6 @@ const AppRoutes: React.FC = () => {
       {AuthRoutes()}
       {/* Student Routes */}
       {StudentRoutes()}
-
 
       <Route element={<PublicRoute restricted={true} />}>{AuthRoutes()}</Route>
 
@@ -97,12 +96,11 @@ const AppRoutes: React.FC = () => {
         path={AUDIENCE_ROUTES.STATS_DISPLAY}
         element={<AudienceStatsPage />}
       />
-      <Route path="/match/eliminate" element={<EliminatePage />} />
+      {/* <Route path="/match/eliminate" element={<EliminatePage />} /> */}
       <Route path="/match/top3" element={<TopThreeReveal />} />
-      <Route path="/match/gold" element={<GoldWinnerDisplay match_id="1" />} />
       {/* Tech Banner Route */}
       <Route path="/banner" element={<TechBanner />} />
-      <Route path="/rule" element={<OlympicIT2025Rules/>}/>
+      <Route path="/rule" element={<OlympicIT2025Rules />} />
       <Route path="/403" element={<Forbidden403 />} />
       <Route path="/404" element={<NotFound404 />} />
       <Route path="*" element={<NotFound404 />} />

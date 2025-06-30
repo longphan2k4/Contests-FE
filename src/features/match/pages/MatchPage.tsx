@@ -3,6 +3,10 @@ import MatchHeader from "../components/MatchHeader/MatchHeader";
 import Background from "../components/QuestionDisplay/Background";
 import FullScreenImage from "../components/Media/FullScreenImage";
 import { AudienceDisplayManager } from "../components/AudienceDisplay";
+import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
+import EliminateDisplay from "../components/Eliminate/EliminateDisplay";
+
+import { mockContestants } from "../constants";
 
 import { Box, CircularProgress } from "@mui/material";
 import {
@@ -36,9 +40,6 @@ import { useSocket } from "../../../contexts/SocketContext";
 import FullScreenVideo from "../components/Media/FullScreenVideo";
 
 export default function MatchPage() {
-  useEffect(() => {
-    document.title = "Theo dõi trận đấu - Olympic Tin học.";
-  }, []);
   const { match } = useParams();
 
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
@@ -140,6 +141,10 @@ export default function MatchPage() {
   useEffect(() => {
     if (isSuccessControl) setScreenControl(screenControlRes.data);
   }, [isSuccessControl, screenControlRes]);
+
+  useEffect(() => {
+    document.title = `Trân đấu ${matchInfo?.name}`;
+  }, [matchInfo]);
   const { socket } = useSocket();
 
   useEffect(() => {
@@ -176,14 +181,50 @@ export default function MatchPage() {
       });
     };
 
+    const handleUpdateGold = (data: any) => {
+      if (!data?.matchInfo) return;
+      setMatchInfo(data?.matchInfo);
+    };
+
+    const handleUpdateStatus = (data: any) => {
+      setListContestant(data?.ListContestant);
+    };
+
+    const handleUpdateEliminate = (data: any) => {
+      setListContestant(data?.ListContestant);
+      setCountContestant(prev => ({
+        ...prev!,
+        countIn_progress: data?.countInProgress ?? 0,
+      }));
+      setScreenControl(data?.updatedScreen);
+    };
+
+    const handleUpdateRescued = (data: any) => {
+      console.log("Rescued data:", data);
+      setListContestant(data?.ListContestant);
+      setCountContestant(prev => ({
+        ...prev!,
+        countIn_progress: data?.countInProgress ?? 0,
+      }));
+      setScreenControl(data?.updateScreen);
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
+    socket.on("update:winGold", handleUpdateGold);
+    socket.on("contestant:status-update", handleUpdateStatus);
+    socket.on("update:Eliminated", handleUpdateEliminate);
+    socket.on("update:Rescused", handleUpdateRescued);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
       socket.off("currentQuestion:get", handleCurrentQuestion);
       socket.off("timer:update", handleUpdateTime);
+      socket.off("update:winGold", handleUpdateGold);
+      socket.off("contestant:status-update", handleUpdateStatus);
+      socket.off("update:Eliminated", handleUpdateEliminate);
+      socket.off("update:Rescued", handleUpdateRescued);
     };
   }, [socket]);
 
@@ -234,12 +275,10 @@ export default function MatchPage() {
   return (
     <>
       {/* Audience Display Component - hiển thị QR hoặc Chart khi được điều khiển */}
-
       <AudienceDisplayManager
         matchSlug={match}
         currentQuestionId={currentQuestion?.id}
       />
-
       {screenControl?.controlKey === "question" && (
         <div key="question">
           <MatchHeader
@@ -257,7 +296,23 @@ export default function MatchPage() {
           />
         </div>
       )}
-
+      {/* {screenControl?.controlKey === "question" && (
+        <div key="question">
+          <MatchHeader
+            countContestant={countContestant}
+            remainingTime={matchInfo?.remainingTime}
+            currentQuestion={currentQuestion}
+            countQuestion={listQuestion.length}
+          />
+          <QuestionContent
+            content={currentQuestion?.content}
+            controlValue={screenControl?.controlValue}
+            questionMedia={currentQuestion?.questionMedia ?? null}
+            options={currentQuestion?.options}
+            type={currentQuestion?.questionType ?? null}
+          />
+        </div>
+      )} */}
       {screenControl?.controlKey === "answer" && (
         <div key="answer">
           <MatchHeader
@@ -273,9 +328,23 @@ export default function MatchPage() {
           />
         </div>
       )}
-
+      {screenControl?.controlKey === "matchDiagram" && (
+        <div key="matchDiagram" className="max-h-[100vh] overflow-y-auto">
+          <MatchHeader
+            countContestant={countContestant}
+            remainingTime={matchInfo?.remainingTime}
+            currentQuestion={currentQuestion}
+            countQuestion={listContestant.length}
+          />
+          <EliminateDisplay
+            ListContestant={listContestant ?? []}
+            currentQuestionOrder={currentQuestion?.questionOrder ?? 0}
+            totalIcons={mockContestants.length}
+            controlValue={screenControl?.controlValue}
+          />
+        </div>
+      )}
       {screenControl?.controlKey === "background" && <Background />}
-
       {screenControl?.controlKey === "explanation" && (
         <div key="explanation ">
           <MatchHeader
@@ -292,13 +361,11 @@ export default function MatchPage() {
           />
         </div>
       )}
-
       {screenControl?.controlKey === "image" && screenControl?.media && (
         <div key="image">
           <FullScreenImage imageUrl={screenControl?.media} />
         </div>
       )}
-
       {screenControl?.controlKey === "video" && screenControl?.media && (
         <div key="video">
           <FullScreenVideo
@@ -307,7 +374,11 @@ export default function MatchPage() {
           />
         </div>
       )}
-
+      {screenControl?.controlKey === "wingold" && (
+        <div key="wingold">
+          <GoldWinnerDisplay studentName={matchInfo?.studentName ?? null} />
+        </div>
+      )}
       {screenControl?.controlKey === "questionInfo" && (
         <div key="questionInfo">
           <MatchHeader

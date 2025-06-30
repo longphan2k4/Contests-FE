@@ -41,7 +41,7 @@ export const controlKey = {
   question: "question",
   questionInfo: "questionInfo",
   answer: "answer",
-  matchdiagram: "matchdiagram",
+  matchDiagram: "matchDiagram",
   explanation: "explanation",
   firstprize: "firstprize",
   secondprize: "secondprize",
@@ -56,6 +56,8 @@ export const controlKey = {
   video: "video",
   audio: "audio",
   image: "image",
+  wingold: "wingold",
+  qrcode: "qrcode",
 } as const;
 
 export type ControlKey = (typeof controlKey)[keyof typeof controlKey];
@@ -66,6 +68,8 @@ export const controlValue = {
   reset: "reset",
   zoomin: "zoomin",
   zoomout: "zoomout",
+  Eliminate: "Eliminate",
+  Rescued: "Rescued",
 } as const;
 
 export type ControlValue = (typeof controlValue)[keyof typeof controlValue];
@@ -132,11 +136,27 @@ export type ListRescue = {
   status: RescueStatus;
 };
 
-export type ListContestant = {
-  contestantId: number;
-  matchId: number;
+export type contestant = {
   registrationNumber: number;
+  eliminatedAtQuestionOrder: number | null;
+  rescuedAtQuestionOrder: number | null;
   status: ContestantMatchStatus;
+  contestant: {
+    student: {
+      id: number;
+      fullName: string;
+    };
+  };
+};
+
+export type ListContestant = {
+  id: number;
+  name: string;
+  confirmCurrentQuestion: number;
+  user: {
+    username: string;
+  };
+  contestantMatches: Contestant[];
 };
 
 export type countContestant = {
@@ -160,3 +180,16 @@ export type Question = {
   difficulty: difficultyType;
   questionType: QuestionType;
 };
+
+export interface Contestant {
+  registrationNumber: number;
+  eliminatedAtQuestionOrder: number | null;
+  rescuedAtQuestionOrder: number | null;
+  status: ContestantMatchStatus;
+  contestant: {
+    student: {
+      id: number;
+      fullName: string;
+    };
+  };
+}
