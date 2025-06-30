@@ -7,6 +7,9 @@ import {
   Chip,
   LinearProgress,
   Paper,
+  Dialog,
+  DialogContent,
+  IconButton,
 } from "@mui/material";
 import {
   Quiz,
@@ -15,7 +18,20 @@ import {
   Category,
   Numbers,
   CheckCircle,
+  Close,
+  ZoomIn,
+  PlayArrow,
+  VolumeUp,
 } from "@mui/icons-material";
+
+interface MediaData {
+  id: string;
+  type: "image" | "video" | "audio";
+  url: string;
+  thumbnail?: string;
+  title?: string;
+  description?: string;
+}
 
 interface QuestionData {
   id: number;
@@ -27,6 +43,7 @@ interface QuestionData {
   defaultTime: number;
   options: string[];
   correctAnswer?: number;
+  media?: MediaData[];
 }
 
 interface CurrentQuestionData {
@@ -49,6 +66,12 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
   isLoading,
   isTimerPaused = false,
 }) => {
+  // State cho media modal
+  const [selectedMedia, setSelectedMedia] = React.useState<MediaData | null>(
+    null
+  );
+  const [mediaModalOpen, setMediaModalOpen] = React.useState(false);
+
   const getTimerProgress = () => {
     if (remainingTime <= 0 || !currentQuestionData) return 0;
     const maxTime = currentQuestionData.question.defaultTime;
@@ -79,6 +102,220 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
       default:
         return "default";
     }
+  };
+
+  // Xử lý media
+  const handleMediaClick = (media: MediaData) => {
+    setSelectedMedia(media);
+    setMediaModalOpen(true);
+  };
+
+  const handleCloseMediaModal = () => {
+    setMediaModalOpen(false);
+    setSelectedMedia(null);
+  };
+
+  // Component MediaGrid để hiển thị media với bố cục responsive
+  const MediaGrid: React.FC<{ mediaList: MediaData[] }> = ({ mediaList }) => {
+    if (!mediaList || mediaList.length === 0) return null;
+
+    const getGridLayout = (count: number) => {
+      switch (count) {
+        case 1:
+          return "grid-cols-1";
+        case 2:
+          return "grid-cols-1 sm:grid-cols-2";
+        case 3:
+          return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
+        case 4:
+        default:
+          return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4";
+      }
+    };
+
+    const renderMediaItem = (media: MediaData, index: number) => {
+      const commonClasses =
+        "relative cursor-pointer rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-400 transition-all duration-200 group";
+
+      return (
+        <Box
+          key={media.id}
+          className={commonClasses}
+          onClick={() => handleMediaClick(media)}
+        >
+          {/* Overlay với icon */}
+          <Box className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 flex items-center justify-center">
+            <Box className="flex flex-col items-center text-white">
+              {media.type === "image" && <ZoomIn className="text-3xl mb-1" />}
+              {media.type === "video" && (
+                <PlayArrow className="text-3xl mb-1" />
+              )}
+              {media.type === "audio" && <VolumeUp className="text-3xl mb-1" />}
+              <Typography variant="caption" className="text-center px-2">
+                {media.type === "image" && "Xem ảnh"}
+                {media.type === "video" && "Phát video"}
+                {media.type === "audio" && "Nghe audio"}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Media content */}
+          {media.type === "image" && (
+            <img
+              src={media.url}
+              alt={media.title || `Media ${index + 1}`}
+              className="w-full h-32 sm:h-40 md:h-48 object-cover"
+              loading="lazy"
+            />
+          )}
+
+          {media.type === "video" && (
+            <Box className="relative">
+              <video
+                src={media.url}
+                poster={media.thumbnail}
+                className="w-full h-32 sm:h-40 md:h-48 object-cover"
+                muted
+                preload="metadata"
+              />
+              <Box className="absolute inset-0 flex items-center justify-center">
+                <PlayArrow className="text-white text-4xl bg-black bg-opacity-50 rounded-full p-2" />
+              </Box>
+            </Box>
+          )}
+
+          {media.type === "audio" && (
+            <Box className="h-32 sm:h-40 md:h-48 bg-gradient-to-br from-purple-400 to-purple-600 flex flex-col items-center justify-center text-white">
+              <VolumeUp className="text-4xl mb-2" />
+              <Typography variant="body2" className="text-center px-2">
+                {media.title || "File âm thanh"}
+              </Typography>
+            </Box>
+          )}
+
+          {/* Media title */}
+          {media.title && (
+            <Box className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2">
+              <Typography
+                variant="caption"
+                className="text-white font-medium line-clamp-2"
+              >
+                {media.title}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      );
+    };
+
+    return (
+      <Box className="space-y-3">
+        <Typography
+          variant="body1"
+          className="text-gray-800 font-bold flex items-center gap-2"
+        >
+          <Box className="w-1 h-5 bg-purple-500 rounded-full" />
+          🎬 Media đính kèm ({mediaList.length})
+        </Typography>
+        <Box
+          className={`grid gap-3 ${getGridLayout(
+            mediaList.slice(0, 4).length
+          )}`}
+        >
+          {mediaList
+            .slice(0, 4)
+            .map((media, index) => renderMediaItem(media, index))}
+        </Box>
+        {mediaList.length > 4 && (
+          <Typography variant="caption" className="text-gray-500 italic">
+            * Hiển thị 4/{mediaList.length} media đầu tiên
+          </Typography>
+        )}
+      </Box>
+    );
+  };
+
+  // Media Modal Component
+  const MediaModal: React.FC = () => {
+    if (!selectedMedia) return null;
+
+    return (
+      <Dialog
+        open={mediaModalOpen}
+        onClose={handleCloseMediaModal}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          className: "m-2 max-h-[90vh]",
+        }}
+      >
+        <DialogContent className="p-2 relative">
+          {/* Close Button */}
+          <IconButton
+            onClick={handleCloseMediaModal}
+            className="absolute top-2 right-2 z-10 bg-black bg-opacity-50 text-white hover:bg-opacity-70"
+            size="small"
+          >
+            <Close />
+          </IconButton>
+
+          {/* Media Content */}
+          <Box className="flex flex-col items-center">
+            {selectedMedia.type === "image" && (
+              <img
+                src={selectedMedia.url}
+                alt={selectedMedia.title || "Media"}
+                className="max-w-full max-h-[80vh] object-contain rounded-lg"
+              />
+            )}
+
+            {selectedMedia.type === "video" && (
+              <video
+                src={selectedMedia.url}
+                controls
+                autoPlay
+                className="max-w-full max-h-[80vh] rounded-lg"
+                poster={selectedMedia.thumbnail}
+              />
+            )}
+
+            {selectedMedia.type === "audio" && (
+              <Box className="w-full max-w-md p-6 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg text-white text-center">
+                <VolumeUp className="text-6xl mb-4" />
+                <Typography variant="h6" className="mb-4">
+                  {selectedMedia.title || "File âm thanh"}
+                </Typography>
+                <audio
+                  src={selectedMedia.url}
+                  controls
+                  autoPlay
+                  className="w-full"
+                />
+              </Box>
+            )}
+
+            {/* Media Info */}
+            {(selectedMedia.title || selectedMedia.description) && (
+              <Box className="mt-4 p-4 bg-gray-50 rounded-lg w-full">
+                {selectedMedia.title && (
+                  <Typography
+                    variant="h6"
+                    className="font-bold text-gray-800 mb-2"
+                  >
+                    {selectedMedia.title}
+                  </Typography>
+                )}
+                {selectedMedia.description && (
+                  <Typography variant="body2" className="text-gray-600">
+                    {selectedMedia.description}
+                  </Typography>
+                )}
+              </Box>
+            )}
+          </Box>
+        </DialogContent>
+      </Dialog>
+    );
   };
 
   // Debug logging cho props
@@ -245,6 +482,7 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
         <Paper className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200 mb-4">
           <Typography
             variant="body1"
+            component="div"
             className="text-gray-800 font-bold mb-5 flex items-center gap-2"
           >
             <Box className="w-1 h-5 bg-blue-500 rounded-full" />
@@ -272,7 +510,7 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
 
         {/* Question Options - Cải thiện hiển thị */}
         {question.options && question.options.length > 0 && (
-          <Paper className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200">
+          <Paper className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200 mb-4">
             <Box className="space-y-3">
               {question.options.map((option, index) => {
                 const isCorrect = question.correctAnswer === index;
@@ -323,7 +561,17 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
             </Box>
           </Paper>
         )}
+
+        {/* Media Grid */}
+        {question.media && question.media.length > 0 && (
+          <Paper className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200">
+            <MediaGrid mediaList={question.media} />
+          </Paper>
+        )}
       </CardContent>
+
+      {/* Media Modal */}
+      <MediaModal />
     </Card>
   );
 };
