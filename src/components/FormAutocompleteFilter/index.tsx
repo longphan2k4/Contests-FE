@@ -14,6 +14,7 @@ interface FormAutocompleteFilterProps {
   sx?: object;
   loading?: boolean;
   disabled?: boolean;
+  disableClearable?: boolean;
 }
 
 export default function FormAutocompleteFilter({
@@ -24,6 +25,7 @@ export default function FormAutocompleteFilter({
   sx,
   loading = false,
   disabled = false,
+  disableClearable = false,
 }: FormAutocompleteFilterProps) {
   const selectedOption = useMemo(() => {
     return options.find(opt => opt.value === value) ?? null;
@@ -50,6 +52,7 @@ export default function FormAutocompleteFilter({
           placeholder={`Chọn ${label.toLowerCase()}`}
         />
       )}
+      disableClearable={disableClearable}
     />
   );
 }

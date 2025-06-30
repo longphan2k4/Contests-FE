@@ -1,7 +1,8 @@
 import axiosInstance from "../../../../config/axiosInstance";
-import type { 
+import type {
   ContestantMatchQueryInput,
-  ContestantMatchResponse 
+  ContestantMatchResponse,
+  ContestantQueryInput
 } from "../types/contestant-match.types";
 
 export const contestantMatchApi = {
@@ -41,7 +42,7 @@ export const contestantMatchApi = {
     );
     return response.data.data; // Trả về data.data để lấy đúng cấu trúc dữ liệu
   },
-  
+
 
   // Lấy danh sách trận đấu
   getMatches: async (contestSlug: string, roundId?: number) => {
@@ -87,11 +88,17 @@ export const contestantMatchApi = {
   getContestantsInMatch: async (
     contestSlug: string,
     matchId: number,
-    params: ContestantMatchQueryInput = {}
+    params: ContestantQueryInput = {}
   ): Promise<ContestantMatchResponse> => {
+    const queryParams = {
+      ...params,
+      // truyền string vào để axios tự động chuyển đổi thành query string
+      schoolIds: params.schoolIds ? params.schoolIds.join(",") : undefined,
+      classIds: params.classIds ? params.classIds.join(",") : undefined,
+    };
     const response = await axiosInstance.get(
       `/contestant/contest/${contestSlug}/match/${matchId}/contestants`,
-      { params }
+      { params: queryParams }
     );
     return response.data;
   }

@@ -94,18 +94,18 @@ export default function Listcontestant({
     // { field: "schoolName", headerName: "Trường", flex: 1.5 },
     // { field: "className", headerName: "Lớp", flex: 1 },
     { field: "roundName", headerName: "Vòng đấu", flex: 1 },
-    {
-      field: "groupName",
-      headerName: "Nhóm",
-      flex: 1,
-      renderCell: (params: GridRenderCellParams<Contestant, string>) => {
-        const groupName = params.row.groupName;
-        if (!groupName) {
-          return <Chip label="Chưa phân nhóm" size="small" color="default" />;
-        }
-        return <Chip label={groupName} size="small" color="primary" />;
-      },
-    },
+    // {
+    //   field: "groupName",
+    //   headerName: "Nhóm",
+    //   flex: 1,
+    //   renderCell: (params: GridRenderCellParams<Contestant, string>) => {
+    //     const groupName = params.row.groupName;
+    //     if (!groupName) {
+    //       return <Chip label="Chưa phân nhóm" size="small" color="default" />;
+    //     }
+    //     return <Chip label={groupName} size="small" color="primary" />;
+    //   },
+    // },
     {
       field: "status",
       headerName: "Trạng thái",

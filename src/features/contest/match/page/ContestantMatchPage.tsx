@@ -58,6 +58,9 @@ import {
   useDelete,
   useContestStatus,
   useListRound,
+  useGetContestantsInMatch,
+  useGetMatchesByContestSlug,
+  type MatchInfo,
 } from "../hook/contestantMatchPage/useContestant";
 import AddIcon from "@mui/icons-material/Add";
 import GroupWorkIcon from "@mui/icons-material/GroupWork";
@@ -149,6 +152,8 @@ const ContestantMatchPage: React.FC = () => {
   // Quản lý trạng thái mở của bộ lọc
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  const [listMatches, setListMatches] = useState<MatchInfo[]>([]);
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_schoolClassFilter, setSchoolClassFilter] = useState<{ schoolIds: number[]; classIds: number[] }>({ schoolIds: [], classIds: [] });
 
@@ -164,6 +169,9 @@ const ContestantMatchPage: React.FC = () => {
   const { showToast } = useToast();
   const { slug, matchId: matchIdParam } = useParams();
   const matchId = matchIdParam ? parseInt(matchIdParam) : null;
+
+  // Điều kiện để quyết định sử dụng hook nàoAdd commentMore actions
+  const shouldUseMatchFilter = !!(filter.matchId && filter.matchId > 0);
 
   // Hook để lấy danh sách nhóm hiện tại
   const {
@@ -182,12 +190,31 @@ const ContestantMatchPage: React.FC = () => {
     isError: issError,
     refetch: refetchs,
   } = useGetAll(
+    shouldUseMatchFilter ? {} : { ...filter, matchId: matchId || undefined },
+    slug ?? null,
+    { enabled: !shouldUseMatchFilter }
+  );
+
+  // Hook để lấy thí sinh theo trận đấu cụ thể (khi có filter theo trận đấu)
+  const {
+    data: contestantMatchData,
+    isLoading: isLoadingMatch,
+    isError: isErrorMatch,
+    refetch: refetchMatch,
+  } = useGetContestantsInMatch(
+    slug ?? "",
+    filter.matchId || 0,
     {
       ...filter,
-      matchId: matchId || undefined,
     },
-    slug ?? null
+    { enabled: shouldUseMatchFilter }
   );
+
+  // Kết hợp dữ liệu từ 2 hook
+  const finalContestantData = shouldUseMatchFilter ? contestantMatchData : contestantData;
+  const finalIsLoading = shouldUseMatchFilter ? isLoadingMatch : issLoading;
+  const finalIsError = shouldUseMatchFilter ? isErrorMatch : issError;
+  const finalRefetch = shouldUseMatchFilter ? refetchMatch : refetchs;
 
   // const { mutate: mutateCreates } = useCreates();
 
@@ -198,6 +225,9 @@ const ContestantMatchPage: React.FC = () => {
   const { data: roundData } = useListRound(slug ?? null);
 
   const { data: statusData } = useContestStatus();
+
+  // Hook để lấy danh sách trận đấu theo slug cuộc thi
+  const { data: matchesData, isLoading: isLoadingMatches } = useGetMatchesByContestSlug(slug ?? "");
 
 
   useEffect(() => {
@@ -214,18 +244,25 @@ const ContestantMatchPage: React.FC = () => {
     }
   }, [statusData]);
 
+  // Effect để cập nhật danh sách trận đấuAdd commentMore actions
   useEffect(() => {
-    if (contestantData) {
-      console.log('contestantData:', contestantData); // Debug log
-      // Try both possible keys
-      const contestants = contestantData.data.contestantes || contestantData.data.Contestantes || [];
+    if (matchesData?.data) {
+      setListMatches(matchesData.data);
+    }
+  }, [matchesData]); useEffect(() => {
+    if (finalContestantData) {
+      console.log('finalContestantData:', finalContestantData); // Debug log
+      // Try both possible keys for different API responses
+      const contestants = finalContestantData.data.contestantes ||
+        finalContestantData.data.Contestantes ||
+        finalContestantData.data.contestants || []; // Thêm key mới cho API contestants in match
       console.log('contestants:', contestants); // Debug log
 
       // Bây giờ backend đã trả về đầy đủ thông tin, không cần mapping thêm
       setcontestant(contestants);
-      setPagination(contestantData.data.pagination);
+      setPagination(finalContestantData.data.pagination);
     }
-  }, [contestantData]);
+  }, [finalContestantData]);
 
   // Xử lý khi có dữ liệu nhóm từ API
   useEffect(() => {
@@ -587,7 +624,7 @@ const ContestantMatchPage: React.FC = () => {
         {
           onSuccess: () => {
             showToast(`Cập nhật thí sinh thành công`, "success");
-            refetchs();
+            finalRefetch();
           },
           onError: (error: unknown) => {
             const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -605,7 +642,7 @@ const ContestantMatchPage: React.FC = () => {
     mutateDelete(id, {
       onSuccess: () => {
         showToast(`Xóa thí sinh học thành công`);
-        refetchs();
+        finalRefetch();
       },
       onError: (error: unknown) => {
         const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -818,6 +855,13 @@ const ContestantMatchPage: React.FC = () => {
       await refetchGroups();
       await fetchCurrentGroups(); // fetchCurrentGroups là hàm bạn đã có
 
+      setFilter(prev => ({
+        ...prev,
+        page: 1,
+      }));
+      // // Đồng bộ lại với dữ liệu mới nhất từ server cho danh sách bên trái
+      // await finalRefetch();
+
       // Chuyển sang Bước 2
       setGroupDivisionStep(2);
 
@@ -837,7 +881,7 @@ const ContestantMatchPage: React.FC = () => {
     bulkCreateGroups,
     showToast,
     refetchGroups,
-    fetchCurrentGroups
+    fetchCurrentGroups,
   ]);
 
   // Load schools on component mount
@@ -1147,6 +1191,12 @@ const ContestantMatchPage: React.FC = () => {
       // Refresh data từ server để đảm bảo consistency (chạy bất đồng bộ)
       refetchGroups();
       fetchCurrentGroups();
+      setFilter(prev => ({
+        ...prev,
+        page: 1,
+      }));
+      // // Đồng bộ lại với dữ liệu mới nhất từ server cho danh sách bên trái
+      // await finalRefetch();
 
       // Thông báo thành công
       const totalDeleted = typeof result.deletedGroupsCount === 'number' ? result.deletedGroupsCount : groupIds.length;
@@ -1167,7 +1217,7 @@ const ContestantMatchPage: React.FC = () => {
       setIsResettingAll(false);
       setIsConfirmResetAllOpen(false);
     }
-  }, [existingGroups, fetchCurrentGroups, refetchGroups, showToast]);
+  }, [existingGroups, fetchCurrentGroups, refetchGroups, showToast, finalRefetch]);
 
   // Debug useEffect to log button state
   useEffect(() => {
@@ -1189,18 +1239,18 @@ const ContestantMatchPage: React.FC = () => {
     return contestant;
   }, [contestant]);
 
-  if (issLoading) {
+  if (finalIsLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
       </Box>
     );
-  } if (issError) {
+  } if (finalIsError) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchs}>Thử lại</Button>}
+          action={<Button onClick={() => finalRefetch}>Thử lại</Button>}
         >
           Không thể tải danh danh sách thí sinh
         </Alert>
@@ -1295,9 +1345,33 @@ const ContestantMatchPage: React.FC = () => {
               setFilter(prev => ({
                 ...prev,
                 roundId: val === "all" ? undefined : Number(val),
+                page: 1, 
               }))
             }
             sx={{ flex: 1, minWidth: 200 }}
+            disableClearable
+          />
+
+          {/* Bộ lọc trận đấu */}
+          <FormAutocompleteFilter
+            label="Trận đấu"
+            options={[
+              { label: "Tất cả", value: "all" },
+              ...listMatches.map(match => ({
+                label: match.name,
+                value: match.id,
+              })),
+            ]}
+            value={filter.matchId ?? "all"}
+            onChange={(val: string | number | undefined) =>
+              setFilter(prev => ({
+                ...prev,
+                matchId: val === "all" ? undefined : Number(val),
+              }))
+            }
+            sx={{ flex: 1, minWidth: 200 }}
+            loading={isLoadingMatches}
+            disableClearable
           />
 
           {/* Trạng thái */}
@@ -1321,6 +1395,7 @@ const ContestantMatchPage: React.FC = () => {
               }))
             }
             sx={{ flex: 1, minWidth: 200 }}
+            disableClearable
           />
 
           {/* Trường học */}
@@ -1368,7 +1443,7 @@ const ContestantMatchPage: React.FC = () => {
           /> */}
 
           {/* Nhóm - chỉ hiển thị khi có matchId */}
-          {matchId && (
+          {!shouldUseMatchFilter && (
             <FormAutocompleteFilter
               label="Nhóm"
               options={[
@@ -1387,6 +1462,7 @@ const ContestantMatchPage: React.FC = () => {
                 }))
               }
               sx={{ flex: 1, minWidth: 200 }}
+              disableClearable
             />
           )}
 
@@ -1650,12 +1726,12 @@ const ContestantMatchPage: React.FC = () => {
               count={pagination.totalPages}
               page={filter.page ?? 1}
               color="primary"
-              onChange={(_event, value) =>
+              onChange={(_event, value) => {
                 setFilter(prev => ({
                   ...prev,
                   page: value,
                 }))
-              }
+              }}
               showFirstButton
               showLastButton
             />
@@ -1665,7 +1741,7 @@ const ContestantMatchPage: React.FC = () => {
           isOpen={isCreateOpen}
           onClose={closeCreate}
           onSuccess={() => {
-            refetchs();
+            finalRefetch();
             showToast("Thêm thí sinh thành công", "success");
           }}
         />

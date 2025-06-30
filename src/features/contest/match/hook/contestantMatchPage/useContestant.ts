@@ -26,7 +26,7 @@ import {
 } from "../../../contestant/service/api";
 
 import { contestantMatchApi } from "../../service/contestant-match.api";
-import type { ContestantMatchQueryInput } from "../../types/contestant-match.types";
+//import type { ContestantMatchQueryInput } from "../../types/contestant-match.types";
 
 export const useGetAll = (
     filter: ContestantQueryInput,
@@ -183,7 +183,7 @@ export const useGetMatchesByContestSlug = (contestSlug: string) => {
 export const useGetContestantsInMatch = (
     contestSlug: string,
     matchId: number,
-    params: ContestantMatchQueryInput = {},
+    params: ContestantQueryInput = {},
     options?: { enabled?: boolean }
 ) => {
     return useQuery({
