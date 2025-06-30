@@ -21,18 +21,20 @@ export interface Contestant {
   rescued_at_question_order?: number | null;
 }
 
-import type { ListContestant } from "../../types/control.type";
+import type { ControlValue, ListContestant } from "../../types/control.type";
 
 interface EliminateDisplayProps {
   ListContestant: ListContestant[];
   totalIcons?: number;
   currentQuestionOrder: number;
+  controlValue?: ControlValue;
 }
 
 export default function EliminateDisplay({
   ListContestant,
   totalIcons = 60,
   currentQuestionOrder,
+  controlValue,
 }: EliminateDisplayProps) {
   const [contestants, setContestants] = useState<Contestant[]>([]);
   const [icons, setIcons] = useState<Icon[]>([]);
@@ -44,6 +46,15 @@ export default function EliminateDisplay({
   const [displayMode, setDisplayMode] = useState<"eliminated" | "rescued">(
     "eliminated"
   );
+  console.log("Control value changed:", controlValue);
+
+  useEffect(() => {
+    if (controlValue === "Eliminate") {
+      handleSnap("delete");
+    } else if (controlValue === "Rescued") {
+      handleSnap("restore");
+    }
+  }, [controlValue]);
 
   useEffect(() => {
     const contestantsData = ListContestant.flatMap(group =>

@@ -36,6 +36,9 @@ import {
 } from "../type/control.type";
 import { useSocket } from "@contexts/SocketContext";
 import { Box, CircularProgress } from "@mui/material";
+import { set } from "zod";
+import { se } from "date-fns/locale";
+import { da } from "@faker-js/faker";
 
 // Define types for socket responses
 interface SocketResponse {
@@ -185,11 +188,25 @@ const ControlsPage: React.FC = () => {
       }
     };
 
+    const handleUpdateEliminate = (data: any) => {
+      setListContestant(data?.ListContestant);
+      setScreenControl(data?.updatedScreen);
+      setCountContestant(prev => ({
+        ...prev!,
+        countIn_progress: data?.countInProgress ?? 0,
+      }));
+    };
+
+    // const handleUpdateRescued = (data: any) => {
+    //   console.log("Update Rescued:", data);
+    // };
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
     socket.on("contestant:status-update", handleUpdateStatus);
     socket.on("update:winGold", handleUpdateGold);
+    socket.on("update:Eliminated", handleUpdateEliminate);
+    // socket.on("update:Rescued", handleUpdateRescued);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
@@ -197,6 +214,8 @@ const ControlsPage: React.FC = () => {
       socket.off("contestant:status-update", handleUpdateStatus);
       socket.off("timer:update", handleUpdateTime);
       socket.off("update:winGold", handleUpdateGold);
+      socket.off("update:Eliminated", handleUpdateEliminate);
+      // socket.off("update:Rescued", handleUpdateRescued);
     };
   }, [socket]);
 
@@ -410,6 +429,7 @@ const ControlsPage: React.FC = () => {
             <ContestantsControl
               ListContestant={listContestant}
               questionOrder={currentQuestion?.questionOrder || 0}
+              controlKey={screenControl?.controlKey}
             />
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">

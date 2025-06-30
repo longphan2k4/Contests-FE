@@ -1,3 +1,5 @@
+import EliminateDisplay from "@features/match/components/Eliminate/EliminateDisplay";
+
 export const contest_status = {
   upcoming: "upcoming",
   ongoing: "ongoing",
@@ -56,6 +58,7 @@ export const controlKey = {
   video: "video",
   audio: "audio",
   image: "image",
+  matchDiagram: "matchDiagram",
 } as const;
 
 export type ControlKey = (typeof controlKey)[keyof typeof controlKey];
@@ -64,6 +67,8 @@ export const controlValue = {
   start: "start",
   pause: "pause",
   reset: "reset",
+  Eliminate: "Eliminate",
+  Rescue: "Rescued",
 } as const;
 
 export type ControlValue = (typeof controlValue)[keyof typeof controlValue];

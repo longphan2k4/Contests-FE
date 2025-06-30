@@ -186,16 +186,45 @@ export default function MatchPage() {
       setMatchInfo(data?.matchInfo);
     };
 
+    const handleUpdateStatus = (data: any) => {
+      setListContestant(data?.ListContestant);
+    };
+
+    const handleUpdateEliminate = (data: any) => {
+      setListContestant(data?.ListContestant);
+      setCountContestant(prev => ({
+        ...prev!,
+        countIn_progress: data?.countInProgress ?? 0,
+      }));
+      setScreenControl(data?.updatedScreen);
+    };
+
+    const handleUpdateRescued = (data: any) => {
+      console.log("Rescued data:", data);
+      setListContestant(data?.ListContestant);
+      setCountContestant(prev => ({
+        ...prev!,
+        countIn_progress: data?.countInProgress ?? 0,
+      }));
+      setScreenControl(data?.updateScreen);
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
     socket.on("update:winGold", handleUpdateGold);
+    socket.on("contestant:status-update", handleUpdateStatus);
+    socket.on("update:Eliminated", handleUpdateEliminate);
+    socket.on("update:Rescused", handleUpdateRescued);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
       socket.off("currentQuestion:get", handleCurrentQuestion);
       socket.off("timer:update", handleUpdateTime);
       socket.off("update:winGold", handleUpdateGold);
+      socket.off("contestant:status-update", handleUpdateStatus);
+      socket.off("update:Eliminated", handleUpdateEliminate);
+      socket.off("update:Rescued", handleUpdateRescued);
     };
   }, [socket]);
 
@@ -267,7 +296,7 @@ export default function MatchPage() {
           />
         </div>
       )}
-      {screenControl?.controlKey === "question" && (
+      {/* {screenControl?.controlKey === "question" && (
         <div key="question">
           <MatchHeader
             countContestant={countContestant}
@@ -283,7 +312,7 @@ export default function MatchPage() {
             type={currentQuestion?.questionType ?? null}
           />
         </div>
-      )}
+      )} */}
       {screenControl?.controlKey === "answer" && (
         <div key="answer">
           <MatchHeader
@@ -311,6 +340,7 @@ export default function MatchPage() {
             ListContestant={listContestant ?? []}
             currentQuestionOrder={currentQuestion?.questionOrder ?? 0}
             totalIcons={mockContestants.length}
+            controlValue={screenControl?.controlValue}
           />
         </div>
       )}

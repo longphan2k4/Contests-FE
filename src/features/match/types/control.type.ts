@@ -68,6 +68,8 @@ export const controlValue = {
   reset: "reset",
   zoomin: "zoomin",
   zoomout: "zoomout",
+  Eliminate: "Eliminate",
+  Rescued: "Rescued",
 } as const;
 
 export type ControlValue = (typeof controlValue)[keyof typeof controlValue];
