@@ -41,7 +41,6 @@ const AppRoutes: React.FC = () => {
       {/* Student Routes */}
       {StudentRoutes()}
 
-
       <Route element={<PublicRoute restricted={true} />}>{AuthRoutes()}</Route>
 
       <Route element={<PrivateRoute roles={["Admin"]} />}>
@@ -99,10 +98,9 @@ const AppRoutes: React.FC = () => {
       />
       <Route path="/match/eliminate" element={<EliminatePage />} />
       <Route path="/match/top3" element={<TopThreeReveal />} />
-      <Route path="/match/gold" element={<GoldWinnerDisplay match_id="1" />} />
       {/* Tech Banner Route */}
       <Route path="/banner" element={<TechBanner />} />
-      <Route path="/rule" element={<OlympicIT2025Rules/>}/>
+      <Route path="/rule" element={<OlympicIT2025Rules />} />
       <Route path="/403" element={<Forbidden403 />} />
       <Route path="/404" element={<NotFound404 />} />
       <Route path="*" element={<NotFound404 />} />

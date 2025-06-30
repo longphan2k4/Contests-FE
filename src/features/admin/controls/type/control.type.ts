@@ -168,6 +168,12 @@ export type MediaType = {
 export type contestant = {
   registrationNumber: number;
   status: ContestantMatchStatus;
+  contestant: {
+    student: {
+      id: number;
+      fullName: string;
+    };
+  };
 };
 
 export type ListContestant = {

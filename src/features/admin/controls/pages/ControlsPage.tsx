@@ -14,6 +14,7 @@ import { OnlineExamControl } from "../../controlsOnline";
 import QuestionDetails from "../components/QuestionDetails";
 import BackgroundControl from "../components/BackgroundControl";
 import CurrentContestants from "../components/CurrentContestants";
+import AwardControl from "../components/AwardControl";
 import {
   useCurrentQuestion,
   useListQuestion,
@@ -178,16 +179,24 @@ const ControlsPage: React.FC = () => {
       }
     };
 
+    const handleUpdateGold = (data: any) => {
+      if (data?.matchInfo) {
+        setMatchInfo(data.matchInfo);
+      }
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
     socket.on("contestant:status-update", handleUpdateStatus);
+    socket.on("update:winGold", handleUpdateGold);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
       socket.off("currentQuestion:get", handleCurrentQuestion);
       socket.off("contestant:status-update", handleUpdateStatus);
       socket.off("timer:update", handleUpdateTime);
+      socket.off("update:winGold", handleUpdateGold);
     };
   }, [socket]);
 
@@ -410,6 +419,12 @@ const ControlsPage: React.FC = () => {
               onShowQR={handleShowQR}
               onShowChart={handleShowChart}
               onHideAll={handleHideAll}
+            />
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+            <AwardControl
+              ListContestant={listContestant}
+              MatchInfo={matchInfo || null}
             />
           </div>
           <div>

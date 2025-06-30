@@ -56,6 +56,8 @@ export const controlKey = {
   video: "video",
   audio: "audio",
   image: "image",
+  wingold: "wingold",
+  qrcode: "qrcode",
 } as const;
 
 export type ControlKey = (typeof controlKey)[keyof typeof controlKey];

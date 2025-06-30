@@ -3,6 +3,7 @@ import MatchHeader from "../components/MatchHeader/MatchHeader";
 import Background from "../components/QuestionDisplay/Background";
 import FullScreenImage from "../components/Media/FullScreenImage";
 import { AudienceDisplayManager } from "../components/AudienceDisplay";
+import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
 
 import { Box, CircularProgress } from "@mui/material";
 import {
@@ -36,9 +37,6 @@ import { useSocket } from "../../../contexts/SocketContext";
 import FullScreenVideo from "../components/Media/FullScreenVideo";
 
 export default function MatchPage() {
-  useEffect(() => {
-    document.title = "Theo dõi trận đấu - Olympic Tin học.";
-  }, []);
   const { match } = useParams();
 
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
@@ -140,6 +138,10 @@ export default function MatchPage() {
   useEffect(() => {
     if (isSuccessControl) setScreenControl(screenControlRes.data);
   }, [isSuccessControl, screenControlRes]);
+
+  useEffect(() => {
+    document.title = `Trân đấu ${matchInfo?.name}`;
+  }, [matchInfo]);
   const { socket } = useSocket();
 
   useEffect(() => {
@@ -176,14 +178,21 @@ export default function MatchPage() {
       });
     };
 
+    const handleUpdateGold = (data: any) => {
+      if (!data?.matchInfo) return;
+      setMatchInfo(data?.matchInfo);
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
+    socket.on("update:winGold", handleUpdateGold);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
       socket.off("currentQuestion:get", handleCurrentQuestion);
       socket.off("timer:update", handleUpdateTime);
+      socket.off("update:winGold", handleUpdateGold);
     };
   }, [socket]);
 
@@ -305,6 +314,12 @@ export default function MatchPage() {
             videoUrl={screenControl?.media}
             control={screenControl.controlValue}
           />
+        </div>
+      )}
+
+      {screenControl?.controlKey === "wingold" && (
+        <div key="wingold">
+          <GoldWinnerDisplay studentName={matchInfo?.studentName ?? null} />
         </div>
       )}
 
