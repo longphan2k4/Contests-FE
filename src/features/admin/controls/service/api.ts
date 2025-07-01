@@ -71,3 +71,63 @@ export const GetListClassVideo = async (slug: string | null) => {
   );
   return res.data;
 };
+
+/**==================================CỨU TRỢ======================================== */
+// Lấy danh sách thí sinh bị loại có phân trang, lọc, tìm kiếm
+export const getEliminatedContestants = async (
+  matchId: number | string,
+  params: { page?: number; limit?: number; search?: string; schoolId?: number; classId?: number; status?: string } = {}
+) => {
+  const res = await axiosInstance.get(`/contestant/eliminated/${matchId}/list`, { params });
+  return res.data;
+};
+
+// Lấy danh sách thí sinh bị loại theo tiêu chí cứu trợ (có thể truyền rescueId)
+export const getRescueCandidates = async (matchId: number | string, rescueId?: number) => {
+  const url = `/contestant/rescue-candidates/${matchId}`;
+  const params: Record<string, unknown> = {};
+  if (rescueId) params.rescueId = rescueId;
+  const res = await axiosInstance.get(url, { params });
+  return res.data;
+};
+
+// Lấy danh sách thí sinh đã được cứu trợ theo rescueId
+export const getRescuedContestantsByRescueId = async (rescueId: number | string) => {
+  const res = await axiosInstance.get(`/contestant/rescued/${rescueId}`);
+  return res.data;
+};
+
+// Cứu trợ hàng loạt thí sinh
+export const rescueManyContestants = async (
+  matchId: number | string,
+  data: { contestantIds: number[]; currentQuestionOrder: number }
+) => {
+  const res = await axiosInstance.post(`/contestant/rescue-candidates/${matchId}/rescue-many`, data);
+  return res.data;
+};
+
+// Thêm hàng loạt studentIds vào rescue (push, không trùng lặp)
+export const addStudentsToRescue = async (
+  rescueId: number,
+  studentIds: number[]
+) => {
+  const res = await axiosInstance.post('/contestant/rescue/add-students', {
+    rescueId,
+    studentIds
+  });
+  return res.data;
+};
+
+// Xóa 1 studentId khỏi rescue
+export const removeStudentFromRescue = async (
+  rescueId: number,
+  studentId: number
+) => {
+  const res = await axiosInstance.delete('/contestant/rescue/remove-student', {
+    data: {
+      rescueId,
+      studentId
+    }
+  });
+  return res.data;
+};

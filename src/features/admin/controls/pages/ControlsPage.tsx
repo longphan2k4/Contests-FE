@@ -403,6 +403,12 @@ const ControlsPage: React.FC = () => {
               questionOrder={currentQuestion?.questionOrder || 0}
             />
           </div>
+
+          {/** triển khai phần cứu trợ ở đây */}
+          <div>
+            <h2 className="text-xl font-bold mb-4">Cứu trợ</h2>
+          </div>
+
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <AudienceRescueControl
               matchSlug={match}
