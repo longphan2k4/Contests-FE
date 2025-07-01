@@ -18,7 +18,7 @@ const FormSwitch: React.FC<CommonSwitchProps> = ({ value, onChange }) => {
           color="primary"
         />
       }
-      label={value === true ? "Đang hoạt động" : "Đã vô hiệu hóa"}
+      label={value === true ? "Hoạt động" : "Không hoạt động"}
     />
   );
 };

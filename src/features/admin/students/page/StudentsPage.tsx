@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo } from "react";
+import React, { useState, useEffect, useCallback, memo, use } from "react";
 import {
   Box,
   Typography,
@@ -44,7 +44,9 @@ import SearchIcon from "@mui/icons-material/Search";
 
 const StudentsPage: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(
+    null
+  );
   const [pagination, setPagination] = useState<pagination>({});
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -192,6 +194,11 @@ const StudentsPage: React.FC = () => {
       </Box>
     );
   }
+
+  useEffect(() => {
+    document.title = "Quản lý Sinh viên";
+  }, []);
+
   if (isStudentsError) {
     return (
       <Box sx={{ p: 3 }}>
@@ -240,10 +247,12 @@ const StudentsPage: React.FC = () => {
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
+            useFlexGap
+            flexWrap="wrap"
             sx={{
-              flexWrap: "wrap",
-              alignItems: { sm: "center" },
+              alignItems: "stretch",
               mb: 2,
+              gap: 2,
             }}
           >
             {/* Ô tìm kiếm */}
@@ -271,27 +280,37 @@ const StudentsPage: React.FC = () => {
               }}
             />
 
-            <FormControl size="small" sx={{ minWidth: 200 }}>
+            <FormControl
+              size="small"
+              sx={{
+                flex: { sm: 1 },
+                minWidth: { xs: "100%", sm: 200 },
+              }}
+            >
               <InputLabel id="class-select-label">Lớp</InputLabel>
               <Select
                 labelId="class-select-label"
                 id="class-select"
-                value={filter.classId !== undefined ? String(filter.classId) : ""}
+                value={
+                  filter.classId !== undefined ? String(filter.classId) : ""
+                }
                 label="Lớp"
                 onChange={e =>
                   setFilter(prev => ({
                     ...prev,
-                    classId: e.target.value === "" ? undefined : Number(e.target.value),
+                    classId:
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
                   }))
                 }
               >
                 <MenuItem value="">Tất cả</MenuItem>
-               {classOptions.map((cls: ClassItem) => (
-                <MenuItem key={cls.id} value={String(cls.id)}>
-                  {`${cls.name} - ${cls.shoolName}`}
-                </MenuItem>
-              ))}
-
+                {classOptions.map((cls: ClassItem) => (
+                  <MenuItem key={cls.id} value={String(cls.id)}>
+                    {`${cls.name} - ${cls.shoolName}`}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
 
@@ -300,7 +319,7 @@ const StudentsPage: React.FC = () => {
               options={[
                 { label: "Tất cả", value: "all" },
                 { label: "Hoạt động", value: "active" },
-                { label: "Không hoạt động", value: "inactive" },
+                { label: "Đã vô hiệu hóa", value: "inactive" },
               ]}
               value={
                 filter.isActive === undefined
@@ -324,7 +343,6 @@ const StudentsPage: React.FC = () => {
               }}
               sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
             />
-          
 
             {/* Nút xoá người */}
             {selectedStudentIds.length > 0 && (
@@ -343,22 +361,22 @@ const StudentsPage: React.FC = () => {
             )}
 
             {/* Tổng số người dùng */}
-            <Box
-              sx={{
-                ml: { xs: 0, sm: "auto" },
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                alignSelf={{ xs: "flex-start", sm: "center" }}
-              >
-                Tổng số: {pagination.total} người dùng
-              </Typography>
-            </Box>
           </Stack>
+          <Box
+            sx={{
+              ml: { xs: 0, sm: "auto" },
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              alignSelf={{ xs: "flex-start", sm: "center" }}
+            >
+              Tổng số: {pagination.total} sinh viên
+            </Typography>
+          </Box>
 
           <StudentList
             students={students}
@@ -389,8 +407,8 @@ const StudentsPage: React.FC = () => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1, // Reset to first page when changing limit
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >
@@ -405,21 +423,30 @@ const StudentsPage: React.FC = () => {
             </Typography>
           </Box>
         </Box>
-        <Box className="flex flex-col items-center">
-          {" "}
-          <Pagination
-            count={pagination.totalPages}
-            page={filter.page ?? 1}
-            color="primary"
-            onChange={(_event, value) =>
-              setFilter(prev => ({
-                ...prev,
-                page: value,
-              }))
-            }
-            showFirstButton
-            showLastButton
-          />
+        <Box
+          style={{
+            display:
+              pagination.totalPages !== undefined && pagination.totalPages > 1
+                ? "block"
+                : "none",
+          }}
+        >
+          <Box className="flex flex-col items-center">
+            {" "}
+            <Pagination
+              count={pagination.totalPages}
+              page={filter.page ?? 1}
+              color="primary"
+              onChange={(_event, value) =>
+                setFilter(prev => ({
+                  ...prev,
+                  page: value,
+                }))
+              }
+              showFirstButton
+              showLastButton
+            />
+          </Box>
         </Box>
         <CreateStudentDialog
           isOpen={isCreateOpen}

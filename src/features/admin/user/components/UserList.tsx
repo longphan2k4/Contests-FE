@@ -40,7 +40,22 @@ export default function UserList({
     },
     { field: "username", headerName: "Tên tài khoản", flex: 1 },
     { field: "email", headerName: "Email", flex: 1 },
-    { field: "role", headerName: "Vai trò", flex: 1 },
+    {
+      field: "role",
+      headerName: "Vai trò",
+      flex: 1,
+      renderCell: params => {
+        return (
+          <>
+            {params.row.role === "Admin"
+              ? "Quản trị viên"
+              : params.row.role === "Judge"
+              ? "Trọng tài"
+              : "Sinh viên"}
+          </>
+        );
+      },
+    },
     {
       field: "isActive",
       headerName: "Trạng thái",

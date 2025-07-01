@@ -290,7 +290,7 @@ const ClassesPage: React.FC = () => {
               options={[
                 { label: "Tất cả", value: "all" },
                 { label: "Hoạt động", value: "active" },
-                { label: "Không hoạt động", value: "inactive" },
+                { label: "Đã vô hiệu hóa", value: "inactive" },
               ]}
               value={
                 filter.isActive === undefined

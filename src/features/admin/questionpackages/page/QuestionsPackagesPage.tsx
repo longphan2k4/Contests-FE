@@ -44,8 +44,12 @@ import SearchIcon from "@mui/icons-material/Search";
 
 const QuestionsPackagesPage: React.FC = () => {
   const navigate = useNavigate();
-  const [questionPackages, setQuestionPackages] = useState<QuestionPackage[]>([]);
-  const [selectedQuestionPackageId, setSelectedQuestionPackageId] = useState<number | null>(null);
+  const [questionPackages, setQuestionPackages] = useState<QuestionPackage[]>(
+    []
+  );
+  const [selectedQuestionPackageId, setSelectedQuestionPackageId] = useState<
+    number | null
+  >(null);
   const [pagination, setPagination] = useState<pagination>({});
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -55,7 +59,9 @@ const QuestionsPackagesPage: React.FC = () => {
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
 
   const [filter, setFilter] = useState<QuestionPackageQuery>({});
-  const [selectedQuestionPackageIds, setSelectedQuestionPackageIds] = useState<number[]>([]);
+  const [selectedQuestionPackageIds, setSelectedQuestionPackageIds] = useState<
+    number[]
+  >([]);
 
   const { showToast } = useToast();
 
@@ -66,6 +72,10 @@ const QuestionsPackagesPage: React.FC = () => {
     refetch: refetchQuestionPackages,
   } = useQuestionPackages(filter);
 
+  useEffect(() => {
+    refetchQuestionPackages();
+  }, [refetchQuestionPackages]);
+
   const { mutate: mutateCreate } = useCreateQuestionPackage();
 
   const { mutate: mutateUpdate } = useUpdate();
@@ -75,6 +85,10 @@ const QuestionsPackagesPage: React.FC = () => {
   const { mutate: mutateDeleteMany } = useDeleteMany();
 
   const { mutate: mutateDelete } = useDelete();
+
+  useEffect(() => {
+    document.title = "Quản lý gói câu hỏi";
+  }, []);
 
   useEffect(() => {
     if (questionPackagesQuery) {
@@ -129,7 +143,7 @@ const QuestionsPackagesPage: React.FC = () => {
       },
       onError: (err: any) => {
         if (err.response?.data?.message) {
-          showToast(err.response?.data?.message, "success");
+          showToast(err.response?.data?.message, "error");
         }
       },
     });
@@ -161,7 +175,7 @@ const QuestionsPackagesPage: React.FC = () => {
         refetchQuestionPackages();
       },
       onError: (error: any) => {
-        showToast(error.response?.data?.message, "success");
+        showToast(error.response?.data?.message, "error");
       },
     });
   }, []);
@@ -179,9 +193,12 @@ const QuestionsPackagesPage: React.FC = () => {
     },
     []
   );
-const handleViewQuestions = useCallback((id: number) => {
-    navigate(`/admin/question-packages/${id}`);
-  }, [navigate]);
+  const handleViewQuestions = useCallback(
+    (id: number) => {
+      navigate(`/admin/question-packages/${id}`);
+    },
+    [navigate]
+  );
 
   const hanldConfirmDeleteManyDeletes = () => {
     setIsConfirmDeleteMany(true);
@@ -199,7 +216,9 @@ const handleViewQuestions = useCallback((id: number) => {
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchQuestionPackages}>Thử lại</Button>}
+          action={
+            <Button onClick={() => refetchQuestionPackages}>Thử lại</Button>
+          }
         >
           Không thể tải danh sách gói câu hỏi.
         </Alert>
@@ -242,10 +261,12 @@ const handleViewQuestions = useCallback((id: number) => {
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
+            useFlexGap
+            flexWrap="wrap"
             sx={{
-              flexWrap: "wrap",
-              alignItems: { sm: "center" },
+              alignItems: "stretch",
               mb: 2,
+              gap: 2,
             }}
           >
             {/* Ô tìm kiếm */}
@@ -278,7 +299,7 @@ const handleViewQuestions = useCallback((id: number) => {
               options={[
                 { label: "Tất cả", value: "all" },
                 { label: "Hoạt động", value: "active" },
-                { label: "Không hoạt động", value: "inactive" },
+                { label: "Đã vô hiệu hóa", value: "inactive" },
               ]}
               value={
                 filter.isActive === undefined
@@ -303,7 +324,6 @@ const handleViewQuestions = useCallback((id: number) => {
               sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
             />
 
-           
             {/* Nút xoá người */}
             {selectedQuestionPackageIds.length > 0 && (
               <Button
@@ -316,27 +336,27 @@ const handleViewQuestions = useCallback((id: number) => {
                   whiteSpace: "nowrap",
                 }}
               >
-                Xoá ({selectedQuestionPackageIds.length})
+                Xoá gói câu hỏi ({selectedQuestionPackageIds.length})
               </Button>
             )}
 
             {/* Tổng số người dùng */}
-            <Box
-              sx={{
-                ml: { xs: 0, sm: "auto" },
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                alignSelf={{ xs: "flex-start", sm: "center" }}
-              >
-                Tổng số: {pagination?.total} gói câu hỏi
-              </Typography>
-            </Box>
           </Stack>
+          <Box
+            sx={{
+              ml: { xs: 0, sm: "auto" },
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              alignSelf={{ xs: "flex-start", sm: "center" }}
+            >
+              Tổng số: {pagination.total} gói câu hỏi
+            </Typography>
+          </Box>
 
           <QuestionPackageList
             questionPackages={questionPackages}
@@ -368,8 +388,8 @@ const handleViewQuestions = useCallback((id: number) => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1,
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >
@@ -384,22 +404,7 @@ const handleViewQuestions = useCallback((id: number) => {
             </Typography>
           </Box>
         </Box>
-        <Box className="flex flex-col items-center">
-          {" "}
-          <Pagination
-            count={pagination?.totalPages}
-            page={filter.page ?? 1}
-            color="primary"
-            onChange={(_event, value) =>
-              setFilter(prev => ({
-                ...prev,
-                page: value,
-              }))
-            }
-            showFirstButton
-            showLastButton
-          />
-        </Box>
+
         <CreateQuestionPackage
           isOpen={isCreateOpen}
           onClose={closeCreate}

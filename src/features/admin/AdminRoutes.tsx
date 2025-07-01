@@ -4,9 +4,7 @@ import AdminLayout from "../../layouts/AdminLayout";
 import { CircularProgress, Box } from "@mui/material";
 
 // ✅ Lazy load tất cả admin components
-const ContestantsPage = lazy(
-  () => import("./contestants/pages/ContestantsPage")
-);
+
 const AboutAdminPage = lazy(() => import("./about/pages/AboutAdminPage"));
 const UsersPage = lazy(() => import("./user/page/UsersPage"));
 const SchoolsPage = lazy(() =>
@@ -116,14 +114,6 @@ const AdminRoutes = () => {
         element={
           <Suspense fallback={<PageLoader />}>
             <ContestPage />
-          </Suspense>
-        }
-      />
-      <Route
-        path="contestants"
-        element={
-          <Suspense fallback={<PageLoader />}>
-            <ContestantsPage />
           </Suspense>
         }
       />

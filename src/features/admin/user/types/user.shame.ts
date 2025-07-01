@@ -52,6 +52,7 @@ export const UpdateUserSchema = z.object({
 export const Role = {
   Admin: "Admin",
   Judge: "Judge",
+  Student: "Student",
 } as const;
 
 export type Role = (typeof Role)[keyof typeof Role];

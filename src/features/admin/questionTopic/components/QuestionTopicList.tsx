@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { 
-  Box, 
+import React, { useState } from "react";
+
+import {
+  Box,
   Pagination,
   TextField,
   InputAdornment,
@@ -15,44 +16,39 @@ import {
   CircularProgress,
   Tooltip,
   IconButton,
-  Button
-} from '@mui/material';
-import {
-  Delete as DeleteIcon,
-} from '@mui/icons-material';
-import type { SelectChangeEvent } from '@mui/material';
-import { DataGrid, type GridRenderCellParams } from '@mui/x-data-grid';
-import SearchIcon from '@mui/icons-material/Search';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import EditIcon from '@mui/icons-material/Edit';
-import type { QuestionTopic } from '../types/questionTopic';
-import { useQuestionTopicList } from '../hooks/list/useQuestionTopicList';
+  Button,
+} from "@mui/material";
+import { Delete as DeleteIcon } from "@mui/icons-material";
+import type { SelectChangeEvent } from "@mui/material";
+import { DataGrid, type GridRenderCellParams } from "@mui/x-data-grid";
+import SearchIcon from "@mui/icons-material/Search";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import EditIcon from "@mui/icons-material/Edit";
+import type { QuestionTopic } from "../types/questionTopic";
+import { useQuestionTopicList } from "../hooks/list/useQuestionTopicList";
+import IsSwitch from "@components/IsSwitch";
 
 interface QuestionTopicListProps {
   onViewDetail?: (questionTopic: QuestionTopic) => void;
   onEdit?: (questionTopic: QuestionTopic) => void;
   onDelete?: (ids: number[]) => void;
+  onToggleActive?: (id: number) => void;
 }
 
 const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
   onViewDetail,
   onEdit,
-  onDelete
+  onDelete,
+  onToggleActive,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [searchTerm, setSearchTerm] = useState('');
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [searchTerm, setSearchTerm] = useState("");
   const [showActiveOnly, setShowActiveOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
-  const {
-    questionTopics,
-    loading,
-    error,
-    filter,
-    updateFilter,
-    total
-  } = useQuestionTopicList();
+  const { questionTopics, loading, error, filter, updateFilter, total } =
+    useQuestionTopicList();
 
   const totalPages = Math.ceil(total / (filter.limit || 10));
 
@@ -63,8 +59,8 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
 
   const handleActiveFilterChange = (event: SelectChangeEvent) => {
     const value = event.target.value;
-    setShowActiveOnly(value === 'active');
-    updateFilter({ isActive: value === 'active' ? true : undefined });
+    setShowActiveOnly(value === "active");
+    updateFilter({ isActive: value === "active" ? true : undefined });
   };
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
@@ -77,8 +73,8 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
 
   const columns = [
     {
-      field: 'stt',
-      headerName: 'STT',
+      field: "stt",
+      headerName: "STT",
       width: 70,
       sortable: false,
       filterable: false,
@@ -87,24 +83,22 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
         return ((filter.page || 1) - 1) * (filter.limit || 10) + index + 1;
       },
     },
-    { field: 'name', headerName: 'Tên chủ đề', flex: 1 },
-    { field: 'questionsCount', headerName: 'Số câu hỏi', width: 120 },
+    { field: "name", headerName: "Tên chủ đề", flex: 1 },
+    { field: "questionsCount", headerName: "Số câu hỏi", width: 120 },
     {
-      field: 'isActive',
-      headerName: 'Trạng thái',
+      field: "isActive",
+      headerName: "Trạng thái",
       width: 200,
-      renderCell: (params: GridRenderCellParams<QuestionTopic, boolean>) => (
-        <Typography
-          color={params.value ? 'success.main' : 'error.main'}
-          fontWeight="medium"
-        >
-          {params.value ? 'Đang hoạt động' : 'Đã ẩn'}
-        </Typography>
+      renderCell: (params: any) => (
+        <IsSwitch
+          value={params.row.isActive}
+          onChange={() => onToggleActive?.(params.row.id)}
+        />
       ),
     },
     {
-      field: 'actions',
-      headerName: 'Thao tác',
+      field: "actions",
+      headerName: "Thao tác",
       width: 300,
       renderCell: (params: GridRenderCellParams<QuestionTopic>) => (
         <Stack direction="row" spacing={1}>
@@ -142,11 +136,7 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
 
   return (
     <Box>
-      <Stack
-        direction={isMobile ? 'column' : 'row'}
-        spacing={2}
-        sx={{ mb: 3 }}
-      >
+      <Stack direction={isMobile ? "column" : "row"} spacing={2} sx={{ mb: 3 }}>
         <TextField
           label="Tìm kiếm"
           variant="outlined"
@@ -165,13 +155,13 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
         <FormControl size="small" sx={{ minWidth: 200 }}>
           <InputLabel>Trạng thái</InputLabel>
           <Select
-            value={showActiveOnly ? 'active' : 'all'}
+            value={showActiveOnly ? "active" : "all"}
             label="Trạng thái"
             onChange={handleActiveFilterChange}
           >
             <MenuItem value="all">Tất cả</MenuItem>
             <MenuItem value="active">Đang hoạt động</MenuItem>
-            <MenuItem value="inactive">Đã ẩn</MenuItem>
+            <MenuItem value="inactive">Đã vô hiệu hóa</MenuItem>
           </Select>
         </FormControl>
         {selectedIds.size > 0 && (
@@ -185,13 +175,13 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
           </Button>
         )}
         <Box flex={1} />
-        <Typography sx={{ alignSelf: 'center' }}>
+        <Typography sx={{ alignSelf: "center" }}>
           Tổng số: {total} chủ đề
         </Typography>
       </Stack>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
           <CircularProgress />
         </Box>
       ) : error ? (
@@ -199,7 +189,7 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
           {error}
         </Typography>
       ) : questionTopics.length === 0 ? (
-        <Typography sx={{ mt: 2, textAlign: 'center' }}>
+        <Typography sx={{ mt: 2, textAlign: "center" }}>
           Không có dữ liệu
         </Typography>
       ) : (
@@ -207,7 +197,7 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
           <DataGrid
             rows={questionTopics}
             columns={columns}
-            getRowId={(row) => row.id}
+            getRowId={row => row.id}
             loading={loading}
             autoHeight
             hideFooter
@@ -217,15 +207,15 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
             paginationMode="server"
             rowCount={total}
             paginationModel={{
-              page: (filter.page ? filter.page - 1 : 0),
+              page: filter.page ? filter.page - 1 : 0,
               pageSize: filter.limit || 10,
             }}
             onPaginationModelChange={({ page, pageSize }) => {
               updateFilter({ page: page + 1, limit: pageSize });
             }}
-            rowSelectionModel={{ type: 'include', ids: selectedIds }}
-            onRowSelectionModelChange={(model) => {
-              if (model && typeof model === 'object' && 'ids' in model) {
+            rowSelectionModel={{ type: "include", ids: selectedIds }}
+            onRowSelectionModelChange={model => {
+              if (model && typeof model === "object" && "ids" in model) {
                 setSelectedIds(new Set(model.ids as unknown as number[]));
               }
             }}
@@ -238,13 +228,22 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
             }}
           />
 
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box
+            sx={{
+              mt: 2,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
               <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
               <Select
                 labelId="page-size-select-label"
                 value={String(filter.limit || 10)}
-                onChange={(e) => updateFilter({ limit: Number(e.target.value), page: 1 })}
+                onChange={e =>
+                  updateFilter({ limit: Number(e.target.value), page: 1 })
+                }
                 label="Hiển thị"
               >
                 <MenuItem value={5}>5</MenuItem>
@@ -259,13 +258,13 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
           </Box>
 
           {totalPages > 1 && (
-            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
               <Pagination
                 count={totalPages}
                 page={filter.page || 1}
                 onChange={handlePageChange}
-                showFirstButton 
-                showLastButton  
+                showFirstButton
+                showLastButton
                 color="primary"
               />
             </Box>

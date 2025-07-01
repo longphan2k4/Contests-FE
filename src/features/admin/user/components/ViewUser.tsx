@@ -26,7 +26,15 @@ export default function ViewUser({
     { label: "ID", value: user?.id },
     { label: "Tên tài khoản", value: user?.username },
     { label: "Email", value: user?.email },
-    { label: "Vai trò", value: user?.role },
+    {
+      label: "Vai trò",
+      value:
+        user?.role === "Admin"
+          ? "Quản trị viên"
+          : user?.role === "Judge"
+          ? "Trọng tài"
+          : "Sinh viên",
+    },
     {
       label: "Trạng thái",
       value: user?.isActive ? "Đang hoạt động" : "Đã bị vô hiệu hóa",
