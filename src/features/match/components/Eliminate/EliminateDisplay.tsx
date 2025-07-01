@@ -55,7 +55,7 @@ export default function EliminateDisplay({
       handleSnap("restore");
     }
   }, [controlValue]);
-
+  // ssnsn s
   useEffect(() => {
     const contestantsData = ListContestant.flatMap(group =>
       group.contestantMatches.map(c => ({
