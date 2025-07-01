@@ -9,33 +9,31 @@ export const useStudentAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<LoginFormErrors>({});
 
-  const login = useCallback(async (formData: LoginSchemaType) => {
-    setIsLoading(true);
-    setErrors({});
+  const login = useCallback(
+    async (formData: LoginSchemaType) => {
+      setIsLoading(true);
+      setErrors({});
 
-    try {
-      // Validate với Zod schema
-      const validatedData = LoginSchema.parse(formData);
+      try {
+        const validatedData = LoginSchema.parse(formData);
 
-      console.log("validatedData", validatedData);
-      console.log("formData", formData);
-      // Gọi API login
-      const response = await StudentApiService.login(validatedData);
-      console.log("response", response);
-      if (response.success) {
-        // Đăng nhập thành công, chuyển về dashboard
-        navigate("/student/dashboard");
-        return { success: true, data: response.data };
-      } else {
-        setErrors({ general: response.message });
-        return { success: false, error: response.message };
+        const response = await StudentApiService.login(validatedData);
+        if (response.success) {
+          navigate("/student/dashboard");
+          return { success: true, data: response.data };
+        } else {
+          setErrors({ general: response.message });
+          return { success: false, error: response.message };
+        }
+      } catch (error) {
+        console.error("Login error:", error);
+        return { success: false, error: "Đăng nhập thất bại" }; // ✅ Thêm dòng này
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Login error:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [navigate]);
+    },
+    [navigate]
+  );
 
   // const logout = useCallback(() => {
   //   StudentApiService.logout();
@@ -63,4 +61,4 @@ export const useStudentAuth = () => {
     isLoading,
     errors,
   };
-}; 
+};

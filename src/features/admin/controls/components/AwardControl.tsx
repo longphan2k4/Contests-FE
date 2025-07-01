@@ -1,4 +1,4 @@
-import React, { use, useEffect } from "react";
+import React from "react";
 import { type MatchInfo, type ListContestant } from "../type/control.type";
 import { useParams } from "react-router-dom";
 import { useSocket } from "@contexts/SocketContext";

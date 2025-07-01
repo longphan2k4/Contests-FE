@@ -27,7 +27,7 @@ interface EliminateDisplayProps {
   ListContestant: ListContestant[];
   totalIcons?: number;
   currentQuestionOrder: number;
-  controlValue?: ControlValue;
+  controlValue?: ControlValue | null;
 }
 
 export default function EliminateDisplay({

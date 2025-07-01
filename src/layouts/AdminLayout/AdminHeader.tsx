@@ -13,7 +13,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { Menu as MenuIcon, AccountCircle, Logout } from "@mui/icons-material";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useLogout } from "../../features/auth/hooks/useLogout";
 import { useAuth } from "../../features/auth/hooks/authContext";
 import { useToast } from "@contexts/toastContext";
@@ -33,7 +33,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggle }) => {
   const { setUser } = useAuth();
   const { showToast } = useToast();
   const { mutate } = useLogout();
-  const navigator = useNavigate();
+  // const navigator = useNavigate();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

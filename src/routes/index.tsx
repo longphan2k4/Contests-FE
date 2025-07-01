@@ -27,7 +27,7 @@ import { OnlineControlSocketProvider } from "../contexts/OnlineControlSocketCont
 import OlympicIT2025Rules from "@features/rule/RulePage";
 //leaderboard
 import TopThreeReveal from "@features/leaderboard/top3/pages/TopThreeReveal";
-import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
+// import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
 
 import NotFound404 from "@components/404";
 const AppRoutes: React.FC = () => {
