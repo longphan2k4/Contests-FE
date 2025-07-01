@@ -10,19 +10,19 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useParams } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
+// import { useQueryClient } from "@tanstack/react-query";
 
 import { useNotification } from "../../../../hooks/useNotification";
 import { useSponsors } from "../hook/useSponsors";
 import { useCreateSponsorForContest } from "../hook/useCreate";
-import { useUpdate } from "../hook/useUpdate";
+// import { useUpdate } from "../hook/useUpdate";
 import { useDeleteMany } from "../hook/useDeleteMany";
 import { useDelete } from "../hook/useDelete";
 
 import SponsorList from "../components/SponsorList";
 import CreateSponsor from "../components/CreateSponsor";
 import ViewSponsor from "../components/ViewSponsor";
-import EditSponsor from "../components/EditSponsor";
+// import EditSponsor from "../components/EditSponsor";
 import ConfirmDeleteMany from "../components/ConfirmDeleteMany";
 import ConfirmDelete from "../components/ConfirmDelete";
 import NotificationSnackbar from "../../components/NotificationSnackbar";
@@ -30,52 +30,73 @@ import NotificationSnackbar from "../../components/NotificationSnackbar";
 import type {
   Sponsor,
   CreateSponsorForContestInput,
-  UpdateSponsorInput,
+  // UpdateSponsorInput,
   SponsorQuery,
   deleteSponsorsType,
 } from "../types/sponsors.shame";
 
-const SponsorsPage: React.FC = () => {  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
-  const [selectedSponsorId, setSelectedSponsorId] = useState<number | null>(null);
+const SponsorsPage: React.FC = () => {
+  const [sponsors, _setSponsors] = useState<Sponsor[]>([]);
+  const [selectedSponsorId, setSelectedSponsorId] = useState<number | null>(
+    null
+  );
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
+  // const [isEditOpen, setIsEditOpen] = useState(false);
   const [isConfirmDeleteMany, setIsConfirmDeleteMany] = useState(false);
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
 
   const [filter, setFilter] = useState<SponsorQuery>({});
   const [selectedSponsorIds, setSelectedSponsorIds] = useState<number[]>([]);
 
-  const { showSuccessNotification, showErrorNotification, notificationState, hideNotification } = useNotification();
+  const {
+    showSuccessNotification,
+    showErrorNotification,
+    notificationState,
+    hideNotification,
+  } = useNotification();
   const { slug } = useParams<{ slug: string }>();
-  const queryClient = useQueryClient();
-  
+  // const queryClient = useQueryClient();
+
   // All hooks must be called unconditionally
   const {
     data: sponsorsQuery,
     isLoading: isSponsorsLoading,
     isError: isSponsorsError,
     refetch: refetchSponsors,
-  } = useSponsors(slug || "", filter);    const { mutate: mutateCreateSponsor, isPending: isCreating } = useCreateSponsorForContest(slug || "");
-  const { mutate: mutateUpdate, isPending: isUpdating } = useUpdate();
+  } = useSponsors(slug || "", filter);
+  const { mutate: mutateCreateSponsor, isPending: isCreating } =
+    useCreateSponsorForContest(slug || "");
+  // const { mutate: mutateUpdate, isPending: isUpdating } = useUpdate();
   const { mutate: mutateDeleteMany } = useDeleteMany();
   const { mutate: mutateDelete } = useDelete();
-  const handleDelete = useCallback((id: number | null) => {
-    if (!id) return;
-    mutateDelete(id, {
-      onSuccess: () => {
-        showSuccessNotification(`Xóa nhà tài trợ thành công`, "Thành công");
-        refetchSponsors();
-        setIsConfirmDelete(false);
-        setSelectedSponsorId(null);
-      },
-      onError: (error: unknown) => {
-        const err = error as { response?: { data?: { message?: string } } };
-        showErrorNotification(err.response?.data?.message || "Có lỗi xảy ra khi xóa nhà tài trợ", "Lỗi xóa");
-      },
-    });
-  }, [mutateDelete, refetchSponsors, showSuccessNotification, showErrorNotification]);
+  const handleDelete = useCallback(
+    (id: number | null) => {
+      if (!id) return;
+      mutateDelete(id, {
+        onSuccess: () => {
+          showSuccessNotification(`Xóa nhà tài trợ thành công`, "Thành công");
+          refetchSponsors();
+          setIsConfirmDelete(false);
+          setSelectedSponsorId(null);
+        },
+        onError: (error: unknown) => {
+          const err = error as { response?: { data?: { message?: string } } };
+          showErrorNotification(
+            err.response?.data?.message || "Có lỗi xảy ra khi xóa nhà tài trợ",
+            "Lỗi xóa"
+          );
+        },
+      });
+    },
+    [
+      mutateDelete,
+      refetchSponsors,
+      showSuccessNotification,
+      showErrorNotification,
+    ]
+  );
 
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
@@ -86,13 +107,13 @@ const SponsorsPage: React.FC = () => {  const [sponsors, setSponsors] = useState
       }
 
       if (type === "view") setIsViewOpen(true);
-      if (type === "edit") setIsEditOpen(true);
+      // if (type === "edit") setIsEditOpen(true);
     },
     []
   );
   useEffect(() => {
     if (sponsorsQuery) {
-      setSponsors(sponsorsQuery);
+      // setSponsors(sponsorsQuery);
     }
   }, [sponsorsQuery]);
 
@@ -101,10 +122,11 @@ const SponsorsPage: React.FC = () => {  const [sponsors, setSponsors] = useState
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
-  const handeDeletes = (ids: deleteSponsorsType) => {    mutateDeleteMany(ids, {
+  const handeDeletes = (ids: deleteSponsorsType) => {
+    mutateDeleteMany(ids, {
       onSuccess: data => {
         let successCount = 0;
-        
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data.messages.forEach((item: any) => {
           if (item.status === "error") {
@@ -113,21 +135,28 @@ const SponsorsPage: React.FC = () => {  const [sponsors, setSponsors] = useState
             successCount++;
           }
         });
-        
+
         if (successCount > 0) {
-          showSuccessNotification(`Xóa thành công ${successCount} nhà tài trợ`, "Thành công");
+          showSuccessNotification(
+            `Xóa thành công ${successCount} nhà tài trợ`,
+            "Thành công"
+          );
         }
-        
+
         refetchSponsors();
         setIsConfirmDeleteMany(false);
         setSelectedSponsorIds([]);
       },
       onError: err => {
         console.log(err);
-        showErrorNotification("Có lỗi xảy ra khi xóa nhà tài trợ", "Lỗi xóa hàng loạt");
+        showErrorNotification(
+          "Có lỗi xảy ra khi xóa nhà tài trợ",
+          "Lỗi xóa hàng loạt"
+        );
       },
     });
-  };const handleCreate = (payload: CreateSponsorForContestInput) => {
+  };
+  const handleCreate = (payload: CreateSponsorForContestInput) => {
     mutateCreateSponsor(payload, {
       onSuccess: () => {
         showSuccessNotification("Tạo nhà tài trợ thành công", "Thành công");
@@ -136,30 +165,40 @@ const SponsorsPage: React.FC = () => {  const [sponsors, setSponsors] = useState
       },
       onError: (error: unknown) => {
         const err = error as { response?: { data?: { message?: string } } };
-        const message = err.response?.data?.message ?? "Đã xảy ra lỗi khi tạo nhà tài trợ";
+        const message =
+          err.response?.data?.message ?? "Đã xảy ra lỗi khi tạo nhà tài trợ";
         showErrorNotification(message, "Lỗi tạo mới");
       },
     });
-  };  const handleUpdate = (payload: UpdateSponsorInput) => {
-    if (selectedSponsorId) {
-      mutateUpdate(
-        { id: selectedSponsorId, payload },
-        {
-          onSuccess: () => {
-            showSuccessNotification(`Cập nhật nhà tài trợ thành công`, "Thành công");
-            refetchSponsors();
-            // Invalidate individual sponsor cache to refresh ViewSponsor
-            queryClient.invalidateQueries({ queryKey: ["sponsor", selectedSponsorId] });
-            setIsEditOpen(false); // Close edit dialog
-          },
-          onError: (err: unknown) => {
-            const error = err as { response?: { data?: { message?: string } } };
-            const message = error.response?.data?.message ?? "Đã xảy ra lỗi khi cập nhật nhà tài trợ";
-            showErrorNotification(message, "Lỗi cập nhật");
-          },
-        }
-      );
-    }  };
+  };
+  // const handleUpdate = (payload: UpdateSponsorInput) => {
+  //   if (selectedSponsorId) {
+  //     mutateUpdate(
+  //       { id: selectedSponsorId, payload },
+  //       {
+  //         onSuccess: () => {
+  //           showSuccessNotification(
+  //             `Cập nhật nhà tài trợ thành công`,
+  //             "Thành công"
+  //           );
+  //           refetchSponsors();
+  //           // Invalidate individual sponsor cache to refresh ViewSponsor
+  //           queryClient.invalidateQueries({
+  //             queryKey: ["sponsor", selectedSponsorId],
+  //           });
+  //           setIsEditOpen(false); // Close edit dialog
+  //         },
+  //         onError: (err: unknown) => {
+  //           const error = err as { response?: { data?: { message?: string } } };
+  //           const message =
+  //             error.response?.data?.message ??
+  //             "Đã xảy ra lỗi khi cập nhật nhà tài trợ";
+  //           showErrorNotification(message, "Lỗi cập nhật");
+  //         },
+  //       }
+  //     );
+  //   }
+  // };
 
   if (isSponsorsLoading) {
     return (
@@ -168,7 +207,7 @@ const SponsorsPage: React.FC = () => {  const [sponsors, setSponsors] = useState
       </Box>
     );
   }
-  
+
   if (isSponsorsError) {
     return (
       <Box sx={{ p: 3 }}>
@@ -182,7 +221,7 @@ const SponsorsPage: React.FC = () => {  const [sponsors, setSponsors] = useState
     );
   }
 
-  const selectedSponsor = sponsors.find(s => s.id === selectedSponsorId);
+  // const selectedSponsor = sponsors.find(s => s.id === selectedSponsorId);
 
   return (
     <Box sx={{ p: 3 }}>
@@ -197,7 +236,6 @@ const SponsorsPage: React.FC = () => {  const [sponsors, setSponsors] = useState
           Thêm nhà tài trợ
         </Button>
       </Box>
-
       {/* Sponsor list card */}
       <Box
         sx={{
@@ -254,21 +292,19 @@ const SponsorsPage: React.FC = () => {  const [sponsors, setSponsors] = useState
           />
         </Box>
       </Box>
-
-      {/* Dialogs */}      <CreateSponsor
+      {/* Dialogs */}{" "}
+      <CreateSponsor
         isOpen={isCreateOpen}
         onClose={closeCreate}
         onSubmit={handleCreate}
         isLoading={isCreating}
       />
-
       <ViewSponsor
         isOpen={isViewOpen}
         onClose={() => setIsViewOpen(false)}
         id={selectedSponsorId}
       />
-
-      {selectedSponsor && (
+      {/* {selectedSponsor && (
         <EditSponsor
           isOpen={isEditOpen}
           onClose={() => setIsEditOpen(false)}
@@ -276,17 +312,19 @@ const SponsorsPage: React.FC = () => {  const [sponsors, setSponsors] = useState
           onSubmit={handleUpdate}
           isLoading={isUpdating}
         />
-      )}
+      )} */}
       <ConfirmDeleteMany
         open={isConfirmDeleteMany}
         onClose={() => setIsConfirmDeleteMany(false)}
         count={selectedSponsorIds.length}
         onConfirm={() => handeDeletes({ ids: selectedSponsorIds })}
-      />      <ConfirmDelete
+      />{" "}
+      <ConfirmDelete
         open={isConfirmDelete}
         onClose={() => setIsConfirmDelete(false)}
         onConfirm={() => handleDelete(selectedSponsorId)}
-      />      {/* Notification Snackbar */}
+      />{" "}
+      {/* Notification Snackbar */}
       <NotificationSnackbar
         open={notificationState.open}
         onClose={hideNotification}
