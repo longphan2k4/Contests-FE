@@ -3,7 +3,8 @@ import {
   PlayIcon,
   PauseIcon,
   StopIcon,
-  ForwardIcon,
+  EyeIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import { Chip, CircularProgress, Alert, Snackbar } from "@mui/material";
 import { useAdminSocket } from "./hooks/useAdminSocket";
@@ -28,10 +29,10 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
     examState,
     isConnected,
     startExam,
-    pauseExam,
-    resumeExam,
-    stopExam,
-    nextQuestion,
+    showQuestion,
+    playTimer,
+    pauseTimer,
+    resetTimer,
   } = useAdminSocket();
 
   const [notification, setNotification] = useState<{
@@ -59,58 +60,69 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
     try {
       const response = await startExam();
       if (response.success) {
-        showToast("Kỳ thi đã bắt đầu thành công!", "success");
+        showToast("Trận đấu đã bắt đầu thành công!", "success");
       } else {
-        showToast(response.message || "Không thể bắt đầu kỳ thi", "error");
+        showToast(response.message || "Không thể bắt đầu trận đấu", "error");
       }
     } catch (error) {
-      showToast("Có lỗi xảy ra khi bắt đầu kỳ thi", "error");
+      showToast("Có lỗi xảy ra khi bắt đầu trận đấu", "error");
       console.error("Error starting exam:", error);
     }
   };
 
-  const handlePauseResume = async () => {
+  const handleShowQuestion = async () => {
     try {
-      const response = examState.isPaused
-        ? await resumeExam()
-        : await pauseExam();
-      if (response.success) {
-        const action = examState.isPaused ? "tiếp tục" : "tạm dừng";
-        showToast(`Kỳ thi đã ${action} thành công!`, "success");
+      const response = await showQuestion();
+      if (response?.success) {
+        showToast("Đã hiển thị câu hỏi cho thí sinh!", "success");
       } else {
-        showToast(response.message || "Không thể thực hiện thao tác", "error");
+        showToast(response?.message || "Không thể hiển thị câu hỏi", "error");
       }
     } catch (error) {
-      showToast("Có lỗi xảy ra khi thực hiện thao tác", "error");
-      console.error("Error pause/resume exam:", error);
+      showToast("Có lỗi xảy ra khi hiển thị câu hỏi", "error");
+      console.error("Error showing question:", error);
     }
   };
 
-  const handleStopExam = async () => {
+  const handlePlayTimer = async () => {
     try {
-      const response = await stopExam();
+      const response = await playTimer();
       if (response.success) {
-        showToast("Kỳ thi đã kết thúc thành công!", "success");
+        showToast("Đã bắt đầu bộ đếm thời gian!", "success");
       } else {
-        showToast(response.message || "Không thể kết thúc kỳ thi", "error");
+        showToast(response.message || "Không thể bắt đầu timer", "error");
       }
     } catch (error) {
-      showToast("Có lỗi xảy ra khi kết thúc kỳ thi", "error");
-      console.error("Error stopping exam:", error);
+      showToast("Có lỗi xảy ra khi bắt đầu timer", "error");
+      console.error("Error playing timer:", error);
     }
   };
 
-  const handleNextQuestion = async () => {
+  const handlePauseTimer = async () => {
     try {
-      const response = await nextQuestion();
+      const response = await pauseTimer();
       if (response.success) {
-        showToast("Đã chuyển sang câu hỏi tiếp theo!", "success");
+        showToast("Đã tạm dừng bộ đếm thời gian!", "success");
       } else {
-        showToast(response.message || "Không thể chuyển câu hỏi", "error");
+        showToast(response.message || "Không thể tạm dừng timer", "error");
       }
     } catch (error) {
-      showToast("Có lỗi xảy ra khi chuyển câu hỏi", "error");
-      console.error("Error next question:", error);
+      showToast("Có lỗi xảy ra khi tạm dừng timer", "error");
+      console.error("Error pausing timer:", error);
+    }
+  };
+
+  const handleResetTimer = async () => {
+    try {
+      const response = await resetTimer();
+      if (response.success) {
+        showToast("Đã reset bộ đếm thời gian!", "success");
+      } else {
+        showToast(response.message || "Không thể reset timer", "error");
+      }
+    } catch (error) {
+      showToast("Có lỗi xảy ra khi reset timer", "error");
+      console.error("Error resetting timer:", error);
     }
   };
 
@@ -118,7 +130,6 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
     setNotification((prev) => ({ ...prev, open: false }));
   };
 
-  // 🔥 DEBUG: Theo dõi matchData changes
   useEffect(() => {
     console.log("📊 [CONTROLS UI] matchData ban đầu:", matchData);
     if (matchData) {
@@ -149,7 +160,6 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
           <div className="flex items-center space-x-3 cursor-help">
             <Chip
               label={
-                // Ưu tiên status từ database trước
                 matchData
                   ? matchData.status === "ongoing"
                     ? examState.isPaused
@@ -158,15 +168,13 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
                     : matchData.status === "finished"
                     ? "Đã kết thúc"
                     : "Chưa bắt đầu"
-                  : // Fallback về examState nếu không có matchData
-                  !examState.isStarted
+                  : !examState.isStarted
                   ? "Chưa bắt đầu"
                   : examState.isPaused
                   ? "Tạm dừng"
                   : "Đang diễn ra"
               }
               color={
-                // Ưu tiên status từ database trước
                 matchData
                   ? matchData.status === "ongoing"
                     ? examState.isPaused
@@ -175,8 +183,7 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
                     : matchData.status === "finished"
                     ? "error"
                     : "default"
-                  : // Fallback về examState nếu không có matchData
-                  !examState.isStarted
+                  : !examState.isStarted
                   ? "default"
                   : examState.isPaused
                   ? "warning"
@@ -187,10 +194,33 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
               className="font-semibold"
             />
 
+            {/* Hiển thị timer info */}
+            {examState.isStarted && (
+              <>
+                <Chip
+                  label={`Thời gian: ${examState.timeRemaining}s`}
+                  color="info"
+                  variant="outlined"
+                  size="small"
+                  icon={<ClockIcon className="h-4 w-4" />}
+                />
+                <Chip
+                  label={
+                    examState.questionShown
+                      ? "Câu hỏi đã hiển thị"
+                      : "Chưa hiển thị câu hỏi"
+                  }
+                  color={examState.questionShown ? "success" : "warning"}
+                  variant="outlined"
+                  size="small"
+                />
+              </>
+            )}
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          {/* Row 1: Start Match và Show Question */}
           <button
             onClick={handleStartExam}
             disabled={
@@ -214,35 +244,69 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
               <PlayIcon className="h-5 w-5" />
             )}
             <span>
-              {/* Hiển thị text dựa trên trạng thái */}
               {(matchData && matchData.status !== "upcoming") ||
               examState.isStarted
                 ? "Đã bắt đầu"
-                : "Bắt Đầu trận"}
+                : "Bắt Đầu Trận"}
             </span>
           </button>
 
           <button
-            onClick={handlePauseResume}
+            onClick={handleShowQuestion}
             disabled={
-              !(
-                (matchData && matchData.status === "ongoing") ||
-                examState.isStarted
-              ) ||
+              !examState.isStarted || examState.isLoading || !isConnected
+            }
+            className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors ${
+              !examState.isStarted || examState.isLoading || !isConnected
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-purple-500 text-white hover:bg-purple-600"
+            }`}
+          >
+            {examState.isLoading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <EyeIcon className="h-5 w-5" />
+            )}
+            <span>Hiển Thị Câu Hỏi</span>
+          </button>
+        </div>
+
+        {/* Timer Controls */}
+        <div className="grid grid-cols-3 gap-4">
+          <button
+            onClick={handlePlayTimer}
+            disabled={
+              !examState.isStarted ||
+              !examState.questionShown ||
               examState.isLoading ||
               !isConnected
             }
             className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors ${
-              !(
-                (matchData && matchData.status === "ongoing") ||
-                examState.isStarted
-              ) ||
+              !examState.isStarted ||
+              !examState.questionShown ||
               examState.isLoading ||
               !isConnected
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : examState.isPaused
-                ? "bg-yellow-600 text-white hover:bg-yellow-700"
                 : "bg-green-600 text-white hover:bg-green-700"
+            }`}
+          >
+            {examState.isLoading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <PlayIcon className="h-5 w-5" />
+            )}
+            <span>Bắt Đầu Timer</span>
+          </button>
+
+          <button
+            onClick={handlePauseTimer}
+            disabled={
+              !examState.isStarted || examState.isLoading || !isConnected
+            }
+            className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors ${
+              !examState.isStarted || examState.isLoading || !isConnected
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-yellow-600 text-white hover:bg-yellow-700"
             }`}
           >
             {examState.isLoading ? (
@@ -250,57 +314,16 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
             ) : (
               <PauseIcon className="h-5 w-5" />
             )}
-            <span>{examState.isPaused ? "Tiếp Tục" : "Tạm Dừng"}</span>
+            <span>Tạm Dừng Timer</span>
           </button>
 
           <button
-            onClick={handleNextQuestion}
+            onClick={handleResetTimer}
             disabled={
-              !(
-                (matchData && matchData.status === "ongoing") ||
-                examState.isStarted
-              ) ||
-              examState.isPaused ||
-              examState.isLoading ||
-              !isConnected
+              !examState.isStarted || examState.isLoading || !isConnected
             }
             className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors ${
-              !(
-                (matchData && matchData.status === "ongoing") ||
-                examState.isStarted
-              ) ||
-              examState.isPaused ||
-              examState.isLoading ||
-              !isConnected
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-blue-500 text-white hover:bg-blue-600"
-            }`}
-          >
-            {examState.isLoading ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              <ForwardIcon className="h-5 w-5" />
-            )}
-            <span>Câu Tiếp Theo</span>
-          </button>
-
-          <button
-            onClick={handleStopExam}
-            disabled={
-              !(
-                (matchData && matchData.status === "ongoing") ||
-                examState.isStarted
-              ) ||
-              examState.isLoading ||
-              !isConnected
-            }
-            className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors ${
-              !(
-                (matchData && matchData.status === "ongoing") ||
-                examState.isStarted
-              ) ||
-              examState.isLoading ||
-              !isConnected
+              !examState.isStarted || examState.isLoading || !isConnected
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                 : "bg-red-500 text-white hover:bg-red-600"
             }`}
@@ -310,7 +333,7 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
             ) : (
               <StopIcon className="h-5 w-5" />
             )}
-            <span>Kết Thúc Thi</span>
+            <span>Reset Timer</span>
           </button>
         </div>
       </div>

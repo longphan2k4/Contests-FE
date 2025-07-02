@@ -24,7 +24,7 @@ const StudentRoutes = () => {
           }
         />
         <Route
-          path="/student/match/:matchId"
+          path="/student/match/:matchSlug"
           element={
             <SocketProvider>
               <StudentWaitingRoom />

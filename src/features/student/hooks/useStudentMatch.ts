@@ -40,15 +40,39 @@ interface MatchStartedEvent {
   status: string;
 }
 
-interface QuestionChangedEvent {
+interface MediaData {
+  id: string;
+  type: "image" | "video" | "audio";
+  url: string;
+  thumbnail?: string;
+  title?: string;
+  description?: string;
+}
+
+interface QuestionShownEvent {
   matchId: number;
+  matchSlug: string;
   currentQuestion: number;
-  remainingTime: number;
+  currentQuestionData: {
+    order: number;
+    question: {
+      id: number;
+      intro?: string;
+      content: string;
+      questionType: string;
+      difficulty: string;
+      defaultTime: number;
+      score: number;
+      options: string[];
+      media?: MediaData[];
+    };
+  };
 }
 
 interface TimerUpdatedEvent {
-  matchId: number;
-  remainingTime: number;
+  timeRemaining: number;
+  isActive: boolean;
+  isPaused: boolean;
 }
 
 interface MatchEndedEvent {
@@ -79,8 +103,8 @@ export const useStudentMatch = () => {
   });
 
   // Join match room
-  const joinMatch = (matchId: number) => {
-    console.log('🏠 [STUDENT MATCH] Attempting to join match:', matchId);
+  const joinMatch = (matchSlug: string) => {
+    console.log('🏠 [STUDENT MATCH] Attempting to join match:', matchSlug);
     
     if (!socket || !isConnected) {
       console.log('❌ [STUDENT MATCH] Cannot join match - socket not connected');
@@ -91,7 +115,7 @@ export const useStudentMatch = () => {
     setLoading(true);
     console.log('📤 [STUDENT MATCH] Emitting student:joinMatch event');
     
-    socket.emit('student:joinMatch', { matchId }, (response: JoinMatchResponse) => {
+    socket.emit('student:joinMatch', { matchSlug }, (response: JoinMatchResponse) => {
       console.log('📥 [STUDENT MATCH] Received joinMatch response:', response);
       
       if (response.success) {
@@ -144,12 +168,12 @@ export const useStudentMatch = () => {
       setMatchData(prev => prev ? { ...prev, status: data.status } : null);
     };
 
-    const handleQuestionChanged = (data: QuestionChangedEvent) => {
-      console.log('❓ [STUDENT MATCH] Question changed event received:', data);
+    const handleQuestionShown = (data: QuestionShownEvent) => {
+      console.log('👁️ [STUDENT MATCH] Question shown event received:', data);
       setMatchData(prev => prev ? {
         ...prev,
         currentQuestion: data.currentQuestion,
-        remainingTime: data.remainingTime
+        remainingTime: prev.remainingTime
       } : null);
     };
 
@@ -157,7 +181,7 @@ export const useStudentMatch = () => {
       console.log('⏱️ [STUDENT MATCH] Timer updated event received:', data);
       setMatchData(prev => prev ? {
         ...prev,
-        remainingTime: data.remainingTime
+        remainingTime: data.timeRemaining
       } : null);
     };
 
@@ -173,8 +197,8 @@ export const useStudentMatch = () => {
 
     // Register event listeners
     socket.on('match:started', handleMatchStarted);
-    socket.on('match:questionChanged', handleQuestionChanged);
-    socket.on('match:timerUpdated', handleTimerUpdated);
+    socket.on('match:questionShown', handleQuestionShown);
+    socket.on('timer:update', handleTimerUpdated);
     socket.on('match:ended', handleMatchEnded);
     socket.on('student:eliminated', handleStudentEliminated);
 
@@ -184,8 +208,8 @@ export const useStudentMatch = () => {
     return () => {
       console.log('🧹 [STUDENT MATCH] Cleaning up event listeners');
       socket.off('match:started', handleMatchStarted);
-      socket.off('match:questionChanged', handleQuestionChanged);
-      socket.off('match:timerUpdated', handleTimerUpdated);
+      socket.off('match:questionShown', handleQuestionShown);
+      socket.off('timer:update', handleTimerUpdated);
       socket.off('match:ended', handleMatchEnded);
       socket.off('student:eliminated', handleStudentEliminated);
     };

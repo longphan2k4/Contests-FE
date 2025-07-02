@@ -23,7 +23,6 @@ import { SocketProvider } from "../contexts/SocketContext";
 import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import ContestList from "../features/judge/components/selector/ContestList";
 import MatchList from "../features/judge/components/selector/MatchList";
-import { OnlineControlSocketProvider } from "../contexts/OnlineControlSocketContext";
 import OlympicIT2025Rules from "@features/rule/RulePage";
 //leaderboard
 import TopThreeReveal from "@features/leaderboard/top3/pages/TopThreeReveal";
@@ -41,7 +40,6 @@ const AppRoutes: React.FC = () => {
       {/* Student Routes */}
       {StudentRoutes()}
 
-
       <Route element={<PublicRoute restricted={true} />}>{AuthRoutes()}</Route>
 
       <Route element={<PrivateRoute roles={["Admin"]} />}>
@@ -51,9 +49,7 @@ const AppRoutes: React.FC = () => {
           path="/admin/cuoc-thi/:slug/dieu-kien-tran-dau/:match"
           element={
             <SocketProvider>
-              <OnlineControlSocketProvider>
-                <ControlsPage />
-              </OnlineControlSocketProvider>
+              <ControlsPage />
             </SocketProvider>
           }
         />
@@ -102,7 +98,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/match/gold" element={<GoldWinnerDisplay match_id="1" />} />
       {/* Tech Banner Route */}
       <Route path="/banner" element={<TechBanner />} />
-      <Route path="/rule" element={<OlympicIT2025Rules/>}/>
+      <Route path="/rule" element={<OlympicIT2025Rules />} />
       <Route path="/403" element={<Forbidden403 />} />
       <Route path="/404" element={<NotFound404 />} />
       <Route path="*" element={<NotFound404 />} />
