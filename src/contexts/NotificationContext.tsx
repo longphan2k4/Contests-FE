@@ -13,7 +13,7 @@ interface NotificationState {
   severity: AlertColor;
   title?: string;
 }
-
+// NotificationContext.tsx
 interface NotificationContextType {
   notificationState: NotificationState;
   showNotification: (

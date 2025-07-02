@@ -1,8 +1,16 @@
 export interface Contestant {
   registration_number: number;
   fullname: string;
-  match_status: string;
-  eliminated_at_question_order: number | null;
+  status:
+    | "not_started"
+    | "in_progress"
+    | "confirmed1"
+    | "confirmed2"
+    | "eliminated"
+    | "rescued"
+    | "banned"
+    | "completed";
+  eliminated_at_question_order: number | null;  
   rescued_at_question_order?: number | null;
 }
 
