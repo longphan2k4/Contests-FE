@@ -30,13 +30,9 @@ export default function StudentList({
 }: StudentListProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
-      field: "index",
-      headerName: "STT",
+      field: "id",
+      headerName: "Id",
       width: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: params =>
-        params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
     { field: "fullName", headerName: "Tên", flex: 1 },
     {

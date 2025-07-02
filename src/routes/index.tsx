@@ -47,7 +47,7 @@ const AppRoutes: React.FC = () => {
         {ContestRoutes()}
         {AdminRoutes()}
         <Route
-          path="/admin/cuoc-thi/:slug/dieu-kien-tran-dau/:match"
+          path="/admin/contest/:slug/control/:match"
           element={
             <SocketProvider>
               <OnlineControlSocketProvider>

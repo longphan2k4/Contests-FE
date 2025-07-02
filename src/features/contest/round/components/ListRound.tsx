@@ -29,13 +29,9 @@ export default function ListRound({
 }: ClassListProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
-      field: "indexs",
-      headerName: "STT",
+      field: "id",
+      headerName: "Id",
       width: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: params =>
-        params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
     { field: "name", headerName: "Tên vòng đấu", flex: 1 },
     { field: "index", headerName: "Thứ tự vòng đấu", flex: 1 },

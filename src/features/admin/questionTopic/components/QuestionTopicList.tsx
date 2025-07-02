@@ -73,15 +73,9 @@ const QuestionTopicList: React.FC<QuestionTopicListProps> = ({
 
   const columns = [
     {
-      field: "stt",
-      headerName: "STT",
-      width: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: (params: GridRenderCellParams) => {
-        const index = params.api.getSortedRowIds().indexOf(params.id);
-        return ((filter.page || 1) - 1) * (filter.limit || 10) + index + 1;
-      },
+      field: "id",
+      headerName: "Id",
+      width: 80,
     },
     { field: "name", headerName: "Tên chủ đề", flex: 1 },
     { field: "questionsCount", headerName: "Số câu hỏi", width: 120 },

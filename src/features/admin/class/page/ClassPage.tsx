@@ -390,8 +390,8 @@ const ClassesPage: React.FC = () => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1, // Reset to first page when changing limit
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >

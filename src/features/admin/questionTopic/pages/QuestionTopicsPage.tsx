@@ -104,7 +104,6 @@ const QuestionTopicsPage: React.FC = () => {
   const handleConfirmDelete = async () => {
     try {
       const response = await handleDeleteSelected(selectedIds);
-      console.log("nhận response", response);
 
       if (response && typeof response === "object" && "data" in response) {
         const res = response as BatchDeleteResponse;

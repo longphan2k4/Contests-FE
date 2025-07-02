@@ -189,6 +189,10 @@ const ContestantMatchPage: React.FC = () => {
   const { slug, matchId: matchIdParam } = useParams();
   const matchId = matchIdParam ? parseInt(matchIdParam) : null;
 
+  useEffect(() => {
+    document.title = "Quản lý nhóm thí sinh";
+  }, []);
+
   // Điều kiện để quyết định sử dụng hook nàoAdd commentMore actions
   const shouldUseMatchFilter = !!(filter.matchId && filter.matchId > 0);
 
@@ -1899,8 +1903,8 @@ const ContestantMatchPage: React.FC = () => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1, // Reset về trang 1 khi thay đổi limit
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >
@@ -1908,6 +1912,9 @@ const ContestantMatchPage: React.FC = () => {
                 <MenuItem value={10}>10</MenuItem>
                 <MenuItem value={25}>25</MenuItem>
                 <MenuItem value={50}>50</MenuItem>
+                <MenuItem value={100}>100</MenuItem>
+                <MenuItem value={200}>200</MenuItem>
+                <MenuItem value={500}>500</MenuItem>
               </Select>
             </FormControl>
             <Typography>

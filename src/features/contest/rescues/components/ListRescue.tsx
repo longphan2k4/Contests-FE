@@ -28,13 +28,9 @@ export default function ListRescue({
 }: ListrescueProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
-      field: "index",
-      headerName: "STT",
+      field: "id",
+      headerName: "Id",
       width: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: params =>
-        params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
     { field: "name", headerName: "Tên cứu trợ", flex: 1 },
     { field: "rescueType", headerName: "Loại cứu trợ", flex: 1 },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo, use } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import {
   Box,
   Typography,
@@ -183,6 +183,10 @@ const StudentsPage: React.FC = () => {
     []
   );
 
+  useEffect(() => {
+    document.title = "Quản lý Sinh viên";
+  }, []);
+
   const hanldConfirmDeleteManyDeletes = () => {
     setIsConfirmDeleteMany(true);
   };
@@ -194,10 +198,6 @@ const StudentsPage: React.FC = () => {
       </Box>
     );
   }
-
-  useEffect(() => {
-    document.title = "Quản lý Sinh viên";
-  }, []);
 
   if (isStudentsError) {
     return (

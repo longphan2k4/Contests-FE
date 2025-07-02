@@ -30,6 +30,7 @@ interface SchoolListProps {
   totalItems?: number;
   onViewDetail?: (school: School) => void;
   onEdit?: (school: School) => void;
+  onDelete?: (id: number) => void;
 }
 
 const SchoolList: React.FC<SchoolListProps> = ({
@@ -40,6 +41,7 @@ const SchoolList: React.FC<SchoolListProps> = ({
   totalItems = 0,
   onViewDetail,
   onEdit,
+  onDelete,
 }) => {
   const theme = useTheme();
 
@@ -56,7 +58,8 @@ const SchoolList: React.FC<SchoolListProps> = ({
           page: filter?.page || 1,
         });
       }
-    }
+    },
+    onDelete
   );
 
   const [searchValue, setSearchValue] = useState(filter?.search || "");
@@ -72,15 +75,12 @@ const SchoolList: React.FC<SchoolListProps> = ({
 
   const handleDeleteSelected = async () => {
     if (selectedIds.length === 0) return;
-    
-    console.log('Danh sách trường học được chọn để xóa:', selectedIds);
+
     const success = await handleDeleteSchools(selectedIds);
-    console.log('Kết quả xóa:', success);
-    
+
     if (success) {
       // Refresh danh sách sau khi xóa thành công
       if (onFilterChange) {
-        console.log('Refresh danh sách sau khi xóa thành công');
         onFilterChange({
           ...filter,
           page: filter?.page || 1,
@@ -190,7 +190,7 @@ const SchoolList: React.FC<SchoolListProps> = ({
             >
               <MenuItem value="all">Tất cả</MenuItem>
               <MenuItem value="active">Đang hoạt động</MenuItem>
-              <MenuItem value="inactive">Không hoạt động</MenuItem>
+              <MenuItem value="inactive">Đã vô hiệu hóa</MenuItem>
             </Select>
           </FormControl>
 
@@ -200,7 +200,13 @@ const SchoolList: React.FC<SchoolListProps> = ({
               color="error"
               onClick={handleDeleteSelected}
               disabled={deleteLoading}
-              startIcon={deleteLoading ? <CircularProgress size={20} color="inherit" /> : <DeleteIcon />}
+              startIcon={
+                deleteLoading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <DeleteIcon />
+                )
+              }
               sx={{
                 width: { xs: "100%", sm: "auto" },
               }}
@@ -243,18 +249,17 @@ const SchoolList: React.FC<SchoolListProps> = ({
           hideFooter
           checkboxSelection
           onRowSelectionModelChange={selectionModel => {
-            console.log('Selection model thay đổi:', selectionModel);
             if (
               selectionModel &&
               typeof selectionModel === "object" &&
               "ids" in selectionModel
             ) {
-              const newSelectedIds = Array.from((selectionModel as unknown as { ids: number[] }).ids);
-              console.log('Danh sách ID mới (từ object):', newSelectedIds);
+              const newSelectedIds = Array.from(
+                (selectionModel as unknown as { ids: number[] }).ids
+              );
               setSelectedIds(newSelectedIds);
             } else {
               const newSelectedIds = selectionModel as number[];
-              console.log('Danh sách ID mới (từ array):', newSelectedIds);
               setSelectedIds(newSelectedIds);
             }
           }}

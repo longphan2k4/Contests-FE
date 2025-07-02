@@ -59,7 +59,7 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
     setOpenSubMenu(openSubMenu === key ? null : key);
   };
 
-  const { slug, match } = useParams();
+  const { slug } = useParams();
   const handleDrawerToggle = () => {
     if (setMobileOpen) {
       setMobileOpen(!mobileOpen);
@@ -74,87 +74,70 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
       key: "dashboard",
       icon: <DashboardIcon />,
       label: "Bảng điều khiển",
-      path: `/admin/cuoc-thi/${slug}/dashboard`,
-    },
-    {
-      key: "controls",
-      icon: <DashboardIcon />,
-      label: "Điều khiển",
-      path: `/admin/cuoc-thi/${slug}/dieu-kien-tran-dau/${match}`,
+      path: `/admin/contest/${slug}/dashboard`,
     },
     {
       key: "round",
       icon: <SchoolIcon />,
       label: "Vòng đấu",
-      path: `/admin/cuoc-thi/${slug}/vong-dau`,
+      path: `/admin/contest/${slug}/round`,
     },
     {
       key: "match",
       icon: <BankIcon />,
       label: "Trận đấu",
-      path: `/admin/cuoc-thi/${slug}/tran-dau`,
+      path: `/admin/contest/${slug}/match`,
     },
 
     {
       key: "group",
       icon: <GroupIcon />,
       label: "Nhóm",
-      path: `/admin/cuoc-thi/${slug}/nhom`,
+      path: `/admin/contest/${slug}/group`,
     },
     {
       key: "class-videos",
       icon: <QuestionIcon fontSize="small" />,
       label: "Video lớp",
-      path: `/admin/cuoc-thi/${slug}/class-videos`,
+      path: `/admin/contest/${slug}/class-videos`,
     },
     {
       key: "sponsors",
       icon: <QuestionIcon fontSize="small" />,
       label: "Nhà tài trợ",
-      path: `/admin/cuoc-thi/${slug}/sponsors`,
+      path: `/admin/contest/${slug}/sponsors`,
     },
 
     {
       key: "results",
       icon: <QuestionIcon fontSize="small" />,
       label: "Kết quả ",
-      path: `/admin/cuoc-thi/${slug}/results`,
+      path: `/admin/contest/${slug}/results`,
     },
     {
       key: "rescues",
       icon: <TrophyIcon />,
       label: "Cứu trợ ",
-      path: `/admin/cuoc-thi/${slug}/cuu-tro`,
+      path: `/admin/contest/${slug}/rescue`,
     },
     {
       key: "contestant",
       icon: <SchoolIcon />,
       label: "Thí sinh",
-      path: `/admin/cuoc-thi/${slug}/thi-sinh`,
+      path: `/admin/contest/${slug}/contestant`,
     },
-    {
-      key: "1",
-      icon: <FileIcon />,
-      label: "Thông tin cuộc thi",
-      path: "/Contest/about",
-    },
-    {
-      key: "2",
-      icon: <FileIcon />,
-      label: "Thí sinh và trận đấu",
-      path: "/Contest/about",
-    },
+
     {
       key: "3",
       icon: <FileIcon />,
       label: "Media",
-      path: `/admin/cuoc-thi/${slug}/media`,
+      path: `/admin/contest/${slug}/media`,
     },
     {
       key: "awards",
       icon: <FileIcon />,
       label: "Giải thưởng",
-      path: `/admin/cuoc-thi/${slug}/awards`,
+      path: `/admin/contest/${slug}/awards`,
     },
   ];
 

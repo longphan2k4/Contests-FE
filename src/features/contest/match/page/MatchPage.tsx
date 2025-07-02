@@ -75,6 +75,10 @@ const MatchPage: React.FC = () => {
     refetch: refetchs,
   } = useGetAll(filter, slug ?? null);
 
+  useEffect(() => {
+    document.title = "Quản lý trận đấu";
+  }, []);
+
   const { mutate: mutateCreate } = useCreate();
 
   const { mutate: mutateUpdate } = useUpdate();
@@ -139,7 +143,9 @@ const MatchPage: React.FC = () => {
           refetchs();
         },
         onError: (err: unknown) => {
-          const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+          const message = (
+            err as { response?: { data?: { message?: string } } }
+          )?.response?.data?.message;
           if (message) {
             showToast(message, "error"); // nên là "error" thay vì "success"
           }
@@ -158,7 +164,9 @@ const MatchPage: React.FC = () => {
             refetchs();
           },
           onError: (err: unknown) => {
-            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            const message = (
+              err as { response?: { data?: { message?: string } } }
+            )?.response?.data?.message;
             if (message) showToast(message, "error");
           },
         }
@@ -174,7 +182,8 @@ const MatchPage: React.FC = () => {
         setSelectedId(null);
       },
       onError: (err: unknown) => {
-        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+        const message = (err as { response?: { data?: { message?: string } } })
+          ?.response?.data?.message;
         if (message) showToast(message, "error");
       },
     });
@@ -188,7 +197,9 @@ const MatchPage: React.FC = () => {
         refetchs();
       },
       onError: (error: unknown) => {
-        const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+        const message = (
+          error as { response?: { data?: { message?: string } } }
+        )?.response?.data?.message;
         if (message) showToast(message, "error");
       },
     });
@@ -414,8 +425,8 @@ const MatchPage: React.FC = () => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1, // Reset to page 1 when changing limit
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >

@@ -44,6 +44,12 @@ export default function FormAutocompleteFilter({
       loading={loading}
       disabled={disabled}
       sx={sx}
+      disableClearable={disableClearable}
+      ListboxProps={{
+        style: {
+          maxHeight: 48 * 10 + 8, // Hiển thị tối đa 10 item, mỗi item cao 48px
+        },
+      }}
       renderInput={params => (
         <TextField
           {...params}
@@ -52,7 +58,6 @@ export default function FormAutocompleteFilter({
           placeholder={`Chọn ${label.toLowerCase()}`}
         />
       )}
-      disableClearable={disableClearable}
     />
   );
 }

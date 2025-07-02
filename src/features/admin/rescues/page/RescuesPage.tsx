@@ -331,8 +331,8 @@ const RescuesPage: React.FC = () => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1, // Reset to page 1 when changing limit
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >
