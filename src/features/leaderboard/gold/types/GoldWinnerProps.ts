@@ -1,3 +1,3 @@
 export interface GoldWinnerProps {
-  match_id: string;
+  studentName: string | null;
 }

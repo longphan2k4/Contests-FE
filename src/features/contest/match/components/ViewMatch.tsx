@@ -15,6 +15,9 @@ export default function ViewMatch({
   isOpen,
   onClose,
 }: ViewMatchProps): React.ReactElement {
+// <<<<<<< HEAD
+//   const { data: match } = useGetById(id);
+// =======
   const { data: match, isLoading, isError, refetch } = useGetById(id);
 
   useEffect(() => {
@@ -30,6 +33,7 @@ export default function ViewMatch({
     );
 
   if (isError) return <div>Không thể tải dữ liệu</div>;
+
   const fields = [
     { label: "ID", value: match?.id },
     { label: "Đường dẫn", value: match?.slug },

@@ -74,7 +74,7 @@ export default function EditeContestant({
 
   const round = useMemo(() => {
     if (listRound?.success && Array.isArray(listRound.data)) {
-      return listRound.data.map((item: any) => ({
+      return listRound.data.map((item: { id: number; name: string }) => ({
         label: item.name,
         value: item.id,
       }));
@@ -84,7 +84,7 @@ export default function EditeContestant({
 
   const status = useMemo(() => {
     if (listStatus?.success && Array.isArray(listStatus.data.options)) {
-      return listStatus.data.options.map((item: any) => ({
+      return listStatus.data.options.map((item: { label: string; value: string }) => ({
         label: item.label,
         value: item.value,
       }));

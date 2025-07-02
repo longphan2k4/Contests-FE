@@ -1,11 +1,12 @@
 import React from "react";
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton, Avatar } from "@mui/material";
 import DataGrid from "../../../../components/DataGrid";
 //import IsSwitch from "../../../../components/IsSwitch";
 import type { GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { getMediaUrl } from "@/config/env";
 
 import { type Sponsor } from "../types/sponsors.shame";
 
@@ -25,8 +26,7 @@ export default function SponsorList({
   onView,
   onEdit,
   onDelete,
-}: SponsorListProps): React.ReactElement {
-  const columns: GridColDef[] = [
+}: SponsorListProps): React.ReactElement {  const columns: GridColDef[] = [
     {
       field: "index",
       headerName: "STT",
@@ -36,7 +36,26 @@ export default function SponsorList({
       renderCell: params =>
         params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
-    { field: "name", headerName: "Tên", flex: 1 },
+    { field: "name", headerName: "Tên", flex: 1 },    {
+      field: "logo",
+      headerName: "Logo",
+      width: 80,
+      renderCell: params => (
+        params.row.logo ? (
+          <Avatar
+            src={getMediaUrl(params.row.logo)}
+            alt="logo"
+            sx={{ width: 40, height: 40 }}
+            onError={(e) => {
+              console.error('Image load error:', getMediaUrl(params.row.logo));
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        ) : (
+          <Avatar sx={{ width: 40, height: 40 }}>?</Avatar>
+        )
+      ),
+    },
     // {
     //   field: "isActive",
     //   headerName: "Trạng thái",
@@ -73,11 +92,10 @@ export default function SponsorList({
         rows={sponsors}
         columns={columns}
         getRowId={row => row.id}
-        selectedIds={selectedSponsorIds}
-        onSelectChange={selection => {
+        selectedIds={selectedSponsorIds}        onSelectChange={selection => {
           const idsArray = Array.isArray(selection)
             ? selection
-            : Array.from((selection as any).ids || []);
+            : Array.from((selection as { ids?: number[] }).ids || []);
           setSelectedSponsorIds(idsArray.map(id => Number(id)));
         }}
       />

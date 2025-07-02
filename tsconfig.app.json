@@ -41,18 +41,18 @@
     "baseUrl": ".",
     "paths": {
       "@*": ["src/*"],
-      "@components/*": ["src/components/*"],
-      "@pages/*": ["src/pages/*"],
-      "@features/*": ["src/features/*"],
-      "@hooks/*": ["src/hooks/*"],
-      "@utils/*": ["src/utils/*"],
-      "@types/*": ["src/types/*"],
-      "@contexts/*": ["src/contexts/*"],
-      "@config/*": ["src/config/*"],
-      "@assets/*": ["src/assets/*"],
-      "@layouts/*": ["src/layouts/*"],
-      "@routes/*": ["src/routes/*"],
-      "@common/*": ["src/common/*"]
+      "@/components/*": ["src/components/*"],
+      "@/pages/*": ["src/pages/*"],
+      "@/features/*": ["src/features/*"],
+      "@/hooks/*": ["src/hooks/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/types/*": ["src/types/*"],
+      "@/contexts/*": ["src/contexts/*"],
+      "@/config/*": ["src/config/*"],
+      "@/assets/*": ["src/assets/*"],
+      "@/layouts/*": ["src/layouts/*"],
+      "@/routes/*": ["src/routes/*"],
+      "@/common/*": ["src/common/*"]
     },
 
     /* ✅ Enforce correct casing in import paths */

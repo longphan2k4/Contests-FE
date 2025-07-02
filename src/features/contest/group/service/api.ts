@@ -41,7 +41,7 @@ export const getListUser = async () => {
 };
 
 export const getListMath = async (slug: string | null) => {
-  if (!slug === null) return;
+  if (slug === null) return;
   const res = await axiosInstance.get(`/match/contest/${slug}`);
   return res.data;
 };
