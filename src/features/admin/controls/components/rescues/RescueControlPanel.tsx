@@ -2,7 +2,8 @@
 import React, { useState, useMemo } from 'react';
 import {
     Box, Typography, Paper, Button, TextField, List, ListItem, ListItemText,
-    IconButton, ListItemAvatar, Avatar, Select, MenuItem, FormControl, InputLabel, Stack, CircularProgress
+    IconButton, ListItemAvatar, Avatar, Select, MenuItem, FormControl, InputLabel, Stack, CircularProgress,
+    Chip
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -47,7 +48,7 @@ type RescuedContestant = {
     schoolName: string;
     correctAnswers: number;
     eliminatedAtQuestionOrder: number | null;
-    registrationNumber?: string; 
+    registrationNumber?: string;
 };
 
 interface RescueControlPanelProps {
@@ -113,10 +114,36 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
         const contestantIds = rescuedList.map((c: RescuedContestant) => c.contestantId);
         confirmMutation.mutate({
             matchId,
-            data: { contestantIds, currentQuestionOrder }
+            data: { contestantIds, currentQuestionOrder, rescueId: selectedRescueId }
         }, {
-            onSuccess: () => {
-                alert('Cứu trợ thành công!');
+            onSuccess: (response) => {
+                // Cập nhật lại cache rescue để cập nhật trạng thái "used" ngay lập tức
+                if (response?.rescueUpdated) {
+                    queryClient.setQueryData(
+                        ['rescuesByMatchIdAndType', matchId, 'resurrected'],
+                        (oldData: { data: RescueFromAPI[] } | undefined) => {
+                            if (!oldData?.data) return oldData;
+                            return {
+                                ...oldData,
+                                data: oldData.data.map((rescue: RescueFromAPI) =>
+                                    rescue.id === selectedRescueId
+                                        ? { ...rescue, status: 'used' }
+                                        : rescue
+                                )
+                            };
+                        }
+                    );
+                }
+                
+                // Invalidate để refresh dữ liệu từ server
+                queryClient.invalidateQueries({
+                    queryKey: ['rescuesByMatchIdAndType'],
+                    exact: false
+                });
+                queryClient.invalidateQueries({
+                    queryKey: ['rescuedContestants'],
+                    exact: false
+                });
             }
         });
     };
@@ -125,10 +152,15 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
         return rescues.find((r: RescueFromAPI) => r.id === selectedRescueId);
     }, [selectedRescueId, rescues]);
 
+    // Kiểm tra xem rescue hiện tại đã được sử dụng chưa
+    const isRescueUsed = useMemo(() => {
+        return selectedRescueInfo?.status === 'used';
+    }, [selectedRescueInfo]);
+
     return (
         <Paper sx={{ p: 3, mt: 3 }} elevation={3}>
             <Typography variant="h5" component="h2" gutterBottom>
-                🚀 Module Cứu Trợ Trực Tiếp
+                🚀 Cứu Trợ Hồi Sinh
             </Typography>
 
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
@@ -145,7 +177,27 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                             >
                                 {rescues?.map((r: RescueFromAPI) => (
                                     <MenuItem key={r.id} value={r.id}>
-                                        {r.id}: {r.status}
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            justifyContent: 'space-between', 
+                                            width: '100%' 
+                                        }}>
+                                            <Typography variant="body2">
+                                                {r.index}: {r.name}
+                                            </Typography>
+                                            <Chip
+                                                label={r.status === 'used' ? 'Đã sử dụng' : 'Chưa sử dụng'}
+                                                color={r.status === 'used' ? 'success' : 'warning'}
+                                                variant="filled"
+                                                size="small"
+                                                sx={{ 
+                                                    ml: 1,
+                                                    fontSize: '0.7rem',
+                                                    height: '20px'
+                                                }}
+                                            />
+                                        </Box>
                                     </MenuItem>
                                 ))}
                             </Select>
@@ -157,14 +209,14 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                             type="number"
                             value={suggestCount}
                             onChange={e => setSuggestCount(Math.max(1, parseInt(e.target.value, 10)))}
-                            disabled={!selectedRescueId}
+                            disabled={!selectedRescueId || isRescueUsed}
                         />
                         <Button
                             variant="contained"
                             color="info"
                             startIcon={isLoadingSuggest ? <CircularProgress size={20} color="inherit" /> : <AutoFixHighIcon />}
                             onClick={handleSuggest}
-                            disabled={!selectedRescueId || isLoadingSuggest}
+                            disabled={!selectedRescueId || isLoadingSuggest || isRescueUsed}
                         >
                             Đề xuất tự động
                         </Button>
@@ -172,25 +224,53 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                             variant="outlined"
                             startIcon={<AddIcon />}
                             onClick={() => setIsDialogOpen(true)}
-                            disabled={!selectedRescueId}
+                            disabled={!selectedRescueId || isRescueUsed}
                         >
                             Thêm thủ công...
                         </Button>
+                        {/* Thêm Hướng dẫn sử dụng */}
+
+
                     </Stack>
                 </Box>
 
                 {/* Cột 2: Danh sách được cứu */}
                 <Box sx={{ flex: 2, minWidth: 400 }}>
-                    <Typography variant="h6">
-                        Danh sách cứu trợ cho:
-                        <Box component="span" color="primary.main" fontWeight="bold">
-                            {selectedRescueInfo ? ` ${selectedRescueInfo.id} - ${selectedRescueInfo.status}` : ' (Chưa chọn)'}
-                        </Box>
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                        <Typography variant="h6">
+                            Danh sách thí sinh được cứu trợ
+                            <Box component="span" color="primary.main" fontWeight="bold">
+                                {!selectedRescueInfo ? ' (Chưa chọn)' : ``}
+                            </Box>
+                        </Typography>
+                        {selectedRescueInfo && (
+                            <Chip
+                                label={selectedRescueInfo.status === 'used' ? 'Đã sử dụng' : 'Chưa sử dụng'}
+                                color={selectedRescueInfo.status === 'used' ? 'success' : 'warning'}
+                                variant="filled"
+                                size="small"
+                                sx={{
+                                    fontWeight: 'bold',
+                                    fontSize: '0.75rem'
+                                }}
+                            />
+                        )}
+                    </Box>
                     <Typography variant="body1" color="text.secondary" gutterBottom>
                         Tổng số: {rescuedList.length} thí sinh
                     </Typography>
-                    <Paper variant="outlined" sx={{ minHeight: 300, mt: 1, p: 1, position: 'relative' }}>
+                    <Paper variant="outlined" sx={{
+                        minHeight: 300,
+                        maxHeight: 350,
+                        mt: 1,
+                        p: 1,
+                        position: 'relative',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        opacity: isRescueUsed ? 0.6 : 1,
+                        backgroundColor: isRescueUsed ? '#f5f5f5' : 'inherit'
+                    }}>
                         {(isLoadingContestants || removeMutation.isPending) &&
                             <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, bgcolor: 'rgba(255,255,255,0.7)', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box>
                         }
@@ -199,21 +279,73 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                                 {selectedRescueId ? 'Không có thí sinh nào trong danh sách này.' : 'Vui lòng chọn một đợt cứu trợ.'}
                             </Typography>
                         ) : (
-                            <List>
-                                {rescuedList.map((c: RescuedContestant) => (
-                                    <ListItem key={c.contestantId} secondaryAction={
-                                        <IconButton edge="end" onClick={() => handleRemove(c.contestantId)}>
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    }>
-                                        <ListItemAvatar><Avatar>{c.registrationNumber}</Avatar></ListItemAvatar>
-                                        <ListItemText
-                                            primary={c.fullName}
-                                            secondary={`Số câu đúng: ${c.correctAnswers} | Bị loại ở câu: ${c.eliminatedAtQuestionOrder || 'N/A'}`}
-                                        />
-                                    </ListItem>
-                                ))}
-                            </List>
+                            <>
+                                {isRescueUsed && (
+                                    <Box sx={{ 
+                                        p: 2, 
+                                        mb: 1, 
+                                        backgroundColor: '#e8f5e8', 
+                                        borderRadius: 1, 
+                                        border: '1px solid #4caf50', 
+                                        overflow: 'hidden',
+                                    }}>
+                                        <Typography variant="body2" color="success.main" fontWeight="bold">
+                                            Rescue này đã được sử dụng - Không thể chỉnh sửa
+                                        </Typography>
+                                    </Box>
+                                )}
+                                <Box sx={{
+                                flex: 1,
+                                overflow: 'auto',
+                                '&::-webkit-scrollbar': {
+                                    width: '6px',
+                                },
+                                '&::-webkit-scrollbar-track': {
+                                    background: '#f1f1f1',
+                                    borderRadius: '4px',
+                                },
+                                '&::-webkit-scrollbar-thumb': {
+                                    background: '#c1c1c1',
+                                    borderRadius: '4px',
+                                },
+                                '&::-webkit-scrollbar-thumb:hover': {
+                                    background: '#a8a8a8',
+                                },
+                            }}>
+                                <List dense>
+                                    {rescuedList.map((c: RescuedContestant) => (
+                                        <ListItem key={c.contestantId} secondaryAction={
+                                            <IconButton 
+                                                edge="end" 
+                                                onClick={() => handleRemove(c.contestantId)} 
+                                                size="small"
+                                                disabled={isRescueUsed}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        }>
+                                            <ListItemAvatar>
+                                                <Avatar sx={{ width: 32, height: 32, fontSize: '0.8rem' }}>
+                                                    {c.registrationNumber}
+                                                </Avatar>
+                                            </ListItemAvatar>
+                                            <ListItemText
+                                                primary={
+                                                    <Typography variant="body2" fontWeight="medium" noWrap>
+                                                        {c.fullName}
+                                                    </Typography>
+                                                }
+                                                secondary={
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        Số câu đúng: {c.correctAnswers} | Bị loại ở câu: {c.eliminatedAtQuestionOrder || 'N/A'}
+                                                    </Typography>
+                                                }
+                                            />
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Box>
+                            </>
                         )}
                     </Paper>
                 </Box>
@@ -223,11 +355,11 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                 <Button
                     variant="contained"
                     size="large"
-                    disabled={!selectedRescueId || rescuedList.length === 0 || confirmMutation.isPending}
+                    disabled={!selectedRescueId || rescuedList.length === 0 || confirmMutation.isPending || isRescueUsed}
                     onClick={handleConfirm}
                     startIcon={confirmMutation.isPending ? <CircularProgress size={24} color="inherit" /> : <CheckCircleIcon />}
                 >
-                    Chốt và Cứu trợ {rescuedList.length} thí sinh
+                    {isRescueUsed ? 'Rescue đã được sử dụng' : `Chốt và Cứu trợ ${rescuedList.length} thí sinh`}
                 </Button>
             </Box>
 

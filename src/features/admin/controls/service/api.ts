@@ -113,7 +113,7 @@ export const getRescuedContestantsByRescueId = async (rescueId: number | string)
 // Cứu trợ hàng loạt thí sinh
 export const rescueManyContestants = async (
   matchId: number | string,
-  data: { contestantIds: number[]; currentQuestionOrder: number }
+  data: { contestantIds: number[]; currentQuestionOrder: number; rescueId?: number }
 ) => {
   const res = await axiosInstance.post(`/contestant/rescue-candidates/${matchId}/rescue-many`, data);
   return res.data;

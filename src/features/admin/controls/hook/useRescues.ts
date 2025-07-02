@@ -45,7 +45,7 @@ export const useRescuedContestantsByRescueId = (rescueId: number | string) => {
 // Hook cứu trợ hàng loạt thí sinh
 export const useRescueManyContestants = () => {
   return useMutation({
-    mutationFn: (variables: { matchId: number | string; data: { contestantIds: number[]; currentQuestionOrder: number } }) =>
+    mutationFn: (variables: { matchId: number | string; data: { contestantIds: number[]; currentQuestionOrder: number; rescueId?: number } }) =>
       rescueManyContestants(variables.matchId, variables.data),
   });
 };
