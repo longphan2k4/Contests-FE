@@ -64,7 +64,7 @@ export const useAdminSocket = () => {
     isStarted: false,
     isPaused: false,
     isLoading: false,
-    currentQuestion: 0,
+    currentQuestion: 1,
     timeRemaining: 0,
     defaultTime: 0,
     questionShown: false, // 🔥 NEW: Thêm state cho question shown
