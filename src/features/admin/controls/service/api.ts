@@ -159,8 +159,25 @@ export const getRescuesByMatchIdAndType = async (
     questionOrder: number | null;
     index: number | null;
     studentIds: number[];
+    questionFrom: number;
+    questionTo: number;
   }>;
 }> => {
   const response = await axiosInstance.get(`/rescue/match/${matchId}?rescueType=${rescueType}`);
   return response.data;
 };
+
+/** Cập nhật trạng thái rescue theo câu hỏi hiện tại */
+export const updateRescueStatusByCurrentQuestion = async (
+  matchId: number,
+  currentQuestionOrder: number
+) => {
+  const res = await axiosInstance.post('/rescues/update-status-by-question',
+    {
+      matchId,
+      currentQuestionOrder,
+    }
+  );
+  return res.data;
+};
+

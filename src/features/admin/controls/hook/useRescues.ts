@@ -6,6 +6,7 @@ import {
   addStudentsToRescue,
   removeStudentFromRescue,
   getRescuesByMatchIdAndType,
+  updateRescueStatusByCurrentQuestion,
 } from "../service/api";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
@@ -82,6 +83,20 @@ export const useRescuesByMatchIdAndType = (
     enabled: !!matchId,
     staleTime: 30000, // 30 seconds
     refetchOnWindowFocus: false,
+  });
+};
+
+// Hook: Cập nhật trạng thái rescue theo câu hỏi hiện tại
+export const useUpdateRescueStatusByCurrentQuestion = () => {
+  return useMutation({
+    mutationFn: (variables: { matchId: number; currentQuestionOrder: number }) =>
+      updateRescueStatusByCurrentQuestion(variables.matchId, variables.currentQuestionOrder),
+    onSuccess: (data) => {
+      console.log('Cập nhật trạng thái rescue thành công:', data);
+    },
+    onError: (error) => {
+      console.error('Lỗi cập nhật trạng thái rescue:', error);
+    },
   });
 };
 

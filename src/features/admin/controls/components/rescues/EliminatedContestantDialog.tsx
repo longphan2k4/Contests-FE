@@ -63,6 +63,7 @@ interface EliminatedContestantDialogProps {
     matchId: number;
     rescueId: number; // Cần rescueId để biết thêm thí sinh vào đợt cứu trợ nào
     existingRescuedIds: number[]; // Mảng các ID đã có sẵn để vô hiệu hóa checkbox
+    rescueStatus?: string; // Trạng thái của rescue để vô hiệu hóa dialog nếu cần
 }
 
 const EliminatedContestantDialog: React.FC<EliminatedContestantDialogProps> = ({
@@ -70,7 +71,8 @@ const EliminatedContestantDialog: React.FC<EliminatedContestantDialogProps> = ({
     onClose,
     matchId,
     rescueId,
-    existingRescuedIds
+    existingRescuedIds,
+    rescueStatus
 }) => {
     const queryClient = useQueryClient();
     // State quản lý các bộ lọc (phân trang, tìm kiếm)
@@ -92,6 +94,9 @@ const EliminatedContestantDialog: React.FC<EliminatedContestantDialogProps> = ({
     // Sử dụng hook mutation để thêm thí sinh vào đợt cứu trợ
     const addMutation = useAddStudentsToRescue();
 
+    // Kiểm tra xem rescue có bị vô hiệu hóa không
+    const isRescueDisabled = Boolean(rescueStatus && ['used', 'passed', 'notEligible'].includes(rescueStatus));
+
     // Dữ liệu và thông tin phân trang được lấy ra từ hook một cách an toàn
     const contestants = useMemo(() => {
         // Data từ useEliminatedContestants có format: { Contestantes: [], pagination: {} }
@@ -110,6 +115,7 @@ const EliminatedContestantDialog: React.FC<EliminatedContestantDialogProps> = ({
 
     // Xử lý khi người dùng chọn/bỏ chọn một checkbox
     const handleSelect = (contestant: EliminatedContestant) => {
+        if (isRescueDisabled) return; // Không cho phép thay đổi nếu rescue đã bị vô hiệu hóa
         setSelected(prev =>
             prev.some(c => c.contestantId === contestant.contestantId)
                 ? prev.filter(c => c.contestantId !== contestant.contestantId)
@@ -119,7 +125,7 @@ const EliminatedContestantDialog: React.FC<EliminatedContestantDialogProps> = ({
 
     // Xử lý khi nhấn nút "Thêm"
     const handleAdd = () => {
-        if (selected.length === 0) return;
+        if (selected.length === 0 || isRescueDisabled) return;
         const studentIds = selected.map(c => c.contestantId);
         addMutation.mutate({ rescueId, studentIds }, {
             onSuccess: () => {
@@ -149,9 +155,21 @@ const EliminatedContestantDialog: React.FC<EliminatedContestantDialogProps> = ({
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-            <DialogTitle>Thêm thí sinh vào danh sách cứu trợ</DialogTitle>
+            <DialogTitle>
+                Thêm thí sinh vào danh sách cứu trợ
+                {isRescueDisabled && (
+                    <Typography variant="body2" color="warning.main" sx={{ mt: 1 }}>
+                        ⚠️ Rescue này không thể chỉnh sửa (Trạng thái: {rescueStatus})
+                    </Typography>
+                )}
+            </DialogTitle>
             <DialogContent dividers>
                 <Stack spacing={2}>
+                    {isRescueDisabled && (
+                        <Alert severity="warning">
+                            Rescue này không thể sử dụng để thêm thí sinh do trạng thái hiện tại là "{rescueStatus}".
+                        </Alert>
+                    )}
                     {/* Khu vực tìm kiếm */}
                     <Box sx={{ display: 'flex', gap: 2 }}>
                         <TextField
@@ -160,6 +178,7 @@ const EliminatedContestantDialog: React.FC<EliminatedContestantDialogProps> = ({
                             size="small"
                             value={filters.search}
                             onChange={e => setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }))}
+                            disabled={isRescueDisabled}
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">
@@ -175,6 +194,7 @@ const EliminatedContestantDialog: React.FC<EliminatedContestantDialogProps> = ({
                             type="number"
                             value={filters.registrationNumber}
                             onChange={e => setFilters(prev => ({ ...prev, registrationNumber: e.target.value, page: 1 }))}
+                            disabled={isRescueDisabled}
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">
@@ -208,11 +228,14 @@ const EliminatedContestantDialog: React.FC<EliminatedContestantDialogProps> = ({
                                     {contestants.length > 0 ? (
                                         contestants.map((c: EliminatedContestant) => {
                                             const isSelected = selected.some(s => s.contestantId === c.contestantId);
-                                            const isDisabled = existingRescuedIds.includes(c.contestantId);
+                                            const isDisabled = existingRescuedIds.includes(c.contestantId) || isRescueDisabled;
+                                            const tooltipText = isRescueDisabled ? "Rescue không thể chỉnh sửa" :
+                                                             existingRescuedIds.includes(c.contestantId) ? "Thí sinh đã có trong danh sách cứu trợ" : 
+                                                             "Nhấn để chọn";
                                             return (
                                                 <Tooltip
                                                     key={c.contestantId}
-                                                    title={isDisabled ? "Thí sinh đã có trong danh sách cứu trợ" : "Nhấn để chọn"}
+                                                    title={tooltipText}
                                                     placement="top"
                                                     arrow
                                                     sx={{ height: '359px' }}
@@ -266,6 +289,7 @@ const EliminatedContestantDialog: React.FC<EliminatedContestantDialogProps> = ({
                                 color="primary"
                                 showFirstButton
                                 showLastButton
+                                disabled={isRescueDisabled}
                             />
                         </Stack>
                     )}
@@ -276,10 +300,10 @@ const EliminatedContestantDialog: React.FC<EliminatedContestantDialogProps> = ({
                 <Button
                     variant="contained"
                     onClick={handleAdd}
-                    disabled={selected.length === 0 || addMutation.isPending}
+                    disabled={selected.length === 0 || addMutation.isPending || isRescueDisabled}
                     startIcon={addMutation.isPending && <CircularProgress size={20} color="inherit" />}
                 >
-                    Thêm {selected.length > 0 ? `(${selected.length})` : ''} thí sinh
+                    {isRescueDisabled ? 'Không thể thêm' : `Thêm ${selected.length > 0 ? `(${selected.length})` : ''} thí sinh`}
                 </Button>
             </DialogActions>
         </Dialog>

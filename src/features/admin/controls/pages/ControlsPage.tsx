@@ -37,9 +37,6 @@ import {
 } from "../type/control.type";
 import { useSocket } from "@contexts/SocketContext";
 import { Box, CircularProgress } from "@mui/material";
-import { set } from "zod";
-import { se } from "date-fns/locale";
-import { da } from "@faker-js/faker";
 
 // Define types for socket responses
 interface SocketResponse {
