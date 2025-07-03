@@ -122,7 +122,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onToggle }) => {
   ];
 
   const renderMenuItems = (items: MenuItem[]) => {
-    return items.map(item => {
+    return items.map((item) => {
       const isSelected = location.pathname === item.path;
       const isSubMenuOpen = openSubMenu === item.key;
 
@@ -138,7 +138,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onToggle }) => {
             </ListItem>
             <Collapse in={isSubMenuOpen} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
-                {item.children.map(child => (
+                {item.children.map((child) => (
                   <ListItem key={child.key} disablePadding>
                     <ListItemButton
                       component={Link}

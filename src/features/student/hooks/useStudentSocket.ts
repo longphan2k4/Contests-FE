@@ -13,8 +13,8 @@ interface StudentSocketReturn {
   socket: Socket | null;
   isConnected: boolean;
   joinMatchRoom: (matchId: number) => void;
-  leaveMatchRoom: (matchId: number) => void;
-  joinMatchForAnswering: (matchId: number, callback?: (response: SocketResponse) => void) => void;
+  leaveMatchRoom: (matchSlug: string) => void;
+  joinMatchForAnswering: (matchSlug: string, callback?: (response: SocketResponse) => void) => void;
 }
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
@@ -95,14 +95,14 @@ export const useStudentSocket = (): StudentSocketReturn => {
     }
   };
 
-  const leaveMatchRoom = (matchId: number) => {
+  const leaveMatchRoom = (matchSlug: string) => {
     if (socket && isConnected) {
-      console.log(`🚪 [FE] Rời phòng student cho trận đấu: ${matchId}`);
-      socket.emit('leaveMatchRoom', matchId);
+      console.log(`🚪 [FE] Rời phòng student cho trận đấu: ${matchSlug}`);
+      socket.emit('leaveMatchRoom', matchSlug);
     }
   };
 
-  const joinMatchForAnswering = (matchId: number, callback?: (response: SocketResponse) => void) => {
+  const joinMatchForAnswering = (matchSlug: string, callback?: (response: SocketResponse) => void) => {
     if (!socket || !isConnected) {
       console.warn('⚠️ [STUDENT SOCKET] Không thể tham gia match - socket chưa kết nối');
       if (callback) {
@@ -114,8 +114,8 @@ export const useStudentSocket = (): StudentSocketReturn => {
       return;
     }
 
-    console.log(`📝 [STUDENT SOCKET] Tham gia match để trả lời câu hỏi: ${matchId}`);
-    socket.emit('student:joinMatch', { matchId }, callback);
+    console.log(`📝 [STUDENT SOCKET] Tham gia match để trả lời câu hỏi: ${matchSlug}`);
+    socket.emit('student:joinMatch', { matchSlug }, callback);
   };
 
   return {

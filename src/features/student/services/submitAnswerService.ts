@@ -135,4 +135,89 @@ export class SubmitAnswerService {
   }
 }
 
+// 🛡️ NEW: Types cho Ban Contestant API
+export interface BanContestantRequest {
+  matchId: number;
+  violationType: string;
+  violationCount: number;
+  reason: string;
+  bannedBy?: string;
+}
+
+export interface BanContestantResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    contestantId: number;
+    matchId: number;
+    bannedAt: string;
+    reason: string;
+    violationType: string;
+    violationCount: number;
+  };
+}
+
+/**
+ * 🛡️ NEW: Ban Contestant API service
+ * Dùng để ban thí sinh do vi phạm anti-cheat
+ */
+export class BanContestantService {
+  /**
+   * Ban thí sinh do vi phạm anti-cheat
+   */
+  static async banContestant(
+    matchId: number,
+    violationType: string,
+    violationCount: number,
+    reason: string,
+    bannedBy?: string
+  ): Promise<BanContestantResponse> {
+    try {
+      console.log('🚨 [BAN SERVICE] Gửi yêu cầu ban contestant qua API...');
+      debugStudentToken();
+
+      const requestData: BanContestantRequest = {
+        matchId,
+        violationType,
+        violationCount,
+        reason,
+        bannedBy: bannedBy || 'ANTI_CHEAT_SYSTEM'
+      };
+
+      console.log('📤 [BAN SERVICE] Request data:', requestData);
+
+      // Sử dụng axiosStudent (đã có interceptor token sẵn)
+      const response = await axiosStudent.post<BanContestantResponse>(
+        "/results/ban-contestant",
+        requestData
+      );
+
+      console.log('✅ [BAN SERVICE] API Response:', response.data);
+
+      return response.data;
+
+    } catch (error: unknown) {
+      console.error('❌ [BAN SERVICE] Lỗi ban contestant:', error);
+
+      // Xử lý lỗi từ server
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string }; status?: number } };
+        console.error('[BAN SERVICE] Server Error:', axiosError.response?.status, axiosError.response?.data);
+        return {
+          success: false,
+          message: axiosError.response?.data?.message || 'Có lỗi từ server khi ban contestant'
+        };
+      }
+
+      // Xử lý lỗi network
+      const errorMessage = error instanceof Error ? error.message : 'Lỗi không xác định';
+      console.error('[BAN SERVICE] Network Error:', errorMessage);
+      return {
+        success: false,
+        message: 'Lỗi kết nối mạng khi ban contestant'
+      };
+    }
+  }
+}
+
 export default SubmitAnswerService; 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -34,9 +34,13 @@ import {
 } from "@mui/icons-material";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { useStudentSocket } from "../hooks/useStudentSocket";
-import { useStudentMatch } from "../hooks/useStudentMatch";
-import { SubmitAnswerService } from "../services/submitAnswerService";
+import {
+  SubmitAnswerService,
+  BanContestantService,
+} from "../services/submitAnswerService";
 import { useNotification } from "../../../contexts/NotificationContext";
+import { useAntiCheat, type AntiCheatViolation } from "../hooks/useAntiCheat";
+import AntiCheatWarning from "./AntiCheatWarning";
 import type { SubmitAnswerResponse } from "../services/submitAnswerService";
 
 interface MediaData {
@@ -146,14 +150,14 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
   const [selectedMedia, setSelectedMedia] = useState<MediaData | null>(null);
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
 
+  // 🛡️ NEW: Anti-cheat states
+  const [showAntiCheatWarning, setShowAntiCheatWarning] = useState(false);
+
   const {
     socket: studentSocket,
     isConnected: isStudentSocketConnected,
     joinMatchForAnswering,
   } = useStudentSocket();
-
-  // Chỉ lấy isSubmitting từ useStudentMatch, không dùng submitAnswer
-  const { isSubmitting } = useStudentMatch();
 
   // 🔥 NEW: Sử dụng notification context
   const {
@@ -161,6 +165,136 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
     showErrorNotification,
     showWarningNotification,
   } = useNotification();
+
+  // 🛡️ NEW: Anti-cheat callbacks
+  const handleViolation = useCallback(
+    (violation: AntiCheatViolation) => {
+      console.log("🚨 [QUESTION-ANSWER] Vi phạm chống gian lận:", violation);
+      setShowAntiCheatWarning(true);
+
+      // Hiển thị thông báo violation
+      showWarningNotification(
+        `⚠️ Phát hiện vi phạm: ${violation.description}`,
+        "Cảnh báo chống gian lận",
+        4000
+      );
+    },
+    [showWarningNotification]
+  );
+
+  const handleAntiCheatTerminate = useCallback(() => {
+    console.log("🚨 [QUESTION-ANSWER] Kết thúc bài thi do vi phạm quá nhiều");
+    showErrorNotification(
+      "Bài thi đã bị kết thúc do vi phạm quy định chống gian lận!",
+      "Kết thúc bài thi",
+      0 // Không tự động ẩn
+    );
+    // API ban sẽ được gọi trong useEffect sau useAntiCheat hook
+  }, [showErrorNotification]);
+
+  const handleWarningContinue = useCallback(() => {
+    setShowAntiCheatWarning(false);
+  }, []);
+
+  const handleWarningTerminate = useCallback(() => {
+    handleAntiCheatTerminate();
+  }, [handleAntiCheatTerminate]);
+
+  // 🛡️ NEW: Anti-cheat hook
+  const {
+    violations,
+    warningCount,
+    isFullscreen,
+    startMonitoring,
+    stopMonitoring,
+    maxViolations,
+    // enterFullscreen,
+    isMonitoring,
+  } = useAntiCheat(
+    {
+      enableFullscreen: true,
+      enableTabSwitchDetection: true,
+      enableCopyPasteBlocking: true,
+      enableContextMenuBlocking: true,
+      enableDevToolsBlocking: true,
+      maxViolations: 3,
+      warningBeforeTermination: true,
+    },
+    handleViolation,
+    handleAntiCheatTerminate
+  );
+
+  // 🛡️ NEW: Start anti-cheat monitoring khi có câu hỏi
+  useEffect(() => {
+    if (currentQuestion && !isEliminated) {
+      console.log(
+        "🛡️ [QUESTION-ANSWER] Bắt đầu giám sát chống gian lận cho câu hỏi:",
+        currentQuestion.order
+      );
+      startMonitoring();
+    }
+
+    return () => {
+      console.log("🛡️ [QUESTION-ANSWER] Dừng giám sát chống gian lận");
+      stopMonitoring();
+    };
+  }, [currentQuestion, isEliminated, startMonitoring, stopMonitoring]);
+
+  // 🛡️ NEW: Gọi API ban khi đủ số lần vi phạm
+  useEffect(() => {
+    // Gọi API ban khi warningCount >= maxViolations
+    if (warningCount >= maxViolations && matchId) {
+      console.log("🚨 [BAN EFFECT] Đủ số lần vi phạm, gọi API ban contestant");
+
+      const banContestant = async () => {
+        try {
+          console.log("🚨 [BAN] Gọi API ban contestant do vi phạm anti-cheat");
+
+          const violationTypes = violations.map((v) => v.type).join(", ");
+          const reason = `Vi phạm ${warningCount} lần: ${violationTypes}. Hệ thống tự động cấm tham gia.`;
+
+          const response = await BanContestantService.banContestant(
+            matchId,
+            "anti_cheat_multiple_violations", // violationType
+            warningCount, // violationCount
+            reason,
+            "ANTI_CHEAT_SYSTEM" // bannedBy
+          );
+
+          if (response.success) {
+            console.log(
+              "✅ [BAN] Đã ban contestant thành công:",
+              response.message
+            );
+            showErrorNotification(
+              `🚫 ${response.message}`,
+              "Bị cấm tham gia",
+              0 // Không tự động ẩn
+            );
+          } else {
+            console.error(
+              "❌ [BAN] Không thể ban contestant:",
+              response.message
+            );
+            showErrorNotification(
+              "Không thể xử lý cấm tham gia. Vui lòng liên hệ giám thị!",
+              "Lỗi hệ thống",
+              0
+            );
+          }
+        } catch (error) {
+          console.error("💥 [BAN] Lỗi khi gọi API ban:", error);
+          showErrorNotification(
+            "Lỗi kết nối khi xử lý cấm tham gia!",
+            "Lỗi kết nối",
+            0
+          );
+        }
+      };
+
+      banContestant();
+    }
+  }, [warningCount, maxViolations, matchId, violations, showErrorNotification]);
 
   // Join match để có thể submit answer (set socket.matchId) - chạy ngay khi component mount
   useEffect(() => {
@@ -883,6 +1017,71 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
 
   return (
     <Box className="space-y-4 relative">
+      {/* 🛡️ Anti-cheat Warning Modal */}
+      <AntiCheatWarning
+        violations={violations}
+        warningCount={warningCount}
+        maxViolations={maxViolations}
+        onContinue={handleWarningContinue}
+        onTerminate={handleWarningTerminate}
+        isVisible={showAntiCheatWarning}
+      />
+
+      {/* 🛡️ Anti-cheat Status Header */}
+      <Card className="border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50 to-red-50">
+        <CardContent className="py-3">
+          <Box className="flex items-center justify-between">
+            <Box className="flex items-center gap-3">
+              <Typography
+                variant="subtitle1"
+                className="font-bold text-orange-800"
+              >
+                🛡️ Trạng thái chống gian lận
+              </Typography>
+              <div
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  isMonitoring
+                    ? "text-green-600 bg-green-100"
+                    : "text-red-600 bg-red-100"
+                }`}
+              >
+                {isMonitoring ? "🟢 Đang giám sát" : "🔴 Không giám sát"}
+              </div>
+            </Box>
+
+            <Box className="flex items-center gap-2">
+              {/* Fullscreen Status */}
+              <div
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  isFullscreen
+                    ? "text-blue-600 bg-blue-100"
+                    : "text-orange-600 bg-orange-100"
+                }`}
+              >
+                {isFullscreen ? "🔒 Toàn màn hình" : "⚠️ Chưa toàn màn hình"}
+              </div>
+
+              {/* Fullscreen Button */}
+              {/* {!isFullscreen && (
+                <button
+                  onClick={handleEnterFullscreen}
+                  className="px-2 py-1 rounded-full text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors"
+                >
+                  📺 Vào toàn màn hình
+                </button>
+              )} */}
+
+              {/* Violation Count */}
+              {warningCount > 0 && (
+                <div className="px-2 py-1 rounded-full text-xs font-medium text-red-600 bg-red-100">
+                  ⚠️ Vi phạm: {warningCount}/{maxViolations}
+                </div>
+              )}
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+
       {/* Toast Notification cho thí sinh khác trả lời */}
       {showNotification && latestAnswer && (
         <Box
@@ -1129,10 +1328,10 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
                 size="large"
                 startIcon={<Send />}
                 onClick={() => handleSubmitAnswer()}
-                disabled={!selectedAnswer || isApiSubmitting || isSubmitting}
+                disabled={!selectedAnswer || isApiSubmitting}
                 className="px-8 py-3"
               >
-                {isApiSubmitting || isSubmitting ? "Đang xử lý..." : "Xác nhận"}
+                {isApiSubmitting ? "Đang xử lý..." : "Xác nhận"}
               </Button>
             </Box>
           )}

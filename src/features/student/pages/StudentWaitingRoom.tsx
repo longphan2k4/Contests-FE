@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useStudentAuth } from "../hooks/useStudentAuth";
 import { useStudentRealTime } from "../hooks/useStudentRealTime";
@@ -9,11 +9,16 @@ import {
   ExclamationTriangleIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
+import { useAntiCheat } from "../hooks/useAntiCheat";
+import { Dialog, DialogContent, Typography, Button } from "@mui/material";
 
 const StudentWaitingRoom: React.FC = () => {
-  const { matchId } = useParams<{ matchId: string }>();
+  const { matchSlug } = useParams<{ matchSlug: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated } = useStudentAuth();
+  const { isAuthenticated, getContestantInfo } = useStudentAuth();
+
+  // 🔥 NEW: Lấy thông tin thí sinh thực tế
+  const contestantInfo = getContestantInfo();
 
   // Redirect nếu chưa đăng nhập
   useEffect(() => {
@@ -22,42 +27,87 @@ const StudentWaitingRoom: React.FC = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  const parsedMatchId = matchId ? parseInt(matchId) : 0;
+  // 🔥 NEW: Redirect nếu không có thông tin thí sinh
+  useEffect(() => {
+    if (isAuthenticated() && !contestantInfo) {
+      console.error("❌ [AUTH] Đã đăng nhập nhưng không có thông tin thí sinh");
+      navigate("/student/login");
+    }
+  }, [isAuthenticated, contestantInfo, navigate]);
 
-  // Mock data đơn giản để test QuestionAnswer - sẽ được thay thế bằng real API sau
-  const currentMatch = useMemo(
-    () => ({
-      id: parsedMatchId,
-      name: `Trận đấu ${parsedMatchId}`,
-      status: "upcoming",
-      currentQuestion: 0,
-      remainingTime: 0,
-    }),
-    [parsedMatchId]
-  );
+  // 🔥 FIX: Tìm match bằng slug thay vì ID - với fallback cho ID
+  const currentMatch = useMemo(() => {
+    if (!contestantInfo?.matches || !matchSlug) return null;
 
-  const contestantInfo = {
-    student: {
-      fullName: "Học sinh Demo",
-      studentCode: "HS001",
-    },
-    contest: {
-      name: "Contest Demo",
-      slug: "contest-demo",
-      status: "active",
-    },
-    round: {
-      name: "Vòng loại",
-    },
-    status: "compete",
-  };
+    // Thử tìm theo slug trước
+    let match = contestantInfo.matches.find((m) => m.slug === matchSlug);
+
+    // Nếu không tìm thấy theo slug, thử tìm theo ID (fallback)
+    if (!match) {
+      const matchId = parseInt(matchSlug);
+      if (!isNaN(matchId)) {
+        match = contestantInfo.matches.find((m) => m.id === matchId);
+        console.log(
+          "🔧 [WAITING ROOM] Fallback: Tìm match theo ID:",
+          matchId,
+          "Result:",
+          match
+        );
+      }
+    } else {
+      console.log(
+        "✅ [WAITING ROOM] Tìm thấy match theo slug:",
+        matchSlug,
+        "Result:",
+        match
+      );
+    }
+
+    if (!match) {
+      console.error(
+        "❌ [WAITING ROOM] Không tìm thấy match với slug/ID:",
+        matchSlug
+      );
+      return null;
+    }
+
+    return {
+      id: match.id,
+      slug: match.slug || matchSlug, // Sử dụng slug từ match hoặc fallback về matchSlug
+      name: match.name,
+      status: match.status,
+      currentQuestion: match.currentQuestion,
+      remainingTime: match.remainingTime,
+    };
+  }, [contestantInfo?.matches, matchSlug]);
+
+  // 🔥 NEW: Tạo contestantInfo object từ dữ liệu thực tế
+  const realContestantInfo = useMemo(() => {
+    if (!contestantInfo) return null;
+
+    return {
+      student: {
+        fullName: contestantInfo.contestant.fullName,
+        studentCode: contestantInfo.contestant.studentCode,
+      },
+      contest: {
+        name: contestantInfo.contest.name,
+        slug: contestantInfo.contest.slug,
+        status: "active", // 🔧 Có thể cần API riêng để lấy status
+      },
+      round: {
+        name: "Vòng thi", // 🔧 Có thể cần API riêng để lấy thông tin round
+      },
+      status: "compete", // 🔧 Có thể cần API riêng để lấy status
+    };
+  }, [contestantInfo]);
 
   const isJoined = true;
   const isConnected = true;
 
   // Sử dụng real-time hook để lắng nghe events
   const { realTimeState, isConnected: isRealTimeConnected } =
-    useStudentRealTime(parsedMatchId);
+    useStudentRealTime(matchSlug);
 
   const isRealTimeStarted = realTimeState.isMatchStarted;
 
@@ -89,7 +139,53 @@ const StudentWaitingRoom: React.FC = () => {
     }
   };
 
-  if (!currentMatch || !contestantInfo) {
+  // 🛡️ State cho modal xác nhận fullscreen
+  const [showFullscreenConfirm, setShowFullscreenConfirm] = useState(false);
+  const [fullscreenError, setFullscreenError] = useState<string | null>(null);
+
+  // 🛡️ Sử dụng hook anti-cheat để lấy enterFullscreen
+  const { enterFullscreen, isFullscreen } = useAntiCheat();
+
+  // Khi vào trang, nếu chưa fullscreen thì hiện modal
+  useEffect(() => {
+    if (!isFullscreen) {
+      setShowFullscreenConfirm(true);
+      setFullscreenError(null);
+    } else {
+      setShowFullscreenConfirm(false);
+      setFullscreenError(null);
+    }
+  }, [isFullscreen]);
+
+  // Handler xác nhận vào fullscreen trong modal
+  const handleConfirmFullscreen = useCallback(async () => {
+    const success = await enterFullscreen();
+    if (success) {
+      setShowFullscreenConfirm(false);
+      setFullscreenError(null);
+    } else {
+      setFullscreenError(
+        "Không thể vào chế độ toàn màn hình. Vui lòng thử lại hoặc kiểm tra trình duyệt!"
+      );
+    }
+  }, [enterFullscreen]);
+
+  // 🔥 NEW: Loading state khi chưa có thông tin thí sinh
+  if (!contestantInfo || !realContestantInfo) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Đang tải thông tin thí sinh...
+          </h2>
+          <p className="text-gray-600">Vui lòng chờ trong giây lát</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentMatch) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-lg p-8 text-center">
@@ -98,8 +194,8 @@ const StudentWaitingRoom: React.FC = () => {
             Không tìm thấy trận đấu
           </h2>
           <p className="text-gray-600">
-            Trận đấu với ID {matchId} không tồn tại hoặc bạn không có quyền truy
-            cập.
+            Trận đấu với ID {matchSlug} không tồn tại hoặc bạn không có quyền
+            truy cập.
           </p>
           <button
             onClick={() => navigate("/student/dashboard")}
@@ -127,7 +223,7 @@ const StudentWaitingRoom: React.FC = () => {
                     : "Phòng chờ thi đấu"}
                 </h1>
                 <p className="text-sm text-gray-500">
-                  Thí sinh: {contestantInfo.student.fullName}
+                  Thí sinh: {realContestantInfo.student.fullName}
                 </p>
               </div>
             </div>
@@ -171,7 +267,7 @@ const StudentWaitingRoom: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold text-indigo-600">
-                    {contestantInfo.contest.name}
+                    {realContestantInfo.contest.name}
                   </h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
@@ -179,25 +275,25 @@ const StudentWaitingRoom: React.FC = () => {
                     <p className="text-sm text-gray-500">Trạng thái cuộc thi</p>
                     <div
                       className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                        contestantInfo.contest.status
+                        realContestantInfo.contest.status
                       )}`}
                     >
-                      {getStatusText(contestantInfo.contest.status)}
+                      {getStatusText(realContestantInfo.contest.status)}
                     </div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <p className="text-sm text-gray-500">Vòng thi</p>
                     <p className="font-semibold text-gray-800">
-                      {contestantInfo.round.name}
+                      {realContestantInfo.round.name}
                     </p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <p className="text-sm text-gray-500">Thông tin thí sinh</p>
                     <p className="font-semibold text-gray-800">
-                      {contestantInfo.student.fullName}
+                      {realContestantInfo.student.fullName}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {contestantInfo.student.studentCode}
+                      {realContestantInfo.student.studentCode}
                     </p>
                   </div>
                 </div>
@@ -208,7 +304,7 @@ const StudentWaitingRoom: React.FC = () => {
             <QuestionAnswer
               currentQuestion={realTimeState.currentQuestion}
               remainingTime={realTimeState.remainingTime}
-              matchId={parsedMatchId}
+              matchId={currentMatch?.id || 0}
               isConnected={isConnected && isRealTimeConnected}
             />
           </div>
@@ -228,7 +324,7 @@ const StudentWaitingRoom: React.FC = () => {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold text-indigo-600">
-                      {contestantInfo.contest.name}
+                      {realContestantInfo.contest.name}
                     </h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -238,18 +334,66 @@ const StudentWaitingRoom: React.FC = () => {
                       </p>
                       <div
                         className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                          contestantInfo.contest.status
+                          realContestantInfo.contest.status
                         )}`}
                       >
-                        {getStatusText(contestantInfo.contest.status)}
+                        {getStatusText(realContestantInfo.contest.status)}
                       </div>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4">
                       <p className="text-sm text-gray-500">Vòng thi</p>
                       <p className="font-semibold text-gray-800">
-                        {contestantInfo.round.name}
+                        {realContestantInfo.round.name}
                       </p>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Thông báo quy định chống gian lận */}
+              <div className="bg-gradient-to-r from-orange-50 to-red-50 border-l-4 border-orange-400 rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-bold text-orange-800 mb-4 flex items-center">
+                  🛡️ Quy định chống gian lận
+                </h3>
+                <div className="space-y-3 text-sm text-gray-700">
+                  <div className="flex items-start space-x-2">
+                    <span className="text-orange-500 font-bold">•</span>
+                    <span>
+                      Bắt buộc vào chế độ <strong>toàn màn hình</strong> khi làm
+                      bài
+                    </span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-orange-500 font-bold">•</span>
+                    <span>
+                      Không được <strong>chuyển tab</strong> hoặc minimize cửa
+                      sổ
+                    </span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-orange-500 font-bold">•</span>
+                    <span>
+                      Không được sử dụng <strong>Copy/Paste</strong>{" "}
+                      (Ctrl+C/V/X)
+                    </span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-orange-500 font-bold">•</span>
+                    <span>
+                      Không được mở <strong>menu chuột phải</strong>
+                    </span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-orange-500 font-bold">•</span>
+                    <span>
+                      Không được mở <strong>Developer Tools</strong> (F12)
+                    </span>
+                  </div>
+                  <div className="mt-4 p-3 bg-orange-100 rounded-lg border border-orange-200">
+                    <p className="text-orange-800 font-medium text-center">
+                      ⚠️ Vi phạm quá <strong>3 lần</strong> sẽ bị kết thúc bài
+                      thi!
+                    </p>
                   </div>
                 </div>
               </div>
@@ -290,29 +434,37 @@ const StudentWaitingRoom: React.FC = () => {
                   <div>
                     <p className="text-sm text-gray-500">Họ tên</p>
                     <p className="font-semibold text-gray-800">
-                      {contestantInfo.student.fullName}
+                      {realContestantInfo.student.fullName}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Mã thí sinh</p>
                     <p className="font-semibold text-gray-800">
-                      {contestantInfo.student.studentCode}
+                      {realContestantInfo.student.studentCode}
                     </p>
                   </div>
+                  {contestantInfo.contestant.class && (
+                    <div>
+                      <p className="text-sm text-gray-500">Lớp</p>
+                      <p className="font-semibold text-gray-800">
+                        {contestantInfo.contestant.class}
+                      </p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm text-gray-500">Trạng thái</p>
                     <div
                       className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
-                        contestantInfo.status === "compete"
+                        realContestantInfo.status === "compete"
                           ? "text-green-600 bg-green-100"
-                          : contestantInfo.status === "eliminated"
+                          : realContestantInfo.status === "eliminated"
                           ? "text-red-600 bg-red-100"
                           : "text-gray-600 bg-gray-100"
                       }`}
                     >
-                      {contestantInfo.status === "compete"
+                      {realContestantInfo.status === "compete"
                         ? "Đang thi đấu"
-                        : contestantInfo.status === "eliminated"
+                        : realContestantInfo.status === "eliminated"
                         ? "Đã bị loại"
                         : "Hoàn thành"}
                     </div>
@@ -323,6 +475,31 @@ const StudentWaitingRoom: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Modal xác nhận fullscreen */}
+      {showFullscreenConfirm && (
+        <Dialog open fullWidth maxWidth="xs">
+          <DialogContent>
+            <Typography variant="h6" gutterBottom align="center">
+              Cho phép chế độ toàn màn hình
+            </Typography>
+            <Button
+              variant="contained"
+              color="error"
+              size="large"
+              onClick={handleConfirmFullscreen}
+              sx={{ display: "block", mx: "auto", mt: 2 }}
+            >
+              Xác nhận
+            </Button>
+            {fullscreenError && (
+              <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+                {fullscreenError}
+              </Typography>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
