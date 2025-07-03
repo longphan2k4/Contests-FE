@@ -8,15 +8,15 @@ import { CircularProgress, Box } from "@mui/material";
 const AboutAdminPage = lazy(() => import("./about/pages/AboutAdminPage"));
 const UsersPage = lazy(() => import("./user/page/UsersPage"));
 const SchoolsPage = lazy(() =>
-  import("./schools/pages").then(module => ({ default: module.SchoolsPage }))
+  import("./schools/pages").then((module) => ({ default: module.SchoolsPage }))
 );
 const QuestionTopicsPage = lazy(() =>
-  import("./questionTopic/pages").then(module => ({
+  import("./questionTopic/pages").then((module) => ({
     default: module.QuestionTopicsPage,
   }))
 );
 const QuestionDetailListPage = lazy(() =>
-  import("./question-details/pages").then(module => ({
+  import("./question-details/pages").then((module) => ({
     default: module.QuestionDetailListPage,
   }))
 );
@@ -27,10 +27,12 @@ const QuestionsPackagesPage = lazy(
 );
 const ClassesPage = lazy(() => import("./class/page/ClassPage"));
 const ContestPage = lazy(() =>
-  import("./contests/pages").then(module => ({ default: module.ContestPage }))
+  import("./contests/pages").then((module) => ({ default: module.ContestPage }))
 );
 const QuestionsPage = lazy(() =>
-  import("./question/pages").then(module => ({ default: module.QuestionsPage }))
+  import("./question/pages").then((module) => ({
+    default: module.QuestionsPage,
+  }))
 );
 
 // Loading component

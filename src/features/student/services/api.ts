@@ -102,7 +102,6 @@ export class StudentApiService {
    */
   static async getMatchInfo(matchId: number) {
     try {
-      // Sử dụng axiosStudent cho các API cần authentication
       const response = await axiosStudent.get(`/matches/${matchId}`);
       return response.data;
     } catch (error: unknown) {

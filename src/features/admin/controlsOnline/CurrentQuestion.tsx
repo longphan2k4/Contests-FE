@@ -429,7 +429,6 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
           />
           <Box className="flex justify-between items-center mt-2">
             <Typography variant="caption" className="text-gray-500">
-              Tiến độ: {timerProgress.toFixed(1)}%
             </Typography>
             <Typography variant="caption" className="text-gray-500">
               Tổng thời gian: {question.defaultTime || 0}s
