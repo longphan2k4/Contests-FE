@@ -193,6 +193,26 @@ const StudentDashboard: React.FC = () => {
     socket.on("timer:update", handleTimerUpdate); // 🔥 CHANGED từ match:timerUpdated
     socket.on("match:ended", handleMatchEnded);
 
+    // 🔥 NEW: Listener cho sự kiện được cứu trợ
+    console.log(
+      "🆘 [DASHBOARD] Student rescued event received:",
+      contestantInfo
+    );
+    socket.on(
+      "student:rescued",
+      (data: { rescuedContestantIds: number[]; message: string }) => {
+        console.log("🆘 [DASHBOARD] Student rescued event received:2", data);
+        if (
+          contestantInfo &&
+          data.rescuedContestantIds.includes(
+            contestantInfo.contestant.registrationNumber
+          )
+        ) {
+          showSuccessNotification(data.message);
+        }
+      }
+    );
+
     // Backup global listener cho trường hợp không nhận được room event
     socket.on("match:globalStarted", (data: MatchEventData) => {
       console.log(
@@ -212,6 +232,7 @@ const StudentDashboard: React.FC = () => {
       socket.off("match:statusUpdate", handleMatchUpdate);
       socket.off("timer:update", handleTimerUpdate); // 🔥 CHANGED từ match:timerUpdated
       socket.off("match:ended", handleMatchEnded);
+      socket.off("student:rescued"); // 🔥 NEW: Dọn dẹp listener
       socket.off("match:globalStarted", handleMatchStarted);
       console.log("🧹 [DASHBOARD] Socket listeners cleaned up");
     };
