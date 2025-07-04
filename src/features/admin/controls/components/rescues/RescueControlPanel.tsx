@@ -325,7 +325,7 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                                 value={selectedRescueId || ''}
                                 onChange={(e) => setSelectedRescueId(Number(e.target.value))}
                             >
-                                {rescues?.map((r: RescueFromAPI) => (
+                                {rescues?.map((r: RescueFromAPI, index) => (
                                     <MenuItem key={r.id} value={r.id}>
                                         <Box sx={{
                                             display: 'flex',
@@ -334,7 +334,7 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                                             width: '100%'
                                         }}>
                                             <Typography variant="body2">
-                                                {r.index}: {r.name}
+                                                {index + 1}: {r.name}
                                             </Typography>
                                             <Chip
                                                 label={getRescueStatusText(r.status)}
