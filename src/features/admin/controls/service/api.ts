@@ -95,7 +95,7 @@ export const getEliminatedContestants = async (
 };
 
 // Lấy danh sách thí sinh bị loại theo tiêu chí cứu trợ (có thể truyền rescueId và limit)
-export const getRescueCandidates = async (matchId: number | string, rescueId?: number, limit?: number) => {
+export const getRescueCandidates = async (matchId: number | string, rescueId?: number | null, limit?: number) => {
   const url = `/contestant/rescue-candidates/${matchId}`;
   const params: Record<string, unknown> = {};
   if (rescueId) params.rescueId = rescueId;

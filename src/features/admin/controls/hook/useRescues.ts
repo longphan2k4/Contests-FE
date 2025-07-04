@@ -26,11 +26,12 @@ export const useEliminatedContestants = (
 };
 
 // Hook lấy danh sách thí sinh cứu trợ (có thể truyền rescueId và limit)
-export const useRescueCandidates = (matchId: number | string, rescueId?: number, limit?: number) => {
-  return useQuery({
-    queryKey: ["rescueCandidates", matchId, rescueId, limit],
-    queryFn: () => getRescueCandidates(matchId, rescueId, limit),
-    enabled: !!matchId,
+export const useRescueCandidates = (matchId: number | string, rescueId?: number | null, limit?: number) => {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await getRescueCandidates(matchId, rescueId, limit);
+      return response;
+    },
   });
 };
 

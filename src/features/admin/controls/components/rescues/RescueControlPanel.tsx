@@ -18,10 +18,11 @@ import {
     useRescueManyContestants,
     useRemoveStudentFromRescue,
     useRescuesByMatchIdAndType,
-    useRescueSocket
+    useRescueSocket,
 } from '../../hook';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSocket } from '@contexts/SocketContext';
+import axiosInstance from '@config/axiosInstance';
 
 // Type cho rescue từ API mới
 type RescueFromAPI = {
@@ -114,10 +115,23 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
             });
 
             // Tìm rescue phù hợp với câu hỏi hiện tại (lấy dòng đầu tiên nếu có nhiều kết quả)
-            const currentRescue = result.updatedRescues.find(r =>
+            // Lấy tất cả rescue phù hợp với câu hỏi hiện tại
+            const eligibleRescues = result.updatedRescues.filter((r) =>
                 r.questionFrom <= currentQuestionOrder &&
                 r.questionTo >= currentQuestionOrder
             );
+
+            let currentRescue = null;
+
+            if (eligibleRescues.length > 0) {
+                // Ưu tiên rescue có status 'notUsed'
+                currentRescue = eligibleRescues.find((r) => r.status === 'notUsed');
+
+                // Nếu không có rescue 'notUsed', lấy rescue đầu tiên trong danh sách
+                if (!currentRescue) {
+                    currentRescue = eligibleRescues[0];
+                }
+            }
 
             // Nếu có rescue phù hợp với câu hỏi hiện tại và rescue đó khác với rescue đang chọn
             if (currentRescue && (!selectedRescueId || selectedRescueId !== currentRescue.id)) {
@@ -126,7 +140,7 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
             // Nếu không tìm thấy rescue phù hợp và không có rescue nào được chọn
             else if (!currentRescue && !selectedRescueId && result.updatedRescues.length > 0) {
                 // Tìm rescue có status = 'notUsed' (fallback)
-                const availableRescue = result.updatedRescues.find(r => r.status === 'notUsed');
+                const availableRescue = result.updatedRescues.find((r) => r.status === 'notUsed');
                 if (availableRescue) {
                     setSelectedRescueId(availableRescue.id);
                 }
@@ -155,11 +169,23 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                 });
 
                 // Auto-select rescue có status = 'notUsed' (nếu có)
-                // Tìm rescue phù hợp với câu hỏi hiện tại (lấy dòng đầu tiên nếu có nhiều kết quả)
-                const currentRescue = data.data.updatedRescues.find((r: RescueFromAPI) =>
+                // Lấy tất cả rescue phù hợp với câu hỏi hiện tại
+                const eligibleRescues = data.data.updatedRescues.filter((r: RescueFromAPI) =>
                     r.questionFrom <= currentQuestionOrder &&
                     r.questionTo >= currentQuestionOrder
                 );
+
+                let currentRescue = null;
+
+                if (eligibleRescues.length > 0) {
+                    // Ưu tiên rescue có status 'notUsed'
+                    currentRescue = eligibleRescues.find((r: RescueFromAPI) => r.status === 'notUsed');
+
+                    // Nếu không có rescue 'notUsed', lấy rescue đầu tiên trong danh sách
+                    if (!currentRescue) {
+                        currentRescue = eligibleRescues[0];
+                    }
+                }
 
                 // Nếu có rescue phù hợp với câu hỏi hiện tại và rescue đó khác với rescue đang chọn
                 if (currentRescue && (!selectedRescueId || selectedRescueId !== currentRescue.id)) {
@@ -194,8 +220,12 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
 
     const mutationAdd = useMutation({
         mutationFn: async () => {
-            const response = await fetch(`/api/contestant/rescue-candidates/${matchId}?rescueId=${selectedRescueId}&limit=${suggestCount}`);
-            return response.json();
+            const url = `/contestant/rescue-candidates/${matchId}`;
+            const response = await axiosInstance.get(url, {
+                params: { rescueId: selectedRescueId, limit: suggestCount }
+            });
+            // const response = await fetch(`/api/contestant/rescue-candidates/${matchId}?rescueId=${selectedRescueId}&limit=${suggestCount}`);
+            return response.data;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
@@ -344,7 +374,8 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                                                 sx={{
                                                     ml: 1,
                                                     fontSize: '0.7rem',
-                                                    height: '20px'
+                                                    height: '20px',
+                                                    pointerEvents: 'none'
                                                 }}
                                             />
                                         </Box>
@@ -454,19 +485,19 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                                     <Box sx={{
                                         p: 2,
                                         mb: 1,
-                                        backgroundColor: selectedRescueInfo?.status === 'used' ? '#e8f5e8' : 
-                                                      selectedRescueInfo?.status === 'passed' ? '#f3e5f5' :
-                                                      selectedRescueInfo?.status === 'notEligible' ? '#fff3e0' : '#f5f5f5',
+                                        backgroundColor: selectedRescueInfo?.status === 'used' ? '#e8f5e8' :
+                                            selectedRescueInfo?.status === 'passed' ? '#f3e5f5' :
+                                                selectedRescueInfo?.status === 'notEligible' ? '#fff3e0' : '#f5f5f5',
                                         borderRadius: 1,
                                         border: selectedRescueInfo?.status === 'used' ? '1px solid #4caf50' :
-                                               selectedRescueInfo?.status === 'passed' ? '1px solid #9c27b0' :
-                                               selectedRescueInfo?.status === 'notEligible' ? '1px solid #ff9800' : '1px solid #ccc',
+                                            selectedRescueInfo?.status === 'passed' ? '1px solid #9c27b0' :
+                                                selectedRescueInfo?.status === 'notEligible' ? '1px solid #ff9800' : '1px solid #ccc',
                                         overflow: 'hidden',
                                     }}>
-                                        <Typography variant="body2" 
+                                        <Typography variant="body2"
                                             color={selectedRescueInfo?.status === 'used' ? 'success.main' :
-                                                  selectedRescueInfo?.status === 'passed' ? 'secondary.main' :
-                                                  selectedRescueInfo?.status === 'notEligible' ? 'warning.main' : 'text.primary'} 
+                                                selectedRescueInfo?.status === 'passed' ? 'secondary.main' :
+                                                    selectedRescueInfo?.status === 'notEligible' ? 'warning.main' : 'text.primary'}
                                             fontWeight="bold">
                                             {selectedRescueInfo?.status === 'used' && `Rescue này đã được ${getRescueStatusText('used')} - Không thể chỉnh sửa`}
                                             {selectedRescueInfo?.status === 'passed' && `Rescue này đã ${getRescueStatusText('passed')} - Không thể sử dụng`}
@@ -539,8 +570,8 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                     onClick={handleConfirm}
                     startIcon={confirmMutation.isPending ? <CircularProgress size={24} color="inherit" /> : <CheckCircleIcon />}
                 >
-                    {isRescueDisabled ? 
-                        `Rescue ${getRescueStatusText(selectedRescueInfo?.status || '')}` : 
+                    {isRescueDisabled ?
+                        `Rescue ${getRescueStatusText(selectedRescueInfo?.status || '')}` :
                         `Chốt và Cứu trợ ${rescuedList.length} thí sinh`
                     }
                 </Button>
