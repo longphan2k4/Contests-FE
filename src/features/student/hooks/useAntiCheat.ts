@@ -51,38 +51,28 @@ export const useAntiCheat = (
   const isActive = useRef(true);
 
   const addViolation = useCallback((violation: AntiCheatViolation) => {
-    console.log('🚨 [ANTI-CHEAT] addViolation called:', violation);
-    console.log('🚨 [ANTI-CHEAT] isActive.current:', isActive.current);
     
     if (!isActive.current) {
-      console.log('⚠️ [ANTI-CHEAT] isActive false, skipping violation');
       return;
     }
     
-    console.log('✅ [ANTI-CHEAT] Adding violation to state');
     setViolations(prev => {
       const newViolations = [...prev, violation];
-      console.log('📊 [ANTI-CHEAT] Updated violations:', newViolations);
       return newViolations;
     });
     
-    console.log('📞 [ANTI-CHEAT] Calling onViolation callback');
     onViolation?.(violation);
     
     setWarningCount(prev => {
       const newCount = prev + 1;
-      console.log('📊 [ANTI-CHEAT] New warning count:', newCount, '/', finalConfig.maxViolations);
       
       if (newCount >= finalConfig.maxViolations) {
-        console.log('🚨 [ANTI-CHEAT] Max violations reached, terminating');
         if (finalConfig.warningBeforeTermination) {
           // Hiển thị cảnh báo cuối cùng trước khi kết thúc
           setTimeout(() => {
-            console.log('🚨 [ANTI-CHEAT] Calling onTerminate after delay');
             onTerminate?.();
           }, 3000);
         } else {
-          console.log('🚨 [ANTI-CHEAT] Calling onTerminate immediately');
           onTerminate?.();
         }
       }
@@ -159,37 +149,28 @@ export const useAntiCheat = (
 
   // Start anti-cheat monitoring
   const startMonitoring = useCallback(() => {
-    console.log('🚀 [ANTI-CHEAT] Bắt đầu startMonitoring');
     isActive.current = true;
-    console.log('🚀 [ANTI-CHEAT] isActive.current set to:', isActive.current);
     // Không tự động vào fullscreen ngay lập tức để tránh lỗi permissions
     // Thay vào đó, chỉ báo cho user biết cần vào fullscreen
-    console.log('Đã bắt đầu monitoring chống gian lận');
   }, []);
 
   // Stop anti-cheat monitoring  
   const stopMonitoring = useCallback(async () => {
-    console.log('🛑 [ANTI-CHEAT] Bắt đầu stopMonitoring');
     isActive.current = false;
-    console.log('🛑 [ANTI-CHEAT] isActive.current set to:', isActive.current);
     if (isFullscreen) {
       await exitFullscreen();
     }
   }, [isFullscreen, exitFullscreen]);
 
   useEffect(() => {
-    console.log('🔄 [ANTI-CHEAT] useEffect được gọi, isActive.current:', isActive.current);
     
     if (!isActive.current) {
-      console.log('⚠️ [ANTI-CHEAT] isActive là false, không thiết lập event listeners');
       return;
     }
 
-    console.log('✅ [ANTI-CHEAT] Thiết lập event listeners');
 
     // Phát hiện thay đổi trạng thái fullscreen
     const handleFullscreenChange = () => {
-      console.log('📺 [ANTI-CHEAT] Fullscreen change detected');
       const extendedDoc = document as ExtendedDocument;
       const isNowFullscreen = !!(
         extendedDoc.fullscreenElement ||
@@ -197,11 +178,9 @@ export const useAntiCheat = (
         extendedDoc.msFullscreenElement
       );
       
-      console.log('📺 [ANTI-CHEAT] isNowFullscreen:', isNowFullscreen);
       setIsFullscreen(isNowFullscreen);
       
       if (!isNowFullscreen && finalConfig.enableFullscreen) {
-        console.log('⚠️ [ANTI-CHEAT] Fullscreen exit violation');
         addViolation({
           type: 'fullscreen_exit',
           timestamp: new Date(),
@@ -212,9 +191,7 @@ export const useAntiCheat = (
 
     // Phát hiện chuyển tab/cửa sổ (visibility change)
     const handleVisibilityChange = () => {
-      console.log('👁️ [ANTI-CHEAT] Visibility change, document.hidden:', document.hidden);
       if (document.hidden && finalConfig.enableTabSwitchDetection) {
-        console.log('⚠️ [ANTI-CHEAT] Tab switch violation');
         addViolation({
           type: 'tab_switch',
           timestamp: new Date(),
@@ -225,12 +202,9 @@ export const useAntiCheat = (
 
     // Phát hiện phím ESC và các phím khác
     const handleKeyDown = (e: KeyboardEvent) => {
-      console.log('⌨️ [ANTI-CHEAT] Key pressed:', e.key, 'ctrlKey:', e.ctrlKey, 'metaKey:', e.metaKey);
       
       // Phím ESC
-      if (e.key === 'Escape') {
-        console.log('⚠️ [ANTI-CHEAT] ESC key violation');
-        e.preventDefault();
+      if (e.key === 'Escape') {        e.preventDefault();
         addViolation({
           type: 'escape_key',
           timestamp: new Date(),
@@ -241,7 +215,6 @@ export const useAntiCheat = (
       // Chặn Copy/Paste
       if (finalConfig.enableCopyPasteBlocking) {
         if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'x')) {
-          console.log('⚠️ [ANTI-CHEAT] Copy/Paste violation:', e.key);
           e.preventDefault();
           addViolation({
             type: 'copy_paste',
@@ -259,7 +232,6 @@ export const useAntiCheat = (
           (e.ctrlKey && e.shiftKey && e.key === 'J') ||
           (e.ctrlKey && e.key === 'U')
         ) {
-          console.log('⚠️ [ANTI-CHEAT] DevTools violation');
           e.preventDefault();
           addViolation({
             type: 'dev_tools',
@@ -272,9 +244,7 @@ export const useAntiCheat = (
 
     // Chặn context menu (chuột phải)
     const handleContextMenu = (e: MouseEvent) => {
-      console.log('🖱️ [ANTI-CHEAT] Context menu attempted');
       if (finalConfig.enableContextMenuBlocking) {
-        console.log('⚠️ [ANTI-CHEAT] Context menu violation');
         e.preventDefault();
         addViolation({
           type: 'context_menu',
@@ -286,9 +256,7 @@ export const useAntiCheat = (
 
     // Phát hiện blur (mất focus)
     const handleBlur = () => {
-      console.log('🔍 [ANTI-CHEAT] Window blur detected');
       if (finalConfig.enableTabSwitchDetection) {
-        console.log('⚠️ [ANTI-CHEAT] Window blur violation');
         addViolation({
           type: 'minimize',
           timestamp: new Date(),

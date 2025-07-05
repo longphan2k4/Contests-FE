@@ -76,23 +76,17 @@ export const useAdminSocket = () => {
   useEffect(() => {
     if (!socket) return;
 
-    console.log('🎧 [ADMIN SOCKET] Đăng ký event listeners cho match control...');
 
     // 🔥 UPDATE: Join room khi kết nối vào match-control namespace
     if (isConnected && match && matchData) {
-      console.log('🏠 [ADMIN SOCKET] Đang join room cho match:', match);
-      console.log('🔍 [ADMIN SOCKET] Match data từ API:', matchData);
-      
       const joinData = {
         matchSlug: match,
         matchId: matchData.id
       };
       
-      console.log('🔧 [ADMIN SOCKET] Join data:', joinData);
       
       // 🔥 UPDATE: Sử dụng event mới từ match-control
       socket.emit('match:join', joinData, (response: JoinRoomResponse) => {
-        console.log('🏠 [ADMIN SOCKET] Join room response:', response);
         if (response.success) {
           console.log('✅ [ADMIN SOCKET] Đã join room thành công:', response.roomName);
         } else {
@@ -102,17 +96,14 @@ export const useAdminSocket = () => {
     }
 
     const handleMatchStarted = (data: MatchStartData) => {
-      console.log('✅ [ADMIN] Match đã bắt đầu:', data);
       
       const currentMatchId = matchData?.id;
       const eventMatchId = typeof data.matchId === 'string' ? parseInt(data.matchId) : data.matchId;
       
       if (!currentMatchId || eventMatchId !== currentMatchId) {
-        console.log('⚠️ [ADMIN] Match ID không khớp - bỏ qua event');
         return;
       }
       
-      console.log('🎯 [ADMIN] Match ID khớp - cập nhật trạng thái admin control');
       setExamState(prev => ({
         ...prev,
         isStarted: true,
@@ -127,13 +118,11 @@ export const useAdminSocket = () => {
 
     // 🔥 NEW: Handler cho show question event
     const handleQuestionShown = (data: ShowQuestionResponseData) => {
-      console.log('👁️ [ADMIN] Câu hỏi đã được hiển thị:', data);
       
       const currentMatchId = matchData?.id;
       const eventMatchId = typeof data.matchId === 'string' ? parseInt(data.matchId) : data.matchId;
       
       if (!currentMatchId || eventMatchId !== currentMatchId) {
-        console.log('⚠️ [ADMIN] Match ID không khớp cho show question - bỏ qua event');
         return;
       }
       
@@ -147,7 +136,6 @@ export const useAdminSocket = () => {
 
     // 🔥 NEW: Handler cho timer events từ shared timer
     const handleTimerUpdate = (data: TimerData) => {
-      console.log('⏰ [ADMIN] Timer update:', data);
       setExamState(prev => ({
         ...prev,
         timeRemaining: data.timeRemaining,
@@ -156,7 +144,6 @@ export const useAdminSocket = () => {
     };
 
     const handleTimerEnded = () => {
-      console.log('⏰ [ADMIN] Timer đã kết thúc');
       setExamState(prev => ({
         ...prev,
         timeRemaining: 0,
@@ -187,10 +174,8 @@ export const useAdminSocket = () => {
 
     return new Promise((resolve) => {
       socket.emit('match:start', { matchId: matchData.id }, (response: SocketResponse) => {
-        console.log('🚀 Start exam response:', response);
         
         if (response.success) {
-          console.log('✅ [ADMIN] Start exam thành công');
           setExamState(prev => ({
             ...prev,
             isStarted: true,
@@ -222,9 +207,7 @@ export const useAdminSocket = () => {
         resolve({ success: false, message: 'Timeout' });
       }, 10000);
       
-      console.log('[DEBUG] Admin gửi match:showQuestion:', { 
-        match: match
-      });
+
       
       // 🔥 FIX: Chỉ hiển thị câu hiện tại, không tăng currentQuestion
       socket.emit('match:showQuestion', { 
@@ -257,7 +240,6 @@ export const useAdminSocket = () => {
 
     return new Promise((resolve) => {
       socket.emit('timer:play', { match: match }, (response: SocketResponse) => {
-        console.log('▶️ Play timer response:', response);
         resolve(response);
       });
     });
@@ -270,7 +252,6 @@ export const useAdminSocket = () => {
 
     return new Promise((resolve) => {
       socket.emit('timer:pause', { match: match }, (response: SocketResponse) => {
-        console.log('⏸️ Pause timer response:', response);
         resolve(response);
       });
     });
@@ -283,7 +264,6 @@ export const useAdminSocket = () => {
 
     return new Promise((resolve) => {
       socket.emit('timer:reset', { match: match }, (response: SocketResponse) => {
-        console.log('🔄 Reset timer response:', response);
         resolve(response);
       });
     });

@@ -68,12 +68,8 @@ const StudentDashboard: React.FC = () => {
   useEffect(() => {
     if (!socket || !isConnected || !contestantInfo?.matches) return;
 
-    console.log(
-      "🔌 [DASHBOARD] Student socket connected, joining match rooms..."
-    );
 
     contestantInfo.matches.forEach((match: Match) => {
-      console.log(`🏠 [DASHBOARD] Joining room for match: ${match.id}`);
       joinMatchRoom(match.id);
     });
 
@@ -81,7 +77,6 @@ const StudentDashboard: React.FC = () => {
     return () => {
       if (contestantInfo?.matches) {
         contestantInfo.matches.forEach((match: Match) => {
-          console.log(`🚪 [DASHBOARD] Leaving room for match: ${match.id}`);
           leaveMatchRoom(match.id.toString());
         });
       }
@@ -99,23 +94,31 @@ const StudentDashboard: React.FC = () => {
     if (!socket) return;
 
     const handleMatchStarted = (data: MatchEventData) => {
-      console.log("🚀 [DASHBOARD] Match started event received:", data);
 
       // 🔥 DEBUG: Console toàn bộ thông tin matches để kiểm tra slug
-      console.log(
-        "🔍 [DEBUG] Toàn bộ contestantInfo.matches:",
-        contestantInfo?.matches
-      );
-      console.log("🔍 [DEBUG] Tìm match với ID:", data.matchId);
 
       const match = contestantInfo?.matches.find((m) => m.id === data.matchId);
 
-      console.log("🔍 [DEBUG] Match tìm được:", match);
-      console.log(
-        "🔍 [DEBUG] Match có các field:",
-        match ? Object.keys(match) : "Không tìm thấy match"
-      );
-
+      console.log('🔥 [HỌC SINH] Nhận sự kiện match:started từ student namespace:', data);
+      console.log('🔥 ID thí sinh: ', contestantInfo?.contestant.id);
+      console.log('🔥 ID trận đấu: ', data.matchId);
+      if (contestantInfo?.contestant.id) {
+        socket.emit("student:confirmStart", {
+          contestantId: contestantInfo?.contestant.id,
+          matchId: data.matchId,
+        });
+        console.log(
+          "✅ [HỌC SINH] Đã gửi xác nhận student:confirmStart cho contestantId:",
+          contestantInfo?.contestant.id,
+          "matchId:",
+          data.matchId
+          
+        );
+      } else {
+        console.warn(
+          "❌ [HỌC SINH] Không tìm thấy contestantId, không thể gửi xác nhận"
+        );
+      }
       showSuccessNotification(
         `Trận đấu ${data.matchName} đã bắt đầu! Đang chuyển vào phòng thi...`
       );
@@ -125,7 +128,6 @@ const StudentDashboard: React.FC = () => {
         setTimeout(() => {
           // 🔥 FIX: Cần tìm slug từ matchId
           const matchSlug = match?.slug;
-          console.log("🔍 [DEBUG] Slug tìm được:", matchSlug);
 
           if (matchSlug) {
             navigate(`/student/match/${matchSlug}`);
@@ -137,9 +139,6 @@ const StudentDashboard: React.FC = () => {
             console.error("❌ [DASHBOARD] Match object:", match);
 
             // 🔥 FALLBACK: Nếu không có slug, sử dụng matchId
-            console.log(
-              "🔧 [DASHBOARD] Fallback: Sử dụng matchId thay vì slug"
-            );
             navigate(`/student/match/${data.matchId}`);
           }
         }, 1500);
@@ -147,9 +146,7 @@ const StudentDashboard: React.FC = () => {
     };
 
     const handleMatchUpdate = (data: MatchEventData) => {
-      console.log("📊 [DASHBOARD] Match update event received:", data);
       if (data.remainingTime !== undefined) {
-        console.log("⏰ [DASHBOARD] Timer update:", data.remainingTime);
         // Cập nhật state với thời gian còn lại mới
         setContestantInfo((prev) => {
           if (!prev) return prev;
@@ -167,7 +164,6 @@ const StudentDashboard: React.FC = () => {
 
     // 🔥 UPDATE: Handler mới cho timer:update event
     const handleTimerUpdate = (data: TimerUpdateData) => {
-      console.log("⏰ [DASHBOARD] Timer update event received:", data);
       // Timer update không có matchId, cần tìm match đang active
       setContestantInfo((prev) => {
         if (!prev) return prev;
@@ -183,7 +179,6 @@ const StudentDashboard: React.FC = () => {
     };
 
     const handleMatchEnded = (data: MatchEventData) => {
-      console.log("🏁 [DASHBOARD] Match ended event received:", data);
       handleMatchUpdate(data);
     };
 
@@ -194,14 +189,9 @@ const StudentDashboard: React.FC = () => {
     socket.on("match:ended", handleMatchEnded);
 
     // 🔥 NEW: Listener cho sự kiện được cứu trợ
-    console.log(
-      "🆘 [DASHBOARD] Student rescued event received:",
-      contestantInfo
-    );
     socket.on(
       "student:rescued",
       (data: { rescuedContestantIds: number[]; message: string }) => {
-        console.log("🆘 [DASHBOARD] Student rescued event received:2", data);
         if (
           contestantInfo &&
           data.rescuedContestantIds.includes(
@@ -215,16 +205,10 @@ const StudentDashboard: React.FC = () => {
 
     // Backup global listener cho trường hợp không nhận được room event
     socket.on("match:globalStarted", (data: MatchEventData) => {
-      console.log(
-        "🌍 [DASHBOARD] Global match started event received (backup):",
-        data
-      );
       handleMatchStarted(data);
     });
 
-    console.log(
-      "🎧 [DASHBOARD] Socket listeners registered for student namespace"
-    );
+
 
     // Cleanup function
     return () => {
@@ -234,7 +218,6 @@ const StudentDashboard: React.FC = () => {
       socket.off("match:ended", handleMatchEnded);
       socket.off("student:rescued"); // 🔥 NEW: Dọn dẹp listener
       socket.off("match:globalStarted", handleMatchStarted);
-      console.log("🧹 [DASHBOARD] Socket listeners cleaned up");
     };
   }, [socket, contestantInfo, navigate, showSuccessNotification]);
 

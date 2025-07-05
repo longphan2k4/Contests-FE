@@ -26,6 +26,8 @@ interface StudentRealTimeState {
   remainingTime: number;
   matchStatus: string;
   isMatchStarted: boolean;
+  isEliminated: boolean;
+  eliminationMessage: string;
   isRescued: boolean;
   lastUpdated: string;
 }
@@ -81,30 +83,6 @@ interface MatchEndedEvent {
   status: string;
 }
 
-interface AnswerSubmittedEvent {
-  contestantId: number;
-  studentName: string;
-  studentCode: string;
-  questionOrder: number;
-  isCorrect: boolean;
-  submittedAt: string;
-  matchId: number;
-  progress: {
-    answeredQuestions: number;
-    totalQuestions: number;
-  };
-}
-
-interface ContestantEliminatedEvent {
-  contestantId: number;
-  studentName: string;
-  studentCode: string;
-  questionOrder: number;
-  eliminationReason: string;
-  eliminatedAt: string;
-  matchId: number;
-}
-
 interface StudentEliminatedEvent {
   message: string;
   questionOrder: number;
@@ -132,6 +110,8 @@ export const useStudentRealTime = (
     remainingTime: 0,
     matchStatus: "upcoming",
     isMatchStarted: false,
+    isEliminated: false,
+    eliminationMessage: "",
     isRescued: false,
     lastUpdated: new Date().toISOString(),
   });
@@ -240,44 +220,12 @@ export const useStudentRealTime = (
 
     // Event: Question changed - cập nhật câu hỏi mới trong waiting room
     const handleQuestionShown = (data: QuestionShownEvent) => {
-      console.log(
-        "🔥 [HỌC SINH] Nhận sự kiện match:questionShown từ admin - HIỂN THỊ CÂU HỎI:",
-        data
-      );
-      console.log("🔍 [DEBUG] Current matchId from hook:", matchIdentifier);
-      console.log("🔍 [DEBUG] Received matchId from event:", data.matchSlug);
-
-      if (data.currentQuestionData?.question) {
-        console.log("📝 [HỌC SINH] Chi tiết câu hỏi admin vừa hiển thị:", {
-          id: data.currentQuestionData.question.id,
-          questionType: data.currentQuestionData.question.questionType,
-          optionsCount: data.currentQuestionData.question.options?.length || 0,
-          options: data.currentQuestionData.question.options,
-        });
-      }
-
       // 🔥 FIX: So sánh cả slug và ID
       const matchIdString = matchIdentifier?.toString();
       const isMatchingSlug = data.matchSlug === matchIdentifier;
       const isMatchingId = data.matchSlug === matchIdString;
 
-      console.log("🔍 [DEBUG] Question comparing:", {
-        dataMatchSlug: data.matchSlug,
-        matchIdentifier: matchIdentifier,
-        matchIdString: matchIdString,
-        isMatchingSlug: isMatchingSlug,
-        isMatchingId: isMatchingId,
-      });
-
       if (isMatchingSlug || isMatchingId) {
-        console.log(
-          "🔥 [HỌC SINH] ✅ ADMIN VỪA HIỂN THỊ CÂU HỎI - Xử lý hiển thị câu hỏi trong waiting room..."
-        );
-        console.log(
-          "⏰ [HỌC SINH] remainingTime từ event:",
-          data.remainingTime
-        );
-
         const newState = {
           currentQuestion: data.currentQuestionData || null,
           remainingTime: data.remainingTime || 0, // 🔥 FIX: Dùng remainingTime từ event
@@ -285,35 +233,19 @@ export const useStudentRealTime = (
           matchStatus: "ongoing",
         };
 
-        console.log("🔍 [DEBUG] New state to update:", newState);
         updateState(newState);
-      } else {
-        console.log(
-          "⏭️ [HỌC SINH] Event match:questionShown không phải cho trận đấu này, bỏ qua"
-        );
       }
     };
 
     // Event: Timer updated - cập nhật thời gian còn lại
     const handleTimerUpdated = (data: TimerUpdatedEvent) => {
-      console.log("⏰ [HỌC SINH] Timer update từ timer.event.ts:", data);
-      console.log("🔍 [DEBUG] Current matchId:", matchIdentifier);
-      console.log("🔍 [DEBUG] Socket connected:", isConnected);
-      console.log("🔍 [DEBUG] Current realTimeState:", realTimeState);
-
       updateState({
         remainingTime: data.timeRemaining,
       });
-
-      console.log(
-        "✅ [HỌC SINH] Đã cập nhật remainingTime thành:",
-        data.timeRemaining
-      );
     };
 
     // Event: Timer paused
     const handleTimerPaused = (data: TimerPausedEvent) => {
-      console.log("⏸️ [HỌC SINH] Timer tạm dừng:", data);
       if (data.matchSlug === matchIdentifier) {
         // Có thể thêm logic xử lý pause nếu cần
       }
@@ -321,7 +253,6 @@ export const useStudentRealTime = (
 
     // Event: Timer resumed
     const handleTimerResumed = (data: TimerResumedEvent) => {
-      console.log("▶️ [HỌC SINH] Timer tiếp tục:", data);
       if (data.matchSlug === matchIdentifier) {
         // Có thể thêm logic xử lý resume nếu cần
       }
@@ -329,7 +260,6 @@ export const useStudentRealTime = (
 
     // Event: Time up
     const handleTimeUp = (data: TimeUpEvent) => {
-      console.log("⏰ [HỌC SINH] Hết thời gian:", data);
       if (data.matchSlug === matchIdentifier) {
         updateState({
           remainingTime: 0,
@@ -339,7 +269,6 @@ export const useStudentRealTime = (
 
     // Event: Match ended
     const handleMatchEnded = (data: MatchEndedEvent) => {
-      console.log("🏁 [HỌC SINH] Trận đấu kết thúc:", data);
       if (data.matchSlug === matchIdentifier) {
         updateState({
           matchStatus: data.status,
@@ -354,46 +283,20 @@ export const useStudentRealTime = (
       }
     };
 
-    // Event: Answer submitted (thông báo về câu trả lời của các thí sinh khác)
-    const handleAnswerSubmitted = (data: AnswerSubmittedEvent) => {
-      console.log("📝 [HỌC SINH] Thí sinh khác đã trả lời:", {
-        studentName: data.studentName,
-        questionOrder: data.questionOrder,
-        isCorrect: data.isCorrect,
-      });
-      // Chỉ log, không cần update state
-    };
-
-    // Event: Contestant eliminated (thông báo thí sinh khác bị loại)
-    const handleContestantEliminated = (data: ContestantEliminatedEvent) => {
-      console.log("🚫 [HỌC SINH] Thí sinh khác bị loại:", {
-        studentName: data.studentName,
-        reason: data.eliminationReason,
-      });
-      // Chỉ log, không cần update state
-    };
-
     // Event: Student eliminated (cho chính thí sinh bị loại)
     const handleStudentEliminated = (data: StudentEliminatedEvent) => {
-      console.log("🚫 [HỌC SINH] Bạn đã bị loại:", data);
-
-      alert(
-        `${data.message}\n\nCâu trả lời đúng: ${data.correctAnswer}\nGiải thích: ${data.explanation}`
-      );
-
+      // 🔥 NEW: State is now the single source of truth.
+      // The UI component will be responsible for showing notifications.
       updateState({
-        matchStatus: "eliminated",
-        isMatchStarted: false,
+        isEliminated: true,
+        eliminationMessage:
+          data.message || "Bạn đã bị loại do trả lời sai hoặc hết giờ.",
+        isRescued: false, // Reset rescue status when eliminated
       });
-
-      setTimeout(() => {
-        navigate(data.redirectTo || "/student/dashboard");
-      }, 5000);
     };
 
     // 🔥 NEW: Event: Thí sinh được cứu trợ
     const handleStudentRescued = (data: StudentRescuedEvent) => {
-      console.log("🆘 [REALTIME HỌC SINH] Nhận sự kiện student:rescued:", data);
       const contestantInfo = getContestantInfo();
 
       if (
@@ -402,10 +305,18 @@ export const useStudentRealTime = (
           contestantInfo.contestant.registrationNumber
         )
       ) {
-        console.log("✅ [REALTIME HỌC SINH] Thí sinh đã được cứu trợ!");
-        updateState({ isRescued: true });
-        // Optional: Reset lại trạng thái bị loại nếu có
-        // updateState({ isEliminated: false });
+        // Cập nhật trạng thái để component có thể phản ứng
+        // The UI component will show a notification based on this state change.
+        updateState({
+          isEliminated: false,
+          eliminationMessage: "",
+          isRescued: true, // Mark as rescued
+        });
+
+        // 🔥 NEW: Reset rescue status after a short delay to allow UI to react
+        setTimeout(() => {
+          updateState({ isRescued: false });
+        }, 2000); // 2 seconds delay
       }
     };
 
@@ -417,44 +328,22 @@ export const useStudentRealTime = (
     socket.on("match:timerPaused", handleTimerPaused);
     socket.on("match:timerResumed", handleTimerResumed);
     socket.on("match:timeUp", handleTimeUp);
-    socket.on("match:answerSubmitted", handleAnswerSubmitted);
-    socket.on("contestant:eliminated", handleContestantEliminated);
     socket.on("student:eliminated", handleStudentEliminated);
     socket.on("student:rescued", handleStudentRescued);
 
     // Backup global listener cho global events (không cần matchId check)
     socket.on("match:globalStarted", (data: MatchStartedEvent) => {
-      console.log(
-        "🌍 [REALTIME HỌC SINH] Global match started event received (backup):",
-        data
-      );
       handleMatchStarted(data);
     });
 
     socket.on("match:globalQuestionShown", (data: QuestionShownEvent) => {
-      console.log(
-        "🌍 [REALTIME HỌC SINH] Global question shown event received (backup):",
-        data
-      );
       if (data.matchSlug === matchIdentifier) {
-        console.log(
-          "🌍 [REALTIME HỌC SINH] Global question matched our matchId - processing..."
-        );
         handleQuestionShown(data);
-      } else {
-        console.log(
-          "🌍 [REALTIME HỌC SINH] Global question for different match - ignoring"
-        );
       }
     });
 
-    console.log(
-      "✅ [REALTIME HỌC SINH] Đã đăng ký tất cả event listeners cho student namespace"
-    );
-
     return () => {
       // Cleanup event listeners
-      console.log("🧹 [REALTIME HỌC SINH] Dọn dẹp event listeners...");
       socket.off("match:started", handleMatchStarted);
       socket.off("match:questionShown", handleQuestionShown);
       socket.off("timer:update", handleTimerUpdated);
@@ -462,14 +351,10 @@ export const useStudentRealTime = (
       socket.off("match:timerPaused", handleTimerPaused);
       socket.off("match:timerResumed", handleTimerResumed);
       socket.off("match:timeUp", handleTimeUp);
-      socket.off("match:answerSubmitted", handleAnswerSubmitted);
-      socket.off("contestant:eliminated", handleContestantEliminated);
       socket.off("student:eliminated", handleStudentEliminated);
       socket.off("match:globalStarted", handleMatchStarted);
       socket.off("match:globalQuestionShown", handleQuestionShown);
       socket.off("student:rescued", handleStudentRescued);
-
-      console.log("🧹 [REALTIME HỌC SINH] Đã dọn dẹp tất cả event listeners");
     };
   }, [
     socket,

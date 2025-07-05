@@ -61,7 +61,6 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
   };
 
   useEffect(() => {
-    console.log("📊 [CONTROLS UI] matchData ban đầu:", matchData);
     if (matchData) {
       console.log("📊 [CONTROLS UI] matchData.status:", matchData.status);
       console.log("📊 [CONTROLS UI] matchData details:", {

@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useStudentAuth } from "../hooks/useStudentAuth";
 import { useStudentRealTime } from "../hooks/useStudentRealTime";
-import QuestionAnswer from "../components/QuestionAnswer";
 import {
   UserGroupIcon,
   TrophyIcon,
@@ -11,11 +10,22 @@ import {
 } from "@heroicons/react/24/outline";
 import { useAntiCheat } from "../hooks/useAntiCheat";
 import { Dialog, DialogContent, Typography, Button } from "@mui/material";
+import { useNotification } from "../../../contexts/NotificationContext";
+import {  QuestionAnswerRefactored } from "../components";
 
 const StudentWaitingRoom: React.FC = () => {
   const { matchSlug } = useParams<{ matchSlug: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, getContestantInfo } = useStudentAuth();
+  const { showSuccessNotification } = useNotification();
+
+  // 🔥 NEW: State for banned status, lifted up from QuestionAnswer
+  const [isBanned, setIsBanned] = useState(false);
+  const [banMessage, setBanMessage] = useState("");
+  const handleContestantBanned = (message: string) => {
+    setIsBanned(true);
+    setBanMessage(message);
+  };
 
   // 🔥 NEW: Lấy thông tin thí sinh thực tế
   const contestantInfo = getContestantInfo();
@@ -47,12 +57,6 @@ const StudentWaitingRoom: React.FC = () => {
       const matchId = parseInt(matchSlug);
       if (!isNaN(matchId)) {
         match = contestantInfo.matches.find((m) => m.id === matchId);
-        console.log(
-          "🔧 [WAITING ROOM] Fallback: Tìm match theo ID:",
-          matchId,
-          "Result:",
-          match
-        );
       }
     } else {
       console.log(
@@ -110,6 +114,15 @@ const StudentWaitingRoom: React.FC = () => {
     useStudentRealTime(matchSlug);
 
   const isRealTimeStarted = realTimeState.isMatchStarted;
+
+  useEffect(() => {
+    if (realTimeState.isRescued) {
+      showSuccessNotification(
+        "Bạn đã được cứu trợ! Hãy tiếp tục thi đấu",
+        "success"
+      );
+    }
+  }, [realTimeState.isRescued, showSuccessNotification]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -169,7 +182,6 @@ const StudentWaitingRoom: React.FC = () => {
       );
     }
   }, [enterFullscreen]);
-
   // 🔥 NEW: Loading state khi chưa có thông tin thí sinh
   if (!contestantInfo || !realContestantInfo) {
     return (
@@ -301,11 +313,17 @@ const StudentWaitingRoom: React.FC = () => {
             </div>
 
             {/* QuestionAnswer Component - Chiếm toàn bộ chiều rộng */}
-            <QuestionAnswer
+            <QuestionAnswerRefactored
               currentQuestion={realTimeState.currentQuestion}
               remainingTime={realTimeState.remainingTime}
               matchId={currentMatch?.id || 0}
               isConnected={isConnected && isRealTimeConnected}
+              isBanned={isBanned}
+              banMessage={banMessage}
+              onContestantBanned={handleContestantBanned}
+              isEliminated={realTimeState.isEliminated}
+              eliminationMessage={realTimeState.eliminationMessage}
+              isRescued={realTimeState.isRescued}
             />
           </div>
         )}

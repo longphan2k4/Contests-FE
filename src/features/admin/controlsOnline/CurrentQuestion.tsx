@@ -318,31 +318,6 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
     );
   };
 
-  // Debug logging cho props
-  React.useEffect(() => {
-    console.log("🔄 [CURRENT QUESTION] Props updated:", {
-      hasCurrentQuestionData: !!currentQuestionData,
-      isGameStarted,
-      remainingTime,
-      isLoading,
-      isTimerPaused,
-      questionOrder: currentQuestionData?.order,
-      questionId: currentQuestionData?.question?.id,
-      defaultTime: currentQuestionData?.question?.defaultTime,
-      progress: currentQuestionData
-        ? (
-            (remainingTime / currentQuestionData.question.defaultTime) *
-            100
-          ).toFixed(1) + "%"
-        : "N/A",
-    });
-  }, [
-    currentQuestionData,
-    isGameStarted,
-    remainingTime,
-    isLoading,
-    isTimerPaused,
-  ]);
 
   if (!isGameStarted) {
     return (
