@@ -39,7 +39,7 @@ export const useRescueSocket = () => {
 
   // Hàm cập nhật status rescue dựa vào câu hỏi hiện tại
   const updateRescueStatusByQuestion = useCallback(
-    (matchId: number, currentQuestionOrder: number) => {
+    (matchId: number, currentQuestionOrder: number, match?: string) => {
       return new Promise<RescueStatusUpdateResult>((resolve, reject) => {
         if (!socket) {
           const errorMsg = 'Socket chưa được kết nối';
@@ -53,7 +53,7 @@ export const useRescueSocket = () => {
 
         socket.emit(
           'rescue:updateStatusByQuestion',
-          { matchId, currentQuestionOrder },
+          { matchId, currentQuestionOrder, match },
           (err: any, response: any) => {
             setIsUpdating(false);
 

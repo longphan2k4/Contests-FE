@@ -213,7 +213,7 @@ const EliminatedContestantDialog: React.FC<EliminatedContestantDialogProps> = ({
                             <CircularProgress />
                         </Box>
                     ) : (
-                        <TableContainer component={Paper} variant="outlined">
+                        <TableContainer sx={{height: '359px'}} component={Paper} variant="outlined">
                             <Table stickyHeader size="small">
                                 <TableHead>
                                     <TableRow>

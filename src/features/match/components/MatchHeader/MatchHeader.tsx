@@ -11,7 +11,11 @@ import QuestionInfo from "../../components/QuestionDisplay/QuestionInfo";
 import {
   type CurrentQuestion,
   type countContestant,
+  // type updateRescuedDataType,
+  type updatedRescuesType,
 } from "../../types/control.type";
+
+import { useSocket } from "../../../../contexts/SocketContext";
 
 type HelpStatusKey = "revive1" | "revive2" | "airplane";
 type HelpStatus = Record<
@@ -43,6 +47,9 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
     airplane: "disabled",
   };
 
+  const { socket } = useSocket();
+  const [updateRescuedData, setUpdateRescuedData] = useState<updatedRescuesType | null>(null);
+
   useEffect(() => {
     setTimeRemaining(remainingTime ?? 30);
   }, [remainingTime]);
@@ -67,6 +74,23 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
       setHasPlayedHelpStatusSound(false);
     }
   }, [helpStatus, countContestant, hasPlayedHelpStatusSound]);
+
+  useEffect(() => {
+    if (!socket) {
+      return () => { }; // Empty cleanup function
+    }
+    const getRescueStatus = (data: any) => {
+      console.log("Rescue status data:", data);
+      setUpdateRescuedData(data.data.updatedRescues);
+      console.log("Updated rescued data:", updateRescuedData);
+    };
+
+    socket.on("rescue:statusUpdated", getRescueStatus);
+
+    return () => {
+      socket.off("rescue:statusUpdated", getRescueStatus);
+    };
+  }, [socket]);
 
   const renderHelpIcon = (
     key: HelpStatusKey,
@@ -115,10 +139,10 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
           {status === "available"
             ? "Sẵn sàng"
             : status === "used"
-            ? "Đã dùng"
-            : status === "disabled"
-            ? "Hết hạn"
-            : "Chưa khả dụng"}
+              ? "Đã dùng"
+              : status === "disabled"
+                ? "Hết hạn"
+                : "Chưa khả dụng"}
         </div>
       </div>
     );
@@ -153,30 +177,27 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
             <div className="relative">
               <div
                 className={`w-24 h-24 flex items-center justify-center rounded-full border-4 
-                ${
-                  timeRemaining <= 5
+                ${timeRemaining <= 5
                     ? "border-red-800 animate-pulse"
                     : timeRemaining <= 10
-                    ? "border-yellow-700"
-                    : "border-blue-500"
-                } 
+                      ? "border-yellow-700"
+                      : "border-blue-500"
+                  } 
                 bg-blue-900 shadow-lg transition-all duration-300`}
               >
                 <div className="absolute inset-0 rounded-full overflow-hidden">
                   <div
                     className={`absolute bottom-0 w-full bg-gradient-to-t 
-                      ${
-                        timeRemaining <= 5
-                          ? "from-red-600 to-red-400"
-                          : timeRemaining <= 10
+                      ${timeRemaining <= 5
+                        ? "from-red-600 to-red-400"
+                        : timeRemaining <= 10
                           ? "from-yellow-600 to-yellow-400"
                           : "from-blue-600 to-blue-400"
                       }`}
                     style={{
-                      height: `${
-                        (timeRemaining / (currentQuestion?.defaultTime ?? 30)) *
+                      height: `${(timeRemaining / (currentQuestion?.defaultTime ?? 30)) *
                         100
-                      }%`,
+                        }%`,
                       transition: "height 1s linear",
                     }}
                   ></div>
@@ -203,7 +224,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
                       top: "calc(50% - 4px)",
                       opacity:
                         i * 30 <
-                        (timeRemaining / (currentQuestion?.defaultTime ?? 30)) *
+                          (timeRemaining / (currentQuestion?.defaultTime ?? 30)) *
                           360
                           ? 1
                           : 0.3,
@@ -222,13 +243,12 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
             <div className="px-4 py-2 bg-white/20 backdrop-blur-lg rounded-xl shadow-2xl border-2 border-blue-300">
               <div
                 className={`font-bold text-black flex items-center space-x-1
-                ${
-                  (countContestant?.countIn_progress ?? 0) <= 5
+                ${(countContestant?.countIn_progress ?? 0) <= 5
                     ? "animate-pulse text-red-400"
                     : (countContestant?.countIn_progress ?? 0) <= 10
-                    ? "text-orange-300"
-                    : "text-green-300"
-                }`}
+                      ? "text-orange-300"
+                      : "text-green-300"
+                  }`}
               >
                 <TrophyIcon className="w-6 h-6" />
                 <span className="text-xl font-extrabold">

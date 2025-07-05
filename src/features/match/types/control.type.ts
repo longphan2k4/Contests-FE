@@ -193,3 +193,25 @@ export interface Contestant {
     };
   };
 }
+
+export interface updateRescuedDataType {
+  updatedRescues: any[];
+  currentEligibleRescues: any[];
+  totalUpdated: number;
+  summary: {
+    passed: number;
+    notEligible: number;
+    notUsed: number;
+    unchanged: number;
+  };
+}
+
+export interface updatedRescuesType {
+  name: string;
+  id: number;
+  status: string;
+  index: number;
+  rescueType: string;
+  questionFrom: number;
+  questionTo: number;
+}

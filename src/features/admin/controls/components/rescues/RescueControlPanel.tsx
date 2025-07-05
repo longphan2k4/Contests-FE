@@ -23,6 +23,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSocket } from '@contexts/SocketContext';
 import axiosInstance from '@config/axiosInstance';
+import { useParams } from 'react-router-dom';
 
 // Type cho rescue từ API mới
 type RescueFromAPI = {
@@ -63,6 +64,7 @@ interface RescueControlPanelProps {
 }
 
 const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, currentQuestionOrder }) => {
+    const { match } = useParams();
     const [selectedRescueId, setSelectedRescueId] = useState<number | null>(null);
     const [suggestCount, setSuggestCount] = useState<number>(1);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -108,7 +110,7 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
     const handleSyncRescueStatus = async () => {
         try {
             setStatusMessage({ type: 'info', text: 'Đang đồng bộ trạng thái cứu trợ...' });
-            const result = await updateRescueStatusByQuestion(matchId, currentQuestionOrder);
+            const result = await updateRescueStatusByQuestion(matchId, currentQuestionOrder, match);
             setStatusMessage({
                 type: 'success',
                 text: `Đồng bộ thành công! Đã cập nhật ${result.totalUpdated} rescue. (${result.summary.notUsed} ${getRescueStatusText('notUsed')}, ${result.summary.passed} ${getRescueStatusText('passed')}, ${result.summary.notEligible} ${getRescueStatusText('notEligible')})`
