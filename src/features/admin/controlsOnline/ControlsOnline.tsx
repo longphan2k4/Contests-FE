@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PlayIcon } from "@heroicons/react/24/outline";
 import { CircularProgress, Alert, Snackbar } from "@mui/material";
 import { useAdminSocket } from "./hooks/useAdminSocket";
@@ -59,19 +59,6 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
   const handleCloseNotification = () => {
     setNotification((prev) => ({ ...prev, open: false }));
   };
-
-  useEffect(() => {
-    if (matchData) {
-      console.log("📊 [CONTROLS UI] matchData.status:", matchData.status);
-      console.log("📊 [CONTROLS UI] matchData details:", {
-        id: matchData.id,
-        name: matchData.name,
-        status: matchData.status,
-        currentQuestion: matchData.currentQuestion,
-        remainingTime: matchData.remainingTime,
-      });
-    }
-  }, [matchData]);
 
   return (
     <div className="space-y-6">

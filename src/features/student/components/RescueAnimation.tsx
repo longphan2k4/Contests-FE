@@ -142,7 +142,8 @@ const RescueAnimation: React.FC<RescueAnimationProps> = ({
     try {
       // Tạo âm thanh celebration bằng Web Audio API
       const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+        (window as typeof window & { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext)();
 
       // Âm thanh "ding" cao
       const oscillator1 = audioContext.createOscillator();

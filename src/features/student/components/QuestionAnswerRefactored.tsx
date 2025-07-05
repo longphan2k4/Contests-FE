@@ -20,7 +20,7 @@ import QuestionResult from "./QuestionResult";
 import AntiCheatStatus from "./AntiCheatStatus";
 import OtherStudentNotification from "./OtherStudentNotification";
 import MediaModal from "./MediaModal";
-import DebugStatus from "./DebugStatus";
+// import DebugStatus from "./DebugStatus";
 
 interface MediaData {
   id: string;
@@ -323,12 +323,6 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
 
   // 🔥 NEW: Sync local state with props from parent
   useEffect(() => {
-    console.log("🔍 [QuestionAnswerRefactored] Syncing elimination state:", {
-      isEliminated,
-      eliminationMessage,
-      currentIsEliminatedState: isEliminatedState,
-      currentEliminationMessageState: eliminationMessageState,
-    });
 
     setIsEliminatedState(isEliminated);
     setEliminationMessageState(eliminationMessage);
@@ -336,20 +330,9 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
 
   // 🔥 NEW: Logic hiển thị kết quả khi có pendingResult
   useEffect(() => {
-    console.log("🔍 [QuestionAnswerRefactored] Processing result display:", {
-      hasPendingResult: !!pendingResult,
-      canShowResult,
-      hasAnswerResult: !!answerResult,
-      pendingResultEliminated: pendingResult?.eliminated,
-      answerResultEliminated: answerResult?.eliminated,
-    });
 
     // 🔧 SỬA: Chỉ hiển thị kết quả khi canShowResult = true (remainingTime < 1)
     if (pendingResult && canShowResult && !answerResult) {
-      console.log(
-        "🔍 [QuestionAnswerRefactored] Setting answer result from pending:",
-        pendingResult
-      );
 
       setAnswerResult(pendingResult);
       setPendingResult(null);
@@ -369,12 +352,6 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
         );
       }
 
-      // 🔥 NEW: Update elimination status từ result với delay để user thấy kết quả trước
-      if (pendingResult.eliminated) {
-        console.log(
-          "🔍 [QuestionAnswerRefactored] Student eliminated, will show elimination alert after delay"
-        );
-      }
     }
   }, [
     pendingResult,
@@ -388,9 +365,6 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
   // 🔥 NEW: Sync elimination state từ answerResult
   useEffect(() => {
     if (answerResult?.eliminated && !isEliminatedState) {
-      console.log(
-        "🔍 [QuestionAnswerRefactored] Setting elimination from answerResult"
-      );
       setIsEliminatedState(true);
       setEliminationMessageState("Bạn đã bị loại do trả lời sai câu hỏi.");
     }
@@ -399,13 +373,13 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
   // 🎉 NEW: Effect để xử lý rescue animation
   useEffect(() => {
     if (isRescued && !showRescueAnimation) {
-      console.log("🎉 [RESCUE] Nhận được tín hiệu rescue, bắt đầu animation");
 
       setIsInRescueMode(true);
       setShowRescueAnimation(true);
       setRescueMessage("Bạn được một cơ hội mới!");
 
       setIsEliminatedState(false);
+
       setEliminationMessageState("");
       showSuccessNotification(
         "🎉 Bạn đã được cứu trợ thành công!",
@@ -417,7 +391,6 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
 
   // 🎉 NEW: Callback khi rescue animation hoàn thành
   const handleRescueAnimationComplete = useCallback(() => {
-    console.log("🎉 [RESCUE] Animation hoàn thành, chuẩn bị chờ câu hỏi mới");
 
     setShowRescueAnimation(false);
     setIsInRescueMode(false);
@@ -427,9 +400,9 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
     setIsSubmitted(false);
     setAnswerResult(null);
     setPendingResult(null);
-    console.log(
-      "🎉 [RESCUE] Đã reset states, đang chờ tín hiệu câu hỏi mới từ server"
-    );
+    setIsEliminatedState(false)
+
+
   }, []);
 
   // 🚀 NEW: Submit answer using API instead of socket
@@ -445,14 +418,9 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
 
     const answerToSubmit = currentAnswer || selectedAnswer;
 
-    if (!answerToSubmit || !answerToSubmit.trim()) {
-      console.warn(
-        "⚠️ [API SUBMIT] Không có đáp án được chọn - sẽ submit như trả lời sai"
-      );
-    }
+
 
     if (!currentQuestion?.question) {
-      console.error("❌ [API SUBMIT] Không có câu hỏi để trả lời");
       alert("Không có câu hỏi để trả lời!");
       return;
     }
@@ -507,7 +475,6 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
           3000
         );
       } else {
-        console.error("❌ [API SUBMIT] Gửi đáp án thất bại:", response.message);
         showErrorNotification(
           `Không thể gửi đáp án: ${response.message}`,
           "Gửi thất bại",
@@ -541,7 +508,6 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
       !isApiSubmitting &&
       currentQuestion
     ) {
-      console.log("⏰ [AUTO-SUBMIT] Hết thời gian, tự động submit câu trả lời");
       const answerToSubmit = selectedAnswer || "[KHÔNG CHỌN ĐÁP ÁN]";
       handleSubmitAnswer(answerToSubmit);
     }
@@ -655,7 +621,7 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
   return (
     <Box className="space-y-4 relative">
       {/* 🔍 DEBUG: Debug Status */}
-      <DebugStatus
+      {/* <DebugStatus
         isEliminated={isEliminatedState}
         isBanned={isBanned}
         isSubmitted={isSubmitted}
@@ -664,7 +630,7 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
         eliminationMessage={eliminationMessageState}
         banMessage={banMessage}
         selectedAnswer={selectedAnswer}
-      />
+      /> */}
 
       {/* 🛡️ Anti-cheat Warning Modal */}
       <AntiCheatWarning

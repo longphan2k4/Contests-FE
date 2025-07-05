@@ -410,18 +410,17 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
     // Khi nhận được rescue signal từ parent
     if (isRescued && !showRescueAnimation) {
       console.log("🎉 [RESCUE] Nhận được tín hiệu rescue, bắt đầu animation");
-
       // 🔧 SỬA: Cập nhật elimination state ngay lập tức
       setIsEliminatedState(false);
-      setEliminationMessageState("");
 
+
+      setEliminationMessageState("");
       // Block auto-submit và interactions
       setIsInRescueMode(true);
 
       // Fade out current content
       setShowRescueAnimation(true);
       setRescueMessage("Bạn được một cơ hội mới!");
-
       // Show success notification
       showSuccessNotification(
         "🎉 Bạn đã được cứu trợ thành công!",
@@ -444,6 +443,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
     setIsSubmitted(false);
     setAnswerResult(null);
     setPendingResult(null);
+    
     console.log(
       "🎉 [RESCUE] Đã reset states, đang chờ tín hiệu câu hỏi mới từ server"
     );
