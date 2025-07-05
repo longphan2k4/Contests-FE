@@ -163,6 +163,7 @@ export interface RegisterFormData {
   password: string;
   confirmPassword: string;
   classId: number;
+  school: string;
 }
 
 export interface RegisterFormErrors {
@@ -172,6 +173,7 @@ export interface RegisterFormErrors {
   password?: string;
   confirmPassword?: string;
   classId?: string;
+  school?: string;
   general?: string;
 }
 

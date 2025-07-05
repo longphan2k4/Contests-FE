@@ -29,6 +29,7 @@ const StudentRegister: React.FC = () => {
     password: "",
     confirmPassword: "",
     classId: 0,
+    school: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -86,6 +87,7 @@ const StudentRegister: React.FC = () => {
     setFormData((prev) => ({
       ...prev,
       classId: 0, // Reset classId when school changes
+      school: schoolName, // cập nhật trường
     }));
     setShowSchoolDropdown(false);
     setSchoolSearch("");
@@ -114,7 +116,8 @@ const StudentRegister: React.FC = () => {
       email: "admin4@example.com",
       password: "Khoa12345@",
       confirmPassword: "Khoa12345@",
-      classId: 2,
+      school: "Trường THPT Bùi Thị Xuân",
+      classId: 0,
     });
     setSelectedSchool("Trường THPT Bùi Thị Xuân");
   };
@@ -132,7 +135,7 @@ const StudentRegister: React.FC = () => {
 
   // Get selected class name for display
   const getSelectedClassName = () => {
-    if (formData.classId === 0)
+    if (formData.classId <= 0)
       return selectedSchool ? "Chọn lớp" : "Vui lòng chọn trường trước";
     const selectedClass = filteredClasses.find(
       (cls) => cls.id === formData.classId
@@ -163,7 +166,6 @@ const StudentRegister: React.FC = () => {
                 <p className="text-sm text-red-600">{errors.general}</p>
               </div>
             )}
-
 
             {/* Full Name Field */}
             <div>
@@ -209,7 +211,7 @@ const StudentRegister: React.FC = () => {
                   type="button"
                   onClick={() => setShowSchoolDropdown(!showSchoolDropdown)}
                   className={`block w-full pl-10 pr-10 py-3 border ${
-                    errors.classId
+                    errors.school
                       ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                       : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
                   } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors text-left`}
@@ -267,8 +269,8 @@ const StudentRegister: React.FC = () => {
                 </div>
               )}
 
-              {errors.classId && (
-                <p className="mt-1 text-sm text-red-600">{errors.classId}</p>
+              {errors.school && (
+                <p className="mt-1 text-sm text-red-600">{errors.school}</p>
               )}
             </div>
 
@@ -348,7 +350,7 @@ const StudentRegister: React.FC = () => {
                 </div>
               )}
 
-              {errors.classId && (
+              {selectedSchool && errors.classId && (
                 <p className="mt-1 text-sm text-red-600">{errors.classId}</p>
               )}
             </div>
@@ -504,7 +506,6 @@ const StudentRegister: React.FC = () => {
               )}
             </div>
 
-
             {/* Submit Button */}
             <button
               type="submit"
@@ -558,7 +559,6 @@ const StudentRegister: React.FC = () => {
             </p>
           </div>
         </div>
-
       </div>
     </div>
   );

@@ -57,16 +57,21 @@ export const RegisterSchema = z
         invalid_type_error: "Vui lòng nhập kí tự chuỗi",
       })
       .min(1, "Vui lòng xác nhận mật khẩu"),
+    school: z.string().min(1, "Vui lòng chọn trường"),
     classId: z
       .number({
         required_error: "Vui lòng chọn lớp",
         invalid_type_error: "Vui lòng chọn lớp",
       })
-      .positive("Vui lòng chọn lớp"),
+      .min(0, "Vui lòng chọn lớp"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Mật khẩu xác nhận không khớp",
     path: ["confirmPassword"],
+  })
+  .refine((data) => data.classId > 0, {
+    message: "Vui lòng chọn lớp",
+    path: ["classId"],
   });
 
 export const SubmitAnswerSchema = z.object({
