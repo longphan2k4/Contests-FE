@@ -68,7 +68,6 @@ const StudentDashboard: React.FC = () => {
   useEffect(() => {
     if (!socket || !isConnected || !contestantInfo?.matches) return;
 
-
     contestantInfo.matches.forEach((match: Match) => {
       joinMatchRoom(match.id);
     });
@@ -94,26 +93,15 @@ const StudentDashboard: React.FC = () => {
     if (!socket) return;
 
     const handleMatchStarted = (data: MatchEventData) => {
-
       // 🔥 DEBUG: Console toàn bộ thông tin matches để kiểm tra slug
 
       const match = contestantInfo?.matches.find((m) => m.id === data.matchId);
 
-      console.log('🔥 [HỌC SINH] Nhận sự kiện match:started từ student namespace:', data);
-      console.log('🔥 ID thí sinh: ', contestantInfo?.contestant.id);
-      console.log('🔥 ID trận đấu: ', data.matchId);
       if (contestantInfo?.contestant.id) {
         socket.emit("student:confirmStart", {
           contestantId: contestantInfo?.contestant.id,
           matchId: data.matchId,
         });
-        console.log(
-          "✅ [HỌC SINH] Đã gửi xác nhận student:confirmStart cho contestantId:",
-          contestantInfo?.contestant.id,
-          "matchId:",
-          data.matchId
-          
-        );
       } else {
         console.warn(
           "❌ [HỌC SINH] Không tìm thấy contestantId, không thể gửi xác nhận"
@@ -207,8 +195,6 @@ const StudentDashboard: React.FC = () => {
     socket.on("match:globalStarted", (data: MatchEventData) => {
       handleMatchStarted(data);
     });
-
-
 
     // Cleanup function
     return () => {

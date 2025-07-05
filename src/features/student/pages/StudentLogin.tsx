@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useStudentAuth } from "../hooks/useStudentAuth";
 import type { LoginFormData } from "../types";
 import {
@@ -224,20 +224,16 @@ const StudentLogin: React.FC = () => {
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
               Chưa có tài khoản?{" "}
-              <a
-                href="#"
+              <Link
+                to="/student/register"
                 className="text-indigo-600 hover:text-indigo-500 font-medium transition-colors"
               >
-                Liên hệ ban tổ chức
-              </a>
+                Đăng ký ngay
+              </Link>
             </p>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="text-center mt-8 text-blue-100 text-sm">
-          <p>© 2024 Cuộc thi Lập trình Olympic. Tất cả quyền được bảo lưu.</p>
-        </div>
       </div>
     </div>
   );

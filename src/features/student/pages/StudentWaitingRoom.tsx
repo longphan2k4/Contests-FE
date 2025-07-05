@@ -11,7 +11,7 @@ import {
 import { useAntiCheat } from "../hooks/useAntiCheat";
 import { Dialog, DialogContent, Typography, Button } from "@mui/material";
 import { useNotification } from "../../../contexts/NotificationContext";
-import {  QuestionAnswerRefactored } from "../components";
+import { QuestionAnswerRefactored } from "../components";
 
 const StudentWaitingRoom: React.FC = () => {
   const { matchSlug } = useParams<{ matchSlug: string }>();
@@ -40,7 +40,6 @@ const StudentWaitingRoom: React.FC = () => {
   // 🔥 NEW: Redirect nếu không có thông tin thí sinh
   useEffect(() => {
     if (isAuthenticated() && !contestantInfo) {
-      console.error("❌ [AUTH] Đã đăng nhập nhưng không có thông tin thí sinh");
       navigate("/student/login");
     }
   }, [isAuthenticated, contestantInfo, navigate]);
@@ -58,20 +57,9 @@ const StudentWaitingRoom: React.FC = () => {
       if (!isNaN(matchId)) {
         match = contestantInfo.matches.find((m) => m.id === matchId);
       }
-    } else {
-      console.log(
-        "✅ [WAITING ROOM] Tìm thấy match theo slug:",
-        matchSlug,
-        "Result:",
-        match
-      );
     }
 
     if (!match) {
-      console.error(
-        "❌ [WAITING ROOM] Không tìm thấy match với slug/ID:",
-        matchSlug
-      );
       return null;
     }
 
