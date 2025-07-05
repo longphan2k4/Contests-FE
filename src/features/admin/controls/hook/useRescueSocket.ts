@@ -62,10 +62,10 @@ export const useRescueSocket = () => {
               reject(err);
             } else {
               setLastResult(response.data);
-              
+
               // Invalidate related queries để cập nhật dữ liệu mới
               queryClient.invalidateQueries({ queryKey: ['rescuesByMatchIdAndType', matchId] });
-              
+
               resolve(response.data);
             }
           }
@@ -75,8 +75,34 @@ export const useRescueSocket = () => {
     [socket, queryClient]
   );
 
+  const sendLatestRescueStatus = useCallback(
+    (matchId: number, currentQuestionOrder: number, match?: string) => {
+      return new Promise<RescueStatusUpdateResult>((resolve, reject) => {
+        if (!socket) return;
+
+        socket.emit(
+          'rescue:updateStatusByQuestion',
+          { matchId, currentQuestionOrder, match },
+          (err: any, response: any) => {
+            setIsUpdating(false);
+
+            if (err) {
+              setError(err.message || 'Lỗi không xác định');
+              reject(err);
+            } else {
+              setLastResult(response.data);
+              resolve(response.data);
+            }
+          }
+        );
+      });
+    },
+    [socket]
+  );
+
   return {
     updateRescueStatusByQuestion,
+    sendLatestRescueStatus,
     isUpdating,
     error,
     lastResult,

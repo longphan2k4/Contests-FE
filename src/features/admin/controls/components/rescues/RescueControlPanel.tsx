@@ -21,7 +21,7 @@ import {
     useRescueSocket,
 } from '../../hook';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSocket } from '@contexts/SocketContext';
+// import { useSocket } from '@contexts/SocketContext';
 import axiosInstance from '@config/axiosInstance';
 import { useParams } from 'react-router-dom';
 
@@ -94,8 +94,8 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
     };
 
     // Socket hook để cập nhật trạng thái rescue
-    const { updateRescueStatusByQuestion, isUpdating } = useRescueSocket();
-    const { socket } = useSocket();
+    const { updateRescueStatusByQuestion, sendLatestRescueStatus, isUpdating } = useRescueSocket();
+    // const { socket } = useSocket();
 
     // API Hooks - sử dụng hook mới để lấy rescue resurrected theo matchId
     const { data: rescueResponse, isLoading: isLoadingRescues } = useRescuesByMatchIdAndType(matchId, 'resurrected');
@@ -117,8 +117,9 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
             });
 
             // Tìm rescue phù hợp với câu hỏi hiện tại (lấy dòng đầu tiên nếu có nhiều kết quả)
-            // Lấy tất cả rescue phù hợp với câu hỏi hiện tại
+            // Tìm rescue phù hợp với câu hỏi hiện tại - chỉ lấy resurrected
             const eligibleRescues = result.updatedRescues.filter((r) =>
+                r.rescueType === 'resurrected' &&
                 r.questionFrom <= currentQuestionOrder &&
                 r.questionTo >= currentQuestionOrder
             );
@@ -126,25 +127,39 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
             let currentRescue = null;
 
             if (eligibleRescues.length > 0) {
-                // Ưu tiên rescue có status 'notUsed'
+                // Ưu tiên rescue có status 'notUsed' trước
                 currentRescue = eligibleRescues.find((r) => r.status === 'notUsed');
 
-                // Nếu không có rescue 'notUsed', lấy rescue đầu tiên trong danh sách
+                // Nếu không có rescue 'notUsed', lấy rescue đầu tiên trong danh sách eligible
+                // (bao gồm cả rescue đã used, passed, notEligible)
                 if (!currentRescue) {
                     currentRescue = eligibleRescues[0];
                 }
             }
 
-            // Nếu có rescue phù hợp với câu hỏi hiện tại và rescue đó khác với rescue đang chọn
-            if (currentRescue && (!selectedRescueId || selectedRescueId !== currentRescue.id)) {
+            // Luôn select rescue phù hợp với câu hỏi hiện tại (dù là bất kỳ trạng thái nào)
+            if (currentRescue) {
                 setSelectedRescueId(currentRescue.id);
             }
-            // Nếu không tìm thấy rescue phù hợp và không có rescue nào được chọn
-            else if (!currentRescue && !selectedRescueId && result.updatedRescues.length > 0) {
-                // Tìm rescue có status = 'notUsed' (fallback)
-                const availableRescue = result.updatedRescues.find((r) => r.status === 'notUsed');
+            // Nếu không có rescue nào phù hợp với câu hỏi hiện tại
+            else if (eligibleRescues.length === 0) {
+                // Fallback: tìm rescue có status = 'notUsed' bất kể range - chỉ resurrected
+                const availableRescue = result.updatedRescues.find((r) =>
+                    r.rescueType === 'resurrected' && r.status === 'notUsed'
+                );
                 if (availableRescue) {
                     setSelectedRescueId(availableRescue.id);
+                } else {
+                    // Lấy rescue resurrected đầu tiên nếu có
+                    const firstResurrectedRescue = result.updatedRescues.find((r) =>
+                        r.rescueType === 'resurrected'
+                    );
+                    if (firstResurrectedRescue) {
+                        setSelectedRescueId(firstResurrectedRescue.id);
+                    } else {
+                        // Nếu không có rescue resurrected nào, clear selection
+                        setSelectedRescueId(null);
+                    }
                 }
             }
 
@@ -156,61 +171,61 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
         }
     };
 
-    // Lắng nghe sự kiện cập nhật từ server
-    useEffect(() => {
-        if (!socket) return;
+    // // Lắng nghe sự kiện cập nhật từ server
+    // useEffect(() => {
+    //     if (!socket) return;
 
-        const handleRescueStatusUpdated = (data: { success: boolean; data: { totalUpdated: number; updatedRescues: RescueFromAPI[] } }) => {
-            if (data.success) {
-                queryClient.invalidateQueries({ queryKey: ['rescuesByMatchIdAndType', matchId] });
+    //     const handleRescueStatusUpdated = (data: { success: boolean; data: { totalUpdated: number; updatedRescues: RescueFromAPI[] } }) => {
+    //         if (data.success) {
+    //             queryClient.invalidateQueries({ queryKey: ['rescuesByMatchIdAndType', matchId] });
 
-                // Hiển thị thông báo cập nhật
-                setStatusMessage({
-                    type: 'info',
-                    text: `Trạng thái rescue đã được cập nhật tự động (${data.data.totalUpdated} thay đổi)`
-                });
+    //             // Hiển thị thông báo cập nhật
+    //             setStatusMessage({
+    //                 type: 'info',
+    //                 text: `Trạng thái rescue đã được cập nhật tự động (${data.data.totalUpdated} thay đổi)`
+    //             });
 
-                // Auto-select rescue có status = 'notUsed' (nếu có)
-                // Lấy tất cả rescue phù hợp với câu hỏi hiện tại
-                const eligibleRescues = data.data.updatedRescues.filter((r: RescueFromAPI) =>
-                    r.questionFrom <= currentQuestionOrder &&
-                    r.questionTo >= currentQuestionOrder
-                );
+    //             // Auto-select rescue có status = 'notUsed' (nếu có)
+    //             // Lấy tất cả rescue phù hợp với câu hỏi hiện tại
+    //             const eligibleRescues = data.data.updatedRescues.filter((r: RescueFromAPI) =>
+    //                 r.questionFrom <= currentQuestionOrder &&
+    //                 r.questionTo >= currentQuestionOrder
+    //             );
 
-                let currentRescue = null;
+    //             let currentRescue = null;
 
-                if (eligibleRescues.length > 0) {
-                    // Ưu tiên rescue có status 'notUsed'
-                    currentRescue = eligibleRescues.find((r: RescueFromAPI) => r.status === 'notUsed');
+    //             if (eligibleRescues.length > 0) {
+    //                 // Ưu tiên rescue có status 'notUsed'
+    //                 currentRescue = eligibleRescues.find((r: RescueFromAPI) => r.status === 'notUsed');
 
-                    // Nếu không có rescue 'notUsed', lấy rescue đầu tiên trong danh sách
-                    if (!currentRescue) {
-                        currentRescue = eligibleRescues[0];
-                    }
-                }
+    //                 // Nếu không có rescue 'notUsed', lấy rescue đầu tiên trong danh sách
+    //                 if (!currentRescue) {
+    //                     currentRescue = eligibleRescues[0];
+    //                 }
+    //             }
 
-                // Nếu có rescue phù hợp với câu hỏi hiện tại và rescue đó khác với rescue đang chọn
-                if (currentRescue && (!selectedRescueId || selectedRescueId !== currentRescue.id)) {
-                    setSelectedRescueId(currentRescue.id);
-                }
-                // Nếu không tìm thấy rescue phù hợp và không có rescue nào được chọn
-                else if (!currentRescue && !selectedRescueId && data.data.updatedRescues.length > 0) {
-                    // Tìm rescue có status = 'notUsed' (fallback)
-                    const availableRescue = data.data.updatedRescues.find((r: RescueFromAPI) => r.status === 'notUsed');
-                    if (availableRescue) {
-                        setSelectedRescueId(availableRescue.id);
-                    }
-                }
-            }
-        };
+    //             // Nếu có rescue phù hợp với câu hỏi hiện tại và rescue đó khác với rescue đang chọn
+    //             if (currentRescue && (!selectedRescueId || selectedRescueId !== currentRescue.id)) {
+    //                 setSelectedRescueId(currentRescue.id);
+    //             }
+    //             // Nếu không tìm thấy rescue phù hợp và không có rescue nào được chọn
+    //             else if (!currentRescue && !selectedRescueId && data.data.updatedRescues.length > 0) {
+    //                 // Tìm rescue có status = 'notUsed' (fallback)
+    //                 const availableRescue = data.data.updatedRescues.find((r: RescueFromAPI) => r.status === 'notUsed');
+    //                 if (availableRescue) {
+    //                     setSelectedRescueId(availableRescue.id);
+    //                 }
+    //             }
+    //         }
+    //     };
 
-        socket.on('rescue:statusUpdated', handleRescueStatusUpdated);
+    //     socket.on('rescue:statusUpdated', handleRescueStatusUpdated);
 
-        return () => {
-            socket.off('rescue:statusUpdated', handleRescueStatusUpdated);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [socket, queryClient, matchId, selectedRescueId]);
+    //     return () => {
+    //         socket.off('rescue:statusUpdated', handleRescueStatusUpdated);
+    //     };
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [socket, queryClient, matchId, selectedRescueId]);
 
     // Tự động cập nhật trạng thái rescue khi câu hỏi thay đổi
     useEffect(() => {
@@ -270,7 +285,7 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
             matchId,
             data: { contestantIds, currentQuestionOrder, rescueId: selectedRescueId }
         }, {
-            onSuccess: (response) => {
+            onSuccess: async (response) => {
                 // Cập nhật lại cache rescue để cập nhật trạng thái "used" ngay lập tức
                 if (response?.rescueUpdated) {
                     queryClient.setQueryData(
@@ -289,6 +304,8 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                     );
                 }
 
+                await sendLatestRescueStatus(matchId, currentQuestionOrder, match);
+
                 // Invalidate để refresh dữ liệu từ server
                 queryClient.invalidateQueries({
                     queryKey: ['rescuesByMatchIdAndType'],
@@ -296,6 +313,10 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                 });
                 queryClient.invalidateQueries({
                     queryKey: ['rescuedContestants'],
+                    exact: false
+                });
+                queryClient.invalidateQueries({
+                    queryKey: ['ListContestant', match],
                     exact: false
                 });
             }

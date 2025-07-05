@@ -18,6 +18,7 @@ export const RescueStatus = {
   notUsed: "notUsed",
   used: "used",
   passed: "passed",
+  notEligible: "notEligible",
 } as const;
 
 export type RescueStatus = (typeof RescueStatus)[keyof typeof RescueStatus];
