@@ -40,7 +40,7 @@ export interface Contest {
   id: number;
   name: string;
   slug: string;
-  status: 'upcoming' | 'active' | 'completed' | 'ongoing' | 'finished';
+  status: "upcoming" | "active" | "completed" | "ongoing" | "finished";
 }
 
 export interface Round {
@@ -52,7 +52,7 @@ export interface Match {
   id: number;
   name: string;
   slug: string;
-  status: 'upcoming' | 'active' | 'completed';
+  status: "upcoming" | "active" | "completed";
   currentQuestion: number;
   remainingTime: number | null;
 }
@@ -60,7 +60,7 @@ export interface Match {
 export interface Question {
   id: number;
   content: string;
-  questionType: 'multiple_choice' | 'fill_blank' | 'true_false';
+  questionType: "multiple_choice" | "fill_blank" | "true_false";
   options?: string[];
   correctAnswer: string;
   defaultTime: number;
@@ -77,9 +77,11 @@ export interface StudentAnswer {
 
 export interface ContestantInfo {
   contestant: {
+    id: number;
     fullName: string;
     studentCode: string;
     class: string | null;
+    registrationNumber: number;
   };
   contest: {
     id: number;
@@ -132,4 +134,4 @@ export interface LoginFormErrors {
   identifier?: string;
   password?: string;
   general?: string;
-} 
+}

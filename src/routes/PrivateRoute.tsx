@@ -24,6 +24,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ roles, children }) => {
         <CircularProgress />
       </div>
     );
+
   }
 
   if (!user || !user.role) {
