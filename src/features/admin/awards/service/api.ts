@@ -7,7 +7,7 @@ import {
   type deleteAwardsType,
 } from "../types/award.shame";
 
-export const getAllAwards = async (slug: string,filter: AwardQuery = {}) => {
+export const getAllAwards = async (slug: string, filter: AwardQuery = {}) => {
   const params = new URLSearchParams();
   if (filter.search) params.append("search", filter.search);
   if (filter.page) params.append("page", String(filter.page));
@@ -22,7 +22,7 @@ export const getAwardById = async (id: number | null) => {
   return res.data.data;
 };
 
-export const CreateAward = async (slug: string,payload: CreateAwardInput) => {
+export const CreateAward = async (slug: string, payload: CreateAwardInput) => {
   const res = await axiosInstance.post(`/awards/contest/${slug}`, payload);
   return res.data;
 };
@@ -38,14 +38,20 @@ export const ToggleActive = async (id: number) => {
 };
 
 export const DeleteAwards = async (ids: deleteAwardsType) => {
-  const res = await axiosInstance.delete("/awards/batch",  {
+  const res = await axiosInstance.delete("/awards/batch", {
     data: ids,
   });
   return res.data;
 };
 
-
 export const DeleteAward = async (id: number) => {
   const res = await axiosInstance.delete(`/awards/${id}`);
+  return res.data;
+};
+
+export const ListContestant = async (slug: string | null) => {
+  const res = await axiosInstance.get(
+    `/contestant/list-contestant/${slug}/list`
+  );
   return res.data;
 };

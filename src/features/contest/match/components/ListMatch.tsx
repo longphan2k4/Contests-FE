@@ -11,7 +11,6 @@ import ForumIcon from "@mui/icons-material/Forum";
 // them icon de tuowng tac voi danh sach thi sinh
 import GroupsIcon from "@mui/icons-material/Groups";
 
-
 import { type Match } from "../types/match.shame";
 import IsSwitch from "../../../../components/IsSwitch";
 
@@ -37,13 +36,9 @@ export default function ListMatch({
   const { slug } = useParams();
   const columns: GridColDef[] = [
     {
-      field: "index",
-      headerName: "STT",
+      field: "id",
+      headerName: "Id",
       width: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: params =>
-        params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
     { field: "name", headerName: "Trận đấu", flex: 1 },
     { field: "roundName", headerName: "Vòng đấu", flex: 1 },
@@ -62,6 +57,7 @@ export default function ListMatch({
     {
       field: "actions",
       headerName: "Thao tác",
+      minWidth: 250,
       flex: 1,
       renderCell: params => (
         <>
@@ -72,17 +68,15 @@ export default function ListMatch({
             <EditIcon />
           </IconButton>
           <Link
-            to={`/admin/cuoc-thi/${slug}/thi-sinh-tran-dau/${params.row.id}`}
-            style={{ textDecoration: 'none' }}
+            to={`/admin/contest/${slug}/contestant-match/${params.row.id}`}
+            style={{ textDecoration: "none" }}
           >
             <IconButton color="info" title="Danh sách thí sinh">
               <GroupsIcon />
             </IconButton>
           </Link>
 
-          <Link
-            to={`/admin/cuoc-thi/${slug}/dieu-kien-tran-dau/${params.row.slug}`}
-          >
+          <Link to={`/admin/contest/${slug}/control/${params.row.slug}`}>
             <ForumIcon />
           </Link>
           <IconButton color="error" onClick={() => onDelete(params.row.id)}>
@@ -98,8 +92,8 @@ export default function ListMatch({
         rows={matchs}
         columns={columns}
         getRowId={row => row.id}
-        selectedIds={selectedIds} onSelectChange={selection => {
-
+        selectedIds={selectedIds}
+        onSelectChange={selection => {
           const idsArray = Array.isArray(selection)
             ? selection
             : Array.from((selection as Set<number>).values() || []);

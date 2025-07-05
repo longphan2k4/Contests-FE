@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Box,
   TextField,
@@ -8,13 +8,11 @@ import {
   Stack,
   Typography,
   Paper,
-  Alert
-} from '@mui/material';
-import type { School } from '../types/school';
-import type { ValidationError } from '../types/validation';
-import { useNotification } from '../../../../hooks';
-import NotificationSnackbar from '../../components/NotificationSnackbar';
-import { useSchoolForm } from '../hooks/form/useSchoolForm';
+  Alert,
+} from "@mui/material";
+import type { School } from "../types/school";
+import type { ValidationError } from "../types/validation";
+import { useSchoolForm } from "../hooks/form/useSchoolForm";
 
 interface SchoolFormProps {
   initialData?: Partial<School>;
@@ -28,21 +26,11 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
   initialData = {},
   onSubmit,
   isSubmitting = false,
-  submitButtonText = 'Lưu',
-  validationErrors = []
+  submitButtonText = "Lưu",
+  validationErrors = [],
 }) => {
-  const {
-    formData,
-    errors,
-    handleChange,
-    handleSwitchChange,
-    handleSubmit
-  } = useSchoolForm(initialData, onSubmit, validationErrors);
-
-  const {
-    notificationState,
-    hideNotification
-  } = useNotification();
+  const { formData, errors, handleChange, handleSwitchChange, handleSubmit } =
+    useSchoolForm(initialData, onSubmit, validationErrors);
 
   return (
     <>
@@ -50,7 +38,7 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
       {validationErrors.length > 0 && (
         <Alert severity="error" sx={{ mb: 2 }}>
           Vui lòng kiểm tra lại thông tin đã nhập
-          {validationErrors.map((error) => (
+          {validationErrors.map(error => (
             <div key={error.field}>{error.message}</div>
           ))}
         </Alert>
@@ -63,15 +51,15 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               Thông tin cơ bản
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                 <Box sx={{ flex: 1 }}>
                   <TextField
                     fullWidth
                     required
                     label="Tên trường"
                     name="name"
-                    value={formData.name || ''}
+                    value={formData.name || ""}
                     onChange={handleChange}
                     error={!!errors.name}
                     helperText={errors.name}
@@ -85,7 +73,7 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
                   fullWidth
                   label="Địa chỉ"
                   name="address"
-                  value={formData.address || ''}
+                  value={formData.address || ""}
                   onChange={handleChange}
                   error={!!errors.address}
                   helperText={errors.address}
@@ -101,8 +89,8 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               Thông tin liên hệ
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                 <Box sx={{ flex: 1 }}>
                   <TextField
                     fullWidth
@@ -110,7 +98,7 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
                     type="email"
                     label="Email"
                     name="email"
-                    value={formData.email || ''}
+                    value={formData.email || ""}
                     onChange={handleChange}
                     error={!!errors.email}
                     helperText={errors.email}
@@ -124,7 +112,7 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
                     type="tel"
                     label="Số điện thoại"
                     name="phone"
-                    value={formData.phone || ''}
+                    value={formData.phone || ""}
                     onChange={handleChange}
                     error={!!errors.phone}
                     helperText={errors.phone}
@@ -141,7 +129,7 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               Thông tin khác
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -156,7 +144,7 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
             </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Stack direction="row" spacing={2}>
               <Button
                 type="submit"
@@ -170,14 +158,6 @@ const SchoolForm: React.FC<SchoolFormProps> = ({
           </Box>
         </Stack>
       </Paper>
-
-      <NotificationSnackbar
-        open={notificationState.open}
-        onClose={hideNotification}
-        severity={notificationState.severity}
-        title={notificationState.title}
-        message={notificationState.message}
-      />
     </>
   );
 };

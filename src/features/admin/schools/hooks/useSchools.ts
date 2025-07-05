@@ -19,8 +19,6 @@ export const useSchools = (initialFilter?: SchoolFilter) => {
       const response: SchoolsResponse = await getSchools(filter);
 
       setSchools(response.school);
-      setTotal(response.pagination.total);
-      setTotalPages(response.pagination.totalPages);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Lỗi khi tải danh sách trường học"

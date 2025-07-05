@@ -400,8 +400,8 @@ export default function ListStudent({
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1,
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >

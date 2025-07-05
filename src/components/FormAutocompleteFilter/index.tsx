@@ -44,6 +44,17 @@ export default function FormAutocompleteFilter({
       loading={loading}
       disabled={disabled}
       sx={sx}
+      disableClearable={disableClearable}
+      ListboxProps={{
+        style: {
+          maxHeight: 48 * 10 + 8,
+        },
+      }}
+      renderOption={(props, option) => (
+        <li {...props} key={`${option.value}-${option.label}`}>
+          {option.label}
+        </li>
+      )}
       renderInput={params => (
         <TextField
           {...params}
@@ -52,7 +63,6 @@ export default function FormAutocompleteFilter({
           placeholder={`Chọn ${label.toLowerCase()}`}
         />
       )}
-      disableClearable={disableClearable}
     />
   );
 }

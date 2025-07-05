@@ -1,13 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useListClass } from "../hook/useListClass";
 import {
   CreateClassVideoSchema,
   type CreateClassVideoInput,
 } from "../types/class-video.shame";
+import FormSelect from "@components/FormSelect";
 
 interface CreateClassVideoDialogProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ interface CreateClassVideoDialogProps {
     slogan?: string;
     classId: number;
     videos?: File;
+    image?: File;
   }) => void;
 }
 
@@ -30,10 +33,32 @@ export default function CreateClassVideoDialog({
     handleSubmit,
     formState: { errors },
     reset,
+    control,
     watch,
   } = useForm<CreateClassVideoInput>({
     resolver: zodResolver(CreateClassVideoSchema),
   });
+
+  const {
+    data: classList,
+    isLoading: isClassLoading,
+    isError: isClassError,
+    refetch: refetchClassList,
+  } = useListClass();
+
+  useEffect(() => {
+    refetchClassList();
+  }, [refetchClassList, isOpen]);
+
+  const classes = useMemo(() => {
+    if (classList?.success) {
+      return classList.data.map((item: { id: number; name: string }) => ({
+        label: item.name,
+        value: item.id,
+      }));
+    }
+    return [];
+  }, [classList]);
 
   const videoFile = watch("videos")?.[0];
 
@@ -46,10 +71,23 @@ export default function CreateClassVideoDialog({
       name: data.name,
       slogan: data.slogan,
       classId: data.classId,
-      videos: data.videos?.[0], // Lấy file đầu tiên từ danh sách file
+      videos: videoFile,
     });
+
     onClose();
   };
+
+  if (isClassLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isClassError) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
 
   return (
     <AppFormDialog
@@ -73,16 +111,16 @@ export default function CreateClassVideoDialog({
           error={errors.slogan}
           register={register("slogan")}
         />
-        <FormInput
-          label="ID Lớp"
+        <FormSelect
           id="classId"
-          placeholder="Nhập ID lớp"
-          type="number"
+          name="classId"
+          label="Chọn lớp"
+          options={classes}
+          control={control}
           error={errors.classId}
-          register={register("classId", { valueAsNumber: true })}
         />
 
-        {/* Video Upload */}
+        {/* Upload Video */}
         <Typography variant="subtitle2" sx={{ mt: 2 }}>
           Video lớp (tệp video)
         </Typography>
@@ -99,7 +137,6 @@ export default function CreateClassVideoDialog({
               justifyContent: "center",
               alignItems: "center",
               height: 100,
-              overflow: "hidden",
               backgroundColor: "#fafafa",
             }}
           >
@@ -127,7 +164,11 @@ export default function CreateClassVideoDialog({
           </Typography>
         )}
 
-        <Button type="submit" variant="contained" sx={{ mt: 2, float: "right" }}>
+        <Button
+          type="submit"
+          variant="contained"
+          sx={{ mt: 3, float: "right" }}
+        >
           Thêm
         </Button>
       </form>

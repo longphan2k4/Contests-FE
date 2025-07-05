@@ -75,4 +75,11 @@ export const UpdateSchoolSchema = z.object({
     .max(255, "Địa chỉ tối đa 255 kí tự")
     .optional(),
   isActive: z.boolean().optional(),
-}); 
+});
+
+export type pagination = {
+  page: number;
+  limit: number;
+  totalItems: number;
+  totalPages: number;
+};

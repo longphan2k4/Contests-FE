@@ -1,4 +1,3 @@
-import { controlValue } from "../../admin/controls/type/control.type";
 // types/question.types.ts
 
 export interface QuestionData {

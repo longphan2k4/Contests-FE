@@ -1,10 +1,14 @@
 import { z } from "zod";
-
 export const CreateClassVideoSchema = z.object({
   name: z.string().min(1, "Tên video không được bỏ trống"),
   slogan: z.string().optional(),
   classId: z.number().int().positive("ID lớp phải là số nguyên dương"),
-  videos: z.any(),
+  videos: z
+    .any()
+    .refine(val => val instanceof FileList && val.length > 0, {
+      message: "Bạn phải chọn một video",
+    })
+    .transform(val => val[0]), // 👉 Lấy ra file đầu tiên
 });
 
 export const ClassVideoIdShema = z.object({
@@ -26,6 +30,11 @@ export const UpdateClassVideoSchema = z.object({
   name: z.string().optional(),
   slogan: z.string().optional(),
   videos: z.any(),
+  classId: z
+    .number()
+    .int()
+    .positive("ID lớp phải là số nguyên dương")
+    .optional(),
 });
 
 export type ClassVideoQuery = {

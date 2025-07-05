@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Box, Fade, Alert, Skeleton, Card, CardContent, IconButton, Tooltip } from "@mui/material";
+import {
+  Typography,
+  Box,
+  Fade,
+  Alert,
+  Skeleton,
+  Card,
+  CardContent,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
 import { ErrorOutline, Home } from "@mui/icons-material"; // Thêm Home
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/authContext";
 import { useProfile } from "../../auth/hooks/useprofile";
 import useChangePassword from "../hooks/useChangePassword";
 import useChangeAccountInfo from "../hooks/useChangeAccountInfo";
-import { useNotification } from "../../../contexts/NotificationContext";
+
 import { CAO_THANG_COLORS } from "../../../common/theme"; // Thêm theme
 import ProfileLayout from "../components/ProfileLayout";
 import AccountInfo from "../components/AccountInfo";
@@ -15,13 +25,16 @@ import ChangeAccountInfoForm from "../components/ChangeAccountInfoForm";
 import type { ChangePasswordData } from "../types/ChangePasswordForm.types";
 import type { ChangeAccountInfoData } from "../types/ChangeAccountInfoForm.types";
 import type { UserType } from "../../auth/types/auth.shema";
+import { useToast } from "@contexts/toastContext";
 
 const ProfilePage: React.FC = () => {
   const { user, loading: authLoading, setUser } = useAuth();
   const { isFetching, refetch } = useProfile();
-  const { mutate: changePassword, status: changePasswordStatus } = useChangePassword();
-  const { mutate: changeAccountInfo, status: changeAccountInfoStatus } = useChangeAccountInfo();
-  const { showSuccessNotification, showErrorNotification } = useNotification();
+  const { mutate: changePassword, status: changePasswordStatus } =
+    useChangePassword();
+  const { mutate: changeAccountInfo, status: changeAccountInfoStatus } =
+    useChangeAccountInfo();
+
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
@@ -33,6 +46,8 @@ const ProfilePage: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const { showToast } = useToast();
+
   const handleChangePassword = (formData: ChangePasswordData) => {
     setError("");
     changePassword(
@@ -43,16 +58,18 @@ const ProfilePage: React.FC = () => {
       },
       {
         onSuccess: () => {
-          showSuccessNotification("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
+          showToast("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
           setTimeout(() => {
-            document.cookie = "feAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie =
+              "feAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             window.location.href = "/login";
           }, 1500);
         },
         onError: (error: any) => {
           const apiMessage = error.response?.data?.message;
-          const errorMsg = apiMessage || "Đổi mật khẩu thất bại! Vui lòng thử lại.";
-          showErrorNotification(errorMsg);
+          const errorMsg =
+            apiMessage || "Đổi mật khẩu thất bại! Vui lòng thử lại.";
+          showToast(errorMsg, "error");
           setError(errorMsg);
         },
       }
@@ -68,7 +85,7 @@ const ProfilePage: React.FC = () => {
       },
       {
         onSuccess: async (data: { data?: UserType; message?: string }) => {
-          showSuccessNotification("Cập nhật thông tin thành công!");
+          showToast("Cập nhật thông tin thành công!", "success");
           if (data?.data) {
             setUser(data.data);
           } else {
@@ -80,8 +97,9 @@ const ProfilePage: React.FC = () => {
         },
         onError: (error: any) => {
           const apiMessage = error.response?.data?.message;
-          const errorMsg = apiMessage || "Cập nhật thông tin thất bại! Vui lòng thử lại.";
-          showErrorNotification(errorMsg);
+          const errorMsg =
+            apiMessage || "Cập nhật thông tin thất bại! Vui lòng thử lại.";
+          showToast(errorMsg, "error");
           setError(errorMsg);
         },
       }
@@ -89,7 +107,7 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleNavigateHome = () => {
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   const LoadingSkeleton = () => (

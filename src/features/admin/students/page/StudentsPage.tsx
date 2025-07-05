@@ -31,11 +31,8 @@ import { useActive } from "../hook/useActive";
 import { useDeleteMany } from "../hook/useDeleteMany";
 import { useDelete } from "../hook/useDelete";
 import AddIcon from "@mui/icons-material/Add";
-import { type ClassItem } from "../types/student.shame";
 import {
   type Student,
-  type CreateStudentInput,
-  type UpdateStudentInput,
   type StudentQuery,
   type pagination,
   type deleteStudentsType,
@@ -44,7 +41,9 @@ import SearchIcon from "@mui/icons-material/Search";
 
 const StudentsPage: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(
+    null
+  );
   const [pagination, setPagination] = useState<pagination>({});
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -55,6 +54,9 @@ const StudentsPage: React.FC = () => {
 
   const [filter, setFilter] = useState<StudentQuery>({});
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
+  const [listClass, setListClass] = useState<{ id: number; name: string }[]>(
+    []
+  );
 
   const { showToast } = useToast();
 
@@ -74,8 +76,17 @@ const StudentsPage: React.FC = () => {
   const { mutate: mutateDeleteMany } = useDeleteMany();
 
   const { mutate: mutateDelete } = useDelete();
-  const { data: classData } = useClasses({});
-  const classOptions = (classData?.data?.classes || []) as ClassItem[];
+  const {
+    data: classData,
+    isLoading: isClassLoading,
+    isError: isClassError,
+  } = useClasses();
+
+  useEffect(() => {
+    if (classData) {
+      setListClass(classData.data);
+    }
+  }, [classData]);
 
   useEffect(() => {
     if (studentsQuery) {
@@ -86,7 +97,11 @@ const StudentsPage: React.FC = () => {
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
-
+  useEffect(() => {
+    document.title = "Quản lý Sinh viên";
+    refetchStudents();
+    refetchStudents();
+  }, []);
   const toggleActive = useCallback((id: number) => {
     mutateActive(
       { id: id },
@@ -116,13 +131,15 @@ const StudentsPage: React.FC = () => {
         });
         refetchStudents();
       },
-      onError: err => {
-        console.log(err);
+      onError: (err: any) => {
+        if (err.response?.data?.message) {
+          showToast(err.response?.data?.message, "error");
+        }
       },
     });
   };
 
-  const handleCreate = (payload: CreateStudentInput) => {
+  const handleCreate = (payload: FormData) => {
     mutateCreate(payload, {
       onSuccess: data => {
         if (data) showToast(`Tạo sinh viên thành công`, "success");
@@ -130,19 +147,20 @@ const StudentsPage: React.FC = () => {
       },
       onError: (err: any) => {
         if (err.response?.data?.message) {
-          showToast(err.response?.data?.message, "success");
+          showToast(err.response?.data?.message, "error");
         }
       },
     });
   };
 
-  const handleUpdate = (payload: UpdateStudentInput) => {
+  const handleUpdate = (payload: FormData) => {
     if (selectedStudentId) {
       mutateUpdate(
         { id: selectedStudentId, payload },
         {
           onSuccess: () => {
             showToast(`Cập nhật sinh viên thành công`, "success");
+            setSelectedStudentId(null);
             refetchStudents();
           },
           onError: (err: any) => {
@@ -160,9 +178,10 @@ const StudentsPage: React.FC = () => {
       onSuccess: () => {
         showToast(`Xóa sinh viên thành công`, "success");
         refetchStudents();
+        setSelectedStudentId(null);
       },
       onError: (error: any) => {
-        showToast(error.response?.data?.message, "success");
+        showToast(error.response?.data?.message, "error");
       },
     });
   }, []);
@@ -185,25 +204,27 @@ const StudentsPage: React.FC = () => {
     setIsConfirmDeleteMany(true);
   };
 
-  if (isStudentsLoading) {
+  if (isStudentsLoading || isClassLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
-  if (isStudentsError) {
+
+  if (isStudentsError || isClassError) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchStudents}>Thử lại</Button>}
+          action={<Button onClick={() => refetchStudents()}>Thử lại</Button>}
         >
           Không thể tải danh sách sinh viên.
         </Alert>
       </Box>
     );
   }
+
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
@@ -240,10 +261,12 @@ const StudentsPage: React.FC = () => {
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
+            useFlexGap
+            flexWrap="wrap"
             sx={{
-              flexWrap: "wrap",
-              alignItems: { sm: "center" },
+              alignItems: "stretch",
               mb: 2,
+              gap: 2,
             }}
           >
             {/* Ô tìm kiếm */}
@@ -271,36 +294,31 @@ const StudentsPage: React.FC = () => {
               }}
             />
 
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <InputLabel id="class-select-label">Lớp</InputLabel>
-              <Select
-                labelId="class-select-label"
-                id="class-select"
-                value={filter.classId !== undefined ? String(filter.classId) : ""}
-                label="Lớp"
-                onChange={e =>
-                  setFilter(prev => ({
-                    ...prev,
-                    classId: e.target.value === "" ? undefined : Number(e.target.value),
-                  }))
-                }
-              >
-                <MenuItem value="">Tất cả</MenuItem>
-               {classOptions.map((cls: ClassItem) => (
-                <MenuItem key={cls.id} value={String(cls.id)}>
-                  {`${cls.name} - ${cls.shoolName}`}
-                </MenuItem>
-              ))}
-
-              </Select>
-            </FormControl>
+            <FormAutocompleteFilter
+              label="Lớp học"
+              options={[
+                { label: "Tất cả", value: "all" },
+                ...listClass.map((s: { id: number; name: string }) => ({
+                  label: s.name,
+                  value: s.id,
+                })),
+              ]}
+              value={filter.classId ?? "all"}
+              onChange={(val: string | number | undefined) =>
+                setFilter(prev => ({
+                  ...prev,
+                  classId: val === "all" ? undefined : Number(val),
+                }))
+              }
+              sx={{ flex: 1, minWidth: 200 }}
+            />
 
             <FormAutocompleteFilter
               label="Trạng thái"
               options={[
                 { label: "Tất cả", value: "all" },
                 { label: "Hoạt động", value: "active" },
-                { label: "Không hoạt động", value: "inactive" },
+                { label: "Đã vô hiệu hóa", value: "inactive" },
               ]}
               value={
                 filter.isActive === undefined
@@ -324,7 +342,6 @@ const StudentsPage: React.FC = () => {
               }}
               sx={{ flex: { sm: 1 }, minWidth: { xs: "100%", sm: 200 } }}
             />
-          
 
             {/* Nút xoá người */}
             {selectedStudentIds.length > 0 && (
@@ -343,22 +360,22 @@ const StudentsPage: React.FC = () => {
             )}
 
             {/* Tổng số người dùng */}
-            <Box
-              sx={{
-                ml: { xs: 0, sm: "auto" },
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                alignSelf={{ xs: "flex-start", sm: "center" }}
-              >
-                Tổng số: {pagination.total} người dùng
-              </Typography>
-            </Box>
           </Stack>
+          <Box
+            sx={{
+              ml: { xs: 0, sm: "auto" },
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              alignSelf={{ xs: "flex-start", sm: "center" }}
+            >
+              Tổng số: {pagination.total} sinh viên
+            </Typography>
+          </Box>
 
           <StudentList
             students={students}
@@ -389,8 +406,8 @@ const StudentsPage: React.FC = () => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1, // Reset to first page when changing limit
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >
@@ -405,21 +422,30 @@ const StudentsPage: React.FC = () => {
             </Typography>
           </Box>
         </Box>
-        <Box className="flex flex-col items-center">
-          {" "}
-          <Pagination
-            count={pagination.totalPages}
-            page={filter.page ?? 1}
-            color="primary"
-            onChange={(_event, value) =>
-              setFilter(prev => ({
-                ...prev,
-                page: value,
-              }))
-            }
-            showFirstButton
-            showLastButton
-          />
+        <Box
+          style={{
+            display:
+              pagination.totalPages !== undefined && pagination.totalPages > 1
+                ? "block"
+                : "none",
+          }}
+        >
+          <Box className="flex flex-col items-center">
+            {" "}
+            <Pagination
+              count={pagination.totalPages}
+              page={filter.page ?? 1}
+              color="primary"
+              onChange={(_event, value) =>
+                setFilter(prev => ({
+                  ...prev,
+                  page: value,
+                }))
+              }
+              showFirstButton
+              showLastButton
+            />
+          </Box>
         </Box>
         <CreateStudentDialog
           isOpen={isCreateOpen}

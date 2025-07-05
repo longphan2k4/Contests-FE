@@ -117,6 +117,7 @@ const ContestantPage: React.FC = () => {
     refetchs();
     refetchRound();
     refetchStatus();
+    document.title = "Quản lý thí sinh";
   }, [slug, refetchRound, refetchStatus, refetchs]);
 
   const openCreate = () => setIsCreateOpen(true);
@@ -147,6 +148,7 @@ const ContestantPage: React.FC = () => {
         {
           onSuccess: () => {
             showToast(`Cập nhật thí sinh thành công`, "success");
+            setSelectedId(null);
             refetchs();
           },
           onError: (err: any) => {
@@ -164,6 +166,7 @@ const ContestantPage: React.FC = () => {
       onSuccess: () => {
         showToast(`Xóa thí sinh  thành công`);
         refetchs();
+        setSelectedId(null);
       },
       onError: (error: any) => {
         showToast(error.response?.data?.message, "error");
@@ -183,9 +186,6 @@ const ContestantPage: React.FC = () => {
     },
     [handleDelete]
   );
-  useEffect(() => {
-    document.title = "Quản lý thí sinh";
-  }, []);
 
   if (issLoading || isLoadingRound || isLoadingStatus) {
     return (
@@ -199,7 +199,7 @@ const ContestantPage: React.FC = () => {
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchs}>Thử lại</Button>}
+          action={<Button onClick={() => refetchs()}>Thử lại</Button>}
         >
           Không thể tải danh danh sách thí sinh
         </Alert>
@@ -362,8 +362,8 @@ const ContestantPage: React.FC = () => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1,
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >
@@ -376,7 +376,7 @@ const ContestantPage: React.FC = () => {
               </Select>
             </FormControl>
             <Typography>
-              Trang {filter.page || 1} / {pagination.totalPages}
+              Trang {filter.page || 1} / {pagination.totalPages || 1}
             </Typography>
           </Box>
         </Box>

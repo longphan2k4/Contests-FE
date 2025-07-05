@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import type { ApiErrorResponse } from '../../types/school';
-import { AxiosError } from 'axios';
-import { deleteSchool } from '../../services/schoolService';
-import { useToast } from '../../../../../contexts/toastContext';
+import { useState } from "react";
+import type { ApiErrorResponse } from "../../types/school";
+import { AxiosError } from "axios";
+import { deleteSchool } from "../../services/schoolService";
+import { useToast } from "../../../../../contexts/toastContext";
 
 export const useDeleteSchool = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -16,31 +16,30 @@ export const useDeleteSchool = () => {
       setError(null);
       setSuccess(false);
 
-      console.log('Bắt đầu xóa các trường học với ids:', ids);
       const result = await deleteSchool(ids);
-      console.log('Kết quả xóa trường học:', result);
-      
+
       // Hiển thị thông báo tổng hợp
-      const successCount = result.messages.filter(m => m.status === "success").length;
-      const errorCount = result.messages.filter(m => m.status === "error").length;
-      
-      console.log('Thống kê kết quả:', { successCount, errorCount });
-      
+      const successCount = result.messages.filter(
+        m => m.status === "success"
+      ).length;
+      const errorCount = result.messages.filter(
+        m => m.status === "error"
+      ).length;
+
       // Hiển thị thông báo tổng hợp
       if (successCount > 0) {
-        showToast(`Đã xóa thành công ${successCount} trường học`, 'success');
+        showToast(`Đã xóa thành công ${successCount} trường học`, "success");
       }
       if (errorCount > 0) {
-        showToast(`Không thể xóa ${errorCount} trường học`, 'error');
+        showToast(`Không thể xóa ${errorCount} trường học`, "error");
       }
-      
+
       // Hiển thị từng thông báo chi tiết
       result.messages.forEach(message => {
-        console.log('Thông báo chi tiết:', message);
         if (message.status === "success") {
-          showToast(message.msg, 'success');
+          showToast(message.msg, "success");
         } else {
-          showToast(message.msg, 'error');
+          showToast(message.msg, "error");
         }
       });
 
@@ -48,19 +47,19 @@ export const useDeleteSchool = () => {
       return true;
     } catch (err: unknown) {
       const error = err as AxiosError<ApiErrorResponse>;
-      console.error('Lỗi khi xóa trường học:', error);
-      
+      console.error("Lỗi khi xóa trường học:", error);
+
       if (error.response?.data) {
         const errorResponse = error.response.data;
         const errorMessage = errorResponse.message || `Lỗi khi xóa trường học`;
-        console.error('Chi tiết lỗi từ server:', errorResponse);
+        console.error("Chi tiết lỗi từ server:", errorResponse);
         setError(errorMessage);
-        showToast(errorMessage, 'error');
+        showToast(errorMessage, "error");
       } else {
         const errorMessage = error.message || `Lỗi khi xóa trường học`;
-        console.error('Lỗi không xác định:', errorMessage);
+        console.error("Lỗi không xác định:", errorMessage);
         setError(errorMessage);
-        showToast(errorMessage, 'error');
+        showToast(errorMessage, "error");
       }
       return false;
     } finally {
@@ -68,10 +67,10 @@ export const useDeleteSchool = () => {
     }
   };
 
-  return { 
-    handleDeleteSchools, 
-    loading, 
-    error, 
-    success 
+  return {
+    handleDeleteSchools,
+    loading,
+    error,
+    success,
   };
-}; 
+};

@@ -15,9 +15,6 @@ export default function ViewMatch({
   isOpen,
   onClose,
 }: ViewMatchProps): React.ReactElement {
-// <<<<<<< HEAD
-//   const { data: match } = useGetById(id);
-// =======
   const { data: match, isLoading, isError, refetch } = useGetById(id);
 
   useEffect(() => {

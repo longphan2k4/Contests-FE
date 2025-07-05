@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  IconButton, 
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
   Typography,
   Box,
-  CircularProgress
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import type { School } from '../types/school';
-import type { ValidationError } from '../types/validation';
-import SchoolForm from './SchoolForm';
-import { useNotification } from '../../../../contexts/NotificationContext';
-import { updateSchool } from '../services/schoolService';
-import type { AxiosError } from 'axios';
+  CircularProgress,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import type { School } from "../types/school";
+import type { ValidationError } from "../types/validation";
+import SchoolForm from "./SchoolForm";
+import { useToast } from "@contexts/toastContext";
+import { updateSchool } from "../services/schoolService";
+import type { AxiosError } from "axios";
 
 interface EditSchoolDialogProps {
   school: School;
@@ -23,38 +23,44 @@ interface EditSchoolDialogProps {
   onUpdated: (updatedSchool: School) => void;
 }
 
-const EditSchoolDialog: React.FC<EditSchoolDialogProps> = ({ 
-  school, 
-  open, 
+const EditSchoolDialog: React.FC<EditSchoolDialogProps> = ({
+  school,
+  open,
   onClose,
-  onUpdated
+  onUpdated,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
-  const { showSuccessNotification, showErrorNotification } = useNotification();
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
+    []
+  );
+  const { showToast } = useToast();
 
   const handleSubmit = async (data: Partial<School>) => {
     if (!school.id) return;
-    
+
     setIsSubmitting(true);
     setValidationErrors([]);
-    
+
     try {
       const updatedSchool = await updateSchool(school.id, data);
-      showSuccessNotification('Thông tin trường học đã được cập nhật', 'Cập nhật thành công');
+      showToast("Thông tin trường học đã được cập nhật", "success");
       onUpdated(updatedSchool);
       onClose();
     } catch (error) {
-      console.error('Error updating school:', error);
-      
-      const axiosError = error as AxiosError<{ error: { details: ValidationError[] }, message: string }>;
-      
+      console.error("Error updating school:", error);
+
+      const axiosError = error as AxiosError<{
+        error: { details: ValidationError[] };
+        message: string;
+      }>;
+
       if (axiosError.response?.data?.error?.details) {
         setValidationErrors(axiosError.response.data.error.details);
       } else {
-        showErrorNotification(
-          axiosError.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trường học', 
-          'Lỗi cập nhật'
+        showToast(
+          axiosError.response?.data?.message ||
+            "Có lỗi xảy ra khi cập nhật trường học",
+          "error"
         );
       }
     } finally {
@@ -63,13 +69,15 @@ const EditSchoolDialog: React.FC<EditSchoolDialogProps> = ({
   };
 
   return (
-    <Dialog 
+    <Dialog
       open={open}
       onClose={isSubmitting ? undefined : onClose}
       maxWidth="md"
       fullWidth
     >
-      <DialogTitle sx={{ m: 0, p: 2, bgcolor: 'secondary.main', color: 'white' }}>
+      <DialogTitle
+        sx={{ m: 0, p: 2, bgcolor: "secondary.main", color: "white" }}
+      >
         <Typography component="span" variant="h6">
           Chỉnh sửa thông tin trường học
         </Typography>
@@ -78,10 +86,10 @@ const EditSchoolDialog: React.FC<EditSchoolDialogProps> = ({
             aria-label="close"
             onClick={onClose}
             sx={{
-              position: 'absolute',
+              position: "absolute",
               right: 8,
               top: 8,
-              color: 'white'
+              color: "white",
             }}
           >
             <CloseIcon />
@@ -90,22 +98,24 @@ const EditSchoolDialog: React.FC<EditSchoolDialogProps> = ({
       </DialogTitle>
       <DialogContent dividers sx={{ p: 3 }}>
         {isSubmitting && (
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            bgcolor: 'rgba(255, 255, 255, 0.7)',
-            zIndex: 1
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              bgcolor: "rgba(255, 255, 255, 0.7)",
+              zIndex: 1,
+            }}
+          >
             <CircularProgress />
           </Box>
         )}
-        
+
         <SchoolForm
           initialData={school}
           onSubmit={handleSubmit}
@@ -118,4 +128,4 @@ const EditSchoolDialog: React.FC<EditSchoolDialogProps> = ({
   );
 };
 
-export default EditSchoolDialog; 
+export default EditSchoolDialog;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import { Box, CircularProgress } from "@mui/material";
 import { useClassVideoById } from "../hook/useClassVideoById";
@@ -14,30 +14,12 @@ export default function ViewClassVideo({
   isOpen,
   onClose,
 }: ViewClassVideoProps): React.ReactElement {
-  const { data: video, isLoading, isError } = useClassVideoById(id);
-
-  const fields = [
-    { label: "ID", value: video?.id },
-    { label: "Tên Video", value: video?.name },
-    { label: "Slogan", value: video?.slogan },
-    { label: "Lớp", value: video?.classId },
-    {
-      label: "Video",
-      value: video?.videos ? (
-        <video
-          width="100%"
-          height="auto"
-          controls
-          src={video.videos}
-          style={{ maxWidth: 400, marginTop: 8 }}
-        />
-      ) : (
-        "Không có video"
-      ),
-    },
-    { label: "Ngày tạo", value: new Date(video?.createdAt || "").toLocaleString() },
-    { label: "Ngày cập nhật", value: new Date(video?.updatedAt || "").toLocaleString() },
-  ];
+  const { data: video, isLoading, isError, refetch } = useClassVideoById(id);
+  useEffect(() => {
+    if (isOpen && id) {
+      refetch();
+    }
+  }, [isOpen, id, refetch]);
 
   if (isLoading) {
     return (
@@ -47,10 +29,42 @@ export default function ViewClassVideo({
     );
   }
 
-  if (isError || !video) return <div></div>;
+  if (isError) return <div>Không thể tải dữ liệu</div>;
+
+  const fields = [
+    { label: "ID", value: video?.id },
+    { label: "Tên Video", value: video?.name },
+    { label: "Slogan", value: video?.slogan },
+    { label: "Lớp", value: video?.class?.name || "Không có lớp" },
+    {
+      label: "Video",
+      value: video?.videos ? (
+        <video
+          controls
+          style={{
+            marginTop: "8px",
+            borderRadius: "8px",
+            width: "100%",
+            height: "150px",
+            objectFit: "cover", // 👈 cái này giúp video bo hết khung
+          }}
+        >
+          <source src={video?.videos} type="video/mp4" />
+          Trình duyệt không hỗ trợ video.
+        </video>
+      ) : (
+        "Không có video"
+      ),
+    },
+  ];
 
   return (
-    <AppFormDialog open={isOpen} onClose={onClose} title={`Xem Video Lớp: ${video.name}`} maxWidth="sm">
+    <AppFormDialog
+      open={isOpen}
+      onClose={onClose}
+      title={`Xem Video Lớp: ${video?.name}`}
+      maxWidth="sm"
+    >
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <tbody>
           {fields.map(({ label, value }) => (

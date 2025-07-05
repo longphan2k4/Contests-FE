@@ -44,7 +44,7 @@ import SearchIcon from "@mui/icons-material/Search";
 
 const AwardsPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  
+
   const [awards, setAwards] = useState<Award[]>([]);
   const [selectedAwardId, setSelectedAwardId] = useState<number | null>(null);
   const [pagination, setPagination] = useState<pagination>({});
@@ -63,9 +63,9 @@ const AwardsPage: React.FC = () => {
     isLoading: isAwardsLoading,
     isError: isAwardsError,
     refetch: refetchAwards,
-  } = useAwards(slug || '', filter);
+  } = useAwards(slug || "", filter);
 
-  const { mutate: mutateCreate } = useCreateAward(slug || '');
+  const { mutate: mutateCreate } = useCreateAward(slug || "");
 
   const { mutate: mutateUpdate } = useUpdate();
 
@@ -77,30 +77,18 @@ const AwardsPage: React.FC = () => {
 
   useEffect(() => {
     if (awardsQuery) {
-      setAwards(awardsQuery?.data);
+      setAwards(awardsQuery?.data.awards);
       setPagination(awardsQuery?.data.pagination);
     }
   }, [awardsQuery]);
 
+  useEffect(() => {
+    refetchAwards();
+    document.title = "Quản lý giải thưởng";
+  }, []);
+
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
-
-  // const toggleActive = useCallback((id: number) => {
-  //   mutateActive(
-  //     { id: id },
-  //     {
-  //       onSuccess: data => {
-  //         showToast(`Cập nhật trạng thái thành công`, "success");
-
-  //         refetchAwards();
-  //         setSelectedAwardId(null);
-  //       },
-  //       onError: (err: any) => {
-  //         showToast(err.response?.data?.message, "error");
-  //       },
-  //     }
-  //   );
-  // }, []);
 
   const handeDeletes = (ids: deleteAwardsType) => {
     mutateDeleteMany(ids, {
@@ -110,7 +98,9 @@ const AwardsPage: React.FC = () => {
         setSelectedAwardIds([]);
       },
       onError: (err: unknown) => {
-        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi xóa giải thưởng";
+        const message =
+          (err as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message || "Đã xảy ra lỗi khi xóa giải thưởng";
         showToast(message, "error");
       },
     });
@@ -123,41 +113,54 @@ const AwardsPage: React.FC = () => {
         setIsCreateOpen(false);
       },
       onError: (err: unknown) => {
-        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi tạo giải thưởng";
+        const message =
+          (err as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message || "Đã xảy ra lỗi khi tạo giải thưởng";
         showToast(message, "error");
       },
     });
-  };  
+  };
   const handleUpdate = (payload: UpdateAwardInput) => {
     if (selectedAwardId) {
       mutateUpdate(
         { id: selectedAwardId, payload },
         {
           onSuccess: () => {
-            // Toast và invalidation được xử lý trong hook useUpdate
+            showToast("Cập nhật giải thưởng thành công", "success");
+            refetchAwards();
+            setSelectedAwardId(null);
             setIsEditOpen(false);
           },
           onError: (err: unknown) => {
-            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi cập nhật giải thưởng";
+            const message =
+              (err as { response?: { data?: { message?: string } } })?.response
+                ?.data?.message || "Đã xảy ra lỗi khi cập nhật giải thưởng";
             showToast(message, "error");
           },
         }
       );
     }
   };
-  const handleDelete = useCallback((id: number | null) => {
-    if (!id) return;
-    mutateDelete(id, {
-      onSuccess: () => {
-        // Toast và invalidation được xử lý trong hook useDelete
-        setIsConfirmDelete(false);
-      },
-      onError: (error: unknown) => {
-        const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi xóa giải thưởng";
-        showToast(message, "error");
-      },
-    });
-  }, [mutateDelete, showToast]);
+  const handleDelete = useCallback(
+    (id: number | null) => {
+      if (!id) return;
+      mutateDelete(id, {
+        onSuccess: () => {
+          showToast("Xóa giải thưởng thành công", "success");
+          refetchAwards();
+          setIsConfirmDelete(false);
+          setSelectedAwardId(null);
+        },
+        onError: (error: unknown) => {
+          const message =
+            (error as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message || "Đã xảy ra lỗi khi xóa giải thưởng";
+          showToast(message, "error");
+        },
+      });
+    },
+    [mutateDelete, showToast]
+  );
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
       setSelectedAwardId(id);
@@ -179,9 +182,7 @@ const AwardsPage: React.FC = () => {
   if (!slug) {
     return (
       <Box sx={{ p: 3 }}>
-        <Alert severity="error">
-          Không tìm thấy thông tin cuộc thi
-        </Alert>
+        <Alert severity="error">Không tìm thấy thông tin cuộc thi</Alert>
       </Box>
     );
   }
@@ -334,8 +335,8 @@ const AwardsPage: React.FC = () => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1, // Reset to page 1 when changing limit
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >
@@ -346,25 +347,34 @@ const AwardsPage: React.FC = () => {
               </Select>
             </FormControl>
             <Typography>
-              Trang {filter?.page || 1} / {pagination?.totalPages}
+              Trang {filter?.page || 1} / {pagination?.totalPages || 1}
             </Typography>
           </Box>
-        </Box>        
-        <Box className="flex flex-col items-center">
-          {" "}
-          <Pagination
-            count={pagination?.totalPages || 0}
-            page={filter?.page ?? 1}
-            color="primary"
-            onChange={(_event, value) =>
-              setFilter(prev => ({
-                ...prev,
-                page: value,
-              }))
-            }
-            showFirstButton
-            showLastButton
-          />
+        </Box>
+        <Box
+          sx={{
+            display:
+              pagination?.totalPages !== undefined && pagination?.totalPages > 1
+                ? "block"
+                : "none",
+          }}
+        >
+          <Box className="flex flex-col items-center">
+            {" "}
+            <Pagination
+              count={pagination?.totalPages || 0}
+              page={filter?.page ?? 1}
+              color="primary"
+              onChange={(_event, value) =>
+                setFilter(prev => ({
+                  ...prev,
+                  page: value,
+                }))
+              }
+              showFirstButton
+              showLastButton
+            />
+          </Box>
         </Box>
         <CreateAward
           isOpen={isCreateOpen}

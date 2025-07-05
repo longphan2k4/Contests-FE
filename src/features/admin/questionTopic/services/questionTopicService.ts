@@ -1,9 +1,9 @@
-import axiosInstance from '../../../../config/axiosInstance';
-import type { 
-  QuestionTopic, 
-  QuestionTopicFilter, 
-  QuestionTopicsResponse
-} from '../types/questionTopic';
+import axiosInstance from "../../../../config/axiosInstance";
+import type {
+  QuestionTopic,
+  QuestionTopicFilter,
+  QuestionTopicsResponse,
+} from "../types/questionTopic";
 
 export interface BatchDeleteResponse {
   success: boolean;
@@ -24,24 +24,29 @@ export interface BatchDeleteResponse {
 /**
  * Lấy danh sách chủ đề câu hỏi từ API
  */
-export const getQuestionTopics = async (filter?: QuestionTopicFilter): Promise<QuestionTopicsResponse> => {
+export const getQuestionTopics = async (
+  filter?: QuestionTopicFilter
+): Promise<QuestionTopicsResponse> => {
   try {
     const params = new URLSearchParams();
-    if (filter?.page) params.append('page', String(filter.page));
-    if (filter?.limit) params.append('limit', String(filter.limit));
-    if (filter?.search) params.append('search', filter.search.trim());
-    if (filter?.isActive !== undefined) params.append('isActive', String(filter.isActive));
-    if (filter?.sortBy) params.append('sortBy', filter.sortBy);
-    if (filter?.sortOrder) params.append('sortOrder', filter.sortOrder);
+    if (filter?.page) params.append("page", String(filter.page));
+    if (filter?.limit) params.append("limit", String(filter.limit));
+    if (filter?.search) params.append("search", filter.search.trim());
+    if (filter?.isActive !== undefined)
+      params.append("isActive", String(filter.isActive));
+    if (filter?.sortBy) params.append("sortBy", filter.sortBy);
+    if (filter?.sortOrder) params.append("sortOrder", filter.sortOrder);
 
-    const response = await axiosInstance.get<QuestionTopicsResponse>('/question-topics', { params });
+    const response = await axiosInstance.get<QuestionTopicsResponse>(
+      "/question-topics",
+      { params }
+    );
     return response.data;
   } catch (error) {
-    console.error('Error fetching question topics:', error);
     // Trả về response mặc định khi có lỗi
     return {
       success: false,
-      message: 'Có lỗi xảy ra khi tải danh sách chủ đề',
+      message: "Có lỗi xảy ra khi tải danh sách chủ đề",
       data: [],
       pagination: {
         page: filter?.page || 1,
@@ -49,9 +54,9 @@ export const getQuestionTopics = async (filter?: QuestionTopicFilter): Promise<Q
         total: 0,
         totalPages: 0,
         hasNext: false,
-        hasPrev: false
+        hasPrev: false,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 };
@@ -59,12 +64,12 @@ export const getQuestionTopics = async (filter?: QuestionTopicFilter): Promise<Q
 /**
  * Lấy thông tin chi tiết chủ đề câu hỏi
  */
-export const getQuestionTopicById = async (id: number): Promise<QuestionTopic> => {
+export const toggleActive = async (id: number): Promise<QuestionTopic> => {
   try {
-    const response = await axiosInstance.get<QuestionTopic>(`/question-topic/${id}`);
-    console.log(response.data);
+    const response = await axiosInstance.patch(
+      `/question-topics/${id}/toggle-active`
+    );
     return response.data;
-
   } catch (error) {
     console.error(`Error fetching question topic with id ${id}:`, error);
     throw error;
@@ -74,13 +79,17 @@ export const getQuestionTopicById = async (id: number): Promise<QuestionTopic> =
 /**
  * Tạo chủ đề câu hỏi mới
  */
-export const createQuestionTopic = async (questionTopicData: Partial<QuestionTopic>): Promise<QuestionTopic> => {
+export const createQuestionTopic = async (
+  questionTopicData: Partial<QuestionTopic>
+): Promise<QuestionTopic> => {
   try {
-    const response = await axiosInstance.post<QuestionTopic>('/question-topics', questionTopicData);
-    console.log(response.data);
+    const response = await axiosInstance.post<QuestionTopic>(
+      "/question-topics",
+      questionTopicData
+    );
+
     return response.data;
   } catch (error) {
-    console.error('Error creating question topic:', error);
     throw error;
   }
 };
@@ -88,12 +97,17 @@ export const createQuestionTopic = async (questionTopicData: Partial<QuestionTop
 /**
  * Cập nhật thông tin chủ đề câu hỏi
  */
-export const updateQuestionTopic = async (id: number, questionTopicData: Partial<QuestionTopic>): Promise<QuestionTopic> => {
+export const updateQuestionTopic = async (
+  id: number,
+  questionTopicData: Partial<QuestionTopic>
+): Promise<QuestionTopic> => {
   try {
-    const response = await axiosInstance.put<QuestionTopic>(`/question-topics/${id}`, questionTopicData);
+    const response = await axiosInstance.put<QuestionTopic>(
+      `/question-topics/${id}`,
+      questionTopicData
+    );
     return response.data;
   } catch (error) {
-    console.error(`Error updating question topic with id ${id}:`, error);
     throw error;
   }
 };
@@ -113,23 +127,28 @@ export const deleteQuestionTopic = async (ids: number[]): Promise<void> => {
 /**
  * Xóa nhiều chủ đề câu hỏi
  */
-export const deleteMultipleQuestionTopics = async (ids: number[]): Promise<BatchDeleteResponse | boolean> => {
+export const deleteMultipleQuestionTopics = async (
+  ids: number[]
+): Promise<BatchDeleteResponse | boolean> => {
   try {
-    const response = await axiosInstance.delete<BatchDeleteResponse>(`/question-topics/batch-delete`, { data: { ids } });
+    const response = await axiosInstance.delete<BatchDeleteResponse>(
+      `/question-topics/batch-delete`,
+      { data: { ids } }
+    );
     return response.data;
   } catch (error: unknown) {
     // Nếu lỗi có response và data đúng định dạng BatchDeleteResponse thì trả về luôn object đó
     if (
-      error && 
-      typeof error === 'object' &&
-      'response' in error &&
+      error &&
+      typeof error === "object" &&
+      "response" in error &&
       error.response &&
-      typeof error.response === 'object' &&
-      'data' in error.response &&
+      typeof error.response === "object" &&
+      "data" in error.response &&
       error.response.data &&
-      typeof error.response.data === 'object' &&
-      'success' in error.response.data &&
-      'data' in error.response.data
+      typeof error.response.data === "object" &&
+      "success" in error.response.data &&
+      "data" in error.response.data
     ) {
       return error.response.data as BatchDeleteResponse;
     }
@@ -141,12 +160,13 @@ export const deleteMultipleQuestionTopics = async (ids: number[]): Promise<Batch
 /**
  * Kích hoạt/vô hiệu hóa chủ đề câu hỏi
  */
-export const toggleQuestionTopicActive = async (id: number): Promise<QuestionTopic> => {
-  try {
-    const questionTopic = await getQuestionTopicById(id);
-    return updateQuestionTopic(id, { isActive: !questionTopic.isActive });
-  } catch (error) {
-    console.error(`Error toggling active state for question topic with id ${id}:`, error);
-    throw error;
-  }
-}; 
+// export const toggleQuestionTopicActive = async (
+//   id: number
+// ): Promise<QuestionTopic> => {
+//   try {
+//     const questionTopic = await getQuestionTopicById(id);
+//     return updateQuestionTopic(id, { isActive: !questionTopic.isActive });
+//   } catch (error) {
+//     throw error;
+//   }
+// };
