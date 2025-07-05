@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import EliminateGrid from "../Eliminate/EliminateGrid";
-import ActionButtons from "../Eliminate/ActionButtons";
 import EliminateSidebar from "../Eliminate/EliminateSidebar";
 import { createParticles } from "../../utils/particleUtils";
 import type { Icon } from "../../types";
+
 export interface Contestant {
   registration_number: number;
   fullname: string;
@@ -32,7 +32,7 @@ interface EliminateDisplayProps {
 
 export default function EliminateDisplay({
   ListContestant,
-  totalIcons = 60,
+  totalIcons = 100,
   currentQuestionOrder,
   controlValue,
 }: EliminateDisplayProps) {
@@ -40,12 +40,9 @@ export default function EliminateDisplay({
   const [icons, setIcons] = useState<Icon[]>([]);
   const [recentlyRestored, setRecentlyRestored] = useState<number[]>([]);
   const [actionInProgress, setActionInProgress] = useState(false);
-  const [fadingOutContestants, setFadingOutContestants] = useState<number[]>(
-    []
-  );
-  const [displayMode, setDisplayMode] = useState<"eliminated" | "rescued">(
-    "eliminated"
-  );
+  const [fadingOutContestants, setFadingOutContestants] = useState<number[]>([]);
+  const [displayMode, setDisplayMode] = useState<"eliminated" | "rescued">("eliminated");
+  
   console.log("Control value changed:", controlValue);
 
   useEffect(() => {
@@ -55,7 +52,7 @@ export default function EliminateDisplay({
       handleSnap("restore");
     }
   }, [controlValue]);
-  // ssnsn s
+
   useEffect(() => {
     const contestantsData = ListContestant.flatMap(group =>
       group.contestantMatches.map(c => ({
@@ -113,7 +110,7 @@ export default function EliminateDisplay({
   };
 
   const handleSnapDelete = () => {
-    setRecentlyRestored([]); // Xóa danh sách người mới được phục hồi
+    setRecentlyRestored([]);
 
     const deleteList = contestants
       .filter(
@@ -128,7 +125,6 @@ export default function EliminateDisplay({
       return;
     }
 
-    // Cập nhật trạng thái thí sinh (nếu cần)
     setContestants(prev =>
       prev.map(c =>
         deleteList.includes(c.registration_number)
@@ -141,7 +137,6 @@ export default function EliminateDisplay({
       )
     );
 
-    // Bắt đầu hiệu ứng mờ dần
     setIcons(prev =>
       prev.map(icon =>
         deleteList.includes(icon.registrationNumber)
@@ -150,7 +145,6 @@ export default function EliminateDisplay({
       )
     );
 
-    // Sau 1 giây, hiệu ứng phân rã (disintegrate)
     setTimeout(() => {
       setIcons(prev =>
         prev.map(icon =>
@@ -165,7 +159,6 @@ export default function EliminateDisplay({
         )
       );
 
-      // Sau thêm 1 giây, xóa hiệu ứng particles
       setTimeout(() => {
         setIcons(prev =>
           prev.map(icon =>
@@ -182,7 +175,6 @@ export default function EliminateDisplay({
   const handleSnapRestore = () => {
     setActionInProgress(true);
 
-    // 1. Lấy danh sách các thí sinh đang bị phân rã và còn hoạt động
     const disintegrated = icons
       .filter(i => i.isDisintegrated && i.isActive)
       .map(i => i.registrationNumber);
@@ -192,7 +184,6 @@ export default function EliminateDisplay({
       return;
     }
 
-    // 2. Lọc ra những thí sinh bị loại ở câu hỏi hiện tại
     const toBeRescued = contestants
       .filter(
         c =>
@@ -207,7 +198,6 @@ export default function EliminateDisplay({
       return;
     }
 
-    // 3. Cập nhật trạng thái sang rescued
     setContestants(prev =>
       prev.map(c =>
         toBeRescued.includes(c.registration_number)
@@ -245,11 +235,6 @@ export default function EliminateDisplay({
     }, 1000);
   };
 
-  const canDelete =
-    icons.some(i => !i.isDisintegrated && i.isActive) && !actionInProgress;
-  const canRestore =
-    icons.some(i => i.isDisintegrated && i.isActive) && !actionInProgress;
-
   const showSidebar = true;
 
   useEffect(() => {
@@ -258,27 +243,32 @@ export default function EliminateDisplay({
 
   return (
     <AnimatePresence>
-      <div className="flex flex-col min-h-screen">
+      {/* Container với chiều cao tính toán động */}
+      <div 
+        className="flex overflow-hidden"
+        style={{ 
+          height: 'calc(100vh - 200px)', // Trừ đi chiều cao header (khoảng 200px)
+          minHeight: '500px' // Đảm bảo chiều cao tối thiểu
+        }}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="flex flex-col flex-1 overflow-hidden"
+          className="flex flex-1 overflow-hidden"
         >
-          <div className="flex flex-1 overflow-auto mt-2">
-            <div className="flex-1 p-5 overflow-auto">
-              <EliminateGrid
-                icons={icons}
-                recentlyRestored={recentlyRestored}
-              />
-              <ActionButtons
-                canDelete={canDelete}
-                canRestore={canRestore}
-                handleSnap={handleSnap}
-              />
-            </div>
-            {showSidebar && (
+          {/* Grid Container - chiếm không gian còn lại */}
+          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+            <EliminateGrid
+              icons={icons}
+              recentlyRestored={recentlyRestored}
+            />
+          </div>
+          
+          {/* Sidebar với chiều cao cố định */}
+          {showSidebar && (
+            <div className="w-85 md:w-96 flex-shrink-0">
               <EliminateSidebar
                 contestants={contestants}
                 displayMode={displayMode}
@@ -292,8 +282,8 @@ export default function EliminateDisplay({
                   icons.filter(i => i.isActive && i.isRescued).length
                 }
               />
-            )}
-          </div>
+            </div>
+          )}
         </motion.div>
       </div>
     </AnimatePresence>
