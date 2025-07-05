@@ -78,7 +78,8 @@ const UsersPage: React.FC = () => {
 
   useEffect(() => {
     refetchUsers();
-  }, [refetchUsers]);
+    document.title = "Quản lý người dùng";
+  }, []);
 
   useEffect(() => {
     if (usersQuery) {
@@ -133,7 +134,7 @@ const UsersPage: React.FC = () => {
       },
       onError: (err: any) => {
         if (err.response?.data?.message) {
-          showToast(err.response?.data?.message, "success");
+          showToast(err.response?.data?.message, "error");
         }
       },
     });
@@ -165,7 +166,7 @@ const UsersPage: React.FC = () => {
         refetchUsers();
       },
       onError: (error: any) => {
-        showToast(error.response?.data?.message, "success");
+        showToast(error.response?.data?.message, "error");
       },
     });
   }, []);
@@ -188,10 +189,6 @@ const UsersPage: React.FC = () => {
     setIsConfirmDeleteMany(true);
   };
 
-  useEffect(() => {
-    document.title = "Quản lý người dùng";
-  }, []);
-
   if (isUsersLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
@@ -204,7 +201,7 @@ const UsersPage: React.FC = () => {
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchUsers}>Thử lại</Button>}
+          action={<Button onClick={() => refetchUsers()}>Thử lại</Button>}
         >
           Không thể tải danh sách người dùng.
         </Alert>
@@ -285,7 +282,7 @@ const UsersPage: React.FC = () => {
               options={[
                 { label: "Tất cả", value: "all" },
                 { label: "Hoạt động", value: "active" },
-                { label: "Không hoạt động", value: "inactive" },
+                { label: "Đã vô hiệu hóa", value: "inactive" },
               ]}
               value={
                 filter.isActive === undefined
@@ -317,6 +314,7 @@ const UsersPage: React.FC = () => {
                 { label: "Tất cả", value: "all" },
                 { label: "Admin", value: "Admin" },
                 { label: "Trọng tài", value: "Judge" },
+                { label: "Sinh viên", value: "Student" },
               ]}
               value={filter.role ?? "all"}
               onChange={(val: string | number | undefined) =>
@@ -391,8 +389,8 @@ const UsersPage: React.FC = () => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1,
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >
@@ -407,21 +405,30 @@ const UsersPage: React.FC = () => {
             </Typography>
           </Box>
         </Box>
-        <Box className="flex flex-col items-center">
-          {" "}
-          <Pagination
-            count={pagination.totalPages}
-            page={filter.page ?? 1}
-            color="primary"
-            onChange={(_event, value) =>
-              setFilter(prev => ({
-                ...prev,
-                page: value,
-              }))
-            }
-            showFirstButton
-            showLastButton
-          />
+        <Box
+          style={{
+            display:
+              pagination.totalPages !== undefined && pagination.totalPages > 1
+                ? "block"
+                : "none",
+          }}
+        >
+          <Box className="flex flex-col items-center">
+            {" "}
+            <Pagination
+              count={pagination.totalPages}
+              page={filter.page ?? 1}
+              color="primary"
+              onChange={(_event, value) =>
+                setFilter(prev => ({
+                  ...prev,
+                  page: value,
+                }))
+              }
+              showFirstButton
+              showLastButton
+            />
+          </Box>
         </Box>
         <CreateUser
           isOpen={isCreateOpen}

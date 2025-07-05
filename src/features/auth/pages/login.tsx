@@ -51,7 +51,7 @@ const LoginPage = () => {
         if (data.data?.role === "Admin") {
           navigate("/admin/dashboard");
         } else {
-          navigate("/trang-chu");
+          navigate("/");
         }
       },
       onError: error => {

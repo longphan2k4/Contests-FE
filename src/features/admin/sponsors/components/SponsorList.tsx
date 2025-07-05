@@ -26,35 +26,32 @@ export default function SponsorList({
   onView,
   onEdit,
   onDelete,
-}: SponsorListProps): React.ReactElement {  const columns: GridColDef[] = [
+}: SponsorListProps): React.ReactElement {
+  const columns: GridColDef[] = [
     {
-      field: "index",
-      headerName: "STT",
+      field: "id",
+      headerName: "Id",
       width: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: params =>
-        params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
-    { field: "name", headerName: "Tên", flex: 1 },    {
+    { field: "name", headerName: "Tên", flex: 1 },
+    {
       field: "logo",
       headerName: "Logo",
       width: 80,
-      renderCell: params => (
+      renderCell: params =>
         params.row.logo ? (
           <Avatar
             src={getMediaUrl(params.row.logo)}
             alt="logo"
             sx={{ width: 40, height: 40 }}
-            onError={(e) => {
-              console.error('Image load error:', getMediaUrl(params.row.logo));
-              e.currentTarget.style.display = 'none';
+            onError={e => {
+              console.error("Image load error:", getMediaUrl(params.row.logo));
+              e.currentTarget.style.display = "none";
             }}
           />
         ) : (
           <Avatar sx={{ width: 40, height: 40 }}>?</Avatar>
-        )
-      ),
+        ),
     },
     // {
     //   field: "isActive",
@@ -92,7 +89,8 @@ export default function SponsorList({
         rows={sponsors}
         columns={columns}
         getRowId={row => row.id}
-        selectedIds={selectedSponsorIds}        onSelectChange={selection => {
+        selectedIds={selectedSponsorIds}
+        onSelectChange={selection => {
           const idsArray = Array.isArray(selection)
             ? selection
             : Array.from((selection as { ids?: number[] }).ids || []);

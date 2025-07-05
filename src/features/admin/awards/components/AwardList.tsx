@@ -28,30 +28,41 @@ export default function AwardList({
 }: AwardListProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
-      field: "index",
-      headerName: "STT",
+      field: "id",
+      headerName: "Id",
       width: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: params =>
-        params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
     { field: "name", headerName: "Tên Giải", flex: 1 },
-    // {
-    //   field: "isActive",
-    //   headerName: "Trạng thái",
-    //   flex: 1,
-    //   renderCell: params => (
-    //     <IsSwitch
-    //       value={params.row.isActive}
-    //       onChange={() => onToggle(params.row.id)}
-    //     />
-    //   ),
-    // },
+    {
+      field: "type",
+      headerName: "Loại Giải",
+      flex: 1,
+      renderCell: params => {
+        const type = params.row.type;
+        switch (type) {
+          case "firstPrize":
+            return "Giải Nhất";
+          case "secondPrize":
+            return "Giải Nhì";
+          case "thirdPrize":
+            return "Giải Ba";
+          case "fourthPrize":
+            return "Giải Khuyến Khích";
+          case "impressiveVideo":
+            return "Video Ấn Tượng";
+          case "excellentVideo":
+            return "Video Xuất Sắc";
+          default:
+            return "Không xác định";
+        }
+      },
+    },
+    { field: "fullName", headerName: "Thí Sinh", flex: 1 },
     {
       field: "actions",
       headerName: "Thao tác",
       flex: 1,
+      minWidth: 200,
       renderCell: params => (
         <>
           <IconButton color="primary" onClick={() => onView(params.row.id)}>

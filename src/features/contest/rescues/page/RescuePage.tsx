@@ -190,6 +190,7 @@ const RescuePage: React.FC = () => {
         {
           onSuccess: () => {
             showToast(`Cập nhật cứu trợ thành công`, "success");
+            setSelectedId(null); // Reset selectedId after update
             refetchs();
           },
           onError: (err: any) => {
@@ -206,6 +207,7 @@ const RescuePage: React.FC = () => {
     mutateDelete(id, {
       onSuccess: () => {
         showToast(`Xóa cứu trợ  thành công`);
+        setSelectedId(null); // Reset selectedId after delete
         refetchs();
       },
       onError: (error: any) => {
@@ -448,7 +450,7 @@ const RescuePage: React.FC = () => {
               </Select>
             </FormControl>
             <Typography>
-              Trang {filter.page || 1} / {pagination.totalPages}
+              Trang {filter.page || 1} / {pagination.totalPages || 1}
             </Typography>
           </Box>
         </Box>

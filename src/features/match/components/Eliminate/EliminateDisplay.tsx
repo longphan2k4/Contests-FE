@@ -27,7 +27,7 @@ interface EliminateDisplayProps {
   ListContestant: ListContestant[];
   totalIcons?: number;
   currentQuestionOrder: number;
-  controlValue?: ControlValue;
+  controlValue?: ControlValue | null;
 }
 
 export default function EliminateDisplay({
@@ -55,7 +55,7 @@ export default function EliminateDisplay({
       handleSnap("restore");
     }
   }, [controlValue]);
-
+  // ssnsn s
   useEffect(() => {
     const contestantsData = ListContestant.flatMap(group =>
       group.contestantMatches.map(c => ({

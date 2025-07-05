@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import AdminRoutes from "../features/admin/AdminRoutes";
 import ContestRoutes from "../features/contest/ContestRouter";
-import PublicRoute from "./PublicRoute";
+
 import AuthRoutes from "../features/auth/routes";
 import StudentRoutes from "../features/student/routes";
 import PublicRoutes from "./PublicRoutes";
@@ -26,7 +26,7 @@ import MatchList from "../features/judge/components/selector/MatchList";
 import OlympicIT2025Rules from "@features/rule/RulePage";
 //leaderboard
 import TopThreeReveal from "@features/leaderboard/top3/pages/TopThreeReveal";
-import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
+// import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
 
 import NotFound404 from "@components/404";
 const AppRoutes: React.FC = () => {
@@ -40,13 +40,13 @@ const AppRoutes: React.FC = () => {
       {/* Student Routes */}
       {StudentRoutes()}
 
-      <Route element={<PublicRoute restricted={true} />}>{AuthRoutes()}</Route>
+      {AuthRoutes()}
 
       <Route element={<PrivateRoute roles={["Admin"]} />}>
         {ContestRoutes()}
         {AdminRoutes()}
         <Route
-          path="/admin/cuoc-thi/:slug/dieu-kien-tran-dau/:match"
+          path="/admin/contest/:slug/control/:match"
           element={
             <SocketProvider>
               <ControlsPage />

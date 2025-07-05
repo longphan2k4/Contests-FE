@@ -28,13 +28,9 @@ export default function ListGroup({
 }: ListGroupProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
-      field: "index",
-      headerName: "STT",
+      field: "id",
+      headerName: "Id",
       width: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: params =>
-        params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
     { field: "name", headerName: "Tên nhóm", flex: 1 },
     { field: "matchName", headerName: "Tên trận đấu", flex: 1 },

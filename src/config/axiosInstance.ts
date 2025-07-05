@@ -61,8 +61,6 @@ axiosInstance.interceptors.response.use(
         // Gửi lại request gốc
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        console.error("Error refreshing token:", refreshError);
-
         // Xoá cookie frontend
         document.cookie =
           "feAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";

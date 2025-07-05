@@ -22,7 +22,8 @@ const FormInput = ({
   icon,
   value,
   type = "text",
-}: FormInputProps) => {  return (
+}: FormInputProps) => {
+  return (
     <TextField
       margin="none" // ❌ bỏ margin mặc định
       fullWidth

@@ -32,13 +32,9 @@ export default function QuestionPackageList({
 }: QuestionPackageListProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
-      field: "index",
-      headerName: "STT",
+      field: "id",
+      headerName: "Id",
       width: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: params =>
-        params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
     { field: "name", headerName: "Tên tài khoản", flex: 1 },
     {
@@ -61,7 +57,10 @@ export default function QuestionPackageList({
           <IconButton color="primary" onClick={() => onView(params.row.id)}>
             <VisibilityIcon />
           </IconButton>
-          <IconButton color="primary" onClick={() => onViewQuestions(params.row.id)}>
+          <IconButton
+            color="primary"
+            onClick={() => onViewQuestions(params.row.id)}
+          >
             <QuestionAnswerIcon />
           </IconButton>
           <IconButton color="primary" onClick={() => onEdit(params.row.id)}>

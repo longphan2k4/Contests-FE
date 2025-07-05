@@ -10,6 +10,5 @@
 // import { someHook } from '@/hooks/someHook';
 
 // Test với các path có sẵn
-console.log('Import test file - both old and new imports should work');
 
 export default {};

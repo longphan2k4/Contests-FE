@@ -4,13 +4,11 @@ import {
   Typography,
   CircularProgress,
   Alert,
-  TextField,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
   Stack,
-  InputAdornment,
 } from "@mui/material";
 import { Button } from "@mui/material";
 import { Pagination } from "@mui/material";
@@ -25,7 +23,7 @@ import ConfirmDelete from "../../../../components/Confirm";
 //import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 import { useParams } from "react-router-dom";
 import { useMedias } from "../hook/useMedias";
-import { useCreateMedia} from "../hook/useCreate";
+import { useCreateMedia } from "../hook/useCreate";
 import { useUpdate } from "../hook/useUpdate";
 //import { useActive } from "../hook/useActive";
 import { useDeleteMany } from "../hook/useDeleteMany";
@@ -40,12 +38,12 @@ import {
   type MediaQuery,
   type DeleteMediasType,
 } from "../types/media.shame";
-import SearchIcon from "@mui/icons-material/Search";
+import FormAutocompleteFilter from "@components/FormAutocompleteFilter";
 
 const MediaPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  
-  const [, setMedias] = useState<MediaItem[]>([]);
+
+  const [medias, setMedias] = useState<MediaItem[]>([]);
   const [selectedMediaId, setSelectedMediaId] = useState<number | null>(null);
   const [pagination, setPagination] = useState<pagination>({});
 
@@ -63,13 +61,11 @@ const MediaPage: React.FC = () => {
     isLoading: isMediasLoading,
     isError: isMediasError,
     refetch: refetchMedias,
-  } = useMedias(slug || '', filter);
+  } = useMedias(slug || "", filter);
 
   const { mutate: mutateCreate } = useCreateMedia();
 
   const { mutate: mutateUpdate } = useUpdate();
-
-  //const { mutate: mutateActive } = useActive();
 
   const { mutate: mutateDeleteMany } = useDeleteMany();
 
@@ -77,10 +73,14 @@ const MediaPage: React.FC = () => {
 
   useEffect(() => {
     if (mediasQuery) {
-      setMedias(mediasQuery?.data);
+      setMedias(mediasQuery?.data.medias);
       setPagination(mediasQuery?.data.pagination);
     }
   }, [mediasQuery]);
+  useEffect(() => {
+    refetchMedias();
+    document.title = "Quản lý Media";
+  }, [refetchMedias]);
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
@@ -93,63 +93,73 @@ const MediaPage: React.FC = () => {
         setSelectedMediaIds([]);
       },
       onError: (err: unknown) => {
-        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi xóa Media";
+        const message =
+          (err as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message || "Đã xảy ra lỗi khi xóa Media";
         showToast(message, "error");
       },
     });
   };
 
-      const handleCreate = (payload: CreateMediaInput) => {
-      mutateCreate(
-        {
-          slug: slug || "",
-          data: payload,
+  const handleCreate = (payload: CreateMediaInput) => {
+    mutateCreate(
+      {
+        slug: slug || "",
+        data: payload,
+      },
+      {
+        onSuccess: data => {
+          if (data) showToast(`Tạo Media thành công`, "success");
+          refetchMedias();
         },
+        onError: (err: any) => {
+          if (err.response?.data?.message) {
+            showToast(err.response?.data?.message, "error");
+          }
+        },
+      }
+    );
+  };
+
+  const handleUpdate = (payload: UpdateMediaInput) => {
+    if (selectedMediaId) {
+      mutateUpdate(
+        { id: selectedMediaId, payload },
         {
-          onSuccess: data => {
-            if (data) showToast(`Tạo Media thành công`, "success");
+          onSuccess: () => {
+            showToast(`Cập nhật Media thành công`, "success");
             refetchMedias();
+            setSelectedMediaId(null);
           },
           onError: (err: any) => {
-            if (err.response?.data?.message) {
+            if (err.response?.data?.message)
               showToast(err.response?.data?.message, "error");
-            }
           },
         }
       );
-    };
+    }
+  };
 
-  const handleUpdate = (payload: UpdateMediaInput) => {
-      if (selectedMediaId) {
-        mutateUpdate(
-          { id: selectedMediaId, payload },
-          {
-            onSuccess: () => {
-              showToast(`Cập nhật Media thành công`, "success");
-              refetchMedias();
-            },
-            onError: (err: any) => {
-              if (err.response?.data?.message)
-                showToast(err.response?.data?.message, "error");
-            },
-          }
-        );
-      }
-    };
-    
-  const handleDelete = useCallback((id: number | null) => {
-    if (!id) return;
-    mutateDelete(id, {
-      onSuccess: () => {
-        // Toast và invalidation được xử lý trong hook useDelete
-        setIsConfirmDelete(false);
-      },
-      onError: (error: unknown) => {
-        const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Đã xảy ra lỗi khi xóa Media";
-        showToast(message, "error");
-      },
-    });
-  }, [mutateDelete, showToast]);
+  const handleDelete = useCallback(
+    (id: number | null) => {
+      if (!id) return;
+      mutateDelete(id, {
+        onSuccess: () => {
+          showToast(`Xóa Media thành công`, "success");
+          refetchMedias();
+          setSelectedMediaId(null);
+          setIsConfirmDelete(false);
+        },
+        onError: (error: unknown) => {
+          const message =
+            (error as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message || "Đã xảy ra lỗi khi xóa Media";
+          showToast(message, "error");
+        },
+      });
+    },
+    [mutateDelete, showToast]
+  );
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
       setSelectedMediaId(id);
@@ -171,9 +181,7 @@ const MediaPage: React.FC = () => {
   if (!slug) {
     return (
       <Box sx={{ p: 3 }}>
-        <Alert severity="error">
-          Không tìm thấy thông tin cuộc thi
-        </Alert>
+        <Alert severity="error">Không tìm thấy thông tin cuộc thi</Alert>
       </Box>
     );
   }
@@ -197,11 +205,7 @@ const MediaPage: React.FC = () => {
       </Box>
     );
   }
-  const combinedMedia = [
-  ...(mediasQuery?.data.images || []),
-  ...(mediasQuery?.data.logo ? [mediasQuery?.data.logo] : []),
-  ...(mediasQuery?.data.background ? [mediasQuery?.data.background] : []),
-];
+
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
@@ -244,32 +248,33 @@ const MediaPage: React.FC = () => {
               mb: 2,
             }}
           >
-            {/* Ô tìm kiếm */}
-            <TextField
-              label="Tìm kiếm"
-              variant="outlined"
-              size="small"
-              value={filter.search || ""}
-              onChange={e =>
+            <FormAutocompleteFilter
+              label="Trạng thái"
+              options={[
+                { label: "Tất cả", value: "all" },
+                { label: "Logo", value: "logo" },
+                { label: "Ảnh nền", value: "background" },
+                { label: "Hình ảnh", value: "images" },
+              ]}
+              value={filter.type}
+              onChange={val => {
                 setFilter(prev => ({
                   ...prev,
-                  search: e.target.value,
-                }))
-              }
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
+                  type:
+                    val === "all"
+                      ? undefined
+                      : val === "logo"
+                      ? "logo"
+                      : val === "background"
+                      ? "background"
+                      : val === "images"
+                      ? "images"
+                      : undefined, // fallback nếu Autocomplete trả undefined
+                }));
               }}
-              sx={{
-                flex: { sm: 1 },
-                minWidth: { xs: "100%", sm: 200 },
-              }}
+              sx={{ flex: 1, minWidth: 200 }}
             />
 
-            {/* Nút xoá người */}
             {selectedMediaIds.length > 0 && (
               <Button
                 variant="contained"
@@ -304,7 +309,7 @@ const MediaPage: React.FC = () => {
           </Stack>
 
           <MediaList
-            media={combinedMedia}
+            media={medias}
             selectedMediaIds={selectedMediaIds}
             setSelectedMediaIds={setSelectedMediaIds}
             onView={id => handleAction("view", id)}
@@ -312,57 +317,66 @@ const MediaPage: React.FC = () => {
             onDelete={id => handleAction("delete", id)}
           />
         </Box>
-
-        <Box>
-          <Box
-            sx={{
-              mt: 2,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
-              <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
-              <Select
-                labelId="page-size-select-label"
-                value={String(filter.limit || 10)}
-                onChange={e => {
+        <Box
+          sx={{
+            mt: 2,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
+            <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
+            <Select
+              labelId="page-size-select-label"
+              value={String(filter.limit || 10)}
+              onChange={e => {
+                setFilter(prev => ({
+                  ...prev,
+                  limit: Number(e.target.value),
+                  page: 1, // Reset về trang 1 khi thay đổi limit
+                }));
+              }}
+              label="Hiển thị"
+            >
+              <MenuItem value={5}>5</MenuItem>
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={25}>25</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+            </Select>
+          </FormControl>
+          <Typography>
+            Trang {filter?.page || 1} / {pagination?.totalPages || 1}
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            display:
+              pagination?.totalPages !== undefined && pagination.totalPages > 1
+                ? "block"
+                : "none",
+          }}
+        >
+          <Box>
+            <Box className="flex flex-col items-center">
+              {" "}
+              <Pagination
+                count={pagination?.totalPages || 0}
+                page={filter?.page ?? 1}
+                color="primary"
+                onChange={(_event, value) =>
                   setFilter(prev => ({
                     ...prev,
-                    limit: Number(e.target.value),
-                  }));
-                  filter.page = 1;
-                }}
-                label="Hiển thị"
-              >
-                <MenuItem value={5}>5</MenuItem>
-                <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={25}>25</MenuItem>
-                <MenuItem value={50}>50</MenuItem>
-              </Select>
-            </FormControl>
-            <Typography>
-              Trang {filter?.page || 1} / {pagination?.totalPages}
-            </Typography>
+                    page: value,
+                  }))
+                }
+                showFirstButton
+                showLastButton
+              />
+            </Box>
           </Box>
-        </Box>        
-        <Box className="flex flex-col items-center">
-          {" "}
-          <Pagination
-            count={pagination?.totalPages || 0}
-            page={filter?.page ?? 1}
-            color="primary"
-            onChange={(_event, value) =>
-              setFilter(prev => ({
-                ...prev,
-                page: value,
-              }))
-            }
-            showFirstButton
-            showLastButton
-          />
         </Box>
+
         <CreateMedia
           isOpen={isCreateOpen}
           onClose={closeCreate}

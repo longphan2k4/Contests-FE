@@ -166,6 +166,7 @@ const GroupPage: React.FC = () => {
           onSuccess: () => {
             showToast(`Cập nhật nhóm thành công`, "success");
             refetchs();
+            setSelectedId(null);
           },
           onError: (err: any) => {
             if (err.response?.data?.message)
@@ -182,6 +183,7 @@ const GroupPage: React.FC = () => {
       onSuccess: () => {
         showToast(`Xóa nhóm  thành công`);
         refetchs();
+        setSelectedId(null);
       },
       onError: (error: any) => {
         showToast(error.response?.data?.message, "error");
@@ -203,6 +205,7 @@ const GroupPage: React.FC = () => {
   );
   useEffect(() => {
     document.title = "Quản lý nhóm ";
+    refetchs();
   }, []);
 
   if (issLoading || isLoadingUser || isLoadingMatch) {
@@ -371,8 +374,8 @@ const GroupPage: React.FC = () => {
                 setFilter(prev => ({
                   ...prev,
                   limit: Number(e.target.value),
+                  page: 1, // Reset to page 1 when changing limit
                 }));
-                filter.page = 1;
               }}
               label="Hiển thị"
             >
@@ -383,7 +386,7 @@ const GroupPage: React.FC = () => {
             </Select>
           </FormControl>
           <Typography>
-            Trang {filter.page || 1} / {pagination.totalPages}
+            Trang {filter.page || 1} / {pagination.totalPages || 1}
           </Typography>
         </Box>
       </Box>

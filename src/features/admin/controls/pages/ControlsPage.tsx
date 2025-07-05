@@ -36,9 +36,6 @@ import {
 } from "../type/control.type";
 import { useSocket } from "@contexts/SocketContext";
 import { Box, CircularProgress } from "@mui/material";
-import { set } from "zod";
-import { se } from "date-fns/locale";
-import { da } from "@faker-js/faker";
 
 // Define types for socket responses
 interface SocketResponse {
@@ -73,30 +70,35 @@ const ControlsPage: React.FC = () => {
     isLoading: isLoadingMatch,
     isSuccess: isSuccessMatch,
     isError,
+    refetch: refetchMatchInfo,
   } = useMatchInfo(match ?? null);
   const {
     data: currentQuestionRes,
     isLoading: isLoadingCurrentQuestion,
     isSuccess: isSuccessCurrentQuestion,
     isError: isErrorCurrentQuestion,
+    refetch: refetchCurrentQuestion,
   } = useCurrentQuestion(match ?? null);
   const {
     data: countContestantRes,
     isLoading: isLoadingCount,
     isSuccess: isSuccessCount,
     isError: isErrorCount,
+    refetch: refetchCountContestant,
   } = useCountContestant(match ?? null);
   const {
     data: listQuestionRes,
     isLoading: isLoadingQuestions,
     isSuccess: isSuccessQuestions,
     isError: isErrorQuestions,
+    refetch: refetchListQuestion,
   } = useListQuestion(match ?? null);
   const {
     data: screenControlRes,
     isLoading: isLoadingControl,
     isSuccess: isSuccessControl,
     isError: isErrorControl,
+    refetch: refetchScreenControl,
   } = useScreenControl(match ?? null);
 
   const {
@@ -104,6 +106,7 @@ const ControlsPage: React.FC = () => {
     isLoading: isLoadingSponsorMedia,
     isSuccess: isSuccessSponsorMedia,
     isError: isErrorSponsorMedia,
+    refetch: refetchSponsorMedia,
   } = useListSponsorMedia(slug ?? null);
 
   const {
@@ -111,13 +114,36 @@ const ControlsPage: React.FC = () => {
     isLoading: isLoadingClassVideo,
     isSuccess: isSuccessClassVideo,
     isError: isErrorClassVideo,
+    refetch: refetchClassVideo,
   } = useListClassVideo(slug ?? null);
   const {
     data: listContestantRes,
     isLoading: isLoadingContestants,
     isSuccess: isSuccessContestants,
     isError: isErrorContestants,
+    refetch: refetchListContestant,
   } = useListContestant(match ?? null);
+
+  useEffect(() => {
+    refetchMatchInfo();
+    refetchCurrentQuestion();
+    refetchCountContestant();
+    refetchListQuestion();
+    refetchScreenControl();
+    refetchSponsorMedia();
+    refetchClassVideo();
+    refetchListContestant();
+  }, [
+    match,
+    refetchMatchInfo,
+    refetchCurrentQuestion,
+    refetchCountContestant,
+    refetchListQuestion,
+    refetchScreenControl,
+    refetchSponsorMedia,
+    refetchClassVideo,
+    refetchListContestant,
+  ]);
 
   useEffect(() => {
     if (isSuccessSponsorMedia) setSponsorMedia(sponsorMediaRes.data);
@@ -130,6 +156,9 @@ const ControlsPage: React.FC = () => {
   useEffect(() => {
     if (isSuccessMatch) {
       setMatchInfo(matchInfoRes.data);
+      document.title = `Điều khiển trận đấu - ${
+        matchInfoRes?.data?.name || "Chưa có trận đấu"
+      }`;
     }
   }, [isSuccessMatch, matchInfoRes]);
 
@@ -154,7 +183,6 @@ const ControlsPage: React.FC = () => {
     if (isSuccessContestants) setListContestant(listContestantRes.data);
   }, [isSuccessContestants, listContestantRes]);
 
-  // Di chuyển useEffect của socket lên trước isLoading
   useEffect(() => {
     if (!socket) {
       return () => {};
@@ -197,9 +225,6 @@ const ControlsPage: React.FC = () => {
       }));
     };
 
-    // const handleUpdateRescued = (data: any) => {
-    //   console.log("Update Rescued:", data);
-    // };
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);

@@ -91,11 +91,11 @@ export class StudentApiService {
   /**
    * Lấy token từ cookie - DEPRECATED vì backend dùng httpOnly cookie
    */
-  private static getTokenFromCookie(): string | null {
-    // ⚠️ Không thể đọc httpOnly cookie từ JavaScript
-    // Chức năng này chỉ để tương thích với code cũ
-    return null;
-  }
+  // private static getTokenFromCookie(): string | null {
+  //   // ⚠️ Không thể đọc httpOnly cookie từ JavaScript
+  //   // Chức năng này chỉ để tương thích với code cũ
+  //   return null;
+  // }
 
   /**
    * Lấy thông tin match theo ID

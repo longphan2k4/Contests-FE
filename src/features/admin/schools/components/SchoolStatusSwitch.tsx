@@ -1,7 +1,7 @@
 import React from "react";
 import { Switch, FormControlLabel } from "@mui/material";
 import { useToggleSchoolActive } from "../hooks/crud/useToggleSchoolActive";
-import { useNotification } from "../../../../contexts/NotificationContext";
+import { useToast } from "@/contexts/toastContext";
 
 interface SchoolStatusSwitchProps {
   schoolId: number;
@@ -17,27 +17,23 @@ const SchoolStatusSwitch: React.FC<SchoolStatusSwitchProps> = ({
   onRefresh,
 }) => {
   const { toggle, loading } = useToggleSchoolActive();
-  const { showSuccessNotification, showErrorNotification } = useNotification();
+  const { showToast } = useToast();
 
   const handleStatusChange = async () => {
     try {
       const updatedSchool = await toggle(schoolId);
       if (updatedSchool) {
-        showSuccessNotification(
+        showToast(
           `Trạng thái trường học đã được ${
             updatedSchool.isActive ? "kích hoạt" : "vô hiệu hóa"
           }`,
-          "Cập nhật thành công"
+          "success"
         );
         onStatusChange?.(updatedSchool.isActive);
         onRefresh?.();
       }
     } catch (error) {
-      console.log(error);
-      showErrorNotification(
-        "Không thể cập nhật trạng thái trường học",
-        "Lỗi cập nhật"
-      );
+      showToast(`Không thể cập nhật trạng thái trường học`, "error");
     }
   };
 
@@ -53,11 +49,11 @@ const SchoolStatusSwitch: React.FC<SchoolStatusSwitchProps> = ({
         />
       }
       labelPlacement="start"
-      sx={{ 
+      sx={{
         margin: 0,
-        '& .MuiFormControlLabel-label': {
-          color: isActive ? 'success.main' : 'error.main'
-        }
+        "& .MuiFormControlLabel-label": {
+          color: isActive ? "success.main" : "error.main",
+        },
       }}
     />
   );

@@ -1,6 +1,6 @@
 import React from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 import { useQuestionPackageById } from "../hook/useQuestionPackageById";
 
@@ -15,9 +15,20 @@ export default function ViewQuestionPackage({
   isOpen,
   onClose,
 }: ViewQuestionPackageProps): React.ReactElement {
-  const { data: questionPackage } = useQuestionPackageById(id);
+  const {
+    data: questionPackage,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuestionPackageById(id);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      refetch();
+    }
+  }, [isOpen, refetch]);
   const fields = [
-     { label: "ID", value: questionPackage?.id },
+    { label: "ID", value: questionPackage?.id },
     { label: "Tên gói câu hỏi", value: questionPackage?.name },
     { label: "Số câu hỏi", value: questionPackage?.questionDetailsCount },
     { label: "Số trận sử dụng", value: questionPackage?.matchesCount },
@@ -38,6 +49,18 @@ export default function ViewQuestionPackage({
       value: questionPackage?.isActive ? "Đang hoạt động" : "Đã vô hiệu hoá",
     },
   ];
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return <div>Không thể load dữ liệu</div>;
+  }
   return (
     <Box>
       <AppFormDialog
