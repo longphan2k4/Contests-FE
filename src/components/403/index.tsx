@@ -19,11 +19,7 @@ const Forbidden403 = () => {
       <Typography variant="h5" mt={2}>
         Bạn không có quyền truy cập trang này
       </Typography>
-      <Button
-        variant="contained"
-        sx={{ mt: 4 }}
-        onClick={() => navigate("/trang-chu")}
-      >
+      <Button variant="contained" sx={{ mt: 4 }} onClick={() => navigate("/")}>
         Quay về trang chủ
       </Button>
     </Box>

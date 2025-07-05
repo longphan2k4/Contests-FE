@@ -6,9 +6,28 @@ export const CreateStudentSchema = z.object({
     .max(50, "Họ và tên tối đa 50 kí tự"),
   studentCode: z
     .string()
-    .min(1, "Vui lòng nhập mã học sinh"),
-  classId: z.number({ required_error: "Vui lòng chọn lớp học" }),
+    .transform(val => (val.trim() === "" ? undefined : val))
+    .optional(),
+  classId: z.number({
+    required_error: "Vui lòng chọn lớp học",
+    invalid_type_error: "Lớp học không hợp lệ",
+  }),
   isActive: z.boolean(),
+  userId: z.number({
+    required_error: "Vui lòng chọn tài khoản học sinh",
+    invalid_type_error: "Vui lòng chọn tài khoản học sinh",
+  }),
+  avatar: z.string().optional().nullable(),
+  bio: z
+    .string()
+    .optional()
+    .nullable()
+    .refine(
+      val => !val || val === "" || z.string().url().safeParse(val).success,
+      {
+        message: "Vui lòng nhập link video giới thiệu hợp lệ",
+      }
+    ),
 });
 
 export type ClassItem = {
@@ -32,9 +51,31 @@ export const StudentShema = z.object({
 
 export const UpdateStudentSchema = z.object({
   fullName: z.string().min(3).max(50).optional(),
-  studentCode: z.string().optional(),
+  studentCode: z
+    .string()
+    .transform(val => (val.trim() === "" ? undefined : val))
+    .optional(),
+
   classId: z.number({ required_error: "Vui lòng chọn lớp học" }),
   isActive: z.boolean().optional(),
+  bio: z
+    .string()
+    .optional()
+    .nullable()
+    .refine(
+      val => !val || val === "" || z.string().url().safeParse(val).success,
+      {
+        message: "Vui lòng nhập link video giới thiệu hợp lệ",
+      }
+    ),
+
+  avatar: z.string().optional().nullable(),
+  userId: z
+    .number({
+      required_error: "Vui lòng chọn tài khoản học sinh",
+      invalid_type_error: "Vui lòng chọn tài khoản học sinh",
+    })
+    .optional(),
 });
 
 export type StudentQuery = {

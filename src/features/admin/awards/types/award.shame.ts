@@ -2,25 +2,20 @@ import { z } from "zod";
 
 export const CreateAwardSchema = z.object({
   name: z.string().min(1, "Tên giải thưởng không được để trống"),
-  contestantId: z
-    .union([
-      z.number().positive("ID thí sinh phải lớn hơn 0"),
-      z.nan().transform(() => null),
-      z.null()
-    ])
-    .nullable(),
-  type: z.enum([
-    "firstPrize",
-    "secondPrize",
-    "thirdPrize",
-    "fourthPrize",
-    "impressiveVideo",
-    "excellentVideo",
-  ], {
-    errorMap: () => ({ message: "Vui lòng chọn loại giải" })
-  }),
+  type: z.enum(
+    [
+      "firstPrize",
+      "secondPrize",
+      "thirdPrize",
+      "fourthPrize",
+      "impressiveVideo",
+      "excellentVideo",
+    ],
+    {
+      errorMap: () => ({ message: "Vui lòng chọn loại giải" }),
+    }
+  ),
 });
-
 
 export const AwardIdShema = z.object({
   id: z.number().nullable(),
@@ -42,20 +37,23 @@ export const UpdateAwardSchema = z.object({
     .union([
       z.number().positive("ID thí sinh phải lớn hơn 0"),
       z.nan().transform(() => null),
-      z.null()
+      z.null(),
     ])
     .nullable(),
   type: z
-    .enum([
-      "firstPrize",
-      "secondPrize",
-      "thirdPrize",
-      "fourthPrize",
-      "impressiveVideo",
-      "excellentVideo",
-    ], {
-      errorMap: () => ({ message: "Vui lòng chọn loại giải" })
-    })
+    .enum(
+      [
+        "firstPrize",
+        "secondPrize",
+        "thirdPrize",
+        "fourthPrize",
+        "impressiveVideo",
+        "excellentVideo",
+      ],
+      {
+        errorMap: () => ({ message: "Vui lòng chọn loại giải" }),
+      }
+    )
     .optional(),
 });
 

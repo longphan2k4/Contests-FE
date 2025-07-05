@@ -77,6 +77,7 @@ const MatchPage: React.FC = () => {
 
   useEffect(() => {
     document.title = "Quản lý trận đấu";
+    refetchs();
   }, []);
 
   const { mutate: mutateCreate } = useCreate();
@@ -129,7 +130,7 @@ const MatchPage: React.FC = () => {
         refetchs();
       },
       onError: () => {
-        showToast("Xóa trận đấu học thất bại");
+        showToast("Xóa trận đấu  thất bại");
       },
     });
   };
@@ -162,6 +163,7 @@ const MatchPage: React.FC = () => {
           onSuccess: () => {
             showToast(`Cập nhật trận đấu thành công`, "success");
             refetchs();
+            setSelectedId(null);
           },
           onError: (err: unknown) => {
             const message = (
@@ -193,8 +195,9 @@ const MatchPage: React.FC = () => {
     if (!id) return;
     mutateDelete(id, {
       onSuccess: () => {
-        showToast(`Xóa trận đấu học thành công`);
+        showToast(`Xóa trận đấu  thành công`);
         refetchs();
+        setSelectedId(null);
       },
       onError: (error: unknown) => {
         const message = (
@@ -230,7 +233,7 @@ const MatchPage: React.FC = () => {
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchs}>Thử lại</Button>}
+          action={<Button onClick={() => refetchs()}>Thử lại</Button>}
         >
           Không thể tải danh danh sách trận đấu
         </Alert>
@@ -392,7 +395,7 @@ const MatchPage: React.FC = () => {
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            Tổng số: {pagination.total} trận đấu học
+            Tổng số: {pagination.total} trận đấu
           </Typography>
         </Box>
 
@@ -437,7 +440,7 @@ const MatchPage: React.FC = () => {
               </Select>
             </FormControl>
             <Typography>
-              Trang {filter.page || 1} / {pagination.totalPages}
+              Trang {filter.page || 1} / {pagination.totalPages || 1}
             </Typography>
           </Box>
         </Box>
@@ -486,15 +489,15 @@ const MatchPage: React.FC = () => {
         />
         <ConfirmDelete
           open={isComfirmDelete}
-          title="Xóa trận đấu học"
+          title="Xóa trận đấu "
           onClose={() => setIsComfirmDelete(false)}
-          description="Bạn có chắc chắn xóa trận đấu học này không"
+          description="Bạn có chắc chắn xóa trận đấu  này không"
           onConfirm={() => handleDelete(selectedId)}
         />
 
         <ConfirmDelete
           open={isComfirmDeleteMany}
-          title="Xóa trận đấu học"
+          title="Xóa trận đấu "
           onClose={() => setIsComfirmDeleteMany(false)}
           onConfirm={() => handeDeletes({ ids: selectedIds })}
         />

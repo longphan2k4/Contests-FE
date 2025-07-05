@@ -28,27 +28,22 @@ export default function MediaList({
 }: MediaListProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
-      field: "index",
-      headerName: "STT",
+      field: "id",
+      headerName: "Id",
       width: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: params =>
-        params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
     { field: "url", headerName: "Url", flex: 1 },
-    { field: "type", headerName: "Type", flex: 1 },
-    // {
-    //   field: "isActive",
-    //   headerName: "Trạng thái",
-    //   flex: 1,
-    //   renderCell: params => (
-    //     <IsSwitch
-    //       value={params.row.isActive}
-    //       onChange={() => onToggle(params.row.id)}
-    //     />
-    //   ),
-    // },
+    {
+      field: "type",
+      headerName: "Type",
+      flex: 1,
+      renderCell: params =>
+        params.row.type === "images"
+          ? "Hình ảnh"
+          : params.row.type === "logo"
+          ? "Logo"
+          : "Ảnh nền",
+    },
     {
       field: "actions",
       headerName: "Thao tác",

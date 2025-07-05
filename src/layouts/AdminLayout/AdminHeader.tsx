@@ -12,7 +12,13 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { Menu as MenuIcon, AccountCircle, Logout } from "@mui/icons-material";
+import {
+  Menu as MenuIcon,
+  AccountCircle,
+  Logout,
+  Home,
+  Person,
+} from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import { useLogout } from "../../features/auth/hooks/useLogout";
 import { useAuth } from "../../features/auth/hooks/authContext";
@@ -107,23 +113,46 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggle }) => {
             aria-controls="user-menu"
             aria-haspopup="true"
             onClick={handleMenuOpen}
-            sx={{ p: isMobile ? 0.5 : 1, borderRadius: 0 }} // Remove rounding from IconButton
+            sx={{
+              p: isMobile ? 0.5 : 1,
+              borderRadius: 1, // nhẹ nhàng thay vì 0 cứng nhắc
+              bgcolor: "background.paper",
+              boxShadow: 1,
+              "&:hover": {
+                bgcolor: "grey.100",
+              },
+            }}
           >
             <Avatar
               sx={{
-                width: isMobile ? 28 : 32,
-                height: isMobile ? 28 : 32,
-                borderRadius: 0,
-              }} // Remove rounding from Avatar
+                width: isMobile ? 32 : 36,
+                height: isMobile ? 32 : 36,
+                bgcolor: "primary.main",
+                color: "white",
+                fontSize: 20,
+              }}
             >
-              <AccountCircle />
+              <AccountCircle fontSize="inherit" />
             </Avatar>
+
             {!isMobile && (
-              <Typography variant="body2" sx={{ borderRadius: "20px" }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  ml: 1,
+                  fontWeight: 500,
+                  color: "text.primary",
+                  bgcolor: "grey.100",
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: "20px",
+                }}
+              >
                 Admin
               </Typography>
             )}
           </IconButton>
+
           <Menu
             id="user-menu"
             anchorEl={anchorEl}
@@ -131,18 +160,67 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggle }) => {
             onClose={handleMenuClose}
             anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             transformOrigin={{ vertical: "top", horizontal: "right" }}
-            PaperProps={{ sx: { minWidth: isMobile ? 120 : 160 } }}
+            PaperProps={{
+              sx: {
+                minWidth: isMobile ? 140 : 180,
+                borderRadius: 2,
+                mt: 1,
+                boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
+                px: 1,
+                py: 0.5,
+              },
+            }}
           >
             <MenuItem
               component={Link}
-              to="/admin/profile"
+              to="/account/profile"
               onClick={handleMenuClose}
+              sx={{
+                borderRadius: 1,
+                px: 2,
+                py: 1,
+                transition: "0.2s",
+                "&:hover": {
+                  bgcolor: "rgba(0, 0, 0, 0.04)",
+                },
+              }}
             >
-              <AccountCircle fontSize="small" sx={{ mr: 1 }} />
+              <Person fontSize="small" sx={{ mr: 1 }} />
               Hồ sơ
             </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleLogout}>
+
+            <MenuItem
+              component={Link}
+              to="/"
+              onClick={handleMenuClose}
+              sx={{
+                borderRadius: 1,
+                px: 2,
+                py: 1,
+                transition: "0.2s",
+                "&:hover": {
+                  bgcolor: "rgba(0, 0, 0, 0.04)",
+                },
+              }}
+            >
+              <Home fontSize="small" sx={{ mr: 1 }} />
+              Trang chủ
+            </MenuItem>
+
+            <Divider sx={{ my: 0.5 }} />
+
+            <MenuItem
+              onClick={handleLogout}
+              sx={{
+                borderRadius: 1,
+                px: 2,
+                py: 1,
+                color: "error.main",
+                "&:hover": {
+                  bgcolor: "rgba(255, 0, 0, 0.05)",
+                },
+              }}
+            >
               <Logout fontSize="small" sx={{ mr: 1 }} />
               Đăng xuất
             </MenuItem>

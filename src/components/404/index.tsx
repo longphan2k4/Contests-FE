@@ -19,11 +19,7 @@ const NotFound404 = () => {
       <Typography variant="h5" mt={2}>
         Trang không tồn tại
       </Typography>
-      <Button
-        variant="contained"
-        sx={{ mt: 4 }}
-        onClick={() => navigate("/trang-chu")}
-      >
+      <Button variant="contained" sx={{ mt: 4 }} onClick={() => navigate("/")}>
         Quay về trang chủ
       </Button>
     </Box>

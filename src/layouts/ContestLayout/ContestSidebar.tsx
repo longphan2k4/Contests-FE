@@ -25,7 +25,6 @@ import {
   AccountBalance as BankIcon,
   ExpandLess,
   ExpandMore,
-  Menu as MenuIcon,
 } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
 
@@ -213,9 +212,7 @@ const ContestSidebar: React.FC<ContestSidebarProps> = ({
             left: 16,
             zIndex: theme.zIndex.drawer + 1,
           }}
-        >
-          <MenuIcon />
-        </IconButton>
+        ></IconButton>
       )}
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}

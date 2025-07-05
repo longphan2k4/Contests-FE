@@ -27,16 +27,15 @@ export default function ClassVideoList({
 }: ClassVideoListProps): React.ReactElement {
   const columns: GridColDef[] = [
     {
-      field: "index",
-      headerName: "STT",
+      field: "id",
+      headerName: "Id",
       width: 70,
       sortable: false,
-      filterable: false,
-      renderCell: params =>
-        params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
     },
     { field: "name", headerName: "Tên video", flex: 1 },
     { field: "slogan", headerName: "slogan", flex: 1 },
+    { field: "className", headerName: "Lớp", flex: 1 },
+
     {
       field: "actions",
       headerName: "Thao tác",

@@ -35,6 +35,7 @@ const FormSelect = ({
   placeholder,
   multiple = false,
 }: FormSelectProps) => {
+  // Tính toán giá trị mặc định từ value
   const calculatedDefaultValue = multiple
     ? options.filter(
         opt => Array.isArray(defaultValue) && defaultValue.includes(opt.value)
@@ -74,15 +75,20 @@ const FormSelect = ({
             onChange={(_, newValue) => {
               if (multiple) {
                 const selectedValues = Array.isArray(newValue)
-                  ? newValue.map((item: OptionType) => item.value)
+                  ? newValue.map(item => item.value)
                   : [];
                 field.onChange(selectedValues);
               } else {
                 const single = newValue as OptionType | null;
-                field.onChange(single ? single.value : undefined); // 👈 CHỈNH SỬA TẠI ĐÂY
+                field.onChange(single ? single.value : undefined);
               }
             }}
             filterOptions={(opts, state) => filter(opts, state)}
+            renderOption={(props, option) => (
+              <li {...props} key={`${option.value}-${option.label}`}>
+                {option.label}
+              </li>
+            )}
             renderInput={params => (
               <TextField
                 {...params}
@@ -92,7 +98,7 @@ const FormSelect = ({
                 helperText={error?.message}
                 InputLabelProps={{ shrink: true }}
                 sx={{
-                  my: "16px",
+                  my: 2,
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "10px",
                     transition: "0.3s",

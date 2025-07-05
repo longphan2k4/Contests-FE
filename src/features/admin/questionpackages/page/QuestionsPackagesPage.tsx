@@ -11,6 +11,7 @@ import {
   MenuItem,
   Stack,
   InputAdornment,
+  Pagination,
 } from "@mui/material";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -73,6 +74,7 @@ const QuestionsPackagesPage: React.FC = () => {
 
   useEffect(() => {
     refetchQuestionPackages();
+    document.title = "Quản lý gói câu hỏi";
   }, [refetchQuestionPackages]);
 
   const { mutate: mutateCreate } = useCreateQuestionPackage();
@@ -84,10 +86,6 @@ const QuestionsPackagesPage: React.FC = () => {
   const { mutate: mutateDeleteMany } = useDeleteMany();
 
   const { mutate: mutateDelete } = useDelete();
-
-  useEffect(() => {
-    document.title = "Quản lý gói câu hỏi";
-  }, []);
 
   useEffect(() => {
     if (questionPackagesQuery) {
@@ -156,6 +154,7 @@ const QuestionsPackagesPage: React.FC = () => {
           onSuccess: () => {
             showToast(`Cập nhật gói câu hỏi thành công`, "success");
             refetchQuestionPackages();
+            setSelectedQuestionPackageId(null);
           },
           onError: (err: any) => {
             if (err.response?.data?.message)
@@ -172,6 +171,7 @@ const QuestionsPackagesPage: React.FC = () => {
       onSuccess: () => {
         showToast(`Xóa gói câu hỏi thành công`, "success");
         refetchQuestionPackages();
+        setSelectedQuestionPackageId(null);
       },
       onError: (error: any) => {
         showToast(error.response?.data?.message, "error");
@@ -399,8 +399,34 @@ const QuestionsPackagesPage: React.FC = () => {
               </Select>
             </FormControl>
             <Typography>
-              Trang {filter.page || 1} / {pagination?.totalPages}
+              Trang {filter.page || 1} / {pagination?.totalPages || 1}
             </Typography>
+          </Box>
+        </Box>
+
+        <Box
+          style={{
+            display:
+              pagination.totalPages !== undefined && pagination.totalPages > 1
+                ? "block"
+                : "none",
+          }}
+        >
+          <Box className="flex flex-col items-center">
+            {" "}
+            <Pagination
+              count={pagination.totalPages}
+              page={filter.page ?? 1}
+              color="primary"
+              onChange={(_event, value) =>
+                setFilter(prev => ({
+                  ...prev,
+                  page: value,
+                }))
+              }
+              showFirstButton
+              showLastButton
+            />
           </Box>
         </Box>
 

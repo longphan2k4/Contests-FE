@@ -1,4 +1,5 @@
 import axiosInstance from "../../../../config/axiosInstance";
+// import { data } from "react-router-dom";
 import {
   //type AwardIdParam,
   type CreateMediaInput,
@@ -7,9 +8,9 @@ import {
   type DeleteMediasType,
 } from "../types/media.shame";
 
-export const getAllMedias = async (slug: string,filter: MediaQuery = {}) => {
+export const getAllMedias = async (slug: string, filter: MediaQuery = {}) => {
   const params = new URLSearchParams();
-  if (filter.search) params.append("search", filter.search);
+  if (filter.type) params.append("type", filter.type);
   if (filter.page) params.append("page", String(filter.page));
   if (filter.limit) params.append("limit", String(filter.limit));
 
@@ -42,16 +43,14 @@ export const CreateMedia = async (slug: string, payload: CreateMediaInput) => {
   return res.data;
 };
 
-
 // export const UpdateMedia = async (id: number, payload: UpdateMediaInput) => {
 //   const res = await axiosInstance.patch(`/media/${id}`, payload);
 //   return res.data;
 // };
 
-
 export const UpdateMedia = async (id: number, payload: UpdateMediaInput) => {
   const formData = new FormData();
-  console.log(payload.url)
+  console.log(payload.url);
   payload.url && formData.append("media", payload.url);
   payload.type && formData.append("type", payload.type);
 
@@ -64,7 +63,6 @@ export const UpdateMedia = async (id: number, payload: UpdateMediaInput) => {
   return res.data;
 };
 
-
 export const ToggleActive = async (id: number) => {
   const res = await axiosInstance.patch(`/media/${id}/toggle-active`);
   return res.data;
@@ -74,8 +72,6 @@ export const DeleteMedias = async (ids: DeleteMediasType) => {
   const res = await axiosInstance.post("/media/delete-many", ids);
   return res.data;
 };
-
-
 
 export const DeleteMedia = async (id: number) => {
   const res = await axiosInstance.delete(`/media/${id}`);

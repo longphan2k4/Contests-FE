@@ -18,33 +18,26 @@ import SchoolDetailPopup from "../components/SchoolDetailPopup";
 import EditSchoolDialog from "../components/EditSchoolDialog";
 import { useToast } from "@contexts/toastContext";
 const SchoolsPage: React.FC = () => {
-  const {
-    schools,
-    loading,
-    error,
-    filter,
-    updateFilter,
-    totalPages,
-    total,
-    refresh,
-  } = useSchools();
+  const { schools, loading, filter, updateFilter, pagination, refresh } =
+    useSchools();
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
   const [isDetailPopupOpen, setDetailPopupOpen] = useState(false);
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   const { showToast } = useToast();
 
+  useEffect(
+    () => {
+      document.title = "Quản lý Trường học";
+      refresh(); // Làm mới danh sách trường học khi component mount
+    },
+    [refresh] // Chỉ chạy khi component mount
+  );
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const { mutate: deleteSchool } = useDeleteSchool();
-
-  // Hiển thị lỗi từ api nếu có
-  useEffect(() => {
-    if (error) {
-      showToast(error, "error");
-    }
-  }, [error, showToast]);
 
   const handleFilterChange = (newFilter: SchoolFilter) => {
     updateFilter(newFilter);
@@ -166,8 +159,7 @@ const SchoolsPage: React.FC = () => {
             schools={schools}
             filter={filter}
             onFilterChange={handleFilterChange}
-            totalPages={totalPages}
-            totalItems={total}
+            pagination={pagination}
             onViewDetail={handleViewDetail}
             onEdit={handleEdit}
             onDelete={handleDeleteSchool}

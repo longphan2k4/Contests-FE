@@ -160,8 +160,10 @@ const ClassesPage: React.FC = () => {
         { id: selectedClassId, payload },
         {
           onSuccess: () => {
-            showToast(`Cập nhật tài khoản thành công`, "success");
+            showToast(`Cập nhật lớp thành công`, "success");
             refetchClasss();
+            setSelectedClassId(null);
+            setIsEditOpen(false);
           },
           onError: (err: any) => {
             if (err.response?.data?.message)
@@ -176,7 +178,9 @@ const ClassesPage: React.FC = () => {
     if (!id) return;
     mutateDelete(id, {
       onSuccess: () => {
-        showToast(`Xóa lớp học thàn công`);
+        showToast(`Xóa lớp học thành công`);
+        refetchClasss();
+        setSelectedClassId(null);
       },
       onError: (error: any) => {
         showToast(error.response?.data?.message, "error");
@@ -213,7 +217,7 @@ const ClassesPage: React.FC = () => {
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchClasss}>Thử lại</Button>}
+          action={<Button onClick={() => refetchClasss()}>Thử lại</Button>}
         >
           Không thể tải danh danh sách lớp
         </Alert>
@@ -402,7 +406,7 @@ const ClassesPage: React.FC = () => {
               </Select>
             </FormControl>
             <Typography>
-              Trang {filter.page || 1} / {pagination.totalPages}
+              Trang {filter.page || 1} / {pagination.totalPages || 1}
             </Typography>
           </Box>
         </Box>

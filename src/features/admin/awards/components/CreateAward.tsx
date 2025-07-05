@@ -4,15 +4,15 @@ import FormInput from "../../../../components/FormInput";
 import { Box, Button } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreateAwardSchema, type CreateAwardInput ,awardTypeOptions } from "../types/award.shame";
+import { CreateAwardSchema, type CreateAwardInput } from "../types/award.shame";
+
+import FormSelect from "@/components/FormSelect";
 
 interface CreateAwardDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CreateAwardInput) => void;
 }
-
-
 
 export default function CreateAwardDialog({
   isOpen,
@@ -24,12 +24,20 @@ export default function CreateAwardDialog({
     handleSubmit,
     formState: { errors },
     reset,
+    control,
   } = useForm<CreateAwardInput>({
     resolver: zodResolver(CreateAwardSchema),
-    defaultValues: {
-      
-    },
+    defaultValues: {},
   });
+
+  const options = [
+    { value: "firstPrize", label: "Giải Nhất" },
+    { value: "secondPrize", label: "Giải Nhì" },
+    { value: "thirdPrize", label: "Giải Ba" },
+    { value: "fourthPrize", label: "Giải Khuyến Khích" },
+    { value: "impressiveVideo", label: "Video Ấn Tượng" },
+    { value: "excellentVideo", label: "Video Xuất Sắc" },
+  ];
 
   useEffect(() => {
     if (isOpen) {
@@ -57,35 +65,17 @@ export default function CreateAwardDialog({
             placeholder="Nhập tên giải thưởng"
             {...(errors.name && { error: errors.name })}
             register={register("name")}
-          />          
-          <FormInput
-            label="ID Thí sinh (tùy chọn)"
-            id="contestantId"
-            placeholder="Nhập ID thí sinh (để trống nếu chưa có)"
-            {...(errors.contestantId && { error: errors.contestantId })}
-            register={register("contestantId", { 
-              valueAsNumber: true
-            })}
-            type="number"
           />
-          <Box sx={{ mt: 2 }}>
-          <label htmlFor="type">Loại giải</label>
-          <select
+
+          <FormSelect
+            label="Loại giải"
             id="type"
-            {...register("type")}
-            style={{ width: "100%", padding: "8px", marginTop: "4px" }}
-          >
-            <option value="">Chọn loại giải</option>
-            {awardTypeOptions.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-          {errors.type && (
-            <p style={{ color: "red", marginTop: "4px" }}>{errors.type.message}</p>
-          )}
-        </Box>
+            name="type"
+            placeholder="Chọn loại giải"
+            options={options}
+            control={control}
+            error={errors.type}
+          />
           <Button
             type="submit"
             variant="contained"

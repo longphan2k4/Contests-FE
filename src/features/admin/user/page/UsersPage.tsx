@@ -78,7 +78,8 @@ const UsersPage: React.FC = () => {
 
   useEffect(() => {
     refetchUsers();
-  }, [refetchUsers]);
+    document.title = "Quản lý người dùng";
+  }, []);
 
   useEffect(() => {
     if (usersQuery) {
@@ -188,10 +189,6 @@ const UsersPage: React.FC = () => {
     setIsConfirmDeleteMany(true);
   };
 
-  useEffect(() => {
-    document.title = "Quản lý người dùng";
-  }, []);
-
   if (isUsersLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
@@ -204,7 +201,7 @@ const UsersPage: React.FC = () => {
       <Box sx={{ p: 3 }}>
         <Alert
           severity="error"
-          action={<Button onClick={() => refetchUsers}>Thử lại</Button>}
+          action={<Button onClick={() => refetchUsers()}>Thử lại</Button>}
         >
           Không thể tải danh sách người dùng.
         </Alert>

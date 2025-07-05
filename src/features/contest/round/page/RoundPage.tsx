@@ -372,7 +372,7 @@ const RoundPage: React.FC = () => {
               </Select>
             </FormControl>
             <Typography>
-              Trang {filter.page || 1} / {pagination.totalPages}
+              Trang {filter.page || 1} / {pagination.totalPages || 1}
             </Typography>
           </Box>
         </Box>
