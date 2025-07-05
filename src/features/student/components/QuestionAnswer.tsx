@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Box,
   Typography,
@@ -25,7 +25,6 @@ import {
   Quiz,
   Send,
   Star,
-  Person,
   Notifications,
   Close,
   ZoomIn,
@@ -41,6 +40,7 @@ import {
 import { useNotification } from "../../../contexts/NotificationContext";
 import { useAntiCheat, type AntiCheatViolation } from "../hooks/useAntiCheat";
 import AntiCheatWarning from "./AntiCheatWarning";
+import RescueAnimation from "./RescueAnimation"; // 🎉 NEW: Import rescue animation
 import type { SubmitAnswerResponse } from "../services/submitAnswerService";
 
 interface MediaData {
@@ -76,6 +76,12 @@ interface QuestionAnswerProps {
   remainingTime: number;
   matchId: number;
   isConnected: boolean;
+  isBanned: boolean;
+  banMessage: string;
+  onContestantBanned: (message: string) => void;
+  isEliminated: boolean;
+  eliminationMessage: string;
+  isRescued: boolean;
 }
 
 interface OtherStudentAnswer {
@@ -90,19 +96,13 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
   currentQuestion,
   remainingTime,
   matchId,
-  isConnected,
+  isBanned,
+  banMessage,
+  onContestantBanned,
+  isEliminated,
+  eliminationMessage,
+  isRescued,
 }) => {
-  console.log(
-    "🔍 [COMPONENT v2024-12-20-16:45] QuestionAnswer render với props:",
-    {
-      hasCurrentQuestion: !!currentQuestion,
-      remainingTime,
-      matchId,
-      isConnected,
-      timestamp: new Date().toISOString(),
-    }
-  );
-
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [hasJoinedMatch, setHasJoinedMatch] = useState(false);
@@ -117,8 +117,14 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
   } | null>(null);
 
   // 🔥 NEW: State để track elimination status
-  const [isEliminated, setIsEliminated] = useState(false);
-  const [eliminationMessage, setEliminationMessage] = useState<string>("");
+  const [isEliminatedState, setIsEliminatedState] = useState(isEliminated);
+  const [eliminationMessageState, setEliminationMessageState] =
+    useState<string>(eliminationMessage);
+
+  // 🎉 NEW: Rescue animation states
+  const [showRescueAnimation, setShowRescueAnimation] = useState(false);
+  const [isInRescueMode, setIsInRescueMode] = useState(false);
+  const [rescueMessage, setRescueMessage] = useState("");
 
   // NEW: State để lưu kết quả tạm thời từ server (chưa hiển thị)
   const [pendingResult, setPendingResult] = useState<{
@@ -131,10 +137,6 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
     submittedAt: string;
   } | null>(null);
 
-  // NEW: State để lưu thông báo về thí sinh khác
-  const [otherStudentAnswers, setOtherStudentAnswers] = useState<
-    OtherStudentAnswer[]
-  >([]);
   const [latestAnswer, setLatestAnswer] = useState<OtherStudentAnswer | null>(
     null
   );
@@ -152,6 +154,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
 
   // 🛡️ NEW: Anti-cheat states
   const [showAntiCheatWarning, setShowAntiCheatWarning] = useState(false);
+  const antiCheatWarningTimer = useRef<NodeJS.Timeout | null>(null);
 
   const {
     socket: studentSocket,
@@ -169,7 +172,6 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
   // 🛡️ NEW: Anti-cheat callbacks
   const handleViolation = useCallback(
     (violation: AntiCheatViolation) => {
-      console.log("🚨 [QUESTION-ANSWER] Vi phạm chống gian lận:", violation);
       setShowAntiCheatWarning(true);
 
       // Hiển thị thông báo violation
@@ -178,12 +180,19 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
         "Cảnh báo chống gian lận",
         4000
       );
+
+      // Tự động ẩn cảnh báo sau 5 giây
+      if (antiCheatWarningTimer.current) {
+        clearTimeout(antiCheatWarningTimer.current);
+      }
+      antiCheatWarningTimer.current = setTimeout(() => {
+        setShowAntiCheatWarning(false);
+      }, 5000);
     },
     [showWarningNotification]
   );
 
   const handleAntiCheatTerminate = useCallback(() => {
-    console.log("🚨 [QUESTION-ANSWER] Kết thúc bài thi do vi phạm quá nhiều");
     showErrorNotification(
       "Bài thi đã bị kết thúc do vi phạm quy định chống gian lận!",
       "Kết thúc bài thi",
@@ -194,10 +203,17 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
 
   const handleWarningContinue = useCallback(() => {
     setShowAntiCheatWarning(false);
+    if (antiCheatWarningTimer.current) {
+      clearTimeout(antiCheatWarningTimer.current);
+    }
   }, []);
 
   const handleWarningTerminate = useCallback(() => {
     handleAntiCheatTerminate();
+    setShowAntiCheatWarning(false); // Ẩn modal ngay khi xác nhận terminate
+    if (antiCheatWarningTimer.current) {
+      clearTimeout(antiCheatWarningTimer.current);
+    }
   }, [handleAntiCheatTerminate]);
 
   // 🛡️ NEW: Anti-cheat hook
@@ -226,30 +242,21 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
 
   // 🛡️ NEW: Start anti-cheat monitoring khi có câu hỏi
   useEffect(() => {
-    if (currentQuestion && !isEliminated) {
-      console.log(
-        "🛡️ [QUESTION-ANSWER] Bắt đầu giám sát chống gian lận cho câu hỏi:",
-        currentQuestion.order
-      );
+    if (currentQuestion && !isEliminatedState) {
       startMonitoring();
     }
 
     return () => {
-      console.log("🛡️ [QUESTION-ANSWER] Dừng giám sát chống gian lận");
       stopMonitoring();
     };
-  }, [currentQuestion, isEliminated, startMonitoring, stopMonitoring]);
+  }, [currentQuestion, isEliminatedState, startMonitoring, stopMonitoring]);
 
   // 🛡️ NEW: Gọi API ban khi đủ số lần vi phạm
   useEffect(() => {
     // Gọi API ban khi warningCount >= maxViolations
-    if (warningCount >= maxViolations && matchId) {
-      console.log("🚨 [BAN EFFECT] Đủ số lần vi phạm, gọi API ban contestant");
-
+    if (warningCount >= maxViolations && matchId && !isBanned) {
       const banContestant = async () => {
         try {
-          console.log("🚨 [BAN] Gọi API ban contestant do vi phạm anti-cheat");
-
           const violationTypes = violations.map((v) => v.type).join(", ");
           const reason = `Vi phạm ${warningCount} lần: ${violationTypes}. Hệ thống tự động cấm tham gia.`;
 
@@ -262,25 +269,17 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
           );
 
           if (response.success) {
-            console.log(
-              "✅ [BAN] Đã ban contestant thành công:",
-              response.message
-            );
-            showErrorNotification(
-              `🚫 ${response.message}`,
-              "Bị cấm tham gia",
-              0 // Không tự động ẩn
+            // 🔥 NEW: Call parent callback instead of setting local state
+            onContestantBanned(
+              response.message ||
+                "Bạn đã bị cấm thi do vi phạm quy chế nhiều lần."
             );
           } else {
             console.error(
               "❌ [BAN] Không thể ban contestant:",
               response.message
             );
-            showErrorNotification(
-              "Không thể xử lý cấm tham gia. Vui lòng liên hệ giám thị!",
-              "Lỗi hệ thống",
-              0
-            );
+            showErrorNotification("Bạn đã bị cấm trước đó!", "Cấm", 0);
           }
         } catch (error) {
           console.error("💥 [BAN] Lỗi khi gọi API ban:", error);
@@ -294,46 +293,28 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
 
       banContestant();
     }
-  }, [warningCount, maxViolations, matchId, violations, showErrorNotification]);
+  }, [
+    warningCount,
+    maxViolations,
+    matchId,
+    violations,
+    showErrorNotification,
+    isBanned,
+    onContestantBanned,
+  ]);
 
   // Join match để có thể submit answer (set socket.matchId) - chạy ngay khi component mount
   useEffect(() => {
-    console.log("🔍 [COMPONENT] useEffect joinMatchForAnswering triggered:", {
-      isStudentSocketConnected: isStudentSocketConnected,
-      matchId,
-      hasJoinMatchForAnswering: !!joinMatchForAnswering,
-      socketRef: !!studentSocket,
-      hasJoinedMatch,
-    });
-
     if (
       isStudentSocketConnected &&
       matchId &&
       joinMatchForAnswering &&
       !hasJoinedMatch
     ) {
-      console.log(
-        "🎯 [COMPONENT] Đang join match để có thể trả lời câu hỏi...",
-        matchId
-      );
-      joinMatchForAnswering(matchId, (response) => {
-        console.log("📨 [COMPONENT] Join match response:", response);
+      joinMatchForAnswering(matchId.toString(), (response) => {
         if (response?.success) {
-          console.log("✅ [COMPONENT] Đã join match thành công để trả lời");
           setHasJoinedMatch(true);
-        } else {
-          console.error(
-            "❌ [COMPONENT] Không thể join match để trả lời:",
-            response?.message
-          );
         }
-      });
-    } else {
-      console.log("⚠️ [COMPONENT] Chưa thể join match - chờ kết nối:", {
-        isStudentSocketConnected: isStudentSocketConnected,
-        matchId,
-        hasJoinMatchForAnswering: !!joinMatchForAnswering,
-        hasJoinedMatch,
       });
     }
   }, [
@@ -344,6 +325,15 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
     studentSocket,
   ]);
 
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (antiCheatWarningTimer.current) {
+        clearTimeout(antiCheatWarningTimer.current);
+      }
+    };
+  }, []);
+
   // Reset khi có câu hỏi mới
   useEffect(() => {
     if (currentQuestion) {
@@ -351,73 +341,30 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
       setIsSubmitted(false);
       setAnswerResult(null);
       setPendingResult(null); // Reset kết quả tạm thời
-      setOtherStudentAnswers([]); // Reset thông báo thí sinh khác
       setLatestAnswer(null);
       setShowNotification(false);
       setCanShowResult(false); // 🔥 NEW: Reset trạng thái hiển thị kết quả
       // 🔥 NEW: Reset elimination state khi chuyển câu hỏi (nếu không bị loại)
-      if (!isEliminated) {
-        console.log(
-          "🔄 [COMPONENT] Reset trạng thái cho câu hỏi mới:",
-          currentQuestion.order
-        );
-      }
+      // Không reset isBanned state, vì ban là vĩnh viễn trong trận đấu
     }
-  }, [currentQuestion, isEliminated]);
+  }, [currentQuestion, isEliminatedState, isBanned]);
 
   // 🔥 NEW: Set canShowResult khi hết thời gian
   useEffect(() => {
     if (remainingTime === 0 && !canShowResult) {
-      console.log("⏰ [COMPONENT] Cho phép hiển thị kết quả vì hết thời gian");
       setCanShowResult(true);
     }
   }, [remainingTime, canShowResult]);
 
-  // 🔥 NEW: Listen for elimination events
+  // 🔥 NEW: Sync local state with props from parent
   useEffect(() => {
-    if (!studentSocket) return;
-
-    const handleStudentEliminated = (data: {
-      message: string;
-      questionOrder: number;
-      eliminatedAt: string;
-      correctAnswer: string;
-      explanation?: string;
-      redirectTo?: string;
-    }) => {
-      console.log("🚫 [ELIMINATION] Thí sinh bị loại:", data);
-
-      setIsEliminated(true);
-      setEliminationMessage(data.message);
-
-      // Hiển thị thông báo elimination
-      alert(
-        `🚫 ${data.message}\n\nĐáp án đúng: ${data.correctAnswer}\n${
-          data.explanation || ""
-        }`
-      );
-
-      // Có thể redirect sau một khoảng thời gian
-      if (data.redirectTo) {
-        setTimeout(() => {
-          if (data.redirectTo) {
-            window.location.href = data.redirectTo;
-          }
-        }, 5000); // 5 giây
-      }
-    };
-
-    studentSocket.on("student:eliminated", handleStudentEliminated);
-
-    return () => {
-      studentSocket.off("student:eliminated", handleStudentEliminated);
-    };
-  }, [studentSocket]);
+    setIsEliminatedState(isEliminated);
+    setEliminationMessageState(eliminationMessage);
+  }, [isEliminated, eliminationMessage]);
 
   // NEW: Logic hiển thị kết quả khi thời gian < 1 giây
   useEffect(() => {
     if (pendingResult && canShowResult && !answerResult) {
-      console.log("⏰ [RESULT] Hiển thị kết quả vì canShowResult = true");
       setAnswerResult(pendingResult);
       setPendingResult(null);
 
@@ -439,15 +386,12 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
       // 🔥 NEW: Update elimination status từ result với delay để user thấy kết quả trước
       if (pendingResult.eliminated) {
         setTimeout(() => {
-          setIsEliminated(true);
+          // Note: We don't set isEliminated here anymore since it's managed by parent
           // 🔥 NEW: Thông báo bị loại với delay
           showWarningNotification(
             "⚠️ Bạn đã bị loại khỏi trận đấu! Bạn vẫn có thể theo dõi các câu hỏi tiếp theo.",
             "Bị loại",
             6000
-          );
-          console.log(
-            "🚫 [ELIMINATION] Hiển thị thông báo loại sau khi show kết quả"
           );
         }, 4000); // Delay 4 giây để user đọc kết quả trước
       }
@@ -461,128 +405,63 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
     showWarningNotification,
   ]);
 
-  // Tự động submit khi hết thời gian
+  // 🎉 NEW: Effect để xử lý rescue animation
   useEffect(() => {
-    if (
-      remainingTime === 0 &&
-      !isSubmitted &&
-      !isEliminated &&
-      currentQuestion // ❌ BỎ điều kiện selectedAnswer
-    ) {
-      console.log(
-        "⏰ [COMPONENT] Tự động submit khi hết thời gian" +
-          (selectedAnswer
-            ? ` với đáp án: ${selectedAnswer}`
-            : " KHÔNG CÓ ĐÁP ÁN")
+    // Khi nhận được rescue signal từ parent
+    if (isRescued && !showRescueAnimation) {
+      console.log("🎉 [RESCUE] Nhận được tín hiệu rescue, bắt đầu animation");
+      // 🔧 SỬA: Cập nhật elimination state ngay lập tức
+      setIsEliminatedState(false);
+
+
+      setEliminationMessageState("");
+      // Block auto-submit và interactions
+      setIsInRescueMode(true);
+
+      // Fade out current content
+      setShowRescueAnimation(true);
+      setRescueMessage("Bạn được một cơ hội mới!");
+      // Show success notification
+      showSuccessNotification(
+        "🎉 Bạn đã được cứu trợ thành công!",
+        "Cứu trợ",
+        3000
       );
-      handleSubmitAnswer(selectedAnswer || "[KHÔNG CHỌN ĐÁP ÁN]"); // 🔧 Submit với đáp án mặc định
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    remainingTime,
-    isSubmitted,
-    isEliminated,
-    currentQuestion, // ❌ BỎ selectedAnswer khỏi dependency
-  ]);
+  }, [isRescued, showRescueAnimation, showSuccessNotification]);
 
-  // NEW: Listen for other students' answers
-  useEffect(() => {
-    if (!studentSocket) return;
+  // 🎉 NEW: Callback khi rescue animation hoàn thành
+  const handleRescueAnimationComplete = useCallback(() => {
+    console.log("🎉 [RESCUE] Animation hoàn thành, chuẩn bị chờ câu hỏi mới");
 
-    const handleOtherStudentAnswer = (data: {
-      contestantId: number;
-      studentName: string;
-      questionOrder: number;
-      isCorrect: boolean;
-      submittedAt: string;
-      matchId: number;
-    }) => {
-      console.log("📝 [HỌC SINH] Thí sinh khác đã gửi câu trả lời:", {
-        studentName: data.studentName,
-        isCorrect: data.isCorrect,
-        questionOrder: data.questionOrder,
-      });
+    // Reset rescue states
+    setShowRescueAnimation(false);
+    setIsInRescueMode(false);
 
-      // Chỉ hiển thị nếu là câu hỏi hiện tại và chưa submit
-      if (
-        data.questionOrder === currentQuestion?.order &&
-        data.matchId === matchId &&
-        !isSubmitted
-      ) {
-        const newAnswer: OtherStudentAnswer = {
-          studentName: data.studentName,
-          isCorrect: data.isCorrect,
-          questionOrder: data.questionOrder,
-          submittedAt: data.submittedAt,
-          contestantId: data.contestantId,
-        };
-
-        // Cập nhật danh sách
-        setOtherStudentAnswers((prev) => {
-          const existingIndex = prev.findIndex(
-            (answer) => answer.contestantId === data.contestantId
-          );
-
-          if (existingIndex >= 0) {
-            const updated = [...prev];
-            updated[existingIndex] = newAnswer;
-            return updated;
-          } else {
-            return [...prev, newAnswer];
-          }
-        });
-
-        // Hiển thị notification toast
-        setLatestAnswer(newAnswer);
-        setShowNotification(true);
-
-        // Tự động ẩn notification sau 3 giây
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 3000);
-      }
-    };
-
-    studentSocket.on("match:answerSubmitted", handleOtherStudentAnswer);
-
-    return () => {
-      studentSocket.off("match:answerSubmitted", handleOtherStudentAnswer);
-    };
-  }, [studentSocket, currentQuestion?.order, matchId, isSubmitted]);
-
-  const handleAnswerSelect = (answer: string) => {
-    // 🔥 NEW: Block eliminated students from selecting answers
-    if (isEliminated) {
-      console.log("🚫 [BLOCKED] Thí sinh đã bị loại không thể chọn đáp án");
-      alert(`🚫 ${eliminationMessage || "Bạn đã bị loại khỏi trận đấu"}`);
-      return;
-    }
-
-    if (!isSubmitted) {
-      setSelectedAnswer(answer);
-      console.log("📝 [COMPONENT] Chọn đáp án:", answer);
-    }
-  };
+    // Reset answer states để chuẩn bị cho câu hỏi mới
+    setSelectedAnswer("");
+    setIsSubmitted(false);
+    setAnswerResult(null);
+    setPendingResult(null);
+    
+    console.log(
+      "🎉 [RESCUE] Đã reset states, đang chờ tín hiệu câu hỏi mới từ server"
+    );
+  }, []);
 
   // 🚀 NEW: Submit answer using API instead of socket
   const handleSubmitAnswer = async (currentAnswer?: string) => {
-    // 🔥 Block eliminated students from submitting answers
-    if (isEliminated) {
-      console.log("🚫 [BLOCKED] Thí sinh đã bị loại không thể submit");
-      alert(`🚫 ${eliminationMessage || "Bạn đã bị loại khỏi trận đấu"}`);
+    // 🔥 Block eliminated or banned students from submitting answers
+    if (isBanned) {
+      alert(`🚫 ${banMessage || "Bạn đã bị cấm tham gia trận đấu này."}`);
+      return;
+    }
+    if (isEliminatedState) {
+      alert(`🚫 ${eliminationMessageState || "Bạn đã bị loại khỏi trận đấu"}`);
       return;
     }
 
     const answerToSubmit = currentAnswer || selectedAnswer;
-
-    console.log("📤 [API SUBMIT] Bắt đầu submit answer qua API:", {
-      answerToSubmit,
-      questionOrder: currentQuestion?.order,
-      matchId,
-      hasCurrentQuestion: !!currentQuestion,
-      isEliminated,
-      isNoAnswerSelected: !answerToSubmit, // 🔧 Log để tracking
-    });
 
     // 🔧 SỬA: Chỉ cảnh báo nhưng vẫn cho phép submit với đáp án trống
     if (!answerToSubmit || !answerToSubmit.trim()) {
@@ -601,7 +480,6 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
     }
 
     try {
-      console.log("📤 [API SUBMIT] Đang gửi đáp án qua API...");
       setIsSubmitted(true); // Set submitted trước để tránh double click
       setIsApiSubmitting(true);
 
@@ -645,9 +523,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
         };
 
         // Lưu kết quả vào pendingResult thay vì answerResult để đợi thời gian < 1s
-        console.log(
-          "📋 [API SUBMIT] Lưu kết quả vào pendingResult, đợi hết thời gian để hiển thị"
-        );
+
         setPendingResult(result);
 
         // 🔥 NEW: Thông báo đã gửi câu trả lời thành công
@@ -658,38 +534,125 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
           "Gửi thành công",
           3000
         );
-
-        if (result.isCorrect) {
-          console.log(
-            `✅ [API SUBMIT] Câu trả lời chính xác! Điểm: ${result.score} (sẽ hiển thị khi hết thời gian)`
-          );
-        } else {
-          console.log(
-            `❌ [API SUBMIT] Câu trả lời sai. Đáp án đúng: ${result.correctAnswer} (sẽ hiển thị khi hết thời gian)`
-          );
-        }
       } else {
         console.error("❌ [API SUBMIT] Gửi đáp án thất bại:", response.message);
         // 🔥 NEW: Thông báo lỗi khi gửi thất bại
         showErrorNotification(
           `Không thể gửi đáp án: ${response.message}`,
-          "Lỗi gửi đáp án"
+          "Gửi thất bại",
+          5000
         );
+
+        // Reset submitted state nếu lỗi để có thể thử lại
+        setIsSubmitted(false);
       }
     } catch (error) {
-      console.error("💥 [API SUBMIT] Lỗi khi submit answer:", error);
-      // 🔥 NEW: Thông báo lỗi kết nối
+      console.error("💥 [API SUBMIT] Lỗi khi gửi đáp án:", error);
+      // 🔥 NEW: Thông báo lỗi mạng
       showErrorNotification(
-        "Không thể kết nối đến server. Vui lòng kiểm tra kết nối internet!",
-        "Lỗi kết nối"
+        "Lỗi kết nối khi gửi đáp án. Vui lòng thử lại!",
+        "Lỗi kết nối",
+        5000
       );
-      alert("Lỗi kết nối. Vui lòng thử lại!");
+
+      // Reset submitted state nếu lỗi để có thể thử lại
+      setIsSubmitted(false);
     } finally {
       setIsApiSubmitting(false);
     }
   };
 
+  // 🔧 UPDATE: Auto-submit logic với rescue protection (MOVED HERE - sau handleSubmitAnswer)
+  useEffect(() => {
+    if (
+      remainingTime === 0 &&
+      !isSubmitted &&
+      !isEliminatedState &&
+      !isBanned &&
+      !isApiSubmitting && // 🔧 SỬA: Thêm check isApiSubmitting
+      currentQuestion
+    ) {
+      console.log("⏰ [AUTO-SUBMIT] Hết thời gian, tự động submit câu trả lời");
+      const answerToSubmit = selectedAnswer || "[KHÔNG CHỌN ĐÁP ÁN]";
+      handleSubmitAnswer(answerToSubmit);
+    }
+  }, [
+    remainingTime,
+    isSubmitted,
+    isEliminatedState,
+    isBanned,
+    isApiSubmitting, // 🔧 SỬA: Thay thế các rescue dependencies
+    currentQuestion,
+    selectedAnswer, // 🔧 SỬA: Thêm selectedAnswer dependency
+    // 🔧 SỬA: Bỏ handleSubmitAnswer khỏi dependencies để tránh vòng lặp vô hạn
+  ]);
+
+  // NEW: Listen for other students' answers
+  useEffect(() => {
+    if (!studentSocket) return;
+
+    const handleOtherStudentAnswer = (data: {
+      contestantId: number;
+      studentName: string;
+      questionOrder: number;
+      isCorrect: boolean;
+      submittedAt: string;
+      matchId: number;
+    }) => {
+      // Chỉ hiển thị nếu là câu hỏi hiện tại và chưa submit
+      if (
+        data.questionOrder === currentQuestion?.order &&
+        data.matchId === matchId &&
+        !isSubmitted
+      ) {
+        const newAnswer: OtherStudentAnswer = {
+          studentName: data.studentName,
+          isCorrect: data.isCorrect,
+          questionOrder: data.questionOrder,
+          submittedAt: data.submittedAt,
+          contestantId: data.contestantId,
+        };
+
+        // Hiển thị notification toast
+        setLatestAnswer(newAnswer);
+        setShowNotification(true);
+
+        // Tự động ẩn notification sau 3 giây
+        setTimeout(() => {
+          setShowNotification(false);
+        }, 3000);
+      }
+    };
+
+    studentSocket.on("match:answerSubmitted", handleOtherStudentAnswer);
+
+    return () => {
+      studentSocket.off("match:answerSubmitted", handleOtherStudentAnswer);
+    };
+  }, [studentSocket, currentQuestion?.order, matchId, isSubmitted]);
+
+  const handleAnswerSelect = (answer: string) => {
+    // 🔥 NEW: Block eliminated or banned students from selecting answers
+    if (isBanned) {
+      alert(`🚫 ${banMessage || "Bạn đã bị cấm tham gia trận đấu này."}`);
+      return;
+    }
+    if (isEliminatedState) {
+      alert(`🚫 ${eliminationMessageState || "Bạn đã bị loại khỏi trận đấu"}`);
+      return;
+    }
+
+    if (!isSubmitted) {
+      setSelectedAnswer(answer);
+    }
+  };
+
   const getOptionClass = (option: string) => {
+    // 🔥 NEW: Nếu đang rescue mode, hiển thị màu xám
+    if (isInRescueMode || showRescueAnimation) {
+      return "bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed opacity-60";
+    }
+
     if (!canShowResult) {
       return selectedAnswer === option
         ? "bg-blue-100 border-blue-500 text-blue-800 shadow-md"
@@ -1184,38 +1147,6 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
         </CardContent>
       </Card>
 
-      {/* Compact indicator của số thí sinh đã trả lời */}
-      {otherStudentAnswers.length > 0 && !isSubmitted && (
-        <Alert
-          severity="info"
-          className="border border-blue-200"
-          icon={<Person />}
-        >
-          <Box className="flex items-center justify-between w-full">
-            <Typography variant="body2" className="text-blue-800">
-              <strong>{otherStudentAnswers.length}</strong> thí sinh khác đã
-              hoàn thành câu hỏi này
-            </Typography>
-            <Box className="flex items-center gap-1">
-              {otherStudentAnswers.slice(0, 3).map((answer) => (
-                <Chip
-                  key={answer.contestantId}
-                  size="small"
-                  label={answer.isCorrect ? "✓" : "✗"}
-                  color={answer.isCorrect ? "success" : "error"}
-                  className="text-xs min-w-8"
-                />
-              ))}
-              {otherStudentAnswers.length > 3 && (
-                <Typography variant="caption" className="text-gray-500 ml-1">
-                  +{otherStudentAnswers.length - 3}
-                </Typography>
-              )}
-            </Box>
-          </Box>
-        </Alert>
-      )}
-
       {/* Nội dung câu hỏi */}
       <Card>
         <CardContent>
@@ -1243,98 +1174,165 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
             )}
 
           {/* Các lựa chọn */}
-          {/* 🔥 NEW: Ẩn options nếu thí sinh bị loại */}
-          {!isEliminated && (
-            <FormControl component="fieldset" className="w-full">
-              <RadioGroup
-                value={selectedAnswer}
-                onChange={(e) => handleAnswerSelect(e.target.value)}
-              >
-                <Box className="space-y-3">
-                  {currentQuestion.question.options?.map((option, index) => (
-                    <Box
-                      key={index}
-                      className={`p-3 rounded-lg border-2 transition-all cursor-pointer ${getOptionClass(
-                        option
-                      )}`}
-                      onClick={() => !isSubmitted && handleAnswerSelect(option)}
-                    >
-                      <Box className="flex items-center justify-between">
-                        <FormControlLabel
-                          value={option}
-                          control={<Radio disabled={isSubmitted} />}
-                          label={
-                            <Typography variant="body1" className="font-medium">
-                              {String.fromCharCode(65 + index)}. {option}
-                            </Typography>
-                          }
-                          className="m-0 flex-1"
-                        />
-                        {getResultIcon(option)}
+          {/* 🔧 SỬA: Hiển thị options khi không bị cấm, và (chưa bị loại HOẶC có kết quả để hiển thị) */}
+          {!isBanned &&
+            (!isEliminatedState ||
+              (isEliminatedState && canShowResult && answerResult)) && (
+              <FormControl component="fieldset" className="w-full">
+                <RadioGroup
+                  value={selectedAnswer}
+                  onChange={(e) =>
+                    !(
+                      isSubmitted ||
+                      isEliminatedState ||
+                      isBanned ||
+                      isInRescueMode ||
+                      showRescueAnimation
+                    ) && handleAnswerSelect(e.target.value)
+                  }
+                >
+                  <Box className="space-y-3">
+                    {currentQuestion.question.options?.map((option, index) => (
+                      <Box
+                        key={index}
+                        className={`p-3 rounded-lg border-2 transition-all ${
+                          isSubmitted ||
+                          isEliminatedState ||
+                          isBanned ||
+                          isInRescueMode ||
+                          showRescueAnimation
+                            ? "cursor-not-allowed"
+                            : "cursor-pointer"
+                        } ${getOptionClass(option)}`}
+                        onClick={() =>
+                          !(
+                            isSubmitted ||
+                            isEliminatedState ||
+                            isBanned ||
+                            isInRescueMode ||
+                            showRescueAnimation
+                          ) && handleAnswerSelect(option)
+                        }
+                      >
+                        <Box className="flex items-center justify-between">
+                          <FormControlLabel
+                            value={option}
+                            control={
+                              <Radio
+                                disabled={
+                                  isSubmitted ||
+                                  isEliminatedState ||
+                                  isBanned ||
+                                  isInRescueMode ||
+                                  showRescueAnimation
+                                }
+                              />
+                            }
+                            label={
+                              <Typography
+                                variant="body1"
+                                className="font-medium"
+                              >
+                                {String.fromCharCode(65 + index)}. {option}
+                              </Typography>
+                            }
+                            className="m-0 flex-1"
+                          />
+                          {getResultIcon(option)}
+                        </Box>
                       </Box>
-                    </Box>
-                  ))}
-                </Box>
-              </RadioGroup>
-            </FormControl>
-          )}
+                    ))}
+                  </Box>
+                </RadioGroup>
+              </FormControl>
+            )}
 
-          {/* 🔥 NEW: Hiển thị thông báo elimination thay cho options */}
-          {isEliminated && (
+          {/* 🔥 NEW: Hiển thị thông báo ban (chỉ khi bị cấm) */}
+          {isBanned && (
             <Alert
               severity="error"
               icon={<Cancel />}
               className="border-2 border-red-500 bg-red-50 mb-4"
             >
-              <AlertTitle>Error</AlertTitle>
+              <AlertTitle>Bị cấm tham gia</AlertTitle>
               <Box className="space-y-3">
                 <Typography variant="h6" className="font-bold text-red-800">
-                  Bạn đã bị loại khỏi trận đấu!
+                  Bạn đã bị cấm tham gia vì vi phạm quy chế!
+                </Typography>
+                <Typography variant="body2" className="text-red-700">
+                  {banMessage}
                 </Typography>
                 <Typography variant="body2" className="text-red-600">
                   💡 Bạn vẫn có thể theo dõi câu hỏi nhưng không thể trả lời.
                 </Typography>
-
-                {/* Hiển thị đáp án đúng nếu có */}
-                {answerResult?.correctAnswer && (
-                  <Box className="bg-red-100 p-3 rounded-lg border border-red-300">
-                    <Typography
-                      variant="body2"
-                      className="text-red-800 font-medium"
-                    >
-                      📝 Đáp án đúng:{" "}
-                      <span className="font-bold">
-                        {answerResult.correctAnswer}
-                      </span>
-                    </Typography>
-                    {answerResult.explanation && (
-                      <Typography variant="body2" className="text-red-700 mt-1">
-                        💡 Giải thích: {answerResult.explanation}
-                      </Typography>
-                    )}
-                  </Box>
-                )}
               </Box>
             </Alert>
           )}
 
-          {/* Nút submit */}
-          {/* 🔥 NEW: Ẩn submit button nếu thí sinh bị loại */}
-          {!isSubmitted && !isEliminated && (
-            <Box className="flex justify-end mt-4">
-              <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                startIcon={<Send />}
-                onClick={() => handleSubmitAnswer()}
-                disabled={!selectedAnswer || isApiSubmitting}
-                className="px-8 py-3"
+          {/* 🔧 SỬA: Chỉ hiển thị thông báo elimination khi thực sự bị loại, không có kết quả và không đang rescue */}
+          {isEliminatedState &&
+            !canShowResult &&
+            !answerResult &&
+            !isInRescueMode &&
+            !showRescueAnimation && (
+              <Alert
+                severity="warning"
+                icon={<Cancel />}
+                className="border-2 border-orange-500 bg-orange-50 mb-4"
               >
-                {isApiSubmitting ? "Đang xử lý..." : "Xác nhận"}
-              </Button>
-            </Box>
+                <AlertTitle>Đã bị loại</AlertTitle>
+                <Box className="space-y-3">
+                  <Typography
+                    variant="h6"
+                    className="font-bold text-orange-800"
+                  >
+                    Bạn đã bị loại khỏi trận đấu!
+                  </Typography>
+                  <Typography variant="body2" className="text-orange-700">
+                    {eliminationMessageState ||
+                      "Do trả lời sai hoặc không trả lời câu hỏi."}
+                  </Typography>
+                  <Typography variant="body2" className="text-orange-600">
+                    💡 Bạn vẫn có thể theo dõi câu hỏi nhưng không thể trả lời.
+                  </Typography>
+                </Box>
+              </Alert>
+            )}
+
+          {/* 🆕 NEW: Hiển thị thông báo rescue mode */}
+          {(isInRescueMode || showRescueAnimation) && (
+            <Alert
+              severity="info"
+              className="border-2 border-blue-500 bg-blue-50 mb-4"
+            >
+              <AlertTitle>🎉 Đang trong chế độ cứu trợ</AlertTitle>
+              <Typography variant="body2" className="text-blue-700">
+                Bạn đang được cứu trợ. Vui lòng chờ câu hỏi tiếp theo...
+              </Typography>
+            </Alert>
           )}
+
+          {/* Nút submit */}
+          {/* 🔥 NEW: Ẩn submit button nếu thí sinh bị loại, bị cấm hoặc đang rescue */}
+          {!isSubmitted &&
+            !isEliminatedState &&
+            !isBanned &&
+            !isInRescueMode &&
+            !showRescueAnimation && (
+              <Box className="flex justify-end mt-4">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  startIcon={<Send />}
+                  onClick={() => handleSubmitAnswer()}
+                  disabled={!selectedAnswer || isApiSubmitting}
+                  className="px-8 py-3"
+                >
+                  {isApiSubmitting ? "Đang xử lý..." : "Xác nhận"}
+                </Button>
+              </Box>
+            )}
 
           {/* Thông báo đã gửi, đang chờ hiển thị kết quả */}
           {isSubmitted && pendingResult && !answerResult && !canShowResult && (
@@ -1375,7 +1373,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
                 <Box className="space-y-2">
                   <Typography variant="h6" className="font-bold">
                     {answerResult.isCorrect
-                      ? `🎉 Chính xác! +${answerResult.score} điểm`
+                      ? `🎉 Chính xác!`
                       : selectedAnswer === "[KHÔNG CHỌN ĐÁP ÁN]"
                       ? " Bạn không chọn đáp án nào!" // 🔧 Thông báo đặc biệt
                       : " Chưa đúng rồi!"}
@@ -1404,23 +1402,6 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
                       </span>
                     </Typography>
                   )}
-
-                  <Box className="flex items-center gap-4 text-sm text-gray-600">
-                    <span>
-                      📊 Điểm số: <strong>{answerResult.score}</strong>
-                    </span>
-                    <span>
-                      📝 Câu số: <strong>{answerResult.questionOrder}</strong>
-                    </span>
-                    <span>
-                      ⏰ Nộp lúc:{" "}
-                      <strong>
-                        {new Date(
-                          answerResult.submittedAt
-                        ).toLocaleTimeString()}
-                      </strong>
-                    </span>
-                  </Box>
                 </Box>
               </Alert>
 
@@ -1458,57 +1439,6 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
                   </Typography>
                 </Box>
               )}
-
-              {/* Thống kê nhanh */}
-              <Box className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
-                <Typography
-                  variant="subtitle2"
-                  className="text-gray-800 font-bold mb-2"
-                >
-                  📈 Thống kê câu trả lời:
-                </Typography>
-                <Box className="grid grid-cols-2 gap-4 text-sm">
-                  <Box>
-                    <span className="text-gray-600">Kết quả:</span>
-                    <span
-                      className={`ml-2 font-bold ${
-                        answerResult.isCorrect
-                          ? "text-green-600"
-                          : "text-green-600"
-                      }`}
-                    >
-                      {answerResult.isCorrect ? "ĐÚNG ✓" : "SAI ✗"}
-                    </span>
-                  </Box>
-                  <Box>
-                    <span className="text-gray-600">Điểm được:</span>
-                    <span className="ml-2 font-bold text-blue-600">
-                      {answerResult.score} điểm
-                    </span>
-                  </Box>
-                  <Box>
-                    <span className="text-gray-600">Trạng thái:</span>
-                    <span
-                      className={`ml-2 font-bold ${
-                        answerResult.eliminated
-                          ? "text-red-600"
-                          : "text-green-600"
-                      }`}
-                    >
-                      {answerResult.eliminated ? "BỊ LOẠI" : "TIẾP TỤC"}
-                    </span>
-                  </Box>
-                  <Box>
-                    <span className="text-gray-600">Đáp án:</span>
-                    <span className="ml-2 font-bold text-gray-800">
-                      {selectedAnswer === "[KHÔNG CHỌN ĐÁP ÁN]"
-                        ? "Không chọn" // 🔧 Hiển thị ngắn gọn
-                        : selectedAnswer?.substring(0, 10) +
-                          (selectedAnswer?.length > 10 ? "..." : "")}
-                    </span>
-                  </Box>
-                </Box>
-              </Box>
             </Box>
           )}
         </CardContent>
@@ -1516,6 +1446,15 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
 
       {/* Media Modal */}
       <MediaModal />
+
+      {/* Rescue Animation */}
+      {showRescueAnimation && (
+        <RescueAnimation
+          isVisible={showRescueAnimation}
+          rescueMessage={rescueMessage}
+          onAnimationComplete={handleRescueAnimationComplete}
+        />
+      )}
     </Box>
   );
 };

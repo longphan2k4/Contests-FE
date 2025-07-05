@@ -36,7 +36,7 @@ const ContestCard: React.FC<ContestCardProps> = ({
   const handleCardClick = () => {
     console.log(contest?.slug);
     if (contest) {
-      navigate(`/admin/cuoc-thi/${contest.slug}`);
+      navigate(`/admin/contest/${contest.slug}`);
     }
   };
 
@@ -68,7 +68,7 @@ const ContestCard: React.FC<ContestCardProps> = ({
             <Checkbox
               checked={selected}
               onChange={onSelect}
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
               sx={{
                 color: "primary.main",
                 "&.Mui-checked": { color: "primary.main" },

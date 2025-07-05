@@ -432,16 +432,16 @@ const QuestionsPage: React.FC = () => {
                           selectedIds.size > 0 &&
                           selectedIds.size < questions.length
                         }
-                        onChange={(e) => {
+                        onChange={e => {
                           if (e.target.checked) {
-                            setSelectedIds(new Set(questions.map((q) => q.id)));
+                            setSelectedIds(new Set(questions.map(q => q.id)));
                           } else {
                             setSelectedIds(new Set());
                           }
                         }}
                       />
                     </TableCell>
-                    <TableCell>STT</TableCell>
+                    <TableCell>Id</TableCell>
                     <TableCell>Nội dung</TableCell>
                     {!isMobile && (
                       <>
@@ -455,12 +455,12 @@ const QuestionsPage: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {questions.map((question, index) => (
+                  {questions.map(question => (
                     <TableRow key={question.id}>
                       <TableCell padding="checkbox">
                         <Checkbox
                           checked={selectedIds.has(question.id)}
-                          onChange={(e) => {
+                          onChange={e => {
                             const newSelectedIds = new Set(selectedIds);
                             if (e.target.checked) {
                               newSelectedIds.add(question.id);
@@ -471,7 +471,7 @@ const QuestionsPage: React.FC = () => {
                           }}
                         />
                       </TableCell>
-                      <TableCell>{(page - 1) * limit + index + 1}</TableCell>
+                      <TableCell>{question.id}</TableCell>
                       <TableCell>
                         <Typography
                           dangerouslySetInnerHTML={{ __html: question.content }}

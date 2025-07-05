@@ -30,7 +30,7 @@ const PublicRoute: React.FC<PublicRouteProps> = ({
   }
   const isAuthenticated = !!user && !!user.role;
   if (isAuthenticated && restricted) {
-    return <Navigate to="/trang-chu" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;

@@ -1,8 +1,8 @@
 import React from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import { useSponsorById } from "../hook/useSponsorById";
-import { getMediaUrl } from '@/config/env';
+import { getMediaUrl } from "@/config/env";
 
 interface ViewSponsorProps {
   id: number | null;
@@ -15,34 +15,50 @@ export default function ViewSponsor({
   isOpen,
   onClose,
 }: ViewSponsorProps): React.ReactElement {
-  const { data: sponsor } = useSponsorById(id);
+  const {
+    data: sponsor,
+    isLoading: isLoadingSponsor,
+    isError: isErrorSponsor,
+  } = useSponsorById(id);
 
   const fields = [
     { label: "ID", value: sponsor?.id },
-    { label: "Tên nhà tài trợ", value: sponsor?.name },    {
-  label: "Logo",
-  value: sponsor?.logo ? (
-    <img
-      src={getMediaUrl(sponsor.logo)}
-      alt="logo"
-      style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 8 }}
-    />
-  ) : (
-    "Không có logo"
-  ),
-},
-{
-  label: "Ảnh giới thiệu",
-  value: sponsor?.images ? (
-    <img
-      src={getMediaUrl(sponsor.images)}
-      alt="image"
-      style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 8 }}
-    />
-  ) : (
-    "Không có ảnh"
-  ),
-},    {
+    { label: "Tên nhà tài trợ", value: sponsor?.name },
+    {
+      label: "Logo",
+      value: sponsor?.logo ? (
+        <img
+          src={getMediaUrl(sponsor.logo)}
+          alt="logo"
+          style={{
+            width: 100,
+            height: 100,
+            objectFit: "cover",
+            borderRadius: 8,
+          }}
+        />
+      ) : (
+        "Không có logo"
+      ),
+    },
+    {
+      label: "Ảnh giới thiệu",
+      value: sponsor?.images ? (
+        <img
+          src={getMediaUrl(sponsor.images)}
+          alt="image"
+          style={{
+            width: 100,
+            height: 100,
+            objectFit: "cover",
+            borderRadius: 8,
+          }}
+        />
+      ) : (
+        "Không có ảnh"
+      ),
+    },
+    {
       label: "Video",
       value: sponsor?.videos ? (
         <video
@@ -54,9 +70,21 @@ export default function ViewSponsor({
         "Không có video"
       ),
     },
-    
+
     { label: "Cuộc thi liên kết", value: sponsor?.contestId ?? "Chưa gán" },
   ];
+
+  if (isLoadingSponsor) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isErrorSponsor) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
 
   return (
     <Box>

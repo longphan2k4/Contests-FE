@@ -51,7 +51,7 @@ export const UserType = z.object({
   id: number().int(),
   username: z.string(),
   email: z.string(),
-  role: z.enum(["Admin", "Judge"]),
+  role: z.enum(["Admin", "Judge", "Student"]),
   isActive: z.boolean(),
 });
 

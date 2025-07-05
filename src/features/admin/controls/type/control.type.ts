@@ -1,4 +1,4 @@
-import EliminateDisplay from "@features/match/components/Eliminate/EliminateDisplay";
+
 
 export const contest_status = {
   upcoming: "upcoming",

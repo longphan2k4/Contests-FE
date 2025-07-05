@@ -1,18 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Typography,
-} from "@mui/material";
+import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   UpdateClassVideoSchema,
   type UpdateClassVideoInput,
 } from "../types/class-video.shame";
+
+import FormSelect from "@components/FormSelect";
+import { useListClass } from "../hook/useListClass";
 
 import { useClassVideoById } from "../hook/useClassVideoById";
 
@@ -35,11 +33,36 @@ export default function EditClassVideo({
     formState: { errors },
     reset,
     watch,
+    control,
   } = useForm<UpdateClassVideoInput>({
     resolver: zodResolver(UpdateClassVideoSchema),
   });
 
-  const { data: video, isLoading, isError } = useClassVideoById(id);
+  const { data: video, isLoading, isError, refetch } = useClassVideoById(id);
+
+  const {
+    data: classList,
+    isLoading: isClassLoading,
+    isError: isClassError,
+    refetch: refetchClassList,
+  } = useListClass();
+
+  useEffect(() => {
+    if (isOpen && id) {
+      refetch();
+      refetchClassList();
+    }
+  }, [refetchClassList, isOpen, id, refetch]);
+
+  const classes = useMemo(() => {
+    if (classList?.success) {
+      return classList.data.map((item: { id: number; name: string }) => ({
+        label: item.name,
+        value: item.id,
+      }));
+    }
+    return [];
+  }, [classList]);
 
   const watchedVideoFile = watch("videos")?.[0];
 
@@ -48,7 +71,8 @@ export default function EditClassVideo({
       reset({
         name: video.name,
         slogan: video.slogan,
-        videos: undefined, // reset không set lại video mới
+        videos: undefined,
+        classId: video.classId,
       });
     }
   }, [video, reset, isOpen]);
@@ -61,7 +85,7 @@ export default function EditClassVideo({
     onClose();
   };
 
-  if (isLoading) {
+  if (isLoading || isClassLoading) {
     return (
       <Box display="flex" justifyContent="center" p={3}>
         <CircularProgress />
@@ -69,13 +93,13 @@ export default function EditClassVideo({
     );
   }
 
-  if (isError || !video) return <div></div>;
+  if (isError || isClassError) return <div>Không thể tải dữ liệu</div>;
 
   return (
     <AppFormDialog
       open={isOpen}
       onClose={onClose}
-      title={`Cập nhật video lớp: ${video.name}`}
+      title={`Cập nhật video lớp: ${video?.name || ""}`}
       maxWidth="sm"
     >
       <form onSubmit={handleSubmit(handleFormSubmit)}>
@@ -93,17 +117,29 @@ export default function EditClassVideo({
           error={errors.slogan}
           register={register("slogan")}
         />
+        <FormSelect
+          id="classId"
+          name="classId"
+          label="Chọn lớp"
+          options={classes}
+          control={control}
+          error={errors.classId}
+        />
         {/* Video cũ */}
-        {video.videos && (
+        {video?.videos && (
           <Box mt={2}>
             <Typography variant="subtitle2">Video hiện tại:</Typography>
             <video
-              width="100%"
-              height="240"
               controls
-              style={{ marginTop: "8px", borderRadius: "8px" }}
+              style={{
+                marginTop: "8px",
+                borderRadius: "8px",
+                width: "100%",
+                height: "200px",
+                objectFit: "cover", // 👈 cái này giúp video bo hết khung
+              }}
             >
-              <source src={video.videos} type="video/mp4" />
+              <source src={video?.videos} type="video/mp4" />
               Trình duyệt không hỗ trợ video.
             </video>
           </Box>

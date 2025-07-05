@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 import { useAwardById } from "../hook/useAwardById";
 
@@ -15,24 +15,59 @@ export default function ViewAward({
   isOpen,
   onClose,
 }: ViewAwardProps): React.ReactElement {
-  const { data: award } = useAwardById(id);
+  const { data: award, refetch, isError, isLoading } = useAwardById(id);
+
+  useEffect(() => {
+    if (isOpen && id) {
+      refetch();
+    }
+  }, [isOpen, id]);
 
   const fields = [
     { label: "ID", value: award?.id },
     { label: "Tên giải thưởng", value: award?.name },
-    { label: "ID Cuộc thi", value: award?.contestId },
-    { label: "ID Thí sinh", value: award?.contestantId },
-    { label: "Loại giải", value: award?.type },
+    {
+      label: "Thí sinh",
+      value: award?.contestant?.student?.fullName ?? "Không có",
+    },
+    {
+      label: "Loại giải",
+      value:
+        award?.type === "firstPrize"
+          ? "Giải Nhất"
+          : award?.type === "secondPrize"
+          ? "Giải Nhì"
+          : award?.type === "thirdPrize"
+          ? "Giải Ba"
+          : award?.type === "fourthPrize"
+          ? "Giải Khuyến Khích"
+          : award?.type === "impressiveVideo"
+          ? "Video Ấn Tượng"
+          : award?.type === "excellentVideo"
+          ? "Video Xuất Sắc"
+          : "Không xác định",
+    },
     { label: "Ngày tạo", value: award?.createdAt },
     { label: "Cập nhật gần nhất", value: award?.updatedAt },
   ];
+  if (isLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
 
   return (
     <Box>
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Chi tiết giải thưởng "${award?.name}"`}
+        title={`Chi tiết giải thưởng ${award?.name}`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>

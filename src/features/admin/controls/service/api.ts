@@ -14,7 +14,6 @@ export const GetCurrentQuestion = async (match: string | null) => {
   const res = await axiosInstance.get(`/match/${match}/CurrentQuestion`);
   return res.data;
 };
-
 export const GetListRescues = async (match: string | null) => {
   const res = await axiosInstance.get(`/match/${match}/ListRescues`);
   return res.data;

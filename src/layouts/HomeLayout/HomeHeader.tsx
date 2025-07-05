@@ -39,7 +39,7 @@ const Header: React.FC = () => {
       "feAccessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
     localStorage.removeItem("feAccessToken");
     showSuccessNotification("Đăng xuất thành công");
-    navigate("/trang-chu");
+    navigate("/");
     window.location.reload();
   };
 
@@ -54,7 +54,7 @@ const Header: React.FC = () => {
   const handleNavClick = (item: { id: string; type: string }) => {
     setActiveItem(item.id);
     setIsMobileMenuOpen(false);
-    
+
     if (item.type === "navigate" && item.id === "contest") {
       handleContestClick();
     } else {
@@ -79,7 +79,10 @@ const Header: React.FC = () => {
       if (!target.closest(".user-menu-container")) {
         setShowUserMenu(false);
       }
-      if (!target.closest(".mobile-menu-container") && !target.closest(".mobile-menu-button")) {
+      if (
+        !target.closest(".mobile-menu-container") &&
+        !target.closest(".mobile-menu-button")
+      ) {
         setIsMobileMenuOpen(false);
       }
     };
@@ -104,13 +107,13 @@ const Header: React.FC = () => {
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
-    
+
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isMobileMenuOpen]);
 
@@ -146,7 +149,11 @@ const Header: React.FC = () => {
             {/* Logo Section */}
             <div className="flex items-center space-x-2 sm:space-x-4 group">
               <div className="w-8 h-8 sm:w-12 sm:h-12 flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                <img src={Logo} alt="Logo" className="w-5 h-7 sm:w-7 sm:h-10 object-cover" />
+                <img
+                  src={Logo}
+                  alt="Logo"
+                  className="w-5 h-7 sm:w-7 sm:h-10 object-cover"
+                />
               </div>
               <div className="relative">
                 <h1
@@ -268,7 +275,8 @@ const Header: React.FC = () => {
                           </button>
 
                           {/* Menu Item: Trang quản lý hoặc Trang giám khảo dựa trên role */}
-                          {(user?.role === "Admin" || user?.role === "Judge") && (
+                          {(user?.role === "Admin" ||
+                            user?.role === "Judge") && (
                             <button
                               onClick={() => {
                                 if (user?.role === "Admin") {
@@ -376,7 +384,7 @@ const Header: React.FC = () => {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         ></div>
@@ -404,8 +412,18 @@ const Header: React.FC = () => {
               onClick={() => setIsMobileMenuOpen(false)}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-5 h-5 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import { useMediaById } from "../hook/useMediaById";
 
 interface ViewMediaProps {
@@ -14,39 +14,21 @@ export default function ViewMedia({
   isOpen,
   onClose,
 }: ViewMediaProps): React.ReactElement {
-  const { data: media } = useMediaById(id);
-
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const { data: media, isLoading, isError, refetch } = useMediaById(id);
 
   useEffect(() => {
-  if (!media?.url) {
-    setPreviewUrl(null);
-    return;
-  }
-
-  if (typeof media.url === "string") {
-    setPreviewUrl(media.url);
-    return; // ✅ Thêm dòng này
-  }
-
-  if (media.url instanceof File) {
-    const objectUrl = URL.createObjectURL(media.url);
-    setPreviewUrl(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  }
-
-  return; // ✅ fallback return
-}, [media?.url]);
-
-
+    if (isOpen) {
+      refetch();
+    }
+  }, [isOpen]);
 
   const fields: { label: string; value: React.ReactNode }[] = [
     { label: "ID", value: media?.id },
     {
       label: "Ảnh",
-      value: previewUrl ? (
+      value: media?.url ? (
         <img
-          src={previewUrl}
+          src={media.url}
           alt="Preview"
           style={{
             maxWidth: "100%",
@@ -64,12 +46,21 @@ export default function ViewMedia({
     { label: "Cập nhật gần nhất", value: media?.updatedAt },
   ];
 
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" mt={8}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  if (isError) return <div>Không thể tải dữ liệu</div>;
+
   return (
     <Box>
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Chi tiết media ID ${media?.id}`}
+        title={`Chi tiết media`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>

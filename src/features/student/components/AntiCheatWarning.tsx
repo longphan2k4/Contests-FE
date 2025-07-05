@@ -120,7 +120,7 @@ const AntiCheatWarning: React.FC<AntiCheatWarningProps> = ({
 
           {/* Nút hành động */}
           <div className="flex gap-3">
-            {remainingChances > 0 ? (
+            {remainingChances > 0 && (
               <>
                 <button
                   onClick={onContinue}
@@ -135,13 +135,6 @@ const AntiCheatWarning: React.FC<AntiCheatWarningProps> = ({
                   Kết thúc
                 </button>
               </>
-            ) : (
-              <button
-                onClick={onTerminate}
-                className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 font-medium"
-              >
-                Kết thúc bài thi
-              </button>
             )}
           </div>
         </div>

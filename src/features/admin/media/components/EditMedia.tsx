@@ -10,10 +10,7 @@ import {
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  UpdateMediaSchema,
-  type UpdateMediaInput,
-} from "../types/media.shame";
+import { UpdateMediaSchema, type UpdateMediaInput } from "../types/media.shame";
 import { useMediaById } from "../hook/useMediaById";
 
 interface EditMediaProps {
@@ -98,13 +95,13 @@ export default function EditMedia({
     );
   }
 
-  if (isError || !media) return <div></div>;
+  if (isError) return <div>Không thể tải dữ liệu</div>;
 
   return (
     <AppFormDialog
       open={isOpen}
       onClose={onClose}
-      title={`Cập nhật Media ID ${media.id}`}
+      title={`Cập nhật media `}
       maxWidth="sm"
     >
       <form onSubmit={handleSubmit(handleFormSubmit)}>
@@ -122,9 +119,9 @@ export default function EditMedia({
               helperText={errors.type?.message}
               margin="normal"
             >
-              <MenuItem value="images">images</MenuItem>
-              <MenuItem value="logo">logo</MenuItem>
-              <MenuItem value="background">background</MenuItem>
+              <MenuItem value="images">Hình ảnh</MenuItem>
+              <MenuItem value="logo">Logo</MenuItem>
+              <MenuItem value="background">Ảnh nền</MenuItem>
             </TextField>
           )}
         />
@@ -175,7 +172,11 @@ export default function EditMedia({
           style={{ display: "none" }}
         />
 
-        <Button type="submit" variant="contained" sx={{ mt: 2, float: "right" }}>
+        <Button
+          type="submit"
+          variant="contained"
+          sx={{ mt: 2, float: "right" }}
+        >
           Cập nhật
         </Button>
       </form>

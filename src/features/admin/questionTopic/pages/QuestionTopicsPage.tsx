@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -13,6 +13,7 @@ import QuestionTopicForm from "../components/QuestionTopicForm";
 import { useQuestionTopicList } from "../hooks";
 import type { QuestionTopic } from "../types/questionTopic";
 import { useToast } from "../../../../contexts/toastContext";
+import { toggleActive } from "../services/questionTopicService";
 import {
   useCreateQuestionTopic,
   useUpdateQuestionTopic,
@@ -70,6 +71,10 @@ const QuestionTopicsPage: React.FC = () => {
     setDetailPopupOpen(true);
   };
 
+  useEffect(() => {
+    document.title = "Quản lý chủ đề câu hỏi";
+  }, []);
+
   // Xử lý khi người dùng nhấn nút sửa
   const handleEdit = (questionTopic: QuestionTopic) => {
     setSelectedQuestionTopic(questionTopic);
@@ -99,7 +104,6 @@ const QuestionTopicsPage: React.FC = () => {
   const handleConfirmDelete = async () => {
     try {
       const response = await handleDeleteSelected(selectedIds);
-      console.log("nhận response", response);
 
       if (response && typeof response === "object" && "data" in response) {
         const res = response as BatchDeleteResponse;
@@ -124,7 +128,7 @@ const QuestionTopicsPage: React.FC = () => {
     } catch (error) {
       if (error && typeof error === "object" && "messages" in error) {
         const messages = (error as { messages: Message[] }).messages;
-        messages.forEach((item) => {
+        messages.forEach(item => {
           if (item.status === "error") {
             showToast(item.msg, "error");
           } else {
@@ -137,6 +141,19 @@ const QuestionTopicsPage: React.FC = () => {
     } finally {
       setOpenConfirmDelete(false);
       setSelectedIds([]);
+    }
+  };
+
+  const handleToggleActive = async (id: number) => {
+    try {
+      await toggleActive(id);
+      showToast("Cập nhật trạng thái chủ đề thành công", "success");
+      refresh();
+
+      // Invalidate question topics cache để other pages có thể nhận data mới
+      queryClient.invalidateQueries({ queryKey: ["questionTopics"] });
+    } catch (error) {
+      showToast("Có lỗi xảy ra khi cập nhật trạng thái chủ đề", "error");
     }
   };
 
@@ -203,6 +220,7 @@ const QuestionTopicsPage: React.FC = () => {
             onViewDetail={handleViewDetail}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onToggleActive={handleToggleActive}
           />
         )}
       </Paper>

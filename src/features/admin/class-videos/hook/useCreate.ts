@@ -9,6 +9,7 @@ interface UseCreateClassVideoPayload {
 
 export const useCreateClassVideo = () => {
   return useMutation({
-    mutationFn: ({ slug, data }: UseCreateClassVideoPayload) => CreateClassVideo(slug, data),
+    mutationFn: ({ slug, data }: UseCreateClassVideoPayload) =>
+      CreateClassVideo(slug, data),
   });
 };

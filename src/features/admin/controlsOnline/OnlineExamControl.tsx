@@ -44,8 +44,6 @@ const OnlineExamControl: React.FC<OnlineExamControlProps> = ({
   // Fetch match data từ API
   const { data: matchResponse } = useMatchInfo(match ?? null);
 
-  console.log("🎮 [ONLINE CONTROL] Match response:", matchResponse);
-  console.log("🎮 [ONLINE CONTROL] Match data:", matchResponse?.data);
 
   // Sử dụng dữ liệu từ socket hook
   const { examState } = useAdminSocket();

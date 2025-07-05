@@ -15,7 +15,7 @@ export const CreateUserSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
       "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa và chữ thường"
     ),
-  role: z.enum(["Admin", "Judge"]),
+  role: z.enum(["Admin", "Judge", "Student"]),
   isActive: z.boolean(),
 });
 
@@ -27,7 +27,7 @@ export const UserShema = z.object({
   id: z.number(),
   username: z.string(),
   email: z.string(),
-  role: z.enum(["Admin", "Judge"]),
+  role: z.enum(["Admin", "Judge", "Student"]),
   isActive: boolean(),
 });
 
@@ -46,12 +46,13 @@ export const UpdateUserSchema = z.object({
     )
     .optional()
     .or(z.literal("")),
-  role: z.enum(["Admin", "Judge"]).optional(),
+  role: z.enum(["Admin", "Judge", "Student"]).optional(),
   isActive: z.boolean().optional(),
 });
 export const Role = {
   Admin: "Admin",
   Judge: "Judge",
+  Student: "Student",
 } as const;
 
 export type Role = (typeof Role)[keyof typeof Role];

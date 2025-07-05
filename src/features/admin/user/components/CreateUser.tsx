@@ -18,6 +18,7 @@ interface CreateSchoolDialogProp {
 const roleOptions = [
   { label: "Admin", value: "Admin" },
   { label: "Trọng tài", value: "Judge" },
+  { label: "Sinh viên", value: "Student" },
 ];
 
 export default function CreateSchoolDialog({

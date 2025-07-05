@@ -89,7 +89,6 @@ interface StudentEliminatedEvent {
 }
 
 export const useStudentMatch = () => {
-  console.log('🎮 [STUDENT MATCH] Khởi tạo hook useStudentMatch');
   
   const { socket, isConnected } = useStudentSocket();
   const [matchData, setMatchData] = useState<MatchData | null>(null);
@@ -97,32 +96,23 @@ export const useStudentMatch = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  console.log('🔍 [STUDENT MATCH] Socket status:', { 
-    connected: isConnected, 
-    socketId: socket?.id || 'none' 
-  });
+
 
   // Join match room
   const joinMatch = (matchSlug: string) => {
-    console.log('🏠 [STUDENT MATCH] Attempting to join match:', matchSlug);
     
     if (!socket || !isConnected) {
-      console.log('❌ [STUDENT MATCH] Cannot join match - socket not connected');
       setError('Kết nối socket không khả dụng');
       return;
     }
 
     setLoading(true);
-    console.log('📤 [STUDENT MATCH] Emitting student:joinMatch event');
     
     socket.emit('student:joinMatch', { matchSlug }, (response: JoinMatchResponse) => {
-      console.log('📥 [STUDENT MATCH] Received joinMatch response:', response);
       
       if (response.success) {
-        console.log('✅ [STUDENT MATCH] Joined match successfully');
         getMatchStatus();
       } else {
-        console.log('❌ [STUDENT MATCH] Failed to join match:', response.message);
         setError(response.message);
       }
       setLoading(false);
@@ -131,23 +121,18 @@ export const useStudentMatch = () => {
 
   // Get current match status
   const getMatchStatus = () => {
-    console.log('📊 [STUDENT MATCH] Getting match status');
     
     if (!socket || !isConnected) {
-      console.log('❌ [STUDENT MATCH] Cannot get status - socket not connected');
       return;
     }
 
     socket.emit('student:getMatchStatus', (response: MatchStatusResponse) => {
-      console.log('📥 [STUDENT MATCH] Received match status:', response);
       
       if (response.success) {
         setMatchData(response.data.matchData);
         setResults(response.data.results || []);
         setError(null);
-        console.log('✅ [STUDENT MATCH] Match status updated successfully');
       } else {
-        console.log('❌ [STUDENT MATCH] Failed to get match status:', response.message);
         setError(response.message);
       }
     });
@@ -156,20 +141,16 @@ export const useStudentMatch = () => {
   // Socket event listeners setup
   useEffect(() => {
     if (!socket || !isConnected) {
-      console.log('🔍 [STUDENT MATCH] Socket not ready, skipping event setup');
       return;
     }
 
-    console.log('🎧 [STUDENT MATCH] Setting up socket event listeners');
 
     // Handle match events
     const handleMatchStarted = (data: MatchStartedEvent) => {
-      console.log('🚀 [STUDENT MATCH] Match started event received:', data);
       setMatchData(prev => prev ? { ...prev, status: data.status } : null);
     };
 
     const handleQuestionShown = (data: QuestionShownEvent) => {
-      console.log('👁️ [STUDENT MATCH] Question shown event received:', data);
       setMatchData(prev => prev ? {
         ...prev,
         currentQuestion: data.currentQuestion,
@@ -178,7 +159,6 @@ export const useStudentMatch = () => {
     };
 
     const handleTimerUpdated = (data: TimerUpdatedEvent) => {
-      console.log('⏱️ [STUDENT MATCH] Timer updated event received:', data);
       setMatchData(prev => prev ? {
         ...prev,
         remainingTime: data.timeRemaining
@@ -186,12 +166,10 @@ export const useStudentMatch = () => {
     };
 
     const handleMatchEnded = (data: MatchEndedEvent) => {
-      console.log('🏁 [STUDENT MATCH] Match ended event received:', data);
       setMatchData(prev => prev ? { ...prev, status: data.status } : null);
     };
 
     const handleStudentEliminated = (data: StudentEliminatedEvent) => {
-      console.log('🚫 [STUDENT MATCH] Student eliminated event received:', data);
       setError(data.message);
     };
 

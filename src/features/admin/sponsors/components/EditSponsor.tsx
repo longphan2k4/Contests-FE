@@ -1,29 +1,36 @@
 import React, { useEffect, useState } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { Box, Button, Typography, TextField, IconButton } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  TextField,
+  IconButton,
+  CircularProgress,
+} from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
+import { useSponsorById } from "../hook/useSponsorById";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import {
   UpdateSponsorSchema,
-  type Sponsor,
   type UpdateSponsorInput,
 } from "../types/sponsors.shame";
 
 interface EditSponsorDialogProps {
+  id: number | null;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: UpdateSponsorInput) => void;
-  sponsor: Sponsor;
   isLoading?: boolean;
 }
 
 function EditSponsorDialog({
+  id,
   isOpen,
   onClose,
   onSubmit,
-  sponsor,
   isLoading = false,
 }: EditSponsorDialogProps): React.ReactElement {
   const {
@@ -39,7 +46,13 @@ function EditSponsorDialog({
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
-  
+
+  const {
+    data: sponsorData,
+    isLoading: isLoadingSponsor,
+    isError: isErrorSponsor,
+  } = useSponsorById(id);
+
   // Track file removal states
   const [removedFiles, setRemovedFiles] = useState<{
     logo: boolean;
@@ -55,13 +68,14 @@ function EditSponsorDialog({
   const imagesFile = watch("images");
   const videosFile = watch("videos");
   useEffect(() => {
-    if (isOpen) {      reset({
-        name: sponsor.name,
-        logo: sponsor.logo,
-        images: sponsor.images,
-        videos: sponsor.videos,
+    if (isOpen) {
+      reset({
+        name: sponsorData.name,
+        logo: sponsorData.logo,
+        images: sponsorData.images,
+        videos: sponsorData.videos,
       });
-      
+
       // Reset removed files state
       setRemovedFiles({
         logo: false,
@@ -69,7 +83,7 @@ function EditSponsorDialog({
         videos: false,
       });
     }
-  }, [isOpen, sponsor, reset]);
+  }, [isOpen, reset]);
   useEffect(() => {
     let url: string | undefined;
     if (logoFile instanceof File) {
@@ -120,7 +134,8 @@ function EditSponsorDialog({
         URL.revokeObjectURL(url);
       }
     };
-  }, [videosFile, removedFiles.videos]);  const handleFormSubmit = (data: UpdateSponsorInput) => {
+  }, [videosFile, removedFiles.videos]);
+  const handleFormSubmit = (data: UpdateSponsorInput) => {
     // Add removal flags to the data
     const submitData = {
       ...data,
@@ -128,20 +143,21 @@ function EditSponsorDialog({
       removeImages: removedFiles.images,
       removeVideos: removedFiles.videos,
     };
-    
+
     onSubmit(submitData);
-  };const handleRemoveFile = (field: "logo" | "images" | "videos") => {
+  };
+  const handleRemoveFile = (field: "logo" | "images" | "videos") => {
     // Get current value before setting to undefined
     const currentValue = watch(field);
-    
+
     // Mark file as removed if it was originally a string URL
     if (typeof currentValue === "string") {
       setRemovedFiles(prev => ({
         ...prev,
-        [field]: true
+        [field]: true,
       }));
     }
-    
+
     setValue(field, undefined, { shouldValidate: true });
   };
   const handleFileChange = (
@@ -150,14 +166,24 @@ function EditSponsorDialog({
   ) => {
     if (e.target.files && e.target.files.length > 0) {
       setValue(field, e.target.files[0], { shouldValidate: true });
-      
+
       // Reset removed state when new file is selected
       setRemovedFiles(prev => ({
         ...prev,
-        [field]: false
+        [field]: false,
       }));
     }
   };
+  if (isLoadingSponsor) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  if (isErrorSponsor) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
 
   return (
     <AppFormDialog
@@ -176,7 +202,6 @@ function EditSponsorDialog({
             required
             fullWidth
           />
-
           <Box
             sx={{
               display: "flex",
@@ -188,7 +213,7 @@ function EditSponsorDialog({
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Logo
               </Typography>
-              {(logoFile && !removedFiles.logo) ? (
+              {logoFile && !removedFiles.logo ? (
                 <Box
                   sx={{
                     position: "relative",
@@ -254,7 +279,7 @@ function EditSponsorDialog({
                     type="file"
                     accept="image/*"
                     hidden
-                    onChange={(e) => handleFileChange(e, "logo")}
+                    onChange={e => handleFileChange(e, "logo")}
                   />
                 </Button>
               )}
@@ -273,7 +298,7 @@ function EditSponsorDialog({
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Hình ảnh giới thiệu
               </Typography>
-              {(imagesFile && !removedFiles.images) ? (
+              {imagesFile && !removedFiles.images ? (
                 <Box
                   sx={{
                     position: "relative",
@@ -339,7 +364,7 @@ function EditSponsorDialog({
                     type="file"
                     accept="image/*"
                     hidden
-                    onChange={(e) => handleFileChange(e, "images")}
+                    onChange={e => handleFileChange(e, "images")}
                   />
                 </Button>
               )}
@@ -358,7 +383,7 @@ function EditSponsorDialog({
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Video giới thiệu
               </Typography>
-              {(videosFile && !removedFiles.videos) ? (
+              {videosFile && !removedFiles.videos ? (
                 <Box
                   sx={{
                     position: "relative",
@@ -423,7 +448,7 @@ function EditSponsorDialog({
                     type="file"
                     accept="video/*"
                     hidden
-                    onChange={(e) => handleFileChange(e, "videos")}
+                    onChange={e => handleFileChange(e, "videos")}
                   />
                 </Button>
               )}
@@ -437,11 +462,22 @@ function EditSponsorDialog({
                 </Typography>
               )}
             </Box>
-          </Box>          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-            <Button variant="outlined" onClick={onClose} fullWidth disabled={isLoading}>
+          </Box>{" "}
+          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={onClose}
+              fullWidth
+              disabled={isLoading}
+            >
               Hủy
             </Button>
-            <Button type="submit" variant="contained" fullWidth disabled={isLoading}>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              disabled={isLoading}
+            >
               {isLoading ? "Đang lưu..." : "Lưu"}
             </Button>
           </Box>
