@@ -214,4 +214,5 @@ export interface updatedRescuesType {
   rescueType: string;
   questionFrom: number;
   questionTo: number;
+  remainingContestants: number;
 }
