@@ -137,6 +137,12 @@ export interface StudentQueryParams {
   search?: string;
   classId?: number;
 }
+
+// export interface UpdateRescueStatusByCurrentQuestionInput {
+//   matchId: number;
+//   currentQuestionOrder: number;
+// }
+
 export type CreateContestantInput = z.infer<typeof CreateContestantSchema>;
 export type UpdateContestantInput = z.infer<typeof UpdateContestantSchema>;
 export type ContestantQueryInput = z.infer<typeof ContestantQuerySchema>;

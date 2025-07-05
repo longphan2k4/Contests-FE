@@ -43,6 +43,7 @@ export default function MatchPage() {
   const { match } = useParams();
 
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
+
   const [listContestant, setListContestant] = useState<ListContestant[]>([]);
   const [_listRescue, setListRescue] = useState<ListRescue[]>([]);
   const [_bgContest, setBgContest] = useState<BgContest | null>(null);
@@ -340,7 +341,7 @@ export default function MatchPage() {
             ListContestant={listContestant ?? []}
             currentQuestionOrder={currentQuestion?.questionOrder ?? 0}
             totalIcons={mockContestants.length}
-            controlValue={screenControl?.controlValue}
+            controlValue={screenControl?.controlValue ?? undefined}
           />
         </div>
       )}
