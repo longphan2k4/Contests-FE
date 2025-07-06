@@ -68,7 +68,6 @@ const StudentDashboard: React.FC = () => {
   useEffect(() => {
     if (!socket || !isConnected || !contestantInfo?.matches) return;
 
-
     contestantInfo.matches.forEach((match: Match) => {
       joinMatchRoom(match.id);
     });
@@ -94,26 +93,15 @@ const StudentDashboard: React.FC = () => {
     if (!socket) return;
 
     const handleMatchStarted = (data: MatchEventData) => {
-
       // 🔥 DEBUG: Console toàn bộ thông tin matches để kiểm tra slug
 
       const match = contestantInfo?.matches.find((m) => m.id === data.matchId);
 
-      console.log('🔥 [HỌC SINH] Nhận sự kiện match:started từ student namespace:', data);
-      console.log('🔥 ID thí sinh: ', contestantInfo?.contestant.id);
-      console.log('🔥 ID trận đấu: ', data.matchId);
       if (contestantInfo?.contestant.id) {
         socket.emit("student:confirmStart", {
           contestantId: contestantInfo?.contestant.id,
           matchId: data.matchId,
         });
-        console.log(
-          "✅ [HỌC SINH] Đã gửi xác nhận student:confirmStart cho contestantId:",
-          contestantInfo?.contestant.id,
-          "matchId:",
-          data.matchId
-          
-        );
       } else {
         console.warn(
           "❌ [HỌC SINH] Không tìm thấy contestantId, không thể gửi xác nhận"
@@ -132,12 +120,6 @@ const StudentDashboard: React.FC = () => {
           if (matchSlug) {
             navigate(`/student/match/${matchSlug}`);
           } else {
-            console.error(
-              "❌ [DASHBOARD] Không tìm thấy slug cho match:",
-              data.matchId
-            );
-            console.error("❌ [DASHBOARD] Match object:", match);
-
             // 🔥 FALLBACK: Nếu không có slug, sử dụng matchId
             navigate(`/student/match/${data.matchId}`);
           }
@@ -208,8 +190,6 @@ const StudentDashboard: React.FC = () => {
       handleMatchStarted(data);
     });
 
-
-
     // Cleanup function
     return () => {
       socket.off("match:started", handleMatchStarted);
@@ -225,7 +205,7 @@ const StudentDashboard: React.FC = () => {
     switch (status) {
       case "upcoming":
         return "text-yellow-600 bg-yellow-100";
-      case "active":
+      case "ongoing":
         return "text-green-600 bg-green-100";
       case "completed":
         return "text-gray-600 bg-gray-100";
@@ -238,7 +218,7 @@ const StudentDashboard: React.FC = () => {
     switch (status) {
       case "upcoming":
         return "Sắp diễn ra";
-      case "active":
+      case "ongoing":
         return "Đang diễn ra";
       case "completed":
         return "Đã kết thúc";
@@ -574,7 +554,7 @@ const StudentDashboard: React.FC = () => {
                 <div className="flex items-start space-x-3">
                   <ArrowRightIcon className="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
                   <p className="text-gray-600">
-                    Nhấn "Tham gia trận đấu" để vào phòng chờ
+                    Vi phạm 3 lần sẽ bị loại khỏi cuộc thi
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -592,9 +572,16 @@ const StudentDashboard: React.FC = () => {
                 <div className="flex items-start space-x-3">
                   <ArrowRightIcon className="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
                   <p className="text-gray-600">
-                    Xem kết quả ngay sau khi gửi câu trả lời
+                    Xem kết quả ngay sau khi hết thời gian
                   </p>
                 </div>
+                <div className="flex items-start space-x-3">
+                  <ArrowRightIcon className="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-gray-600">
+                    Khi bị loại vẫn có thể hồi sinh ( nên đừng rời phòng thi )
+                  </p>
+                </div>
+
               </div>
             </div>
           </div>

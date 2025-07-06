@@ -5,10 +5,12 @@ import StudentWaitingRoom from "../pages/StudentWaitingRoom";
 import StudentDashboard from "../pages/StudentDashboard";
 import AntiCheatDemo from "../components/AntiCheatDemo";
 import { SocketProvider } from "../../../contexts/SocketContext";
+import StudentRegister from "../pages/StudentRegister";
 
 const StudentRoutes = () => {
   return (
     <>
+      <Route path="/student/register" element={<StudentRegister />} />
       <Route path="/student/login" element={<StudentLogin />} />
 
       {/* Demo route - không cần authentication */}

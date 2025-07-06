@@ -50,7 +50,6 @@ export class SubmitAnswerService {
     correctAnswers?: number[]
   ): Promise<SubmitAnswerResponse> {
     try {
-      console.log('🚀 Gửi câu trả lời qua API...');
       debugStudentToken();
 
       const requestData: SubmitAnswerRequest = {
@@ -61,7 +60,6 @@ export class SubmitAnswerService {
         ...(correctAnswers && { correctAnswers })
       };
 
-      console.log('📤 Request data:', requestData);
 
       // Sử dụng axiosStudent (đã có interceptor token sẵn)
       const response = await axiosStudent.post<SubmitAnswerResponse>(
@@ -69,17 +67,14 @@ export class SubmitAnswerService {
         requestData
       );
 
-      console.log('✅ API Response:', response.data);
 
       return response.data;
 
     } catch (error: unknown) {
-      console.error('❌ Lỗi submit answer:', error);
 
       // Xử lý lỗi từ server
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as { response?: { data?: { message?: string }; status?: number } };
-        console.error('Server Error:', axiosError.response?.status, axiosError.response?.data);
         return {
           success: false,
           message: axiosError.response?.data?.message || 'Có lỗi từ server',
@@ -173,7 +168,6 @@ export class BanContestantService {
     bannedBy?: string
   ): Promise<BanContestantResponse> {
     try {
-      console.log('🚨 [BAN SERVICE] Gửi yêu cầu ban contestant qua API...');
       debugStudentToken();
 
       const requestData: BanContestantRequest = {
@@ -184,7 +178,6 @@ export class BanContestantService {
         bannedBy: bannedBy || 'ANTI_CHEAT_SYSTEM'
       };
 
-      console.log('📤 [BAN SERVICE] Request data:', requestData);
 
       // Sử dụng axiosStudent (đã có interceptor token sẵn)
       const response = await axiosStudent.post<BanContestantResponse>(
@@ -192,17 +185,14 @@ export class BanContestantService {
         requestData
       );
 
-      console.log('✅ [BAN SERVICE] API Response:', response.data);
 
       return response.data;
 
     } catch (error: unknown) {
-      console.error('❌ [BAN SERVICE] Lỗi ban contestant:', error);
 
       // Xử lý lỗi từ server
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as { response?: { data?: { message?: string }; status?: number } };
-        console.error('[BAN SERVICE] Server Error:', axiosError.response?.status, axiosError.response?.data);
         return {
           success: false,
           message: axiosError.response?.data?.message || 'Có lỗi từ server khi ban contestant'

@@ -1,12 +1,25 @@
 import axiosStudent from "../../../config/axiosStudent";
 import axiosInstance from "../../../config/axiosInstance";
-import type { LoginRequest, LoginResponse, ContestantInfo } from "../types";
+import type {
+  LoginRequest,
+  LoginResponse,
+  ContestantInfo,
+  RegisterRequest,
+  RegisterResponse,
+  RegisterErrorResponse,
+  RegisterApiResponse,
+  ClassListResponse,
+} from "../types";
 
 // Interface cho error response
 interface ApiError {
   response?: {
     data?: {
       message?: string;
+      error?: {
+        type: string;
+        details: Array<{ field: string; message: string }>;
+      };
     };
     status?: number;
   };
@@ -51,6 +64,56 @@ export class StudentApiService {
         throw new Error(apiError.response.data.message);
       }
       throw new Error("Có lỗi xảy ra trong quá trình đăng nhập");
+    }
+  }
+
+  /**
+   * Đăng ký thí sinh
+   */
+  static async register(
+    registerData: RegisterRequest
+  ): Promise<RegisterResponse> {
+    try {
+
+      const response = await axiosInstance.post<RegisterApiResponse>(
+        "/auth/register-student",
+        registerData
+      );
+
+      // Kiểm tra nếu response là error
+      if (!response.data.success) {
+        const errorResponse = response.data as RegisterErrorResponse;
+        throw new Error(errorResponse.message || "Đăng ký thất bại");
+      }
+
+      return response.data as RegisterResponse;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+
+      // Xử lý lỗi API với cấu trúc mới
+      if (apiError.response?.data) {
+        const errorData = apiError.response.data;
+
+        // Nếu có validation errors
+        if (
+          errorData.error?.type === "VALIDATION_ERROR" &&
+          errorData.error.details
+        ) {
+          throw new Error(
+            JSON.stringify({
+              type: "VALIDATION_ERROR",
+              details: errorData.error.details,
+            })
+          );
+        }
+
+        // Nếu có message chung
+        if (errorData.message) {
+          throw new Error(errorData.message);
+        }
+      }
+
+      throw new Error("Có lỗi xảy ra trong quá trình đăng ký");
     }
   }
 
@@ -113,6 +176,26 @@ export class StudentApiService {
         throw new Error(apiError.response.data.message);
       }
       throw new Error("Không thể lấy thông tin trận đấu");
+    }
+  }
+
+  /**
+   * Lấy danh sách lớp và trường
+   */
+  static async getClassList(): Promise<ClassListResponse> {
+    try {
+      const response = await axiosInstance.get<ClassListResponse>(
+        "/class/list-with-school"
+      );
+
+      return response.data;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      // Xử lý lỗi API
+      if (apiError.response?.data?.message) {
+        throw new Error(apiError.response.data.message);
+      }
+      throw new Error("Có lỗi xảy ra khi lấy danh sách lớp");
     }
   }
 

@@ -35,31 +35,22 @@ export const useStudentSocket = (): StudentSocketReturn => {
 
     // Student namespace events
     studentSocket.on('connect', () => {
-      console.log('✅ [FE] Đã kết nối thành công tới namespace /student:', studentSocket.id);
-      console.log('🔍 [FE] Student socket sẵn sàng nhận events');
       setIsConnected(true);
     });
 
-    studentSocket.on('disconnect', (reason) => {
-      console.log('❌ [FE] Mất kết nối tới namespace /student. Lý do:', reason);
+    studentSocket.on('disconnect', () => {
       setIsConnected(false);
     });
 
-    studentSocket.on('connect_error', (error) => {
-      console.error('🚫 [FE] Lỗi kết nối tới namespace /student:', error);
-      console.error('🚫 [FE] Error message:', error.message);
-      console.error('🚫 [FE] Error details:', error);
+    studentSocket.on('connect_error', () => {
       setIsConnected(false);
     });
 
-    studentSocket.on('reconnect', (attemptNumber) => {
-      console.log('🔄 [FE] Kết nối lại thành công sau', attemptNumber, 'lần thử');
+    studentSocket.on('reconnect', () => {
       setIsConnected(true);
     });
 
-    studentSocket.on('reconnect_error', (error) => {
-      console.error('🔄 [FE] Lỗi kết nối lại:', error);
-    });
+
 
     // Authentication error handlers
     studentSocket.on('error', (error) => {
@@ -79,17 +70,14 @@ export const useStudentSocket = (): StudentSocketReturn => {
 
   const joinMatchRoom = (matchId: number) => {
     if (socket && isConnected) {
-      socket.emit('joinMatchRoom', matchId, (response: SocketResponse) => {
-        if (response.success) {
-          console.log('✅ [FE STUDENT SOCKET] Tham gia phòng student thành công:', response);
-        } 
+      socket.emit('joinMatchRoom', matchId, () => {
+
       });
     } 
   };
 
   const leaveMatchRoom = (matchSlug: string) => {
     if (socket && isConnected) {
-      console.log(`🚪 [FE] Rời phòng student cho trận đấu: ${matchSlug}`);
       socket.emit('leaveMatchRoom', matchSlug);
     }
   };

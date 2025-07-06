@@ -129,41 +129,18 @@ export const useStudentRealTime = (
   useEffect(() => {
     if (!isConnected || !matchIdentifier) return;
 
-    console.log(
-      "🏠 [REALTIME HỌC SINH] Tham gia phòng trận đấu cho matchIdentifier:",
-      matchIdentifier
-    );
     // 🔥 FIX: Sử dụng matchIdentifier (có thể là slug hoặc ID) để join room
     const matchSlug =
       typeof matchIdentifier === "string"
         ? matchIdentifier
         : matchIdentifier.toString();
-    console.log("🔧 [REALTIME HỌC SINH] Converted matchSlug:", matchSlug);
 
-    joinMatchForAnswering(matchSlug, (response) => {
-      if (response?.success) {
-        console.log(
-          "✅ [REALTIME HỌC SINH] Đã join match thành công để nhận timer events:",
-          response
-        );
-        console.log(
-          "🏠 [REALTIME HỌC SINH] Room name từ backend:",
-          response.roomName
-        );
-      } else {
-        console.error(
-          "❌ [REALTIME HỌC SINH] Không thể join match để nhận timer events:",
-          response?.message
-        );
-      }
+    joinMatchForAnswering(matchSlug, () => {
+
     });
 
     // Cleanup - leave room khi unmount
     return () => {
-      console.log(
-        "🚪 [REALTIME HỌC SINH] Rời khỏi phòng trận đấu cho matchIdentifier:",
-        matchIdentifier
-      );
       leaveMatchRoom(matchSlug);
     };
   }, [isConnected, matchIdentifier, joinMatchForAnswering, leaveMatchRoom]);
@@ -172,34 +149,21 @@ export const useStudentRealTime = (
   useEffect(() => {
     if (!socket) return;
 
-    console.log(
-      "🎧 [REALTIME HỌC SINH] Đăng ký listeners cho student namespace..."
-    );
+
 
     // Event: Match started - chuyển từ dashboard sang waiting room VÀ hiển thị câu hỏi đầu tiên
     const handleMatchStarted = (data: MatchStartedEvent) => {
-      console.log(
-        "🔥 [HỌC SINH] Nhận sự kiện match:started từ student namespace:",
-        data
-      );
+
 
       // 🔥 FIX: So sánh cả slug và ID
       const matchIdString = matchIdentifier?.toString();
       const isMatchingSlug = data.matchSlug === matchIdentifier;
       const isMatchingId = data.matchSlug === matchIdString;
 
-      console.log("🔍 [DEBUG] Comparing:", {
-        dataMatchSlug: data.matchSlug,
-        matchIdentifier: matchIdentifier,
-        matchIdString: matchIdString,
-        isMatchingSlug: isMatchingSlug,
-        isMatchingId: isMatchingId,
-      });
+
 
       if (isMatchingSlug || isMatchingId) {
-        console.log(
-          "🔥 [HỌC SINH] Trận đấu đã bắt đầu - CHỈ cập nhật trạng thái, chờ admin hiển thị câu hỏi..."
-        );
+
 
         // 🔥 NEW: CHỈ cập nhật trạng thái match bắt đầu, KHÔNG xử lý câu hỏi
         updateState({
@@ -208,14 +172,8 @@ export const useStudentRealTime = (
           // 🔥 REMOVED: currentQuestion, remainingTime - sẽ được cập nhật khi admin hiển thị câu hỏi
         });
 
-        console.log(
-          "✅ [HỌC SINH] Đã cập nhật trạng thái match started, đang chờ admin hiển thị câu hỏi..."
-        );
-      } else {
-        console.log(
-          "⏭️ [HỌC SINH] Event match:started không phải cho trận đấu này, bỏ qua"
-        );
-      }
+
+      } 
     };
 
     // Event: Question changed - cập nhật câu hỏi mới trong waiting room
