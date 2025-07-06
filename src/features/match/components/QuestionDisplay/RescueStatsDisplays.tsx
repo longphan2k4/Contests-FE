@@ -204,7 +204,7 @@ const RescueStatsDisplay: React.FC<RescueStatsDisplayProps> = ({
                               color: "#374151",
                               fontWeight: "500",
                             }}
-                            payload={barChartData.map((item, index) => ({
+                            payload={barChartData.map(item => ({
                               value: `${item.label} (${item.value} - ${item.percentage}%)`,
                               type: "rect",
                               color: item.fill,

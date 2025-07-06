@@ -122,7 +122,7 @@ const QuestionControl: React.FC<QuestionControlProp> = ({
           onClick={() =>
             EmitScreenUpdate(
               {
-                controlKey: "questionInfo",
+                controlKey: "questionIntro",
               },
               "Đã chuyển sang màn hình thông tin câu hỏi"
             )
@@ -178,7 +178,7 @@ const QuestionControl: React.FC<QuestionControlProp> = ({
               min={0}
               placeholder="Nhập thời gian"
               value={inputTime}
-              onChange={(e) => setInputTime(e.target.value)}
+              onChange={e => setInputTime(e.target.value)}
               className="p-3 w-1/2 bg-gray-50 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 shadow-sm placeholder-gray-400"
             />
             <button

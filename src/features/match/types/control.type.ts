@@ -60,6 +60,7 @@ export const controlKey = {
   wingold: "wingold",
   qrcode: "qrcode",
   chart: "chart",
+  questionIntro: "questionIntro",
 } as const;
 
 export type ControlKey = (typeof controlKey)[keyof typeof controlKey];

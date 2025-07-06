@@ -14,11 +14,10 @@ import {
   type CurrentQuestion,
   type countContestant,
   type updatedRescuesType,
-  RescueStatus
+  RescueStatus,
 } from "../../types/control.type";
 
 // import { useSocket } from "../../../../contexts/SocketContext";
-
 
 interface MatchHeaderProps {
   remainingTime?: number;
@@ -33,7 +32,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   currentQuestion,
   countContestant,
   countQuestion,
-  updateRescuedData
+  updateRescuedData,
 }) => {
   const [timeRemaining, setTimeRemaining] = useState<number>(
     currentQuestion?.defaultTime ?? 30
@@ -58,7 +57,8 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
 
   useEffect(() => {
     const availableHelp = updateRescuedData.some(
-      (rescue) => rescue.status === RescueStatus.notUsed && isRescueEligible(rescue)
+      rescue =>
+        rescue.status === RescueStatus.notUsed && isRescueEligible(rescue)
     );
     if (availableHelp && !hasPlayedHelpStatusSound) {
       console.log("Phát âm thanh trợ giúp");
@@ -69,19 +69,19 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
     ) {
       setHasPlayedHelpStatusSound(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateRescuedData, countContestant, hasPlayedHelpStatusSound]);
 
-  // // Lắng nghe sự kiện rescue:statusUpdated từ server
+  // Lắng nghe sự kiện rescue:statusUpdated từ server
   // useEffect(() => {
   //   if (!socket) {
   //     return () => {}; // Empty cleanup function
   //   }
-  //   const getRescueStatus = (data: any) => {
-  //     console.log("Rescue status data:", data);
-  //     setUpdateRescuedData(data.data.updatedRescues);
-  //     console.log("Updated rescued data:", updateRescuedData);
-  //   };
+  // const getRescueStatus = (data: any) => {
+  //   console.log("Rescue status data:", data);
+  //   setUpdateRescuedData(data.data.updatedRescues);
+  //   console.log("Updated rescued data:", updateRescuedData);
+  // };
 
   //   socket.on("rescue:statusUpdated", getRescueStatus);
 
@@ -213,27 +213,30 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
             <div className="relative">
               <div
                 className={`w-24 h-24 flex items-center justify-center rounded-full border-4 
-                ${timeRemaining <= 5
+                ${
+                  timeRemaining <= 5
                     ? "border-red-800 animate-pulse"
                     : timeRemaining <= 10
-                      ? "border-yellow-700"
-                      : "border-blue-500"
-                  } 
+                    ? "border-yellow-700"
+                    : "border-blue-500"
+                } 
                 bg-blue-900 shadow-lg transition-all duration-300`}
               >
                 <div className="absolute inset-0 rounded-full overflow-hidden">
                   <div
                     className={`absolute bottom-0 w-full bg-gradient-to-t 
-                      ${timeRemaining <= 5
-                        ? "from-red-600 to-red-400"
-                        : timeRemaining <= 10
+                      ${
+                        timeRemaining <= 5
+                          ? "from-red-600 to-red-400"
+                          : timeRemaining <= 10
                           ? "from-yellow-600 to-yellow-400"
                           : "from-blue-600 to-blue-400"
                       }`}
                     style={{
-                      height: `${(timeRemaining / (currentQuestion?.defaultTime ?? 30)) *
+                      height: `${
+                        (timeRemaining / (currentQuestion?.defaultTime ?? 30)) *
                         100
-                        }%`,
+                      }%`,
                       transition: "height 1s linear",
                     }}
                   ></div>
@@ -260,7 +263,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
                       top: "calc(50% - 4px)",
                       opacity:
                         i * 30 <
-                          (timeRemaining / (currentQuestion?.defaultTime ?? 30)) *
+                        (timeRemaining / (currentQuestion?.defaultTime ?? 30)) *
                           360
                           ? 1
                           : 0.3,
@@ -275,21 +278,21 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
           <div className="flex justify-center md:justify-end items-center flex-col md:flex-row gap-2">
             {/* Rescue items container */}
             <div className="flex justify-center md:justify-end gap-2 items-center flex-wrap max-w-xs md:max-w-md">
-              {updateRescuedData
-                .map((rescue) => renderRescueIcon(rescue))}
+              {updateRescuedData.map(rescue => renderRescueIcon(rescue))}
             </div>
-            
+
             {/* Contestant count - always at the end */}
             <div className="flex-shrink-0 flex items-center">
               <div className="px-4 py-2 bg-white/20 backdrop-blur-lg rounded-xl shadow-2xl border-2 border-blue-300">
                 <div
                   className={`font-bold text-black flex items-center space-x-1
-                  ${(countContestant?.countIn_progress ?? 0) <= 5
+                  ${
+                    (countContestant?.countIn_progress ?? 0) <= 5
                       ? "animate-pulse text-red-400"
                       : (countContestant?.countIn_progress ?? 0) <= 10
-                        ? "text-orange-300"
-                        : "text-green-300"
-                    }`}
+                      ? "text-orange-300"
+                      : "text-green-300"
+                  }`}
                 >
                   <TrophyIcon className="w-6 h-6" />
                   <span className="text-xl font-extrabold">

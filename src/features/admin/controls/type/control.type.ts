@@ -59,6 +59,7 @@ export const controlKey = {
   wingold: "wingold",
   qrcode: "qrcode",
   chart: "chart",
+  questionIntro: "questionIntro",
 } as const;
 
 export type ControlKey = (typeof controlKey)[keyof typeof controlKey];
@@ -197,7 +198,7 @@ export type ListRescueLifelineUsed = {
   id?: number;
   name?: string;
   index?: number;
-  status?: "notUsed" | "used" | "passed" | "notEligible";
+  status?: "notUsed" | "used" | "passed" | "notEligible" | "proposed";
   questionFrom?: number;
   questionTo?: number;
   rescueType?: "resurrected" | "lifelineUsed";

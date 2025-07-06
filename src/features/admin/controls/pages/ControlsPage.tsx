@@ -192,7 +192,7 @@ const ControlsPage: React.FC = () => {
 
   useEffect(() => {
     if (!socket) {
-      return () => { };
+      return () => {};
     }
 
     const handleScreenUpdate = (data: { updatedScreen: SceenControl }) => {
@@ -202,8 +202,10 @@ const ControlsPage: React.FC = () => {
     const handleCurrentQuestion = (data: {
       matchInfo: MatchInfo;
       currentQuestion: CurrentQuestion;
+      ListContestant: ListContestant[];
     }) => {
       setMatchInfo({ ...data?.matchInfo });
+      setListContestant(data?.ListContestant);
       setCurrentQuestion({ ...data?.currentQuestion });
     };
 
@@ -246,6 +248,10 @@ const ControlsPage: React.FC = () => {
       setListRescueLifelineUsed(data?.ListRescue);
     };
 
+    const handleUpdateRescued = (data: any) => {
+      setListRescueLifelineUsed(data?.ListRescue);
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
@@ -256,6 +262,7 @@ const ControlsPage: React.FC = () => {
     socket.on("timerStart:Rescue", handleTimerRescue);
     socket.on("timerEnd:Rescue", handleTimerRescue);
     socket.on("showQrChart", handleShowQrChart);
+    socket.on("rescue:updateStatus", handleUpdateRescued);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
@@ -267,6 +274,8 @@ const ControlsPage: React.FC = () => {
       socket.off("showQrRescue", handleShowQrRescue);
       socket.off("timerStart:Rescue", handleTimerRescue);
       socket.off("timerEnd:Rescue", handleTimerRescue);
+      socket.off("showQrChart", handleShowQrChart);
+      socket.off("rescue:updateStatus", handleUpdateRescued);
       // socket.off("update:Rescued", handleUpdateRescued);
     };
   }, [socket]);
