@@ -9,6 +9,7 @@ import {
   AudienceRescueControl,
   VideoControl,
   StatusControl,
+  RescueControl,
 } from "../components";
 import { OnlineExamControl } from "../../controlsOnline";
 import QuestionDetails from "../components/QuestionDetails";
@@ -24,6 +25,7 @@ import {
   useListClassVideo,
   useListSponsorMedia,
   useListContestant,
+  useListRescueLifelineUsed,
 } from "../hook/useControls";
 import {
   type MatchInfo,
@@ -33,6 +35,7 @@ import {
   type CurrentQuestion,
   type MediaType,
   type ListContestant,
+  type ListRescueLifelineUsed,
 } from "../type/control.type";
 import { useSocket } from "@contexts/SocketContext";
 import { Box, CircularProgress } from "@mui/material";
@@ -61,6 +64,9 @@ const ControlsPage: React.FC = () => {
   const [listContestant, setListContestant] = useState<ListContestant[]>([]);
   const [sponsorMedia, setSponsorMedia] = useState<MediaType[]>([]);
   const [classVideo, setClassVideo] = useState<MediaType[]>([]);
+  const [listRescueLifelineUsed, setListRescueLifelineUsed] = useState<
+    ListRescueLifelineUsed[]
+  >([]);
   const {
     data: matchInfoRes,
     isLoading: isLoadingMatch,
@@ -98,6 +104,14 @@ const ControlsPage: React.FC = () => {
   } = useScreenControl(match ?? null);
 
   const {
+    data: listRescueLifelineUsedRes,
+    isLoading: isLoadingListRescueLifelineUsed,
+    isSuccess: isSuccessListRescueLifelineUsed,
+    isError: isErrorListRescueLifelineUsed,
+    refetch: refetchListRescueLifelineUsed,
+  } = useListRescueLifelineUsed(match ?? null);
+
+  const {
     data: sponsorMediaRes,
     isLoading: isLoadingSponsorMedia,
     isSuccess: isSuccessSponsorMedia,
@@ -129,17 +143,8 @@ const ControlsPage: React.FC = () => {
     refetchSponsorMedia();
     refetchClassVideo();
     refetchListContestant();
-  }, [
-    match,
-    refetchMatchInfo,
-    refetchCurrentQuestion,
-    refetchCountContestant,
-    refetchListQuestion,
-    refetchScreenControl,
-    refetchSponsorMedia,
-    refetchClassVideo,
-    refetchListContestant,
-  ]);
+    refetchListRescueLifelineUsed();
+  }, [match]);
 
   useEffect(() => {
     if (isSuccessSponsorMedia) setSponsorMedia(sponsorMediaRes.data);
@@ -148,6 +153,12 @@ const ControlsPage: React.FC = () => {
   useEffect(() => {
     if (isSuccessClassVideo) setClassVideo(classVideoRes.data);
   }, [isSuccessClassVideo, classVideoRes]);
+
+  useEffect(() => {
+    if (isSuccessListRescueLifelineUsed) {
+      setListRescueLifelineUsed(listRescueLifelineUsedRes.data);
+    }
+  }, [isSuccessListRescueLifelineUsed, listRescueLifelineUsedRes]);
 
   useEffect(() => {
     if (isSuccessMatch) {
@@ -181,7 +192,7 @@ const ControlsPage: React.FC = () => {
 
   useEffect(() => {
     if (!socket) {
-      return () => {};
+      return () => { };
     }
 
     const handleScreenUpdate = (data: { updatedScreen: SceenControl }) => {
@@ -221,13 +232,30 @@ const ControlsPage: React.FC = () => {
       }));
     };
 
+    const handleShowQrRescue = (data: any) => {
+      setListRescueLifelineUsed(data?.LisstRescue);
+      setScreenControl(data?.updatedScreen);
+    };
+
+    const handleShowQrChart = (data: any) => {
+      setListRescueLifelineUsed(data?.ListRescue);
+      setScreenControl(data?.updatedScreen);
+    };
+
+    const handleTimerRescue = (data: any) => {
+      setListRescueLifelineUsed(data?.ListRescue);
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
     socket.on("contestant:status-update", handleUpdateStatus);
     socket.on("update:winGold", handleUpdateGold);
     socket.on("update:Eliminated", handleUpdateEliminate);
-    // socket.on("update:Rescued", handleUpdateRescued);
+    socket.on("showQrRescue", handleShowQrRescue);
+    socket.on("timerStart:Rescue", handleTimerRescue);
+    socket.on("timerEnd:Rescue", handleTimerRescue);
+    socket.on("showQrChart", handleShowQrChart);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
@@ -236,66 +264,12 @@ const ControlsPage: React.FC = () => {
       socket.off("timer:update", handleUpdateTime);
       socket.off("update:winGold", handleUpdateGold);
       socket.off("update:Eliminated", handleUpdateEliminate);
+      socket.off("showQrRescue", handleShowQrRescue);
+      socket.off("timerStart:Rescue", handleTimerRescue);
+      socket.off("timerEnd:Rescue", handleTimerRescue);
       // socket.off("update:Rescued", handleUpdateRescued);
     };
   }, [socket]);
-
-  // Handle audience rescue controls
-  const handleShowQR = (rescueId: number) => {
-    // Emit socket event để hiển thị QR trên màn hình chiếu
-    if (socket) {
-      socket.emit(
-        "audience:showQR",
-        {
-          match: match,
-          rescueId: rescueId,
-          matchSlug: match,
-        }
-        // (response: SocketResponse) => {
-        //   if (response?.success) {
-        //     console.log("✅ Show QR successful:", response.message);
-        //   } else {
-        //     console.error("❌ Show QR failed:", response?.message);
-        //   }
-        // }
-      );
-    }
-  };
-
-  const handleShowChart = (rescueId: number) => {
-    // Emit socket event để hiển thị chart trên màn hình chiếu
-    if (socket) {
-      socket.emit(
-        "audience:showChart",
-        {
-          match: match,
-          rescueId: rescueId,
-          matchSlug: match,
-        }
-        // (response: SocketResponse) => {
-        //   if (response?.success) {
-        //     console.log("✅ Show Chart successful:", response.message);
-        //   } else {
-        //     console.error("❌ Show Chart failed:", response?.message);
-        //   }
-        // }
-      );
-    }
-  };
-
-  const handleHideAll = () => {
-    // Emit socket event để ẩn audience display
-    if (socket) {
-      socket.emit(
-        "audience:hide",
-        {
-          match: match,
-          matchSlug: match,
-        },
-
-      );
-    }
-  };
 
   // Transform function để convert CurrentQuestion thành CurrentQuestionData
   const transformCurrentQuestionData = (question: CurrentQuestion | null) => {
@@ -334,6 +308,7 @@ const ControlsPage: React.FC = () => {
     isLoadingControl ||
     isLoadingSponsorMedia ||
     isLoadingClassVideo ||
+    isLoadingListRescueLifelineUsed ||
     isLoadingContestants;
 
   if (isLoading) {
@@ -357,6 +332,7 @@ const ControlsPage: React.FC = () => {
     isErrorControl ||
     isErrorSponsorMedia ||
     isErrorClassVideo ||
+    isErrorListRescueLifelineUsed ||
     isErrorContestants
   ) {
     return (
@@ -447,13 +423,20 @@ const ControlsPage: React.FC = () => {
               controlKey={screenControl?.controlKey}
             />
           </div>
+
+          {/** triển khai phần cứu trợ ở đây */}
+          <RescueControl
+            matchId={matchInfo?.id ?? 0}
+            currentQuestionOrder={currentQuestion?.questionOrder || 0}
+          />
+
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <AudienceRescueControl
-              matchSlug={match}
               currentQuestionOrder={currentQuestion?.questionOrder}
-              onShowQR={handleShowQR}
-              onShowChart={handleShowChart}
-              onHideAll={handleHideAll}
+              totalQuestions={listQuestion.length}
+              controlKey={screenControl?.controlKey || null}
+              ListRescueLifelineUsed={listRescueLifelineUsed || []}
+              matchId={matchInfo?.id || null}
             />
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">

@@ -8,6 +8,7 @@ import {
   GetCurrentQuestion,
   GetMatchInfo,
   GetListContestant,
+  GetChartData,
 } from "../service/api";
 
 export const useMatchInfo = (match: string | null) => {
@@ -71,5 +72,13 @@ export const useScreenControl = (match: string | null) => {
     queryKey: ["ScreenControl", match],
     queryFn: () => GetScreenControl(match),
     enabled: !!match,
+  });
+};
+
+export const userChartData = (id: number) => {
+  return useQuery({
+    queryKey: ["ChartData", id],
+    queryFn: () => GetChartData(id),
+    enabled: !!id,
   });
 };

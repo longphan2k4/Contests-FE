@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import MatchHeader from "../components/MatchHeader/MatchHeader";
 import Background from "../components/QuestionDisplay/Background";
 import FullScreenImage from "../components/Media/FullScreenImage";
-import { AudienceDisplayManager } from "../components/AudienceDisplay";
+
 import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
 import EliminateDisplay from "../components/Eliminate/EliminateDisplay";
+import QRCodeDisplay from "../components/QuestionDisplay/QRCodeDisplay";
+import RescueStatsDisplay from "../components/QuestionDisplay/RescueStatsDisplays";
 
 import { mockContestants } from "../constants";
 
@@ -43,6 +45,7 @@ export default function MatchPage() {
   const { match } = useParams();
 
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
+
   const [listContestant, setListContestant] = useState<ListContestant[]>([]);
   const [_listRescue, setListRescue] = useState<ListRescue[]>([]);
   const [_bgContest, setBgContest] = useState<BgContest | null>(null);
@@ -209,13 +212,24 @@ export default function MatchPage() {
       setScreenControl(data?.updateScreen);
     };
 
+    const handleShowQrRescue = (data: any) => {
+      console.log("handleShowQrRescue", data);
+      setScreenControl(data?.updatedScreen);
+    };
+
+    const handleShowQrChart = (data: any) => {
+      setScreenControl(data?.updatedScreen);
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
     socket.on("update:winGold", handleUpdateGold);
     socket.on("contestant:status-update", handleUpdateStatus);
     socket.on("update:Eliminated", handleUpdateEliminate);
-    socket.on("update:Rescused", handleUpdateRescued);
+    socket.on("update:Rescued", handleUpdateRescued);
+    socket.on("showQrRescue", handleShowQrRescue);
+    socket.on("showQrChart", handleShowQrChart);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
@@ -274,11 +288,37 @@ export default function MatchPage() {
 
   return (
     <>
-      {/* Audience Display Component - hiển thị QR hoặc Chart khi được điều khiển */}
-      <AudienceDisplayManager
-        matchSlug={match}
-        currentQuestionId={currentQuestion?.id}
-      />
+      {screenControl?.controlKey === "qrcode" && (
+        <div key="qrCode">
+          <QRCodeDisplay
+            matchSlug={match ?? ""}
+            rescueId={Number(screenControl?.value) ?? 2}
+            matchName={matchInfo?.name ?? ""}
+            currentQuestionOrder={currentQuestion?.questionOrder}
+          />
+        </div>
+      )}
+
+      {screenControl?.controlKey === "chart" && (
+        <div key="chart">
+          <RescueStatsDisplay rescueId={Number(screenControl?.value) ?? 2} />
+        </div>
+      )}
+
+      {/* {screenControl?.controlKey === "qrcode" && (
+        <div
+          key="qrCode"
+          className="max-h-[100vh] overflow-y-auto flex items-center justify-center"
+        >
+          <QRCodeDisplay
+            matchSlug={match ?? ""}
+            rescueId={2}
+            matchName={matchInfo?.name ?? ""}
+            currentQuestionOrder={2}
+          />
+        </div>
+      )} */}
+
       {screenControl?.controlKey === "question" && (
         <div key="question">
           <MatchHeader
@@ -340,7 +380,7 @@ export default function MatchPage() {
             ListContestant={listContestant ?? []}
             currentQuestionOrder={currentQuestion?.questionOrder ?? 0}
             totalIcons={mockContestants.length}
-            controlValue={screenControl?.controlValue}
+            controlValue={screenControl?.controlValue ?? undefined}
           />
         </div>
       )}

@@ -100,7 +100,7 @@ export interface ContestantInfo {
     fullName: string;
     studentCode: string;
     class: string | null;
-    registrationNumber: number;
+    registrationNumber: number; 
   };
   contest: {
     id: number;

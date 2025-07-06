@@ -18,6 +18,7 @@ export const RescueStatus = {
   notUsed: "notUsed",
   used: "used",
   passed: "passed",
+  notEligible: "notEligible",
 } as const;
 
 export type RescueStatus = (typeof RescueStatus)[keyof typeof RescueStatus];
@@ -58,6 +59,7 @@ export const controlKey = {
   image: "image",
   wingold: "wingold",
   qrcode: "qrcode",
+  chart: "chart",
 } as const;
 
 export type ControlKey = (typeof controlKey)[keyof typeof controlKey];
@@ -171,6 +173,7 @@ export type SceenControl = {
   controlValue: ControlValue | null;
   matchId: number;
   media: string | null;
+  value: string | null;
 };
 
 export type Question = {
@@ -192,4 +195,27 @@ export interface Contestant {
       fullName: string;
     };
   };
+}
+
+export interface updateRescuedDataType {
+  updatedRescues: any[];
+  currentEligibleRescues: any[];
+  totalUpdated: number;
+  summary: {
+    passed: number;
+    notEligible: number;
+    notUsed: number;
+    unchanged: number;
+  };
+}
+
+export interface updatedRescuesType {
+  name: string;
+  id: number;
+  status: string;
+  index: number;
+  rescueType: string;
+  questionFrom: number;
+  questionTo: number;
+  remainingContestants: number;
 }

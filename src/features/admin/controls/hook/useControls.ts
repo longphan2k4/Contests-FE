@@ -10,6 +10,7 @@ import {
   GetListContestant,
   GetListSponsorMedia,
   GetListClassVideo,
+  GetListRescueLifelineUsed,
 } from "../service/api";
 
 export const useMatchInfo = (match: string | null) => {
@@ -89,5 +90,13 @@ export const useListClassVideo = (slug: string | null) => {
     queryKey: ["ListClassVideo", slug],
     queryFn: () => GetListClassVideo(slug),
     enabled: !!slug,
+  });
+};
+
+export const useListRescueLifelineUsed = (match: string | null) => {
+  return useQuery({
+    queryKey: ["ListRescueLifelineUsed", match],
+    queryFn: () => GetListRescueLifelineUsed(match),
+    enabled: !!match,
   });
 };
