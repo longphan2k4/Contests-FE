@@ -44,3 +44,14 @@ export const GetChartData = async (id: number) => {
   const res = await axiosInstance.get(`/rescue/chart/${id}`);
   return res.data;
 };
+
+export const GetAllRescues = async (matchSlug: string) => {
+  const res = await axiosInstance.get(`/rescue/list-all/${matchSlug}`);
+  return res.data;
+};
+
+// export const GetLifelineUsedRescues = async (matchSlug: string) => {
+//   const res = await axiosInstance.get(`/rescues/list-lifelineUsed/${matchSlug}`);
+//   return res.data;
+// };
+

@@ -17,7 +17,7 @@ import {
   RescueStatus
 } from "../../types/control.type";
 
-import { useSocket } from "../../../../contexts/SocketContext";
+// import { useSocket } from "../../../../contexts/SocketContext";
 
 
 interface MatchHeaderProps {
@@ -25,6 +25,7 @@ interface MatchHeaderProps {
   currentQuestion: CurrentQuestion | null;
   countContestant: countContestant | null;
   countQuestion?: number;
+  updateRescuedData: updatedRescuesType[];
 }
 
 const MatchHeader: React.FC<MatchHeaderProps> = ({
@@ -32,6 +33,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   currentQuestion,
   countContestant,
   countQuestion,
+  updateRescuedData
 }) => {
   const [timeRemaining, setTimeRemaining] = useState<number>(
     currentQuestion?.defaultTime ?? 30
@@ -39,10 +41,10 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   const [hasPlayedHelpStatusSound, setHasPlayedHelpStatusSound] =
     useState(false);
 
-  const { socket } = useSocket();
-  const [updateRescuedData, setUpdateRescuedData] = useState<updatedRescuesType[]>(
-    []
-  );
+  // const { socket } = useSocket();
+  // const [updateRescuedData, setUpdateRescuedData] = useState<updatedRescuesType[]>(
+  //   []
+  // );
 
   useEffect(() => {
     setTimeRemaining(remainingTime ?? 30);
@@ -70,23 +72,23 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateRescuedData, countContestant, hasPlayedHelpStatusSound]);
 
-  // Lắng nghe sự kiện rescue:statusUpdated từ server
-  useEffect(() => {
-    if (!socket) {
-      return () => {}; // Empty cleanup function
-    }
-    const getRescueStatus = (data: any) => {
-      console.log("Rescue status data:", data);
-      setUpdateRescuedData(data.data.updatedRescues);
-      console.log("Updated rescued data:", updateRescuedData);
-    };
+  // // Lắng nghe sự kiện rescue:statusUpdated từ server
+  // useEffect(() => {
+  //   if (!socket) {
+  //     return () => {}; // Empty cleanup function
+  //   }
+  //   const getRescueStatus = (data: any) => {
+  //     console.log("Rescue status data:", data);
+  //     setUpdateRescuedData(data.data.updatedRescues);
+  //     console.log("Updated rescued data:", updateRescuedData);
+  //   };
 
-    socket.on("rescue:statusUpdated", getRescueStatus);
+  //   socket.on("rescue:statusUpdated", getRescueStatus);
 
-    return () => {
-      socket.off("rescue:statusUpdated", getRescueStatus);
-    };
-  }, [socket]);
+  //   return () => {
+  //     socket.off("rescue:statusUpdated", getRescueStatus);
+  //   };
+  // }, [socket]);
 
   const isRescueEligible = (rescue: updatedRescuesType): boolean => {
     const currentContestants =

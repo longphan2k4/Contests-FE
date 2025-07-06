@@ -20,6 +20,7 @@ import {
   type countContestant,
   type SceenControl,
   type CurrentQuestion,
+  type updatedRescuesType,
 } from "../types/control.type";
 
 import {
@@ -31,6 +32,7 @@ import {
   useCountContestant,
   useListContestant,
   useListRescues,
+  useAllRescues,
 } from "../hooks/useControls";
 import { useParams } from "react-router-dom";
 
@@ -55,6 +57,17 @@ export default function MatchPage() {
     useState<countContestant | null>(null);
   const [listQuestion, setListQuestion] = useState<Question[]>([]);
   const [screenControl, setScreenControl] = useState<SceenControl | null>(null);
+  const [updateRescuedData, setUpdateRescuedData] = useState<updatedRescuesType[]>(
+      []
+    );
+
+  // Use rescue hook to fetch initial data
+  const {
+    data: allRescuesRes,
+    isLoading: isLoadingAllRescues,
+    isSuccess: isSuccessAllRescues,
+    isError: isErrorAllRescues,
+  } = useAllRescues(match ?? null);
 
   const {
     data: matchInfoRes,
@@ -148,6 +161,23 @@ export default function MatchPage() {
   useEffect(() => {
     document.title = `Trân đấu ${matchInfo?.name}`;
   }, [matchInfo]);
+
+  // gọi getAllRescues khi match thay đổi
+  useEffect(() => {
+    if (isSuccessAllRescues && allRescuesRes?.data) {
+      const formattedRescues: updatedRescuesType[] = allRescuesRes.data.map((rescue: any) => ({
+        id: rescue.id,
+        name: rescue.name,
+        rescueType: rescue.rescueType,
+        status: rescue.status,
+        remainingContestants: rescue.remainingContestants || 0,
+        questionFrom: rescue.questionFrom,
+        questionTo: rescue.questionTo,
+        index: rescue.index || 0
+      }));
+      setUpdateRescuedData(formattedRescues);
+    }
+  }, [isSuccessAllRescues, allRescuesRes]);
   const { socket } = useSocket();
 
   useEffect(() => {
@@ -221,6 +251,13 @@ export default function MatchPage() {
       setScreenControl(data?.updatedScreen);
     };
 
+    const getRescueStatus = (data: unknown) => {
+      const typedData = data as { data: { updatedRescues: updatedRescuesType[] } };
+      console.log("Rescue status data:", typedData);
+      setUpdateRescuedData(typedData.data.updatedRescues);
+    };
+
+    socket.on("rescue:statusUpdated", getRescueStatus);
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
@@ -232,6 +269,7 @@ export default function MatchPage() {
     socket.on("showQrChart", handleShowQrChart);
 
     return () => {
+      socket.off("rescue:statusUpdated", getRescueStatus);
       socket.off("screen:update", handleScreenUpdate);
       socket.off("currentQuestion:get", handleCurrentQuestion);
       socket.off("timer:update", handleUpdateTime);
@@ -250,7 +288,8 @@ export default function MatchPage() {
     isLoadingContestants ||
     isLoadingCount ||
     isLoadingQuestions ||
-    isLoadingControl;
+    isLoadingControl ||
+    isLoadingAllRescues;
   if (isLoading) {
     return (
       <Box
@@ -272,7 +311,8 @@ export default function MatchPage() {
     isErrorContestants ||
     isErrorCount ||
     isErrorQuestions ||
-    isErrorControl
+    isErrorControl ||
+    isErrorAllRescues
   ) {
     return (
       <Box
@@ -326,6 +366,7 @@ export default function MatchPage() {
             remainingTime={matchInfo?.remainingTime}
             currentQuestion={currentQuestion}
             countQuestion={listQuestion.length}
+            updateRescuedData={updateRescuedData}
           />
           <QuestionContent
             content={currentQuestion?.content}
@@ -359,7 +400,8 @@ export default function MatchPage() {
             countContestant={countContestant}
             remainingTime={matchInfo?.remainingTime}
             currentQuestion={currentQuestion}
-            countQuestion={listContestant.length}
+            countQuestion={listQuestion.length}
+            updateRescuedData={updateRescuedData}
           />
           <AnswerContent
             controlValue={screenControl?.controlValue ?? null}
@@ -374,7 +416,8 @@ export default function MatchPage() {
             countContestant={countContestant}
             remainingTime={matchInfo?.remainingTime}
             currentQuestion={currentQuestion}
-            countQuestion={listContestant.length}
+            countQuestion={listQuestion.length}
+            updateRescuedData={updateRescuedData}
           />
           <EliminateDisplay
             ListContestant={listContestant ?? []}
@@ -391,7 +434,8 @@ export default function MatchPage() {
             countContestant={countContestant}
             remainingTime={matchInfo?.remainingTime}
             currentQuestion={currentQuestion}
-            countQuestion={listContestant.length}
+            countQuestion={listQuestion.length}
+            updateRescuedData={updateRescuedData}
           />
           <QuestionExplanation
             explanation={
@@ -425,7 +469,8 @@ export default function MatchPage() {
             countContestant={countContestant}
             remainingTime={matchInfo?.remainingTime}
             currentQuestion={currentQuestion}
-            countQuestion={listContestant.length}
+            countQuestion={listQuestion.length}
+            updateRescuedData={updateRescuedData}
           />
           <QuestionIntro
             intro={currentQuestion?.intro ?? "Câu hỏi này không có thông tin"}
