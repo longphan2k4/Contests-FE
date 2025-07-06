@@ -1,5 +1,3 @@
-
-
 export const contest_status = {
   upcoming: "upcoming",
   ongoing: "ongoing",
@@ -43,7 +41,7 @@ export const controlKey = {
   question: "question",
   questionInfo: "questionInfo",
   answer: "answer",
-  matchdiagram: "matchdiagram",
+  matchDiagram: "matchDiagram",
   explanation: "explanation",
   firstprize: "firstprize",
   secondprize: "secondprize",
@@ -58,7 +56,9 @@ export const controlKey = {
   video: "video",
   audio: "audio",
   image: "image",
-  matchDiagram: "matchDiagram",
+  wingold: "wingold",
+  qrcode: "qrcode",
+  chart: "chart",
 } as const;
 
 export type ControlKey = (typeof controlKey)[keyof typeof controlKey];
@@ -191,4 +191,14 @@ export type ListContestant = {
     username: string;
   };
   contestantMatches: contestant[];
+};
+
+export type ListRescueLifelineUsed = {
+  id?: number;
+  name?: string;
+  index?: number;
+  status?: "notUsed" | "used" | "passed" | "notEligible";
+  questionFrom?: number;
+  questionTo?: number;
+  rescueType?: "resurrected" | "lifelineUsed";
 };

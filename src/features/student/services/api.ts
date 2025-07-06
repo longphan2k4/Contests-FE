@@ -25,21 +25,24 @@ export class StudentApiService {
         loginData,
         { withCredentials: true } // Quan trọng: để nhận httpOnly cookies từ backend
       );
-      
+
       // Lưu token và thông tin contestant
       if (response.data.success) {
         // ✅ Lưu toàn bộ object data vào localStorage
-        localStorage.setItem("contestantInfo", JSON.stringify(response.data.data));
-        
+        localStorage.setItem(
+          "contestantInfo",
+          JSON.stringify(response.data.data)
+        );
+
         // ✅ Lưu token vào localStorage để có thể thêm vào Authorization header
         localStorage.setItem("accessToken", response.data.data.accessToken);
-        
+
         // ⚠️ Không cần set cookie bằng JavaScript vì backend đã set httpOnly cookie
         // Backend sẽ tự động set:
         // - accessToken cookie (httpOnly, 1 hour)
         // - refreshToken cookie (httpOnly, 30 days)
       }
-      
+
       return response.data;
     } catch (error: unknown) {
       const apiError = error as ApiError;
@@ -84,7 +87,7 @@ export class StudentApiService {
     // ✅ Chỉ kiểm tra localStorage vì httpOnly cookie không đọc được từ JS
     const localToken = this.getAccessToken();
     const contestantInfo = this.getContestantInfo();
-    
+
     return !!(localToken && contestantInfo);
   }
 
@@ -131,7 +134,7 @@ export class StudentApiService {
       }
 
       const response = await axiosInstance.post("/auth/refresh-token", {
-        refreshToken
+        refreshToken,
       });
 
       if (response.data.success) {
@@ -149,4 +152,4 @@ export class StudentApiService {
   }
 }
 
-export default StudentApiService; 
+export default StudentApiService;

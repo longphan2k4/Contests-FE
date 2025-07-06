@@ -19,6 +19,11 @@ export const GetListRescues = async (match: string | null) => {
   return res.data;
 };
 
+export const GetListRescueLifelineUsed = async (match: string | null) => {
+  const res = await axiosInstance.get(`/rescue/list-lifelineUsed/${match}/`);
+  return res.data;
+};
+
 export const GetcountContestant = async (match: string | null) => {
   const res = await axiosInstance.get(`/match/${match}/countContestant`);
   return res.data;

@@ -59,6 +59,7 @@ export const controlKey = {
   image: "image",
   wingold: "wingold",
   qrcode: "qrcode",
+  chart: "chart",
 } as const;
 
 export type ControlKey = (typeof controlKey)[keyof typeof controlKey];
@@ -172,6 +173,7 @@ export type SceenControl = {
   controlValue: ControlValue | null;
   matchId: number;
   media: string | null;
+  value: string | null;
 };
 
 export type Question = {
