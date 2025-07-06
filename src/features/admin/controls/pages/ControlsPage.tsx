@@ -9,6 +9,7 @@ import {
   AudienceRescueControl,
   VideoControl,
   StatusControl,
+  RescueControl,
 } from "../components";
 import { OnlineExamControl } from "../../controlsOnline";
 import QuestionDetails from "../components/QuestionDetails";
@@ -185,7 +186,7 @@ const ControlsPage: React.FC = () => {
 
   useEffect(() => {
     if (!socket) {
-      return () => {};
+      return () => { };
     }
 
     const handleScreenUpdate = (data: { updatedScreen: SceenControl }) => {
@@ -457,6 +458,13 @@ const ControlsPage: React.FC = () => {
               controlKey={screenControl?.controlKey}
             />
           </div>
+
+          {/** triển khai phần cứu trợ ở đây */}
+          <RescueControl
+            matchId={matchInfo?.id ?? 0}
+            currentQuestionOrder={currentQuestion?.questionOrder || 0}
+          />
+
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <AudienceRescueControl
               matchSlug={match}
