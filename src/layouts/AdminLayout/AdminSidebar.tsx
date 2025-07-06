@@ -20,7 +20,6 @@ import {
   Group as GroupIcon,
   QuestionMark as QuestionIcon,
   EmojiEvents as TrophyIcon,
-  Description as FileIcon,
   AccountBalance as BankIcon,
   ExpandLess,
   ExpandMore,
@@ -113,12 +112,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onToggle }) => {
       label: "Quản lý sinh viên",
       path: "/admin/students",
     },
-    {
-      key: "about",
-      icon: <FileIcon />,
-      label: "Thông tin website",
-      path: "/admin/about",
-    },
+    // {
+    //   key: "about",
+    //   icon: <FileIcon />,
+    //   label: "Thông tin website",
+    //   path: "/admin/about",
+    // },
   ];
 
   const renderMenuItems = (items: MenuItem[]) => {

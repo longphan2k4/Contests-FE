@@ -1,9 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import { useStudentById } from "../hook/useStudentById";
-import { useClasses } from "../hook/useGetClass";
-import { type ClassItem } from "../types/student.shame";
+
 interface ViewStudentProps {
   id: number | null;
   isOpen: boolean;
@@ -15,32 +14,88 @@ export default function ViewStudent({
   isOpen,
   onClose,
 }: ViewStudentProps): React.ReactElement {
-  const { data: student } = useStudentById(id);
-  const { data: classData } = useClasses({});
-  const classOptions = (classData?.data?.classes || []) as ClassItem[];
-  const classLabel = classOptions.find(cls => cls.id === student?.classId);
+  const {
+    data: student,
+    isLoading: isLoadingStudent,
+    refetch,
+    isError,
+  } = useStudentById(id);
+
+  useEffect(() => {
+    if (isOpen && id) {
+      refetch();
+    }
+  }, [isOpen, id, refetch]);
+
   const fields = [
     { label: "ID", value: student?.id },
     { label: "Họ và tên", value: student?.fullName },
-    { label: "Mã học sinh", value: student?.studentCode },
+    { label: "Mã học sinh", value: student?.studentCode || "Chưa có" },
     {
-    label: "Lớp",
-    value: classLabel
-      ? `${classLabel.name} - ${classLabel.shoolName}`
-      : "-",
+      label: "Lớp",
+      value: student?.class?.name || "Chưa có",
     },
+    {
+      label: "Tên đăng nhập",
+      value: student?.user?.username || "Chưa có",
+    },
+    {
+      label: "Ảnh đại diện",
+      value: student?.avatar ? (
+        <img
+          src={
+            student.avatar ? student.avatar : "https://via.placeholder.com/150"
+          }
+          alt="Avatar"
+          style={{
+            maxWidth: "100%",
+            maxHeight: 150,
+            borderRadius: 8,
+            objectFit: "cover",
+          }}
+        />
+      ) : (
+        "Chưa có"
+      ),
+    },
+    {
+      label: "Link video giới thiệu",
+      value: student?.bio ? (
+        <a
+          href={student.bio}
+          className="text-blue-500"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {student.bio}
+        </a>
+      ) : (
+        "Chưa có"
+      ),
+    },
+
     {
       label: "Trạng thái",
-      value: student?.isActive ? "Đang hoạt động" : "Không hoạt động",
+      value: student?.isActive ? "Đang hoạt động" : "Đã vô hiệu hóa",
     },
   ];
+
+  if (isLoadingStudent) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" mt={8}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError) return <div>Không thể tải dữ liệu</div>;
 
   return (
     <Box>
       <AppFormDialog
         open={isOpen}
         onClose={onClose}
-        title={`Thông tin chi tiết: ${student?.fullName || "Học sinh"}`}
+        title={`Xem sinh viên: ${student?.fullName || "Học sinh"}`}
         maxWidth="sm"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -51,14 +106,14 @@ export default function ViewStudent({
                   style={{
                     fontWeight: "bold",
                     padding: "8px",
-                    width: "40%",
+                    width: "35%",
                     verticalAlign: "top",
                   }}
                 >
                   {label}
                 </td>
                 <td style={{ padding: "8px", verticalAlign: "top" }}>
-                  {value !== undefined && value !== null ? String(value) : "-"}
+                  {value}
                 </td>
               </tr>
             ))}

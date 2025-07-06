@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import MultipleChoiceInput from "../components/MultipleChoiceInput";
 import OpenEndedInput from "../components/OpenEndedInput";
-import { useTimer } from "../hooks/useTimer";
-import { useRescue } from "../hooks/useRescue";
-import { isMultipleChoice, isOpenEnded, isEssay } from "../types/rescue";
-import { useToast } from "../../../contexts/toastContext";
+import { useRescueQuestion } from "../hooks/useRescue";
+
+import { useSocket } from "../../../contexts/SocketContext";
+import type { Question } from "../types";
 import {
   ClockIcon,
   UserGroupIcon,
@@ -19,51 +19,50 @@ import {
 
 const AudienceOpinionPage: React.FC = () => {
   // Lấy params từ URL
-  const { matchSlug, rescueId: rescueIdParam } = useParams<{
-    matchSlug: string;
+  const { match, rescueId: rescueIdParam } = useParams<{
+    match: string;
     rescueId: string;
   }>();
 
-  // Chuyển đổi rescueId từ string sang number
+  const [question, setQuestion] = useState<Question | null>(null);
   const rescueId = rescueIdParam ? parseInt(rescueIdParam, 10) : 0;
-
-  // Toast notification
-  const { showToast } = useToast();
-
   useEffect(() => {
     document.title = "Trợ giúp của khán giả - Olympic tin học.";
   }, []);
 
   const {
-    question,
+    data: questionData,
     isLoading,
     error,
-    selectedAnswer,
-    setSelectedAnswer,
-    submitVote,
-    hasVoted,
-  } = useRescue({
-    matchSlug: matchSlug || "",
-    rescueId,
-    autoRefreshChart: false,
-  });
+    refetch,
+  } = useRescueQuestion(match || null, rescueId);
 
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
-  const { timeLeft } = useTimer(60, isSubmitted);
-
-  const handleAnswerSelect = (answer: string) => {
-    setSelectedAnswer(answer);
-  };
-
-  const handleAnswerSubmit = async (isCorrect: boolean) => {
-    setIsSubmitted(true);
-    console.log(`Đáp án ${isCorrect ? "chính xác" : "không chính xác"}`);
-
-    if (!hasVoted && selectedAnswer) {
-      await submitVote();
-      showToast("Bạn đã gửi trợ giúp thành công!", "success");
+  useEffect(() => {
+    if (questionData) {
+      setQuestion(questionData.data);
     }
-  };
+  }, [questionData]);
+
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  const { socket } = useSocket();
+
+  React.useEffect(() => {
+    if (!socket) return;
+
+    const handleTimerLeft = (data: any) => {
+      // console.log("Received timerLeft:Rescue event", data);
+      setTimeLeft(data.timerLeft);
+    };
+
+    // Lắng nghe sự kiện từ server
+    socket.on("timerLeft:Rescue", handleTimerLeft);
+
+    // Cleanup listener khi component unmount
+    return () => {
+      socket.off("timerLeft:Rescue", handleTimerLeft);
+    };
+  }, [socket]);
 
   const getTimeColor = (time: number) => {
     if (time > 30) return "text-green-600";
@@ -72,7 +71,7 @@ const AudienceOpinionPage: React.FC = () => {
   };
 
   // Kiểm tra params hợp lệ
-  if (!matchSlug || !rescueId) {
+  if (!match || !rescueId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center">
         <div className="bg-white p-8 rounded-2xl shadow-xl border border-red-200 max-w-md">
@@ -84,7 +83,7 @@ const AudienceOpinionPage: React.FC = () => {
               Tham số không hợp lệ
             </h3>
             <p className="text-gray-600">
-              URL cần có định dạng: /audience/opinion/[matchSlug]/[rescueId]
+              URL cần có định dạng: /audience/opinion/[match]/[rescueId]
             </p>
           </div>
         </div>
@@ -94,47 +93,17 @@ const AudienceOpinionPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Đang tải câu hỏi...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-500">Đang tải...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-xl border border-red-200 max-w-md">
-          <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-              <InformationCircleIcon className="h-6 w-6 text-red-600" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Cứu trợ đã hết hạn
-            </h3>
-            <p className="text-gray-600">
-              Không thể gửi đáp án
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!question) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-xl border max-w-md text-center">
-          <AcademicCapIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Không có câu hỏi
-          </h3>
-          <p className="text-gray-600">
-            Hiện tại chưa có câu hỏi nào trong hệ thống.
-          </p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div onClick={() => refetch()}>Thử lại</div>
+        <div className="text-red-500">Lỗi khi tải câu hỏi: {error.message}</div>
       </div>
     );
   }
@@ -152,7 +121,7 @@ const AudienceOpinionPage: React.FC = () => {
                   Trợ giúp khán giả
                 </span>
               </div>
-              <div className="text-sm text-gray-500">ID: {question.id}</div>
+              <div className="text-sm text-gray-500">ID: {question?.id}</div>
             </div>
 
             <div className="flex items-center space-x-4">
@@ -178,18 +147,18 @@ const AudienceOpinionPage: React.FC = () => {
               <div className="flex-1">
                 <h1
                   className="text-2xl lg:text-3xl font-bold leading-tight"
-                  dangerouslySetInnerHTML={{ __html: question.content }}
+                  dangerouslySetInnerHTML={{ __html: question?.content || "" }}
                 />
               </div>
             </div>
 
             {/* Question Stats */}
             <div className="flex flex-wrap gap-3 mt-4">
-              {question.questionTopic && (
+              {question?.questionTopic && (
                 <div className="flex items-center space-x-2 bg-white/20 px-3 py-1 rounded-full">
                   <AcademicCapIcon className="w-4 h-4" />
                   <span className="text-sm font-medium">
-                    {question.questionTopic}
+                    {question?.questionTopic || "Chưa có chủ đề"}
                   </span>
                 </div>
               )}
@@ -202,13 +171,13 @@ const AudienceOpinionPage: React.FC = () => {
           </div>
 
           {/* Question Media */}
-          {question.questionMedia &&
-            Array.isArray(question.questionMedia) &&
+          {question?.questionMedia &&
+            Array.isArray(question?.questionMedia) &&
             question.questionMedia.length > 0 && (
               <div className="px-6 pt-6">
                 <div
                   className={`grid gap-4 ${
-                    question.questionMedia.length === 1
+                    question?.questionMedia.length === 1
                       ? "grid-cols-1"
                       : question.questionMedia.length === 2
                       ? "grid-cols-2"
@@ -217,7 +186,7 @@ const AudienceOpinionPage: React.FC = () => {
                       : "grid-cols-2 md:grid-cols-4"
                   }`}
                 >
-                  {question.questionMedia.map((media, index) => (
+                  {question?.questionMedia?.map((media, index) => (
                     <div
                       key={index}
                       className={`relative rounded-xl overflow-hidden bg-gray-50 border border-gray-200 ${
@@ -234,11 +203,11 @@ const AudienceOpinionPage: React.FC = () => {
                           <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
                             <PhotoIcon className="w-4 h-4 text-gray-600" />
                           </div>
-                          {question.questionMedia &&
-                            question.questionMedia.length > 1 && (
+                          {question?.questionMedia &&
+                            question.questionMedia?.length > 1 && (
                               <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
                                 <span className="text-xs font-medium text-gray-700">
-                                  {index + 1}/{question.questionMedia.length}
+                                  {index + 1}/{question?.questionMedia?.length}
                                 </span>
                               </div>
                             )}
@@ -254,14 +223,21 @@ const AudienceOpinionPage: React.FC = () => {
                           <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
                             <VideoCameraIcon className="w-4 h-4 text-gray-600" />
                           </div>
-                          {question.questionMedia &&
-                            question.questionMedia.length > 1 && (
-                              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
-                                <span className="text-xs font-medium text-gray-700">
-                                  {index + 1}/{question.questionMedia.length}
-                                </span>
-                              </div>
-                            )}
+                          {question?.questionMedia?.map((media, index) => (
+                            <div key={index} className="relative">
+                              {question?.questionMedia?.length &&
+                                question.questionMedia.length > 1 && (
+                                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
+                                    <span className="text-xs font-medium text-gray-700">
+                                      {index + 1}/
+                                      {question.questionMedia.length}
+                                    </span>
+                                  </div>
+                                )}
+
+                              <img src={media.url} alt={`Media ${index}`} />
+                            </div>
+                          ))}
                         </>
                       )}
                       {media.type === "audio" && (
@@ -300,21 +276,19 @@ const AudienceOpinionPage: React.FC = () => {
 
           {/* Question Input */}
           <div className="p-6">
-            {question &&
-              (isMultipleChoice(question) ? (
-                <MultipleChoiceInput
-                  options={question.options}
-                  correctAnswer={question.correctAnswer}
-                  onAnswerSelect={handleAnswerSelect}
-                  onSubmit={handleAnswerSubmit}
-                />
-              ) : isOpenEnded(question) || isEssay(question) ? (
-                <OpenEndedInput
-                  correctAnswer={question.correctAnswer}
-                  onAnswerChange={handleAnswerSelect}
-                  onSubmit={handleAnswerSubmit}
-                />
-              ) : null)}
+            {question && question.questionType === "multiple_choice" ? (
+              <MultipleChoiceInput
+                questionId={question?.id || 0}
+                options={question.options ?? []}
+                rescueId={rescueId}
+              />
+            ) : (
+              <OpenEndedInput
+                correctAnswer={question?.correctAnswer || ""}
+                questionId={question?.id}
+                rescueId={rescueId}
+              />
+            )}
           </div>
         </div>
       </div>

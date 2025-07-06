@@ -211,6 +211,10 @@ const ContestPage: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    document.title = "Quản lý cuộc thi";
+  }, []);
+
   if (loading) {
     return (
       <Box

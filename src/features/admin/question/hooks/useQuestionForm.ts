@@ -141,13 +141,6 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
   };
 
   useEffect(() => {
-    console.log("=== DEBUG useQuestionForm useEffect ===");
-    console.log("Question:", question?.id, question?.questionMedia?.length, question?.mediaAnswer?.length);
-    console.log("Mode:", mode);
-    console.log("Current questionMediaFiles:", questionMediaFiles.length);
-    console.log("Current mediaAnswerFiles:", mediaAnswerFiles.length);
-    console.log("Current questionMediaPreviews:", questionMediaPreviews.length);
-    console.log("Current mediaAnswerPreviews:", mediaAnswerPreviews.length);
 
     if (question && (mode === "view" || mode === "edit")) {
       const initialFormData: QuestionFormValues = {
@@ -173,7 +166,6 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
 
       // QUAN TRỌNG: Reset media files mỗi khi question data thay đổi 
       // để tránh media mới thêm bị nhân đôi sau khi cập nhật thành công
-      console.log("Resetting media files...");
       setQuestionMediaFiles([]);
       setMediaAnswerFiles([]);
 
@@ -189,10 +181,8 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
           type: media.mimeType || "application/octet-stream",
           size: media.size || 0,
         }));
-        console.log("Setting questionMediaPreviews:", previews.length, previews);
         setQuestionMediaPreviews(previews);
       } else {
-        console.log("No questionMedia, clearing questionMediaPreviews");
         setQuestionMediaPreviews([]);
       }
 
@@ -204,20 +194,16 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
           type: media.mimeType || "application/octet-stream",
           size: media.size || 0,
         }));
-        console.log("Setting mediaAnswerPreviews:", previews.length, previews);
         setMediaAnswerPreviews(previews);
       } else {
-        console.log("No mediaAnswer, clearing mediaAnswerPreviews");
         setMediaAnswerPreviews([]);
       }
     } else if (mode === "create") {
       // Reset toàn bộ khi tạo mới
-      console.log("Mode is create, calling resetForm");
       resetForm();
     } else {
       showToast("Có lỗi xảy ra khi tải dữ liệu câu hỏi", "error");
     }
-    console.log("=== END useQuestionForm useEffect ===");
   }, [question, mode]); // Dependency chính xác để trigger khi question hoặc mode thay đổi
 
   // Hàm reset form
@@ -246,12 +232,8 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
 
   // Hàm reset chỉ media files - để sử dụng sau khi submit thành công
   const resetMediaFiles = () => {
-    console.log("=== DEBUG resetMediaFiles ===");
-    console.log("Before reset - questionMediaFiles:", questionMediaFiles.length);
-    console.log("Before reset - mediaAnswerFiles:", mediaAnswerFiles.length);
     setQuestionMediaFiles([]);
     setMediaAnswerFiles([]);
-    console.log("Media files reset completed");
   };
 
   const handleFormChange = (name: string, value: string | number | boolean) => {
@@ -326,14 +308,10 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
   const handleQuestionMediaChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    console.log("=== DEBUG handleQuestionMediaChange ===");
-    console.log("Current questionMediaFiles before:", questionMediaFiles.length);
-    console.log("Current questionMediaPreviews:", questionMediaPreviews.length);
 
     if (!e.target.files || e.target.files.length === 0) return;
 
     const files = Array.from(e.target.files);
-    console.log("New files to add:", files.length, files.map(f => f.name));
 
     // Validate files using Zod
     const validation = validateMediaFiles([...questionMediaFiles, ...files]);
@@ -383,7 +361,6 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
     const maxFiles = getMaxFilesByMediaType(currentMediaType);
     const currentTotalFiles = questionMediaFiles.length + questionMediaPreviews.length;
 
-    console.log("Media type:", currentMediaType, "Max files:", maxFiles, "Current total:", currentTotalFiles);
 
     // Kiểm tra số lượng file theo loại media
     if (files.length + currentTotalFiles > maxFiles) {
@@ -408,11 +385,9 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
 
     setQuestionMediaFiles(prev => {
       const newFiles = [...prev, ...files];
-      console.log("Setting questionMediaFiles to:", newFiles.length, newFiles.map(f => f.name));
       return newFiles;
     });
     showToast(`Đã thêm ${files.length} file thành công`, "success");
-    console.log("=== END handleQuestionMediaChange ===");
   };
 
   const handleMediaAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -593,11 +568,6 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
   };
 
   const prepareFormData = (data: QuestionFormValues) => {
-    console.log("=== DEBUG prepareFormData ===");
-    console.log("Form data:", data);
-    console.log("questionMediaFiles to submit:", questionMediaFiles.length, questionMediaFiles.map(f => f.name));
-    console.log("mediaAnswerFiles to submit:", mediaAnswerFiles.length, mediaAnswerFiles.map(f => f.name));
-    
     const formDataToSubmit = new FormData();
 
     // Append basic fields
@@ -620,7 +590,6 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
         item => item && item.trim() !== ""
       );
       if (validEntries.length > 0) {
-        console.log("Files to delete (questionMedia):", validEntries);
         formDataToSubmit.append(
           "deleteQuestionMedia",
           JSON.stringify(validEntries)
@@ -633,7 +602,6 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
         item => item && item.trim() !== ""
       );
       if (validEntries.length > 0) {
-        console.log("Files to delete (mediaAnswer):", validEntries);
         formDataToSubmit.append(
           "deleteMediaAnswer",
           JSON.stringify(validEntries)
@@ -643,16 +611,13 @@ export const useQuestionForm = ({ question, mode }: UseQuestionFormProps) => {
 
     // Append media files
     questionMediaFiles.forEach(file => {
-      console.log("Appending questionMedia file:", file.name);
       formDataToSubmit.append("questionMedia", file);
     });
 
     mediaAnswerFiles.forEach(file => {
-      console.log("Appending mediaAnswer file:", file.name);
       formDataToSubmit.append("mediaAnswer", file);
     });
 
-    console.log("FormData prepared successfully");
     return formDataToSubmit;
   };
 

@@ -26,6 +26,13 @@ interface MatchEventData {
   remainingTime?: number;
 }
 
+// 🔥 UPDATE: Interface cho timer events từ timer.event.ts
+interface TimerUpdateData {
+  timeRemaining: number;
+  isActive: boolean;
+  isPaused: boolean;
+}
+
 const StudentDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { getContestantInfo, isAuthenticated } = useStudentAuth();
@@ -61,12 +68,7 @@ const StudentDashboard: React.FC = () => {
   useEffect(() => {
     if (!socket || !isConnected || !contestantInfo?.matches) return;
 
-    console.log(
-      "🔌 [DASHBOARD] Student socket connected, joining match rooms..."
-    );
-
     contestantInfo.matches.forEach((match: Match) => {
-      console.log(`🏠 [DASHBOARD] Joining room for match: ${match.id}`);
       joinMatchRoom(match.id);
     });
 
@@ -74,8 +76,7 @@ const StudentDashboard: React.FC = () => {
     return () => {
       if (contestantInfo?.matches) {
         contestantInfo.matches.forEach((match: Match) => {
-          console.log(`🚪 [DASHBOARD] Leaving room for match: ${match.id}`);
-          leaveMatchRoom(match.id);
+          leaveMatchRoom(match.id.toString());
         });
       }
     };
@@ -92,93 +93,111 @@ const StudentDashboard: React.FC = () => {
     if (!socket) return;
 
     const handleMatchStarted = (data: MatchEventData) => {
-      console.log("🚀 [DASHBOARD] Match started event received:", data);
+      // 🔥 DEBUG: Console toàn bộ thông tin matches để kiểm tra slug
 
-      const isParticipating = contestantInfo?.matches?.some(
-        (match) => match.id === data.matchId
+      const match = contestantInfo?.matches.find((m) => m.id === data.matchId);
+
+      if (contestantInfo?.contestant.id) {
+        socket.emit("student:confirmStart", {
+          contestantId: contestantInfo?.contestant.id,
+          matchId: data.matchId,
+        });
+      } else {
+        console.warn(
+          "❌ [HỌC SINH] Không tìm thấy contestantId, không thể gửi xác nhận"
+        );
+      }
+      showSuccessNotification(
+        `Trận đấu ${data.matchName} đã bắt đầu! Đang chuyển vào phòng thi...`
       );
 
-      if (isParticipating) {
-        showSuccessNotification(
-          `Bạn sẽ được chuyển đến phòng chờ để chuẩn bị tham gia thi đấu.`,
-          `🎮 Trận đấu "${data.matchName}" đã bắt đầu!`,
-          5000
-        );
-
+      if (data.matchId) {
         // Delay một chút để user đọc thông báo trước khi chuyển trang
         setTimeout(() => {
-          navigate(`/student/match/${data.matchId}`);
+          // 🔥 FIX: Cần tìm slug từ matchId
+          const matchSlug = match?.slug;
+
+          if (matchSlug) {
+            navigate(`/student/match/${matchSlug}`);
+          } else {
+            // 🔥 FALLBACK: Nếu không có slug, sử dụng matchId
+            navigate(`/student/match/${data.matchId}`);
+          }
         }, 1500);
       }
     };
 
     const handleMatchUpdate = (data: MatchEventData) => {
-      console.log("📝 [DASHBOARD] Match update received:", data);
+      if (data.remainingTime !== undefined) {
+        // Cập nhật state với thời gian còn lại mới
+        setContestantInfo((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            matches: prev.matches.map((match) =>
+              match.id === data.matchId
+                ? { ...match, remainingTime: data.remainingTime || null }
+                : match
+            ),
+          };
+        });
+      }
+    };
 
+    // 🔥 UPDATE: Handler mới cho timer:update event
+    const handleTimerUpdate = (data: TimerUpdateData) => {
+      // Timer update không có matchId, cần tìm match đang active
       setContestantInfo((prev) => {
         if (!prev) return prev;
-
-        const updatedMatches = prev.matches.map((match) => {
-          if (match.id === data.matchId) {
-            // Map socket status to Match status
-            let mappedStatus: "upcoming" | "active" | "completed";
-            if (data.status === "ongoing") {
-              mappedStatus = "active";
-            } else if (data.status === "finished") {
-              mappedStatus = "completed";
-            } else {
-              mappedStatus = data.status as "upcoming" | "active" | "completed";
-            }
-
-            return {
-              ...match,
-              status: mappedStatus,
-              currentQuestion: data.currentQuestion || match.currentQuestion,
-              remainingTime: data.remainingTime || match.remainingTime,
-            };
-          }
-          return match;
-        });
-
         return {
           ...prev,
-          matches: updatedMatches,
+          matches: prev.matches.map((match) =>
+            match.status === "active"
+              ? { ...match, remainingTime: data.timeRemaining }
+              : match
+          ),
         };
       });
     };
 
     const handleMatchEnded = (data: MatchEventData) => {
-      console.log("🏁 [DASHBOARD] Match ended event received:", data);
       handleMatchUpdate(data);
     };
 
     // Register socket listeners cho student namespace
     socket.on("match:started", handleMatchStarted);
     socket.on("match:statusUpdate", handleMatchUpdate);
-    socket.on("match:timerUpdated", handleMatchUpdate);
+    socket.on("timer:update", handleTimerUpdate); // 🔥 CHANGED từ match:timerUpdated
     socket.on("match:ended", handleMatchEnded);
+
+    // 🔥 NEW: Listener cho sự kiện được cứu trợ
+    socket.on(
+      "student:rescued",
+      (data: { rescuedContestantIds: number[]; message: string }) => {
+        if (
+          contestantInfo &&
+          data.rescuedContestantIds.includes(
+            contestantInfo.contestant.registrationNumber
+          )
+        ) {
+          showSuccessNotification(data.message);
+        }
+      }
+    );
 
     // Backup global listener cho trường hợp không nhận được room event
     socket.on("match:globalStarted", (data: MatchEventData) => {
-      console.log(
-        "🌍 [DASHBOARD] Global match started event received (backup):",
-        data
-      );
       handleMatchStarted(data);
     });
-
-    console.log(
-      "🎧 [DASHBOARD] Socket listeners registered for student namespace"
-    );
 
     // Cleanup function
     return () => {
       socket.off("match:started", handleMatchStarted);
       socket.off("match:statusUpdate", handleMatchUpdate);
-      socket.off("match:timerUpdated", handleMatchUpdate);
+      socket.off("timer:update", handleTimerUpdate); // 🔥 CHANGED từ match:timerUpdated
       socket.off("match:ended", handleMatchEnded);
+      socket.off("student:rescued"); // 🔥 NEW: Dọn dẹp listener
       socket.off("match:globalStarted", handleMatchStarted);
-      console.log("🧹 [DASHBOARD] Socket listeners cleaned up");
     };
   }, [socket, contestantInfo, navigate, showSuccessNotification]);
 
@@ -186,7 +205,7 @@ const StudentDashboard: React.FC = () => {
     switch (status) {
       case "upcoming":
         return "text-yellow-600 bg-yellow-100";
-      case "active":
+      case "ongoing":
         return "text-green-600 bg-green-100";
       case "completed":
         return "text-gray-600 bg-gray-100";
@@ -199,7 +218,7 @@ const StudentDashboard: React.FC = () => {
     switch (status) {
       case "upcoming":
         return "Sắp diễn ra";
-      case "active":
+      case "ongoing":
         return "Đang diễn ra";
       case "completed":
         return "Đã kết thúc";
@@ -535,7 +554,7 @@ const StudentDashboard: React.FC = () => {
                 <div className="flex items-start space-x-3">
                   <ArrowRightIcon className="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
                   <p className="text-gray-600">
-                    Nhấn "Tham gia trận đấu" để vào phòng chờ
+                    Vi phạm 3 lần sẽ bị loại khỏi cuộc thi
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -553,9 +572,16 @@ const StudentDashboard: React.FC = () => {
                 <div className="flex items-start space-x-3">
                   <ArrowRightIcon className="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
                   <p className="text-gray-600">
-                    Xem kết quả ngay sau khi gửi câu trả lời
+                    Xem kết quả ngay sau khi hết thời gian
                   </p>
                 </div>
+                <div className="flex items-start space-x-3">
+                  <ArrowRightIcon className="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-gray-600">
+                    Khi bị loại vẫn có thể hồi sinh ( nên đừng rời phòng thi )
+                  </p>
+                </div>
+
               </div>
             </div>
           </div>

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { BackspaceIcon } from "@heroicons/react/24/outline";
+import { useToast } from "@contexts/toastContext";
+import { useSocket } from "@contexts/SocketContext";
+import { useSubmitSupportAnswer } from "../hooks/useRescue";
 
 // Shuffle utility function
 const shuffle = (array: string[]): string[] => {
@@ -13,20 +16,24 @@ const shuffle = (array: string[]): string[] => {
 
 interface Props {
   correctAnswer: string;
+  questionId?: number;
   onAnswerChange?: (answer: string) => void;
-  onSubmit: (isCorrect: boolean) => void;
+  rescueId: number;
 }
 
 const OpenEndedInput: React.FC<Props> = ({
   correctAnswer,
   onAnswerChange,
-  onSubmit,
+  questionId,
+  rescueId,
 }) => {
   const [answerSlots, setAnswerSlots] = useState<(string | null)[]>(
     Array(correctAnswer.length).fill(null)
   );
   const [availableLetters, setAvailableLetters] = useState<string[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const { socket } = useSocket();
+  const { mutateAsync: submitAnswer } = useSubmitSupportAnswer();
 
   // Notify parent about answer changes
   const notifyAnswerChange = (slots: (string | null)[]) => {
@@ -36,16 +43,28 @@ const OpenEndedInput: React.FC<Props> = ({
     }
   };
 
-  // Khởi tạo chữ cái bị xáo trộn
   useEffect(() => {
-    // Chỉ lấy các ký tự không phải dấu cách để xáo trộn
+    if (!socket) return;
+    const handletimerStart = (_data: any) => {
+      localStorage.removeItem("answer");
+      setIsSubmitted(false);
+    };
+    socket.on("timerStart:Rescue", handletimerStart);
+
+    return () => {
+      if (socket) {
+        socket.off("timerStart:Rescue", handletimerStart);
+      }
+    };
+  }, [socket, questionId]);
+
+  const { showToast } = useToast();
+  useEffect(() => {
     const allChars = correctAnswer.split("");
-    const lettersOnly = allChars.filter((char) => char !== " ");
+    const lettersOnly = allChars.filter(char => char !== " ");
 
     setAvailableLetters(shuffle(lettersOnly));
-
-    // Tạo slots với đúng định dạng (bao gồm cả dấu cách)
-    const initialSlots = allChars.map((char) => (char === " " ? " " : null));
+    const initialSlots = allChars.map(char => (char === " " ? " " : null));
     setAnswerSlots(initialSlots);
     setIsSubmitted(false);
     notifyAnswerChange(initialSlots);
@@ -55,7 +74,6 @@ const OpenEndedInput: React.FC<Props> = ({
   const addToAnswer = (letter: string) => {
     if (isSubmitted) return;
 
-    // Tìm slot trống đầu tiên (bỏ qua dấu cách)
     const newSlots = [...answerSlots];
 
     for (let i = 0; i < newSlots.length; i++) {
@@ -71,7 +89,6 @@ const OpenEndedInput: React.FC<Props> = ({
           setAvailableLetters(newAvailable);
         }
 
-        // Notify parent về sự thay đổi
         notifyAnswerChange(newSlots);
         break;
       }
@@ -86,7 +103,7 @@ const OpenEndedInput: React.FC<Props> = ({
       const newSlots = [...answerSlots];
       newSlots[index] = null;
       setAnswerSlots(newSlots);
-      setAvailableLetters((prev) => [...prev, letter as string]);
+      setAvailableLetters(prev => [...prev, letter as string]);
       notifyAnswerChange(newSlots);
     }
   };
@@ -95,28 +112,42 @@ const OpenEndedInput: React.FC<Props> = ({
   const clearAll = () => {
     // Chỉ lấy các ký tự đã sử dụng (không phải dấu cách)
     const usedLetters = answerSlots.filter(
-      (slot) => slot !== null && slot !== " "
+      slot => slot !== null && slot !== " "
     ) as string[];
     // Giữ lại dấu cách, chỉ xóa các ký tự khác
-    const clearedSlots = answerSlots.map((slot) => (slot === " " ? " " : null));
+    const clearedSlots = answerSlots.map(slot => (slot === " " ? " " : null));
     setAnswerSlots(clearedSlots);
-    setAvailableLetters((prev) => [...prev, ...usedLetters]);
+    setAvailableLetters(prev => [...prev, ...usedLetters]);
     notifyAnswerChange(clearedSlots);
   };
+
+  useEffect(() => {
+    const answer = localStorage.getItem("answer");
+    if (answer) setIsSubmitted(true);
+  }, [rescueId, questionId]);
 
   // Gửi đáp án
   const handleSubmit = () => {
     const answer = answerSlots.join("");
-    const isCorrect = answer === correctAnswer;
     setIsSubmitted(true);
-
-    setTimeout(() => {
-      onSubmit(isCorrect);
-    }, 500);
+    localStorage.setItem("answer", "true");
+    submitAnswer(
+      { rescueId: rescueId || 0, supportAnswers: answer },
+      {
+        onSuccess: () => {
+          showToast("Cứu trợ thành công", "success");
+        },
+        onError: (error: any) => {
+          showToast(
+            error?.response?.data?.message || "Lỗi khi gửi cứu trợ",
+            "error"
+          );
+        },
+      }
+    );
   };
 
-  // Kiểm tra hoàn thành: tất cả slot không phải dấu cách đã được điền
-  const isComplete = answerSlots.every((slot) => slot === " " || slot !== null);
+  const isComplete = answerSlots.every(slot => slot === " " || slot !== null);
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl shadow-xl border border-gray-100">
@@ -130,7 +161,7 @@ const OpenEndedInput: React.FC<Props> = ({
             onClick={clearAll}
             disabled={
               isSubmitted ||
-              answerSlots.every((slot) => slot === null || slot === " ")
+              answerSlots.every(slot => slot === null || slot === " ")
             }
             className="flex items-center space-x-1 px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -268,14 +299,7 @@ const OpenEndedInput: React.FC<Props> = ({
             }
           `}
         >
-          {isSubmitted ? (
-            <div className="flex items-center space-x-2">
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Đã gửi</span>
-            </div>
-          ) : (
-            "Gửi đáp án"
-          )}
+          Cứu trợ
         </button>
       </div>
 
@@ -284,8 +308,8 @@ const OpenEndedInput: React.FC<Props> = ({
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm text-gray-600">Tiến độ:</span>
           <span className="text-sm font-medium text-gray-700">
-            {answerSlots.filter((slot) => slot !== null && slot !== " ").length}
-            /{correctAnswer.replace(/ /g, "").length}
+            {answerSlots.filter(slot => slot !== null && slot !== " ").length}/
+            {correctAnswer.replace(/ /g, "").length}
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -293,7 +317,7 @@ const OpenEndedInput: React.FC<Props> = ({
             className="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-500"
             style={{
               width: `${
-                (answerSlots.filter((slot) => slot !== null && slot !== " ")
+                (answerSlots.filter(slot => slot !== null && slot !== " ")
                   .length /
                   correctAnswer.replace(/ /g, "").length) *
                 100

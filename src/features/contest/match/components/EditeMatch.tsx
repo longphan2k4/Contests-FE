@@ -42,7 +42,12 @@ export default function EditeMatch({
     resolver: zodResolver(UpdateMatchSchema),
   });
 
-  const { data: matchData } = useGetById(id);
+  const {
+    data: matchData,
+    isLoading: isMatchLoading,
+    refetch: refetchMatch,
+    isError: isMatchError,
+  } = useGetById(id);
 
   const { slug } = useParams();
 
@@ -68,9 +73,12 @@ export default function EditeMatch({
   } = useListQuestionPackage();
 
   useEffect(() => {
-    refetchRound();
-    refetchStatus();
-    refetchQuestionPackage();
+    if (isOpen) {
+      refetchMatch();
+      refetchStatus();
+      refetchRound();
+      refetchQuestionPackage();
+    }
   }, [refetchRound, refetchStatus, refetchQuestionPackage, isOpen]);
 
   // Memo hóa danh sách trường học để tránh re-render thừa
@@ -87,20 +95,24 @@ export default function EditeMatch({
   // Memo hóa danh sách trường học để tránh re-render thừa
   const questionPackage = useMemo(() => {
     if (listQuestionPackage?.success) {
-      return listQuestionPackage.data.map((item: { id: number; name: string }) => ({
-        label: item.name,
-        value: item.id,
-      }));
+      return listQuestionPackage.data.map(
+        (item: { id: number; name: string }) => ({
+          label: item.name,
+          value: item.id,
+        })
+      );
     }
     return [];
   }, [listQuestionPackage]);
 
   const status = useMemo(() => {
     if (listStatus?.success && Array.isArray(listStatus.data.options)) {
-      return listStatus.data.options.map((item: { label: string; value: string }) => ({
-        label: item.label,
-        value: item.value,
-      }));
+      return listStatus.data.options.map(
+        (item: { label: string; value: string }) => ({
+          label: item.label,
+          value: item.value,
+        })
+      );
     }
     return [];
   }, [listStatus]);
@@ -111,7 +123,7 @@ export default function EditeMatch({
         name: matchData.name,
         roundId: matchData.roundId,
         status: matchData.status,
-currentQuestion: matchData.currentQuestion,
+        currentQuestion: matchData.currentQuestion,
         questionPackageId: matchData.questionPackageId,
         isActive: matchData.isActive,
         startTime: dayjs(matchData.startTime).format("YYYY-MM-DDTHH:mm"),
@@ -126,7 +138,12 @@ currentQuestion: matchData.currentQuestion,
     onClose();
   };
 
-  if (isStatusLoading || isRoundLoading || isQuestionPackageLoading) {
+  if (
+    isStatusLoading ||
+    isRoundLoading ||
+    isQuestionPackageLoading ||
+    isMatchLoading
+  ) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
@@ -134,7 +151,7 @@ currentQuestion: matchData.currentQuestion,
     );
   }
 
-  if (isStatusError || isRoundError || isQuestionPackageError) {
+  if (isStatusError || isRoundError || isQuestionPackageError || isMatchError) {
     return <div>Không thể tải dữ liệu</div>;
   }
 
@@ -214,7 +231,7 @@ currentQuestion: matchData.currentQuestion,
           error={errors.status}
         />
         <Controller
-name="isActive"
+          name="isActive"
           control={control}
           render={({ field }) => (
             <FormSwitch

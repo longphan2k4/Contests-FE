@@ -124,26 +124,26 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
       <h2 className="text-xl font-bold mb-4 text-center">Danh sách thí sinh</h2>
 
       <div className="flex flex-wrap gap-4">
-        {ListContestant.map(group => (
+        {ListContestant?.map(group => (
           <div
             key={group.id}
             className={`border-2 ${
-              group.confirmCurrentQuestion >= questionOrder
+              group?.confirmCurrentQuestion >= questionOrder
                 ? "border-blue-500"
                 : "border-red-500"
             } rounded-lg p-3 w-full`}
           >
             <div className="grid grid-cols-10 gap-2">
-              {group.contestantMatches.map(contestant => (
+              {group?.contestantMatches.map(contestant => (
                 <button
-                  key={contestant.registrationNumber}
-                  onClick={() => toggleSelect(contestant.registrationNumber)}
+                  key={contestant?.registrationNumber}
+                  onClick={() => toggleSelect(contestant?.registrationNumber)}
                   className={`relative p-2 rounded-md font-semibold text-sm transition
-             ${getStatusClass(contestant.status)}
+             ${getStatusClass(contestant?.status)}
             `}
                 >
-                  {contestant.registrationNumber}
-                  {selectedIds.includes(contestant.registrationNumber) && (
+                  {contestant?.registrationNumber}
+                  {selectedIds.includes(contestant?.registrationNumber) && (
                     <CheckCircleIcon className="absolute top-0 right-0 h-6 w-6 text-white drop-shadow" />
                   )}
                 </button>
@@ -163,7 +163,8 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
                   : "border-red-500"
               } rounded-lg p-2`}
             >
-              {group.user.username} - {group.contestantMatches.length} thí sinh
+              {group?.user?.username} - {group?.contestantMatches.length} thí
+              sinh
             </button>
           ))}
         </div>

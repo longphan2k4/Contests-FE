@@ -13,8 +13,8 @@ interface StudentSocketReturn {
   socket: Socket | null;
   isConnected: boolean;
   joinMatchRoom: (matchId: number) => void;
-  leaveMatchRoom: (matchId: number) => void;
-  joinMatchForAnswering: (matchId: number, callback?: (response: SocketResponse) => void) => void;
+  leaveMatchRoom: (matchSlug: string) => void;
+  joinMatchForAnswering: (matchSlug: string, callback?: (response: SocketResponse) => void) => void;
 }
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
@@ -35,31 +35,22 @@ export const useStudentSocket = (): StudentSocketReturn => {
 
     // Student namespace events
     studentSocket.on('connect', () => {
-      console.log('✅ [FE] Đã kết nối thành công tới namespace /student:', studentSocket.id);
-      console.log('🔍 [FE] Student socket sẵn sàng nhận events');
       setIsConnected(true);
     });
 
-    studentSocket.on('disconnect', (reason) => {
-      console.log('❌ [FE] Mất kết nối tới namespace /student. Lý do:', reason);
+    studentSocket.on('disconnect', () => {
       setIsConnected(false);
     });
 
-    studentSocket.on('connect_error', (error) => {
-      console.error('🚫 [FE] Lỗi kết nối tới namespace /student:', error);
-      console.error('🚫 [FE] Error message:', error.message);
-      console.error('🚫 [FE] Error details:', error);
+    studentSocket.on('connect_error', () => {
       setIsConnected(false);
     });
 
-    studentSocket.on('reconnect', (attemptNumber) => {
-      console.log('🔄 [FE] Kết nối lại thành công sau', attemptNumber, 'lần thử');
+    studentSocket.on('reconnect', () => {
       setIsConnected(true);
     });
 
-    studentSocket.on('reconnect_error', (error) => {
-      console.error('🔄 [FE] Lỗi kết nối lại:', error);
-    });
+
 
     // Authentication error handlers
     studentSocket.on('error', (error) => {
@@ -71,7 +62,6 @@ export const useStudentSocket = (): StudentSocketReturn => {
 
     // Cleanup on unmount
     return () => {
-      console.log('🧹 [STUDENT SOCKET] Dọn dẹp kết nối socket student');
       studentSocket.disconnect();
       setSocket(null);
       setIsConnected(false);
@@ -80,31 +70,20 @@ export const useStudentSocket = (): StudentSocketReturn => {
 
   const joinMatchRoom = (matchId: number) => {
     if (socket && isConnected) {
-      console.log(`🏠 [FE STUDENT SOCKET] Đang join phòng match-${matchId}...`);
-      socket.emit('joinMatchRoom', matchId, (response: SocketResponse) => {
-        if (response.success) {
-          console.log('✅ [FE STUDENT SOCKET] Tham gia phòng student thành công:', response);
-          console.log('📊 [FE STUDENT SOCKET] Room size:', response.roomSize);
-        } else {
-          console.error('❌ [FE STUDENT SOCKET] Tham gia phòng student thất bại:', response.message);
-        }
+      socket.emit('joinMatchRoom', matchId, () => {
+
       });
-    } else {
-      console.warn('⚠️ [FE STUDENT SOCKET] Không thể tham gia phòng - chưa kết nối socket');
-      console.warn('⚠️ [FE STUDENT SOCKET] Socket status:', { socket: !!socket, isConnected });
-    }
+    } 
   };
 
-  const leaveMatchRoom = (matchId: number) => {
+  const leaveMatchRoom = (matchSlug: string) => {
     if (socket && isConnected) {
-      console.log(`🚪 [FE] Rời phòng student cho trận đấu: ${matchId}`);
-      socket.emit('leaveMatchRoom', matchId);
+      socket.emit('leaveMatchRoom', matchSlug);
     }
   };
 
-  const joinMatchForAnswering = (matchId: number, callback?: (response: SocketResponse) => void) => {
+  const joinMatchForAnswering = (matchSlug: string, callback?: (response: SocketResponse) => void) => {
     if (!socket || !isConnected) {
-      console.warn('⚠️ [STUDENT SOCKET] Không thể tham gia match - socket chưa kết nối');
       if (callback) {
         callback({ 
           success: false, 
@@ -114,8 +93,7 @@ export const useStudentSocket = (): StudentSocketReturn => {
       return;
     }
 
-    console.log(`📝 [STUDENT SOCKET] Tham gia match để trả lời câu hỏi: ${matchId}`);
-    socket.emit('student:joinMatch', { matchId }, callback);
+    socket.emit('student:joinMatch', { matchSlug }, callback);
   };
 
   return {

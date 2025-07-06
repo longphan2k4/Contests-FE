@@ -2,15 +2,11 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import AdminRoutes from "../features/admin/AdminRoutes";
 import ContestRoutes from "../features/contest/ContestRouter";
-import PublicRoute from "./PublicRoute";
+
 import AuthRoutes from "../features/auth/routes";
 import StudentRoutes from "../features/student/routes";
 import PublicRoutes from "./PublicRoutes";
-import {
-  AudienceOpinionPage,
-  AudienceStatsPage,
-  AUDIENCE_ROUTES,
-} from "../features/audience";
+import { AudienceOpinionPage, AUDIENCE_ROUTES } from "../features/audience";
 import MatchPage from "../features/match/pages/MatchPage";
 import TechBanner from "../features/match/components/MediaPopup/BackGround";
 import PrivateRoute from "./PrivateRoute";
@@ -23,7 +19,6 @@ import { SocketProvider } from "../contexts/SocketContext";
 import ControlsPage from "../features/admin/controls/pages/ControlsPage";
 import ContestList from "../features/judge/components/selector/ContestList";
 import MatchList from "../features/judge/components/selector/MatchList";
-import { OnlineControlSocketProvider } from "../contexts/OnlineControlSocketContext";
 import OlympicIT2025Rules from "@features/rule/RulePage";
 //leaderboard
 import TopThreeReveal from "@features/leaderboard/top3/pages/TopThreeReveal";
@@ -41,18 +36,16 @@ const AppRoutes: React.FC = () => {
       {/* Student Routes */}
       {StudentRoutes()}
 
-      <Route element={<PublicRoute restricted={true} />}>{AuthRoutes()}</Route>
+      {AuthRoutes()}
 
       <Route element={<PrivateRoute roles={["Admin"]} />}>
         {ContestRoutes()}
         {AdminRoutes()}
         <Route
-          path="/admin/cuoc-thi/:slug/dieu-kien-tran-dau/:match"
+          path="/admin/contest/:slug/control/:match"
           element={
             <SocketProvider>
-              <OnlineControlSocketProvider>
-                <ControlsPage />
-              </OnlineControlSocketProvider>
+              <ControlsPage />
             </SocketProvider>
           }
         />
@@ -89,12 +82,16 @@ const AppRoutes: React.FC = () => {
 
       <Route
         path={AUDIENCE_ROUTES.OPINION_PAGE}
-        element={<AudienceOpinionPage />}
+        element={
+          <SocketProvider>
+            <AudienceOpinionPage />
+          </SocketProvider>
+        }
       />
 
       <Route
         path={AUDIENCE_ROUTES.STATS_DISPLAY}
-        element={<AudienceStatsPage />}
+        element={<AudienceOpinionPage />}
       />
       {/* <Route path="/match/eliminate" element={<EliminatePage />} /> */}
       <Route path="/match/top3" element={<TopThreeReveal />} />

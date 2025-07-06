@@ -1,23 +1,17 @@
-import React, { useEffect,useState } from "react";
+import React, { useEffect, useState } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
-import {
-  Box,
-  Button,
-  Typography,
-  MenuItem,
-  TextField,
-} from "@mui/material";
+import { Box, Button, Typography, MenuItem, TextField } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  CreateMediaSchema,
-  type CreateMediaInput,
-} from "../types/media.shame";
+import { CreateMediaSchema, type CreateMediaInput } from "../types/media.shame";
 
 interface CreateMediaDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { type: "images" | "logo" | "background"; url: File }) => void;
+  onSubmit: (data: {
+    type: "images" | "logo" | "background";
+    url: File;
+  }) => void;
 }
 
 export default function CreateMediaDialog({
@@ -54,17 +48,16 @@ export default function CreateMediaDialog({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
-  if (selectedFile instanceof File) {
-    const objectUrl = URL.createObjectURL(selectedFile);
-    setPreviewUrl(objectUrl);
+    if (selectedFile instanceof File) {
+      const objectUrl = URL.createObjectURL(selectedFile);
+      setPreviewUrl(objectUrl);
 
-    return () => URL.revokeObjectURL(objectUrl);
-  } else {
-    setPreviewUrl(null);
-    return undefined;
-  }
-}, [selectedFile]);
-
+      return () => URL.revokeObjectURL(objectUrl);
+    } else {
+      setPreviewUrl(null);
+      return undefined;
+    }
+  }, [selectedFile]);
 
   return (
     <AppFormDialog
@@ -89,7 +82,7 @@ export default function CreateMediaDialog({
             >
               <MenuItem value="images">Hình ảnh</MenuItem>
               <MenuItem value="logo">Logo</MenuItem>
-              <MenuItem value="background">Nền</MenuItem>
+              <MenuItem value="background">Ảnh nền</MenuItem>
             </TextField>
           )}
         />
@@ -117,7 +110,11 @@ export default function CreateMediaDialog({
               <img
                 src={previewUrl}
                 alt="Preview"
-                style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }}
+                style={{
+                  maxHeight: "100%",
+                  maxWidth: "100%",
+                  objectFit: "contain",
+                }}
               />
             ) : (
               <Typography variant="body2" color="text.secondary">
@@ -127,7 +124,7 @@ export default function CreateMediaDialog({
           </Box>
         </label>
 
-                <Controller
+        <Controller
           name="url"
           control={control}
           render={({ field }) => (
@@ -136,7 +133,7 @@ export default function CreateMediaDialog({
               type="file"
               accept="image/*"
               style={{ display: "none" }}
-              onChange={(e) => {
+              onChange={e => {
                 const file = e.target.files?.[0];
                 field.onChange(file);
               }}
@@ -144,12 +141,14 @@ export default function CreateMediaDialog({
           )}
         />
         {errors.url && (
-          <Typography variant="caption" color="error">
-            
-          </Typography>
+          <Typography variant="caption" color="error"></Typography>
         )}
 
-        <Button type="submit" variant="contained" sx={{ mt: 2, float: "right" }}>
+        <Button
+          type="submit"
+          variant="contained"
+          sx={{ mt: 2, float: "right" }}
+        >
           Thêm
         </Button>
       </form>

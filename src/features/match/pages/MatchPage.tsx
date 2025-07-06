@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import MatchHeader from "../components/MatchHeader/MatchHeader";
 import Background from "../components/QuestionDisplay/Background";
 import FullScreenImage from "../components/Media/FullScreenImage";
-import { AudienceDisplayManager } from "../components/AudienceDisplay";
+
 import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
 import EliminateDisplay from "../components/Eliminate/EliminateDisplay";
+import QRCodeDisplay from "../components/QuestionDisplay/QRCodeDisplay";
+import RescueStatsDisplay from "../components/QuestionDisplay/RescueStatsDisplays";
+import Info from "../components/QuestionDisplay/Info";
 
 import { mockContestants } from "../constants";
 
@@ -18,6 +21,7 @@ import {
   type countContestant,
   type SceenControl,
   type CurrentQuestion,
+  type updatedRescuesType,
 } from "../types/control.type";
 
 import {
@@ -29,6 +33,7 @@ import {
   useCountContestant,
   useListContestant,
   useListRescues,
+  useAllRescues,
 } from "../hooks/useControls";
 import { useParams } from "react-router-dom";
 
@@ -43,6 +48,7 @@ export default function MatchPage() {
   const { match } = useParams();
 
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
+
   const [listContestant, setListContestant] = useState<ListContestant[]>([]);
   const [_listRescue, setListRescue] = useState<ListRescue[]>([]);
   const [_bgContest, setBgContest] = useState<BgContest | null>(null);
@@ -52,6 +58,17 @@ export default function MatchPage() {
     useState<countContestant | null>(null);
   const [listQuestion, setListQuestion] = useState<Question[]>([]);
   const [screenControl, setScreenControl] = useState<SceenControl | null>(null);
+  const [updateRescuedData, setUpdateRescuedData] = useState<
+    updatedRescuesType[]
+  >([]);
+
+  // Use rescue hook to fetch initial data
+  const {
+    data: allRescuesRes,
+    isLoading: isLoadingAllRescues,
+    isSuccess: isSuccessAllRescues,
+    isError: isErrorAllRescues,
+  } = useAllRescues(match ?? null);
 
   const {
     data: matchInfoRes,
@@ -145,6 +162,25 @@ export default function MatchPage() {
   useEffect(() => {
     document.title = `Trân đấu ${matchInfo?.name}`;
   }, [matchInfo]);
+
+  // gọi getAllRescues khi match thay đổi
+  useEffect(() => {
+    if (isSuccessAllRescues && allRescuesRes?.data) {
+      const formattedRescues: updatedRescuesType[] = allRescuesRes.data.map(
+        (rescue: any) => ({
+          id: rescue.id,
+          name: rescue.name,
+          rescueType: rescue.rescueType,
+          status: rescue.status,
+          remainingContestants: rescue.remainingContestants || 0,
+          questionFrom: rescue.questionFrom,
+          questionTo: rescue.questionTo,
+          index: rescue.index || 0,
+        })
+      );
+      setUpdateRescuedData(formattedRescues);
+    }
+  }, [isSuccessAllRescues, allRescuesRes]);
   const { socket } = useSocket();
 
   useEffect(() => {
@@ -159,12 +195,13 @@ export default function MatchPage() {
     const handleCurrentQuestion = (data: any) => {
       setMatchInfo(data?.matchInfo);
       setCurrentQuestion(data?.currentQuestion);
+      setListContestant(data?.ListContestant);
       setScreenControl(prev => {
         if (!prev) return null;
 
         return {
           ...prev,
-          controlKey: "question",
+          controlKey: "questionInfo",
         };
       });
     };
@@ -186,9 +223,9 @@ export default function MatchPage() {
       setMatchInfo(data?.matchInfo);
     };
 
-    const handleUpdateStatus = (data: any) => {
-      setListContestant(data?.ListContestant);
-    };
+    // const handleUpdateStatus = (data: any) => {
+    //   setListContestant(data?.ListContestant);
+    // };
 
     const handleUpdateEliminate = (data: any) => {
       setListContestant(data?.ListContestant);
@@ -200,7 +237,6 @@ export default function MatchPage() {
     };
 
     const handleUpdateRescued = (data: any) => {
-      console.log("Rescued data:", data);
       setListContestant(data?.ListContestant);
       setCountContestant(prev => ({
         ...prev!,
@@ -209,22 +245,42 @@ export default function MatchPage() {
       setScreenControl(data?.updateScreen);
     };
 
+    const handleShowQrRescue = (data: any) => {
+      setScreenControl(data?.updatedScreen);
+    };
+
+    const handleShowQrChart = (data: any) => {
+      setScreenControl(data?.updatedScreen);
+    };
+
+    const getRescueStatus = (data: unknown) => {
+      const typedData = data as {
+        data: { updatedRescues: updatedRescuesType[] };
+      };
+      console.log("Rescue status data:", typedData);
+      setUpdateRescuedData(typedData.data.updatedRescues);
+    };
+
+    socket.on("rescue:statusUpdated", getRescueStatus);
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
     socket.on("update:winGold", handleUpdateGold);
-    socket.on("contestant:status-update", handleUpdateStatus);
+    // socket.on("contestant:status-update", handleUpdateStatus);
     socket.on("update:Eliminated", handleUpdateEliminate);
     socket.on("update:Rescused", handleUpdateRescued);
+    socket.on("showQrRescue", handleShowQrRescue);
+    socket.on("showQrChart", handleShowQrChart);
 
     return () => {
+      socket.off("rescue:statusUpdated", getRescueStatus);
       socket.off("screen:update", handleScreenUpdate);
       socket.off("currentQuestion:get", handleCurrentQuestion);
       socket.off("timer:update", handleUpdateTime);
       socket.off("update:winGold", handleUpdateGold);
-      socket.off("contestant:status-update", handleUpdateStatus);
+      // socket.off("contestant:status-update", handleUpdateStatus);
       socket.off("update:Eliminated", handleUpdateEliminate);
-      socket.off("update:Rescued", handleUpdateRescued);
+      socket.off("update:Rescused", handleUpdateRescued);
     };
   }, [socket]);
 
@@ -236,7 +292,8 @@ export default function MatchPage() {
     isLoadingContestants ||
     isLoadingCount ||
     isLoadingQuestions ||
-    isLoadingControl;
+    isLoadingControl ||
+    isLoadingAllRescues;
   if (isLoading) {
     return (
       <Box
@@ -258,7 +315,8 @@ export default function MatchPage() {
     isErrorContestants ||
     isErrorCount ||
     isErrorQuestions ||
-    isErrorControl
+    isErrorControl ||
+    isErrorAllRescues
   ) {
     return (
       <Box
@@ -274,11 +332,23 @@ export default function MatchPage() {
 
   return (
     <>
-      {/* Audience Display Component - hiển thị QR hoặc Chart khi được điều khiển */}
-      <AudienceDisplayManager
-        matchSlug={match}
-        currentQuestionId={currentQuestion?.id}
-      />
+      {screenControl?.controlKey === "qrcode" && (
+        <div key="qrCode">
+          <QRCodeDisplay
+            matchSlug={match ?? ""}
+            rescueId={Number(screenControl?.value) ?? 2}
+            matchName={matchInfo?.name ?? ""}
+            currentQuestionOrder={currentQuestion?.questionOrder}
+          />
+        </div>
+      )}
+
+      {screenControl?.controlKey === "chart" && (
+        <div key="chart">
+          <RescueStatsDisplay rescueId={Number(screenControl?.value) ?? 2} />
+        </div>
+      )}
+
       {screenControl?.controlKey === "question" && (
         <div key="question">
           <MatchHeader
@@ -286,6 +356,7 @@ export default function MatchPage() {
             remainingTime={matchInfo?.remainingTime}
             currentQuestion={currentQuestion}
             countQuestion={listQuestion.length}
+            updateRescuedData={updateRescuedData}
           />
           <QuestionContent
             content={currentQuestion?.content}
@@ -319,7 +390,8 @@ export default function MatchPage() {
             countContestant={countContestant}
             remainingTime={matchInfo?.remainingTime}
             currentQuestion={currentQuestion}
-            countQuestion={listContestant.length}
+            countQuestion={listQuestion.length}
+            updateRescuedData={updateRescuedData}
           />
           <AnswerContent
             controlValue={screenControl?.controlValue ?? null}
@@ -334,13 +406,14 @@ export default function MatchPage() {
             countContestant={countContestant}
             remainingTime={matchInfo?.remainingTime}
             currentQuestion={currentQuestion}
-            countQuestion={listContestant.length}
+            countQuestion={listQuestion.length}
+            updateRescuedData={updateRescuedData}
           />
           <EliminateDisplay
             ListContestant={listContestant ?? []}
             currentQuestionOrder={currentQuestion?.questionOrder ?? 0}
             totalIcons={mockContestants.length}
-            controlValue={screenControl?.controlValue}
+            controlValue={screenControl?.controlValue ?? undefined}
           />
         </div>
       )}
@@ -351,7 +424,8 @@ export default function MatchPage() {
             countContestant={countContestant}
             remainingTime={matchInfo?.remainingTime}
             currentQuestion={currentQuestion}
-            countQuestion={listContestant.length}
+            countQuestion={listQuestion.length}
+            updateRescuedData={updateRescuedData}
           />
           <QuestionExplanation
             explanation={
@@ -379,17 +453,23 @@ export default function MatchPage() {
           <GoldWinnerDisplay studentName={matchInfo?.studentName ?? null} />
         </div>
       )}
-      {screenControl?.controlKey === "questionInfo" && (
-        <div key="questionInfo">
+      {screenControl?.controlKey === "questionIntro" && (
+        <div key="questionIntro">
           <MatchHeader
             countContestant={countContestant}
             remainingTime={matchInfo?.remainingTime}
             currentQuestion={currentQuestion}
-            countQuestion={listContestant.length}
+            countQuestion={listQuestion.length}
+            updateRescuedData={updateRescuedData}
           />
           <QuestionIntro
             intro={currentQuestion?.intro ?? "Câu hỏi này không có thông tin"}
           />
+        </div>
+      )}
+      {screenControl?.controlKey === "questionInfo" && (
+        <div key="questionInfo">
+          <Info currentQuestion={currentQuestion} />
         </div>
       )}
     </>

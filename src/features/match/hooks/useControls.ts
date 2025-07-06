@@ -8,6 +8,9 @@ import {
   GetCurrentQuestion,
   GetMatchInfo,
   GetListContestant,
+  GetChartData,
+  GetAllRescues,
+  // GetLifelineUsedRescues,
 } from "../service/api";
 
 export const useMatchInfo = (match: string | null) => {
@@ -73,3 +76,27 @@ export const useScreenControl = (match: string | null) => {
     enabled: !!match,
   });
 };
+
+export const userChartData = (id: number) => {
+  return useQuery({
+    queryKey: ["ChartData", id],
+    queryFn: () => GetChartData(id),
+    enabled: !!id,
+  });
+};
+
+export const useAllRescues = (matchSlug: string | null) => {
+  return useQuery({
+    queryKey: ["AllRescues", matchSlug],
+    queryFn: () => GetAllRescues(matchSlug!),
+    enabled: !!matchSlug,
+  });
+};
+
+// export const useLifelineUsedRescues = (matchSlug: string | null) => {
+//   return useQuery({
+//     queryKey: ["LifelineUsedRescues", matchSlug],
+//     queryFn: () => GetLifelineUsedRescues(matchSlug!),
+//     enabled: !!matchSlug,
+//   });
+// };

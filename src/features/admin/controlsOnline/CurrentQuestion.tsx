@@ -318,31 +318,6 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
     );
   };
 
-  // Debug logging cho props
-  React.useEffect(() => {
-    console.log("🔄 [CURRENT QUESTION] Props updated:", {
-      hasCurrentQuestionData: !!currentQuestionData,
-      isGameStarted,
-      remainingTime,
-      isLoading,
-      isTimerPaused,
-      questionOrder: currentQuestionData?.order,
-      questionId: currentQuestionData?.question?.id,
-      defaultTime: currentQuestionData?.question?.defaultTime,
-      progress: currentQuestionData
-        ? (
-            (remainingTime / currentQuestionData.question.defaultTime) *
-            100
-          ).toFixed(1) + "%"
-        : "N/A",
-    });
-  }, [
-    currentQuestionData,
-    isGameStarted,
-    remainingTime,
-    isLoading,
-    isTimerPaused,
-  ]);
 
   if (!isGameStarted) {
     return (
@@ -429,7 +404,6 @@ const CurrentQuestion: React.FC<CurrentQuestionProps> = ({
           />
           <Box className="flex justify-between items-center mt-2">
             <Typography variant="caption" className="text-gray-500">
-              Tiến độ: {timerProgress.toFixed(1)}%
             </Typography>
             <Typography variant="caption" className="text-gray-500">
               Tổng thời gian: {question.defaultTime || 0}s

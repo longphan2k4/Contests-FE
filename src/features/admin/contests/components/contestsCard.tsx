@@ -34,9 +34,8 @@ const ContestCard: React.FC<ContestCardProps> = ({
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    console.log(contest?.slug);
     if (contest) {
-      navigate(`/admin/cuoc-thi/${contest.slug}`);
+      navigate(`/admin/contest/${contest.slug}`);
     }
   };
 

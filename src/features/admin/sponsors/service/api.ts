@@ -4,7 +4,7 @@ import {
   type UpdateSponsorInput,
   type SponsorQuery,
   type deleteSponsorsType,
-  type UploadSponsorMediaInput
+  type UploadSponsorMediaInput,
 } from "../types/sponsors.shame";
 
 // Get sponsors by contest slug
@@ -15,7 +15,7 @@ export const getAllSponsors = async (slug: string, filter: SponsorQuery) => {
   if (filter.limit) params.append("limit", String(filter.limit));
 
   const res = await axiosInstance.get(`/sponsors/contest/${slug}?${params}`);
-  return res.data.data;
+  return res.data;
 };
 
 // Get sponsor by ID
@@ -37,7 +37,7 @@ export const createSponsorForContest = async (
 ) => {
   const formData = new FormData();
   formData.append("name", data.name);
-  
+
   if (data.logo) formData.append("logo", data.logo);
   if (data.images) formData.append("images", data.images);
   if (data.videos) formData.append("videos", data.videos);
@@ -52,17 +52,14 @@ export const createSponsorForContest = async (
 };
 
 // Update sponsor
-export const UpdateSponsor = async (
-  id: number,
-  data: UpdateSponsorInput
-) => {
+export const UpdateSponsor = async (id: number, data: UpdateSponsorInput) => {
   const formData = new FormData();
 
   if (data.name) formData.append("name", data.name);
   if (data.logo) formData.append("logo", data.logo);
   if (data.images) formData.append("images", data.images);
   if (data.videos) formData.append("videos", data.videos);
-  
+
   // Add removal flags - explicitly check for true
   if (data.removeLogo === true) formData.append("removeLogo", "true");
   if (data.removeImages === true) formData.append("removeImages", "true");
@@ -83,11 +80,9 @@ export const DeleteSponsor = async (id: number) => {
   return res.data;
 };
 
-// Batch delete sponsors  
+// Batch delete sponsors
 export const DeleteSponsors = async (ids: deleteSponsorsType) => {
-  const res = await axiosInstance.delete("/sponsors/batch", {
-    data: ids,
-  });
+  const res = await axiosInstance.post("/sponsors/batch", ids);
   return res.data;
 };
 

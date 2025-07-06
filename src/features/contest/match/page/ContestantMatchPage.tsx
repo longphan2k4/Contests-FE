@@ -189,6 +189,10 @@ const ContestantMatchPage: React.FC = () => {
   const { slug, matchId: matchIdParam } = useParams();
   const matchId = matchIdParam ? parseInt(matchIdParam) : null;
 
+  useEffect(() => {
+    document.title = "Quản lý nhóm thí sinh";
+  }, []);
+
   // Điều kiện để quyết định sử dụng hook nàoAdd commentMore actions
   const shouldUseMatchFilter = !!(filter.matchId && filter.matchId > 0);
 
@@ -363,6 +367,7 @@ const ContestantMatchPage: React.FC = () => {
         setGroupDivisionStep(1);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingGroups, isGroupDivisionOpen, skipSyncFromAPI]);
 
   const openCreate = () => setIsCreateOpen(true);
@@ -715,6 +720,7 @@ const ContestantMatchPage: React.FC = () => {
         }
       },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const handleAction = useCallback(
     (type: "view" | "edit" | "delete", id: number) => {
@@ -726,6 +732,7 @@ const ContestantMatchPage: React.FC = () => {
       if (type === "view") setIsViewOpen(true);
       if (type === "edit") setIsEditOpen(true);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [handleDelete]
   );
 
@@ -1365,6 +1372,7 @@ const ContestantMatchPage: React.FC = () => {
       setIsResettingAll(false);
       setIsConfirmResetAllOpen(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     existingGroups,
     fetchCurrentGroups,
@@ -1724,28 +1732,20 @@ const ContestantMatchPage: React.FC = () => {
         <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            flexDirection: "column",
+            gap: 1,
             mb: 1,
           }}
         >
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-            {/* {filter.schoolId && (
-              <Chip
-                label={`Trường: ${listSchools.find(s => s.id === filter.schoolId)?.name}`}
-                onDelete={() => setFilter(prev => ({ ...prev, schoolId: undefined, classId: undefined }))}
-                size="small"
-                color="primary"
-              />
-            )}
-            {filter.classId && (
-              <Chip
-                label={`Lớp: ${listClasses.find(c => c.id === filter.classId)?.name}`}
-                onDelete={() => setFilter(prev => ({ ...prev, classId: undefined }))}
-                size="small"
-                color="primary"
-              />
-            )} */}
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 1,
+              alignItems: "center",
+              // minHeight: 32, // Đảm bảo có chiều cao tối thiểu
+            }}
+          >
             {matchId &&
               filter.groupId !== undefined &&
               filter.groupId !== 0 && (
@@ -1801,7 +1801,6 @@ const ContestantMatchPage: React.FC = () => {
                     }}
                     size="small"
                     color="primary"
-                    sx={{ mr: 1 }}
                   />
                 );
               })}
@@ -1817,21 +1816,27 @@ const ContestantMatchPage: React.FC = () => {
                     groupId: undefined,
                   }))
                 }
+                sx={{
+                  flexShrink: 0, // Ngăn nút bị co lại
+                  minWidth: "auto",
+                }}
               >
                 Xóa tất cả bộ lọc
               </Button>
             )}
           </Box>
-          <Typography variant="body2" color="text.secondary">
-            Hiển thị: {displayedContestants.length} / Tổng số:{" "}
-            {pagination.total} thí sinh
-            {(filter.schoolId ||
-              filter.classId ||
-              (matchId &&
-                filter.groupId !== undefined &&
-                filter.groupId !== 0)) && <span> (đã lọc)</span>}
-          </Typography>
-        </Box>{" "}
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Typography variant="body2" color="text.secondary">
+              Hiển thị: {displayedContestants.length} / Tổng số:{" "}
+              {pagination.total} thí sinh
+              {(filter.schoolId ||
+                filter.classId ||
+                (matchId &&
+                  filter.groupId !== undefined &&
+                  filter.groupId !== 0)) && <span> (đã lọc)</span>}
+            </Typography>
+          </Box>
+        </Box>
         {/* Danh sách thí sinh */}
         <Box
           sx={{
@@ -1899,8 +1904,8 @@ const ContestantMatchPage: React.FC = () => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1, // Reset về trang 1 khi thay đổi limit
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >
@@ -1908,6 +1913,9 @@ const ContestantMatchPage: React.FC = () => {
                 <MenuItem value={10}>10</MenuItem>
                 <MenuItem value={25}>25</MenuItem>
                 <MenuItem value={50}>50</MenuItem>
+                <MenuItem value={100}>100</MenuItem>
+                <MenuItem value={200}>200</MenuItem>
+                <MenuItem value={500}>500</MenuItem>
               </Select>
             </FormControl>
             <Typography>

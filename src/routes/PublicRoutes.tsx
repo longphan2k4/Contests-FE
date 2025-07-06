@@ -3,7 +3,7 @@ import HomePage from "../features/home/pages/HomePage";
 
 const PublicRoutes = () => {
   return (
-    <Route path="/trang-chu">
+    <Route path="/">
       <Route index element={<HomePage />} />
     </Route>
   );

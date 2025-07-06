@@ -1,7 +1,5 @@
 import axiosInstance from "../../../../config/axiosInstance";
 import {
-  type CreateStudentInput,
-  type UpdateStudentInput,
   type StudentQuery,
   type deleteStudentsType,
 } from "../types/student.shame";
@@ -11,8 +9,8 @@ export const getAllStudents = async (params: StudentQuery = {}) => {
   return res.data;
 };
 
-export const getAllClasses = async (params: StudentQuery = {}) => {
-  const res = await axiosInstance.get(`/class?limit=50`, { params });
+export const getAllClasses = async () => {
+  const res = await axiosInstance.get(`/class/list-class`);
   return res.data;
 };
 
@@ -21,12 +19,12 @@ export const getStudentById = async (id: number | null) => {
   return res.data.data;
 };
 
-export const CreateStudent = async (payload: CreateStudentInput) => {
+export const CreateStudent = async (payload: FormData) => {
   const res = await axiosInstance.post("/student", payload);
   return res.data;
 };
 
-export const UpdateStudent = async (id: number, payload: UpdateStudentInput) => {
+export const UpdateStudent = async (id: number, payload: FormData) => {
   const res = await axiosInstance.patch(`/student/${id}`, payload);
   return res.data;
 };
@@ -43,5 +41,18 @@ export const DeleteUssers = async (ids: deleteStudentsType) => {
 
 export const DeleteStudent = async (id: number) => {
   const res = await axiosInstance.delete(`/student/${id}`);
+  return res.data;
+};
+
+export const ListStudents = async () => {
+  const res = await axiosInstance.get("/user/get-student");
+  return res.data;
+};
+
+export const getListStudentCurrent = async (userId: string | null) => {
+  if (!userId) {
+    return;
+  }
+  const res = await axiosInstance.get(`/user/get-student/${userId}`);
   return res.data;
 };

@@ -1,5 +1,5 @@
-import React from 'react';
-import ConfirmDeleteDialog from '../../../../components/ConfirmDeleteDialog';
+import React from "react";
+import ConfirmDeleteDialog from "../../../../components/ConfirmDeleteDialog";
 
 interface ConfirmDeleteManyProps {
   open: boolean;
@@ -12,10 +12,10 @@ const ConfirmDeleteMany: React.FC<ConfirmDeleteManyProps> = ({
   open,
   onClose,
   onConfirm,
-  count
+  count,
 }) => {
-  const title = 'Xác nhận xóa nhiều nhà tài trợ';
-  const content = `Bạn có chắc chắn muốn xóa ${count} nhà tài trợ đã chọn? Hành động này không thể hoàn tác.`;
+  const title = "Xác nhà tài trợ";
+  const content = `Bạn có chắc chắn muốn xóa ${count} nhà tài trợ `;
 
   return (
     <ConfirmDeleteDialog

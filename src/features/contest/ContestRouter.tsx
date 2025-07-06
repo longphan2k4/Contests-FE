@@ -17,20 +17,23 @@ import AwardsPage from "../admin/awards/page/AwardsPage";
 import MediaPage from "@features/admin/media/page/MediaPage";
 const ContestRoutes = () => {
   return (
-    <Route path="/admin/cuoc-thi/:slug" element={<ContestLayout />}>
+    <Route path="/admin/contest/:slug" element={<ContestLayout />}>
       <Route path="dashboard" element={<Dashboard />} />
-      <Route path="vong-dau" element={<RoundPage />} />
-      <Route path="nhom" element={<GroupPage />} />
-      <Route path="thi-sinh" element={<ContestantPage />} />
-      <Route path="tran-dau" element={<MatchPage />} />
+      <Route path="round" element={<RoundPage />} />
+      <Route path="group" element={<GroupPage />} />
+      <Route path="contestant" element={<ContestantPage />} />
+      <Route path="match" element={<MatchPage />} />
       <Route path="sponsors" element={<SponsorsPage />} />
       <Route path="awards" element={<AwardsPage />} />
       <Route path="class-videos" element={<ClassVideosPage />} />
       <Route path="media" element={<MediaPage />} />
-      <Route path="cuu-tro" element={<RescuePage />} />
+      <Route path="rescue" element={<RescuePage />} />
       <Route index element={<Navigate to="dashboard" replace />} />
       <Route path="results" element={<ResultsPage />} />
-      <Route path="thi-sinh-tran-dau/:matchId" element={<ContestantMatchPage />} />
+      <Route
+        path="contestant-match/:matchId"
+        element={<ContestantMatchPage />}
+      />
     </Route>
   );
 };

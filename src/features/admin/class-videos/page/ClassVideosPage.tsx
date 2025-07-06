@@ -43,7 +43,9 @@ import SearchIcon from "@mui/icons-material/Search";
 const ClassVideos: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [classVideos, setclassVideos] = useState<ClassVideo[]>([]);
-  const [selectedClassVideoId, setSelectedClassVideoId] = useState<number | null>(null);
+  const [selectedClassVideoId, setSelectedClassVideoId] = useState<
+    number | null
+  >(null);
   const [pagination, setPagination] = useState<pagination>({});
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -53,7 +55,9 @@ const ClassVideos: React.FC = () => {
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
 
   const [filter, setFilter] = useState<ClassVideoQuery>({});
-  const [selectedClassVideoIds, setSelectedClassVideoIds] = useState<number[]>([]);
+  const [selectedClassVideoIds, setSelectedClassVideoIds] = useState<number[]>(
+    []
+  );
 
   const { showToast } = useToast();
 
@@ -62,7 +66,7 @@ const ClassVideos: React.FC = () => {
     isLoading: isClassVideosLoading,
     isError: isClassVideosError,
     refetch: refetchClassVideos,
-  } = useClassVideos(slug || '',filter);
+  } = useClassVideos(slug || "", filter);
 
   const { mutate: mutateCreate } = useCreateClassVideo();
 
@@ -74,7 +78,7 @@ const ClassVideos: React.FC = () => {
 
   useEffect(() => {
     if (classVideosQuery) {
-      setclassVideos(classVideosQuery.data);
+      setclassVideos(classVideosQuery.data.classVideos);
       setPagination(classVideosQuery.data.pagination);
     }
   }, [classVideosQuery]);
@@ -101,25 +105,24 @@ const ClassVideos: React.FC = () => {
   };
 
   const handleCreate = (payload: CreateClassVideoInput) => {
-  mutateCreate(
-    {
-      slug: slug || "",
-      data: payload,
-    },
-    {
-      onSuccess: data => {
-        if (data) showToast(`Tạo Video Lớp thành công`, "success");
-        refetchClassVideos();
+    mutateCreate(
+      {
+        slug: slug || "",
+        data: payload,
       },
-      onError: (err: any) => {
-        if (err.response?.data?.message) {
-          showToast(err.response?.data?.message, "error");
-        }
-      },
-    }
-  );
-};
-
+      {
+        onSuccess: data => {
+          if (data) showToast(`Tạo Video Lớp thành công`, "success");
+          refetchClassVideos();
+        },
+        onError: (err: any) => {
+          if (err.response?.data?.message) {
+            showToast(err.response?.data?.message, "error");
+          }
+        },
+      }
+    );
+  };
 
   const handleUpdate = (payload: UpdateClassVideoInput) => {
     if (selectedClassVideoId) {
@@ -129,6 +132,7 @@ const ClassVideos: React.FC = () => {
           onSuccess: () => {
             showToast(`Cập nhật Video Lớp thành công`, "success");
             refetchClassVideos();
+            setSelectedClassVideoId(null);
           },
           onError: (err: any) => {
             if (err.response?.data?.message)
@@ -138,7 +142,6 @@ const ClassVideos: React.FC = () => {
       );
     }
   };
-  
 
   const handleDelete = useCallback((id: number | null) => {
     if (!id) return;
@@ -146,6 +149,7 @@ const ClassVideos: React.FC = () => {
       onSuccess: () => {
         showToast(`Xóa Video Lớp thành công`, "success");
         refetchClassVideos();
+        setSelectedClassVideoId(null);
       },
       onError: (error: any) => {
         showToast(error.response?.data?.message, "success");
@@ -173,6 +177,7 @@ const ClassVideos: React.FC = () => {
 
   useEffect(() => {
     document.title = "Quản lý Video Lớp";
+    refetchClassVideos();
   }, []);
 
   if (isClassVideosLoading) {
@@ -198,7 +203,7 @@ const ClassVideos: React.FC = () => {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h5">Quản lý Video Lớp</Typography>
+        <Typography variant="h5">Quản lý video lớp</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -277,8 +282,6 @@ const ClassVideos: React.FC = () => {
                 Xoá ({selectedClassVideoIds.length})
               </Button>
             )}
-
-           
           </Stack>
           <Box
             sx={{
@@ -324,8 +327,8 @@ const ClassVideos: React.FC = () => {
                   setFilter(prev => ({
                     ...prev,
                     limit: Number(e.target.value),
+                    page: 1, // Reset to first page when changing limit
                   }));
-                  filter.page = 1;
                 }}
                 label="Hiển thị"
               >
@@ -336,44 +339,34 @@ const ClassVideos: React.FC = () => {
               </Select>
             </FormControl>
             <Typography>
-              Trang {filter.page || 1} / {pagination?.totalPages}
+              Trang {filter.page || 1} / {pagination?.totalPages ?? 1}
             </Typography>
           </Box>
         </Box>
-        <Box className="flex flex-col items-center">
-          {" "}
-          <Pagination
-            count={pagination?.totalPages}
-            page={filter.page ?? 1}
-            color="primary"
-            onChange={(_event, value) =>
-              setFilter(prev => ({
-                ...prev,
-                page: value,
-              }))
-            }
-            showFirstButton
-            showLastButton
-          />
+        <Box
+          style={{
+            display:
+              pagination?.totalPages && pagination.totalPages > 1
+                ? "block"
+                : "none",
+          }}
+        >
+          <Box className="flex flex-col items-center">
+            <Pagination
+              count={pagination?.totalPages ?? 1}
+              page={filter.page ?? 1}
+              color="primary"
+              onChange={(_event, value) =>
+                setFilter(prev => ({
+                  ...prev,
+                  page: value,
+                }))
+              }
+              showFirstButton
+              showLastButton
+            />
+          </Box>
         </Box>
-        <CreateClassVideo
-          isOpen={isCreateOpen}
-          onClose={closeCreate}
-          onSubmit={handleCreate}
-        />
-
-        <ViewClassVideo
-          isOpen={isViewOpen}
-          onClose={() => setIsViewOpen(false)}
-          id={selectedClassVideoId}
-        />
-
-        <EditClassVideo
-          isOpen={isEditOpen}
-          onClose={() => setIsEditOpen(false)}
-          id={selectedClassVideoId}
-          onSubmit={handleUpdate}
-        />
       </Box>
       <ConfirmDeleteMany
         open={isConfirmDeleteMany}
@@ -382,7 +375,24 @@ const ClassVideos: React.FC = () => {
         description={`Bạn có chắc xóa ${selectedClassVideoIds.length} video lớp này không`}
         onConfirm={() => handeDeletes({ ids: selectedClassVideoIds })}
       />
+      <CreateClassVideo
+        isOpen={isCreateOpen}
+        onClose={closeCreate}
+        onSubmit={handleCreate}
+      />
 
+      <ViewClassVideo
+        isOpen={isViewOpen}
+        onClose={() => setIsViewOpen(false)}
+        id={selectedClassVideoId}
+      />
+
+      <EditClassVideo
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        id={selectedClassVideoId}
+        onSubmit={handleUpdate}
+      />
       <ConfirmDelete
         open={isConfirmDelete}
         onClose={() => setIsConfirmDelete(false)}

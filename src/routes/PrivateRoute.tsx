@@ -24,10 +24,11 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ roles, children }) => {
         <CircularProgress />
       </div>
     );
+
   }
 
   if (!user || !user.role) {
-    return <Navigate to="/trang-chu" state={{ from: location }} replace />;
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   if (roles && !roles.includes(user.role)) {
