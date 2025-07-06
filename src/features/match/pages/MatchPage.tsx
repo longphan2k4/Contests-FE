@@ -7,6 +7,7 @@ import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerD
 import EliminateDisplay from "../components/Eliminate/EliminateDisplay";
 import QRCodeDisplay from "../components/QuestionDisplay/QRCodeDisplay";
 import RescueStatsDisplay from "../components/QuestionDisplay/RescueStatsDisplays";
+import Info from "../components/QuestionDisplay/Info";
 
 import { mockContestants } from "../constants";
 
@@ -57,9 +58,9 @@ export default function MatchPage() {
     useState<countContestant | null>(null);
   const [listQuestion, setListQuestion] = useState<Question[]>([]);
   const [screenControl, setScreenControl] = useState<SceenControl | null>(null);
-  const [updateRescuedData, setUpdateRescuedData] = useState<updatedRescuesType[]>(
-      []
-    );
+  const [updateRescuedData, setUpdateRescuedData] = useState<
+    updatedRescuesType[]
+  >([]);
 
   // Use rescue hook to fetch initial data
   const {
@@ -165,16 +166,18 @@ export default function MatchPage() {
   // gọi getAllRescues khi match thay đổi
   useEffect(() => {
     if (isSuccessAllRescues && allRescuesRes?.data) {
-      const formattedRescues: updatedRescuesType[] = allRescuesRes.data.map((rescue: any) => ({
-        id: rescue.id,
-        name: rescue.name,
-        rescueType: rescue.rescueType,
-        status: rescue.status,
-        remainingContestants: rescue.remainingContestants || 0,
-        questionFrom: rescue.questionFrom,
-        questionTo: rescue.questionTo,
-        index: rescue.index || 0
-      }));
+      const formattedRescues: updatedRescuesType[] = allRescuesRes.data.map(
+        (rescue: any) => ({
+          id: rescue.id,
+          name: rescue.name,
+          rescueType: rescue.rescueType,
+          status: rescue.status,
+          remainingContestants: rescue.remainingContestants || 0,
+          questionFrom: rescue.questionFrom,
+          questionTo: rescue.questionTo,
+          index: rescue.index || 0,
+        })
+      );
       setUpdateRescuedData(formattedRescues);
     }
   }, [isSuccessAllRescues, allRescuesRes]);
@@ -192,12 +195,13 @@ export default function MatchPage() {
     const handleCurrentQuestion = (data: any) => {
       setMatchInfo(data?.matchInfo);
       setCurrentQuestion(data?.currentQuestion);
+      setListContestant(data?.ListContestant);
       setScreenControl(prev => {
         if (!prev) return null;
 
         return {
           ...prev,
-          controlKey: "question",
+          controlKey: "questionInfo",
         };
       });
     };
@@ -219,9 +223,9 @@ export default function MatchPage() {
       setMatchInfo(data?.matchInfo);
     };
 
-    const handleUpdateStatus = (data: any) => {
-      setListContestant(data?.ListContestant);
-    };
+    // const handleUpdateStatus = (data: any) => {
+    //   setListContestant(data?.ListContestant);
+    // };
 
     const handleUpdateEliminate = (data: any) => {
       setListContestant(data?.ListContestant);
@@ -233,7 +237,6 @@ export default function MatchPage() {
     };
 
     const handleUpdateRescued = (data: any) => {
-      console.log("Rescued data:", data);
       setListContestant(data?.ListContestant);
       setCountContestant(prev => ({
         ...prev!,
@@ -243,7 +246,6 @@ export default function MatchPage() {
     };
 
     const handleShowQrRescue = (data: any) => {
-      console.log("handleShowQrRescue", data);
       setScreenControl(data?.updatedScreen);
     };
 
@@ -252,7 +254,9 @@ export default function MatchPage() {
     };
 
     const getRescueStatus = (data: unknown) => {
-      const typedData = data as { data: { updatedRescues: updatedRescuesType[] } };
+      const typedData = data as {
+        data: { updatedRescues: updatedRescuesType[] };
+      };
       console.log("Rescue status data:", typedData);
       setUpdateRescuedData(typedData.data.updatedRescues);
     };
@@ -262,9 +266,9 @@ export default function MatchPage() {
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
     socket.on("update:winGold", handleUpdateGold);
-    socket.on("contestant:status-update", handleUpdateStatus);
+    // socket.on("contestant:status-update", handleUpdateStatus);
     socket.on("update:Eliminated", handleUpdateEliminate);
-    socket.on("update:Rescued", handleUpdateRescued);
+    socket.on("update:Rescused", handleUpdateRescued);
     socket.on("showQrRescue", handleShowQrRescue);
     socket.on("showQrChart", handleShowQrChart);
 
@@ -274,9 +278,9 @@ export default function MatchPage() {
       socket.off("currentQuestion:get", handleCurrentQuestion);
       socket.off("timer:update", handleUpdateTime);
       socket.off("update:winGold", handleUpdateGold);
-      socket.off("contestant:status-update", handleUpdateStatus);
+      // socket.off("contestant:status-update", handleUpdateStatus);
       socket.off("update:Eliminated", handleUpdateEliminate);
-      socket.off("update:Rescued", handleUpdateRescued);
+      socket.off("update:Rescused", handleUpdateRescued);
     };
   }, [socket]);
 
@@ -344,20 +348,6 @@ export default function MatchPage() {
           <RescueStatsDisplay rescueId={Number(screenControl?.value) ?? 2} />
         </div>
       )}
-
-      {/* {screenControl?.controlKey === "qrcode" && (
-        <div
-          key="qrCode"
-          className="max-h-[100vh] overflow-y-auto flex items-center justify-center"
-        >
-          <QRCodeDisplay
-            matchSlug={match ?? ""}
-            rescueId={2}
-            matchName={matchInfo?.name ?? ""}
-            currentQuestionOrder={2}
-          />
-        </div>
-      )} */}
 
       {screenControl?.controlKey === "question" && (
         <div key="question">
@@ -463,8 +453,8 @@ export default function MatchPage() {
           <GoldWinnerDisplay studentName={matchInfo?.studentName ?? null} />
         </div>
       )}
-      {screenControl?.controlKey === "questionInfo" && (
-        <div key="questionInfo">
+      {screenControl?.controlKey === "questionIntro" && (
+        <div key="questionIntro">
           <MatchHeader
             countContestant={countContestant}
             remainingTime={matchInfo?.remainingTime}
@@ -475,6 +465,11 @@ export default function MatchPage() {
           <QuestionIntro
             intro={currentQuestion?.intro ?? "Câu hỏi này không có thông tin"}
           />
+        </div>
+      )}
+      {screenControl?.controlKey === "questionInfo" && (
+        <div key="questionInfo">
+          <Info currentQuestion={currentQuestion} />
         </div>
       )}
     </>
