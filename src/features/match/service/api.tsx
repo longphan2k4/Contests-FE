@@ -39,3 +39,8 @@ export const GetListContestant = async (match: string | null) => {
   const res = await axiosInstance.get(`/match/${match}/ListContestant`);
   return res.data;
 };
+
+export const GetChartData = async (id: number) => {
+  const res = await axiosInstance.get(`/rescue/chart/${id}`);
+  return res.data;
+};

@@ -1,55 +1,82 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useSocket } from "@contexts/SocketContext";
+import { useSubmitSupportAnswer } from "../hooks/useRescue";
+import { useToast } from "@/contexts/toastContext";
 
 interface Props {
+  questionId: number | null; // dùng để lưu trữ theo từng câu
   options: string[];
-  correctAnswer: string;
-  selectedAnswer?: string;
-  onAnswerSelect?: (answer: string) => void;
-  onSubmit: (isCorrect: boolean) => void;
+  rescueId?: number; // Thêm rescueId nếu cần thiết
 }
 
 const MultipleChoiceInput: React.FC<Props> = ({
+  questionId,
   options,
-  correctAnswer,
-  selectedAnswer,
-  onAnswerSelect,
-  onSubmit,
+  rescueId,
 }) => {
-  const [selected, setSelected] = useState<string | null>(
-    selectedAnswer || null
-  );
+  const [selected, setSelected] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const { socket } = useSocket();
+  const { showToast } = useToast();
 
-  // Sync with external selectedAnswer
   useEffect(() => {
-    setSelected(selectedAnswer || null);
-  }, [selectedAnswer]);
+    if (!socket) return;
 
-  const handleSelect = (option: string) => {
+    const handletimerStart = (_data: any) => {
+      localStorage.removeItem("answer");
+      setIsSubmitted(false);
+    };
+    socket.on("timerStart:Rescue", handletimerStart);
+
+    return () => {
+      if (socket) {
+        socket.off("timerStart:Rescue", handletimerStart);
+      }
+    };
+  }, [socket, questionId]);
+
+  // --- Helper functions
+  const getLetter = (index: number) => String.fromCharCode(65 + index); // A, B, C...
+
+  useEffect(() => {
+    const anwser = localStorage.getItem("answer");
+    if (anwser) setIsSubmitted(true);
+  }, [questionId]);
+
+  // --- Handle chọn đáp án
+  const handleSelect = (index: number) => {
     if (isSubmitted) return;
-
-    setSelected(option);
-    if (onAnswerSelect) {
-      onAnswerSelect(option);
-    }
+    const letter = getLetter(index);
+    setSelected(letter);
   };
 
+  const { mutateAsync: submitAnswer } = useSubmitSupportAnswer();
   const handleSubmit = () => {
     if (!selected) return;
-
-    const isCorrect = selected === correctAnswer;
     setIsSubmitted(true);
-
-    setTimeout(() => {
-      onSubmit(isCorrect);
-    }, 500);
+    localStorage.setItem("answer", "true");
+    submitAnswer(
+      { rescueId: rescueId || 0, supportAnswers: selected },
+      {
+        onSuccess: () => {
+          showToast("Cứu trợ thành công", "success");
+          setSelected(null);
+        },
+        onError: (error: any) => {
+          showToast(
+            error?.response?.data?.message || "Lỗi khi gửi cứu trợ",
+            "error"
+          );
+        },
+      }
+    );
   };
 
-  const getOptionClass = (option: string) => {
+  const getOptionClass = (letter: string) => {
     const baseClass =
       "group relative w-full p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg";
 
-    if (selected === option) {
+    if (selected === letter) {
       return `${baseClass} border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-md ring-2 ring-blue-200`;
     }
     return `${baseClass} border-gray-200 bg-white hover:border-blue-300 hover:bg-gray-50`;
@@ -57,81 +84,49 @@ const MultipleChoiceInput: React.FC<Props> = ({
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl shadow-xl border border-gray-100">
-      {/* Options */}
       <div className="space-y-4 mb-8">
-        {options.map((option, index) => (
-          <div
-            key={index}
-            className={getOptionClass(option)}
-            onClick={() => handleSelect(option)}
-          >
-            <div className="flex items-center justify-between">
+        {options.map((option, index) => {
+          const letter = getLetter(index);
+          return (
+            <div
+              key={index}
+              className={getOptionClass(letter)}
+              onClick={() => handleSelect(index)}
+            >
               <div className="flex items-center space-x-4">
-                {/* Option Letter */}
                 <div
-                  className={`
-                  flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-colors duration-300
-                  ${
-                    selected === option
+                  className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-colors duration-300 ${
+                    selected === letter
                       ? "bg-blue-500 text-white"
                       : "bg-gray-200 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600"
-                  }
-                `}
+                  }`}
                 >
-                  {String.fromCharCode(65 + index)}
+                  {letter}
                 </div>
-
-                {/* Option Text */}
                 <span
-                  className={`
-                  text-base font-medium transition-colors duration-300
-                  ${selected === option ? "text-blue-700" : "text-gray-700"}
-                `}
+                  className={`text-base font-medium ${
+                    selected === letter ? "text-blue-700" : "text-gray-700"
+                  }`}
                 >
                   {option}
                 </span>
               </div>
             </div>
-
-            {/* Hover effect indicator */}
-            <div
-              className={`
-                absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                ${
-                  selected === option
-                    ? "bg-gradient-to-r from-blue-500/5 to-indigo-500/5"
-                    : "bg-gradient-to-r from-gray-500/5 to-slate-500/5"
-                }
-              `}
-            />
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Submit Button */}
-      <div className="flex justify-center">
+      <div className="flex flex-col items-center space-y-3">
         <button
           onClick={handleSubmit}
           disabled={selected === null || isSubmitted}
-          className={`
-            relative px-8 py-3 rounded-xl font-semibold text-lg transition-all duration-300 transform
-            ${
-              selected && !isSubmitted
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:scale-105 hover:from-blue-700 hover:to-indigo-700 active:scale-95"
-                : isSubmitted
-                ? "bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed"
-                : "bg-gradient-to-r from-gray-300 to-gray-400 text-gray-500 cursor-not-allowed"
-            }
-          `}
+          className={`relative px-8 py-3 rounded-xl font-semibold text-lg transition-all duration-300 transform ${
+            selected && !isSubmitted
+              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+              : "bg-gradient-to-r from-gray-300 to-gray-400 text-gray-500 cursor-not-allowed"
+          }`}
         >
-          {isSubmitted ? (
-            <div className="flex items-center space-x-2">
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Đã gửi</span>
-            </div>
-          ) : (
-            "Gửi đáp án"
-          )}
+          Cứu trợ
         </button>
       </div>
     </div>
