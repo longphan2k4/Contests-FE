@@ -110,7 +110,7 @@ const ContestPage: React.FC = () => {
   };
 
   const handleEditContest = (contestId: number) => {
-    const contest = contests.find(c => c.id === contestId);
+    const contest = contests.find((c) => c.id === contestId);
     if (contest) {
       setSelectedContest(contest);
       setEditDialogOpen(true);
@@ -146,8 +146,8 @@ const ContestPage: React.FC = () => {
   };
 
   const handleContestUpdated = (updatedContest: Contest) => {
-    setContests(prevContests =>
-      prevContests.map(contest =>
+    setContests((prevContests) =>
+      prevContests.map((contest) =>
         contest.id === updatedContest.id ? updatedContest : contest
       )
     );
@@ -157,9 +157,9 @@ const ContestPage: React.FC = () => {
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
   const handleSelectContest = (contestId: number) => {
-    setSelectedContests(prev => {
+    setSelectedContests((prev) => {
       if (prev.includes(contestId)) {
-        return prev.filter(id => id !== contestId);
+        return prev.filter((id) => id !== contestId);
       }
       return [...prev, contestId];
     });
@@ -169,7 +169,7 @@ const ContestPage: React.FC = () => {
     if (selectedContests.length === contests.length) {
       setSelectedContests([]);
     } else {
-      setSelectedContests(contests.map(contest => contest.id));
+      setSelectedContests(contests.map((contest) => contest.id));
     }
   };
 
@@ -346,7 +346,7 @@ const ContestPage: React.FC = () => {
               gap: 3,
             }}
           >
-            {contests.map(contest => (
+            {contests.map((contest) => (
               <Box key={contest.id}>
                 <ContestCard
                   contest={contest}

@@ -109,18 +109,18 @@ const StudentRegister: React.FC = () => {
     await register(formData);
   };
 
-  const handleDemoRegister = () => {
-    setFormData({
-      username: "khoa4",
-      fullName: "Nguyễn Thị Test5",
-      email: "admin4@example.com",
-      password: "Khoa12345@",
-      confirmPassword: "Khoa12345@",
-      school: "Trường THPT Bùi Thị Xuân",
-      classId: 0,
-    });
-    setSelectedSchool("Trường THPT Bùi Thị Xuân");
-  };
+  // const handleDemoRegister = () => {
+  //   setFormData({
+  //     username: "khoa4",
+  //     fullName: "Nguyễn Thị Test5",
+  //     email: "admin4@example.com",
+  //     password: "Khoa12345@",
+  //     confirmPassword: "Khoa12345@",
+  //     school: "Trường THPT Bùi Thị Xuân",
+  //     classId: 0,
+  //   });
+  //   setSelectedSchool("Trường THPT Bùi Thị Xuân");
+  // };
 
   // Filter schools and classes based on search
   const filteredSchools = getUniqueSchools().filter((school) =>
@@ -535,7 +535,7 @@ const StudentRegister: React.FC = () => {
                 <span className="px-2 bg-white text-gray-500">Hoặc</span>
               </div>
             </div>
-
+{/* 
             <button
               type="button"
               onClick={handleDemoRegister}
@@ -543,7 +543,7 @@ const StudentRegister: React.FC = () => {
               className="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Điền thông tin demo
-            </button>
+            </button> */}
           </form>
 
           {/* Additional Info */}

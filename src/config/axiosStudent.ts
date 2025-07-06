@@ -24,7 +24,6 @@ axiosStudent.interceptors.request.use(
   (config) => {
     // Backend authenticate thông qua req.cookies.accessToken
     // Không cần thêm Authorization header
-    console.log("📤 [STUDENT REQUEST] Sending request with credentials");
     return config;
   },
   (error) => {
@@ -51,7 +50,6 @@ axiosStudent.interceptors.response.use(
         if (refreshResponse.data.success) {
           // Backend sẽ set cookie mới và response không có accessToken trong data
           // Chỉ cần thử lại request gốc vì cookie đã được update
-          console.log("✅ [REFRESH] Token refreshed successfully via cookie");
           return axiosStudent(originalRequest);
         }
       } catch (refreshError) {
@@ -79,13 +77,7 @@ export const debugStudentToken = () => {
   const localToken = getTokenFromLocalStorage("accessToken");
   const contestantInfo = getTokenFromLocalStorage("contestantInfo");
 
-  console.log("🔍 [STUDENT TOKEN DEBUG] Token info:", {
-    localToken: localToken ? `${localToken.substring(0, 20)}... (FOR DISPLAY ONLY)` : null,
-    hasContestantInfo: !!contestantInfo,
-    withCredentials: true, // Authentication chỉ qua httpOnly cookie
-    note: "Backend chỉ sử dụng req.cookies.accessToken, không đọc Authorization header",
-    timestamp: new Date().toISOString()
-  });
+
 
   return {
     localToken,

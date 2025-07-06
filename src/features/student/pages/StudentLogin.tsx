@@ -45,12 +45,12 @@ const StudentLogin: React.FC = () => {
     await login(formData);
   };
 
-  const handleDemoLogin = () => {
-    setFormData({
-      identifier: "khoa5",
-      password: "Khoa12345@",
-    });
-  };
+  // const handleDemoLogin = () => {
+  //   setFormData({
+  //     identifier: "khoa5",
+  //     password: "Khoa12345@",
+  //   });
+  // };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 flex items-center justify-center px-4">
@@ -210,14 +210,14 @@ const StudentLogin: React.FC = () => {
               </div>
             </div>
 
-            <button
+            {/* <button
               type="button"
               onClick={handleDemoLogin}
               disabled={isLoading}
               className="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Điền thông tin demo
-            </button>
+            </button> */}
           </form>
 
           {/* Additional Info */}

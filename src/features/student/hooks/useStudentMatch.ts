@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useStudentSocket } from './useStudentSocket';
+import { useState, useEffect } from "react";
+import { useStudentSocket } from "./useStudentSocket";
 
 export interface MatchData {
   matchId: number;
@@ -89,45 +89,42 @@ interface StudentEliminatedEvent {
 }
 
 export const useStudentMatch = () => {
-  
   const { socket, isConnected } = useStudentSocket();
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [results, setResults] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-
-
   // Join match room
   const joinMatch = (matchSlug: string) => {
-    
     if (!socket || !isConnected) {
-      setError('Kết nối socket không khả dụng');
+      setError("Kết nối socket không khả dụng");
       return;
     }
 
     setLoading(true);
-    
-    socket.emit('student:joinMatch', { matchSlug }, (response: JoinMatchResponse) => {
-      
-      if (response.success) {
-        getMatchStatus();
-      } else {
-        setError(response.message);
+
+    socket.emit(
+      "student:joinMatch",
+      { matchSlug },
+      (response: JoinMatchResponse) => {
+        if (response.success) {
+          getMatchStatus();
+        } else {
+          setError(response.message);
+        }
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    );
   };
 
   // Get current match status
   const getMatchStatus = () => {
-    
     if (!socket || !isConnected) {
       return;
     }
 
-    socket.emit('student:getMatchStatus', (response: MatchStatusResponse) => {
-      
+    socket.emit("student:getMatchStatus", (response: MatchStatusResponse) => {
       if (response.success) {
         setMatchData(response.data.matchData);
         setResults(response.data.results || []);
@@ -144,29 +141,36 @@ export const useStudentMatch = () => {
       return;
     }
 
-
     // Handle match events
     const handleMatchStarted = (data: MatchStartedEvent) => {
-      setMatchData(prev => prev ? { ...prev, status: data.status } : null);
+      setMatchData((prev) => (prev ? { ...prev, status: data.status } : null));
     };
 
     const handleQuestionShown = (data: QuestionShownEvent) => {
-      setMatchData(prev => prev ? {
-        ...prev,
-        currentQuestion: data.currentQuestion,
-        remainingTime: prev.remainingTime
-      } : null);
+      setMatchData((prev) =>
+        prev
+          ? {
+              ...prev,
+              currentQuestion: data.currentQuestion,
+              remainingTime: prev.remainingTime,
+            }
+          : null
+      );
     };
 
     const handleTimerUpdated = (data: TimerUpdatedEvent) => {
-      setMatchData(prev => prev ? {
-        ...prev,
-        remainingTime: data.timeRemaining
-      } : null);
+      setMatchData((prev) =>
+        prev
+          ? {
+              ...prev,
+              remainingTime: data.timeRemaining,
+            }
+          : null
+      );
     };
 
     const handleMatchEnded = (data: MatchEndedEvent) => {
-      setMatchData(prev => prev ? { ...prev, status: data.status } : null);
+      setMatchData((prev) => (prev ? { ...prev, status: data.status } : null));
     };
 
     const handleStudentEliminated = (data: StudentEliminatedEvent) => {
@@ -174,22 +178,20 @@ export const useStudentMatch = () => {
     };
 
     // Register event listeners
-    socket.on('match:started', handleMatchStarted);
-    socket.on('match:questionShown', handleQuestionShown);
-    socket.on('timer:update', handleTimerUpdated);
-    socket.on('match:ended', handleMatchEnded);
-    socket.on('student:eliminated', handleStudentEliminated);
+    socket.on("match:started", handleMatchStarted);
+    socket.on("match:questionShown", handleQuestionShown);
+    socket.on("timer:update", handleTimerUpdated);
+    socket.on("match:ended", handleMatchEnded);
+    socket.on("student:eliminated", handleStudentEliminated);
 
-    console.log('✅ [STUDENT MATCH] Event listeners registered successfully');
 
     // Cleanup function
     return () => {
-      console.log('🧹 [STUDENT MATCH] Cleaning up event listeners');
-      socket.off('match:started', handleMatchStarted);
-      socket.off('match:questionShown', handleQuestionShown);
-      socket.off('timer:update', handleTimerUpdated);
-      socket.off('match:ended', handleMatchEnded);
-      socket.off('student:eliminated', handleStudentEliminated);
+      socket.off("match:started", handleMatchStarted);
+      socket.off("match:questionShown", handleQuestionShown);
+      socket.off("timer:update", handleTimerUpdated);
+      socket.off("match:ended", handleMatchEnded);
+      socket.off("student:eliminated", handleStudentEliminated);
     };
   }, [socket, isConnected]);
 
@@ -205,4 +207,4 @@ export const useStudentMatch = () => {
     joinMatch,
     getMatchStatus,
   };
-}; 
+};

@@ -85,7 +85,6 @@ export const useAntiCheat = (
     try {
       // Kiểm tra xem có thể request fullscreen không
       if (!document.fullscreenEnabled) {
-        console.warn('Trình duyệt không hỗ trợ fullscreen');
         return false;
       }
 

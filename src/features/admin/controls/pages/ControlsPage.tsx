@@ -38,10 +38,6 @@ import { useSocket } from "@contexts/SocketContext";
 import { Box, CircularProgress } from "@mui/material";
 
 // Define types for socket responses
-interface SocketResponse {
-  success: boolean;
-  message?: string;
-}
 
 interface TimerUpdateData {
   timeRemaining: number;
@@ -296,13 +292,7 @@ const ControlsPage: React.FC = () => {
           match: match,
           matchSlug: match,
         },
-        (response: SocketResponse) => {
-          if (response?.success) {
-            console.log("✅ Hide All successful:", response.message);
-          } else {
-            console.error("❌ Hide All failed:", response?.message);
-          }
-        }
+
       );
     }
   };

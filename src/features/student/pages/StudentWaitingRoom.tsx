@@ -94,7 +94,6 @@ const StudentWaitingRoom: React.FC = () => {
     };
   }, [contestantInfo]);
 
-  const isJoined = true;
   const isConnected = true;
 
   // Sử dụng real-time hook để lắng nghe events
@@ -239,16 +238,7 @@ const StudentWaitingRoom: React.FC = () => {
                   ? "🟢 Đã kết nối"
                   : "🔴 Mất kết nối"}
               </div>
-              {isJoined && (
-                <div className="px-3 py-1 rounded-full text-sm font-medium text-blue-600 bg-blue-100">
-                  ✅ Đã tham gia
-                </div>
-              )}
-              {isRealTimeStarted && (
-                <div className="px-3 py-1 rounded-full text-sm font-medium text-orange-600 bg-orange-100 animate-pulse">
-                  🔥 Đang thi
-                </div>
-              )}
+     
             </div>
           </div>
         </div>

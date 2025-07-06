@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { PlayIcon } from "@heroicons/react/24/outline";
 import { CircularProgress, Alert, Snackbar } from "@mui/material";
 import { useAdminSocket } from "./hooks/useAdminSocket";
+import { useToast } from "@contexts/toastContext";
 
 interface MatchData {
   id: number;
@@ -31,16 +32,7 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
     severity: "info",
   });
 
-  const showToast = (
-    message: string,
-    severity: "success" | "error" | "info"
-  ) => {
-    setNotification({
-      open: true,
-      message,
-      severity,
-    });
-  };
+  const { showToast } = useToast();
 
   const handleStartExam = async () => {
     try {

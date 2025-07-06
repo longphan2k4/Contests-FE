@@ -74,12 +74,39 @@ export const RegisterSchema = z
     path: ["classId"],
   });
 
-export const SubmitAnswerSchema = z.object({
-  matchId: z.number().positive("Match ID phải là số dương"),
-  questionOrder: z.number().positive("Question order phải là số dương"),
-  answer: z.string().min(1, "Vui lòng chọn câu trả lời"),
-  submittedAt: z.string().optional(),
-});
+export const SubmitAnswerSchema = z
+  .object({
+    matchId: z.number().positive("Match ID phải là số dương"),
+    questionOrder: z.number().positive("Question order phải là số dương"),
+    answer: z.string().min(1, "Vui lòng chọn câu trả lời"),
+    submittedAt: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      // 🔥 NEW: Validation bổ sung cho đáp án
+      const answer = data.answer.trim();
+
+      // Kiểm tra format option cho câu hỏi tự luận
+      const optionPatterns = [/^option\s*[a-d]$/i, /^[a-d]$/i, /^[a-d]\./i];
+
+      const isOptionFormat = optionPatterns.some((pattern) =>
+        pattern.test(answer)
+      );
+
+      // 🔥 NEW: Cảnh báo nếu gửi format option (có thể do lỗi UI)
+      if (isOptionFormat) {
+        console.warn(
+          `⚠️ [VALIDATION] Phát hiện format option "${answer}" - có thể do lỗi UI`
+        );
+      }
+
+      return true; // Vẫn cho phép submit để backend xử lý
+    },
+    {
+      message: "Đáp án không hợp lệ",
+      path: ["answer"],
+    }
+  );
 
 export type LoginSchemaType = z.infer<typeof LoginSchema>;
 export type RegisterSchemaType = z.infer<typeof RegisterSchema>;
