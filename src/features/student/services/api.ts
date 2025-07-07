@@ -3,7 +3,6 @@ import axiosInstance from "../../../config/axiosInstance";
 import type {
   LoginRequest,
   LoginResponse,
-  ContestantInfo,
   RegisterRequest,
   RegisterResponse,
   RegisterErrorResponse,
@@ -41,12 +40,6 @@ export class StudentApiService {
 
       // Lưu token và thông tin contestant
       if (response.data.success) {
-        // ✅ Lưu toàn bộ object data vào localStorage
-        localStorage.setItem(
-          "contestantInfo",
-          JSON.stringify(response.data.data)
-        );
-
         // ✅ Lưu token vào localStorage để có thể thêm vào Authorization header
         localStorage.setItem("accessToken", response.data.data.accessToken);
 
@@ -74,7 +67,6 @@ export class StudentApiService {
     registerData: RegisterRequest
   ): Promise<RegisterResponse> {
     try {
-
       const response = await axiosInstance.post<RegisterApiResponse>(
         "/auth/register-student",
         registerData
@@ -118,14 +110,18 @@ export class StudentApiService {
   }
 
   /**
-   * Lấy thông tin contestant từ localStorage
+   * Lấy thông tin profile thí sinh từ API
    */
-  static getContestantInfo(): ContestantInfo | null {
+  static async getProfileStudent() {
     try {
-      const stored = localStorage.getItem("contestantInfo");
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
+      const response = await axiosInstance.get("/auth/profile-student");
+      return response.data;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      if (apiError.response?.data?.message) {
+        throw new Error(apiError.response.data.message);
+      }
+      throw new Error("Không thể lấy thông tin thí sinh");
     }
   }
 
@@ -149,9 +145,9 @@ export class StudentApiService {
   static isAuthenticated(): boolean {
     // ✅ Chỉ kiểm tra localStorage vì httpOnly cookie không đọc được từ JS
     const localToken = this.getAccessToken();
-    const contestantInfo = this.getContestantInfo();
-
-    return !!(localToken && contestantInfo);
+    // Đã bỏ localStorage contestantInfo, chỉ kiểm tra token
+    const feAccessToken = localStorage.getItem("feAccessToken");
+    return !!localToken || !!feAccessToken;
   }
 
   /**
@@ -200,13 +196,6 @@ export class StudentApiService {
   }
 
   /**
-   * Cập nhật thông tin contestant trong localStorage
-   */
-  static updateContestantInfo(contestantInfo: ContestantInfo): void {
-    localStorage.setItem("contestantInfo", JSON.stringify(contestantInfo));
-  }
-
-  /**
    * Refresh token manually
    */
   static async refreshToken(): Promise<boolean> {
@@ -231,6 +220,25 @@ export class StudentApiService {
     } catch (error) {
       console.error("Manual refresh token failed:", error);
       return false;
+    }
+  }
+
+  /**
+   * Lấy registrationNumber cho thí sinh trong trận đấu
+   */
+  static async getRegistrationNumber(contestantId: number, matchId: number) {
+    try {
+      const response = await axiosInstance.get(
+        `/auth/registration-number?contestantId=${contestantId}&matchId=${matchId}`
+      );
+      console.log("response waiting", response.data);
+      return response.data;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      if (apiError.response?.data?.message) {
+        throw new Error(apiError.response.data.message);
+      }
+      throw new Error("Không thể lấy registrationNumber");
     }
   }
 }

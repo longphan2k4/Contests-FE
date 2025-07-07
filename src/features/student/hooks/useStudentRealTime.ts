@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useStudentSocket } from "./useStudentSocket";
 import { useNavigate } from "react-router-dom";
-import { useStudentAuth } from "./useStudentAuth";
+import { useStudentContext } from "../contexts/StudentContext";
 
 interface QuestionData {
   id: number;
@@ -102,7 +102,7 @@ export const useStudentRealTime = (
 ): StudentRealTimeReturn => {
   const { socket, isConnected, joinMatchForAnswering, leaveMatchRoom } =
     useStudentSocket();
-  const { getContestantInfo } = useStudentAuth();
+  const { contestantInfo, registrationNumber } = useStudentContext();
   const navigate = useNavigate();
 
   const [realTimeState, setRealTimeState] = useState<StudentRealTimeState>({
@@ -135,9 +135,7 @@ export const useStudentRealTime = (
         ? matchIdentifier
         : matchIdentifier.toString();
 
-    joinMatchForAnswering(matchSlug, () => {
-
-    });
+    joinMatchForAnswering(matchSlug, () => {});
 
     // Cleanup - leave room khi unmount
     return () => {
@@ -149,31 +147,21 @@ export const useStudentRealTime = (
   useEffect(() => {
     if (!socket) return;
 
-
-
     // Event: Match started - chuyển từ dashboard sang waiting room VÀ hiển thị câu hỏi đầu tiên
     const handleMatchStarted = (data: MatchStartedEvent) => {
-
-
       // 🔥 FIX: So sánh cả slug và ID
       const matchIdString = matchIdentifier?.toString();
       const isMatchingSlug = data.matchSlug === matchIdentifier;
       const isMatchingId = data.matchSlug === matchIdString;
 
-
-
       if (isMatchingSlug || isMatchingId) {
-
-
         // 🔥 NEW: CHỈ cập nhật trạng thái match bắt đầu, KHÔNG xử lý câu hỏi
         updateState({
           matchStatus: "ongoing",
           isMatchStarted: true,
           // 🔥 REMOVED: currentQuestion, remainingTime - sẽ được cập nhật khi admin hiển thị câu hỏi
         });
-
-
-      } 
+      }
     };
 
     // Event: Question changed - cập nhật câu hỏi mới trong waiting room
@@ -255,26 +243,19 @@ export const useStudentRealTime = (
 
     // 🔥 NEW: Event: Thí sinh được cứu trợ
     const handleStudentRescued = (data: StudentRescuedEvent) => {
-      const contestantInfo = getContestantInfo();
-
       if (
-        contestantInfo &&
-        data.rescuedContestantIds.includes(
-          contestantInfo.contestant.registrationNumber
-        )
+        registrationNumber !== null &&
+        data.rescuedContestantIds.includes(registrationNumber)
       ) {
         // Cập nhật trạng thái để component có thể phản ứng
-        // The UI component will show a notification based on this state change.
         updateState({
           isEliminated: false,
           eliminationMessage: "",
           isRescued: true, // Mark as rescued
         });
-
-        // 🔥 NEW: Reset rescue status after a short delay to allow UI to react
         setTimeout(() => {
           updateState({ isRescued: false });
-        }, 2000); // 2 seconds delay
+        }, 2000);
       }
     };
 
@@ -320,7 +301,8 @@ export const useStudentRealTime = (
     updateState,
     navigate,
     realTimeState.remainingTime,
-    getContestantInfo,
+    contestantInfo,
+    registrationNumber,
   ]);
 
   return {

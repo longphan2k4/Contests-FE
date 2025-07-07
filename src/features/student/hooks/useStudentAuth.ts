@@ -8,7 +8,6 @@ import {
 } from "../schemas/validation";
 import { StudentApiService } from "../services/api";
 import type {
-  ContestantInfo,
   LoginFormErrors,
   RegisterFormErrors,
   Class,
@@ -39,7 +38,7 @@ export const useStudentAuth = () => {
         }
       } catch (error) {
         console.error("Login error:", error);
-        return { success: false, error: "Đăng nhập thất bại" }; // ✅ Thêm dòng này
+        return { success: false, error: "Đăng nhập thất bại" };
       } finally {
         setIsLoading(false);
       }
@@ -52,9 +51,7 @@ export const useStudentAuth = () => {
   //   navigate("/student/login");
   // }, [navigate]);
 
-  const getContestantInfo = useCallback((): ContestantInfo | null => {
-    return StudentApiService.getContestantInfo();
-  }, []);
+  // Đã bỏ getContestantInfo, mọi component lấy contestantInfo qua context
 
   const isAuthenticated = useCallback((): boolean => {
     return StudentApiService.isAuthenticated();
@@ -67,7 +64,6 @@ export const useStudentAuth = () => {
   return {
     login,
     // logout,
-    getContestantInfo,
     isAuthenticated,
     clearErrors,
     isLoading,

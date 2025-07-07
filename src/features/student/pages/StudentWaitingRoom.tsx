@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useStudentAuth } from "../hooks/useStudentAuth";
 import { useStudentRealTime } from "../hooks/useStudentRealTime";
+import StudentApiService from "../services/api";
 import {
   UserGroupIcon,
   TrophyIcon,
@@ -12,12 +12,19 @@ import { useAntiCheat } from "../hooks/useAntiCheat";
 import { Dialog, DialogContent, Typography, Button } from "@mui/material";
 import { useNotification } from "../../../contexts/NotificationContext";
 import { QuestionAnswerRefactored } from "../components";
+import { useStudentContext } from "../contexts/StudentContext";
+import type { Match } from "../types";
 
 const StudentWaitingRoom: React.FC = () => {
   const { matchSlug } = useParams<{ matchSlug: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, getContestantInfo } = useStudentAuth();
   const { showSuccessNotification } = useNotification();
+  const {
+    contestantInfo,
+    setContestantInfo,
+    registrationNumber,
+    setRegistrationNumber,
+  } = useStudentContext();
 
   // 🔥 NEW: State for banned status, lifted up from QuestionAnswer
   const [isBanned, setIsBanned] = useState(false);
@@ -27,45 +34,83 @@ const StudentWaitingRoom: React.FC = () => {
     setBanMessage(message);
   };
 
-  // 🔥 NEW: Lấy thông tin thí sinh thực tế
-  const contestantInfo = getContestantInfo();
+  const [loading, setLoading] = useState(true);
+  const [regLoading, setRegLoading] = useState(false);
 
-  // Redirect nếu chưa đăng nhập
+  // Khi vào trang: lấy profile và registrationNumber nếu chưa có
   useEffect(() => {
-    if (!isAuthenticated()) {
+    const isMounted = true;
+    setLoading(true);
+    if (!contestantInfo) {
+      StudentApiService.getProfileStudent()
+        .then((data) => {
+          if (isMounted) setContestantInfo(data.data);
+        })
+        .catch(() => {
+          if (isMounted) setContestantInfo(null);
+        })
+        .finally(() => {
+          if (isMounted) setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
+  }, [contestantInfo, setContestantInfo]);
+
+  // Lấy registrationNumber nếu chưa có và đã có contestantInfo
+  useEffect(() => {
+    if (contestantInfo && !registrationNumber && matchSlug) {
+      setRegLoading(true);
+      const contestantId = contestantInfo.contestant.id;
+      let matchId: number | null = null;
+      const match = contestantInfo.matches.find(
+        (m: Match) => m.slug === matchSlug || m.id === parseInt(matchSlug)
+      );
+      if (match) matchId = match.id;
+      if (contestantId && matchId) {
+        StudentApiService.getRegistrationNumber(contestantId, matchId)
+          .then((res) => {
+            if (
+              res.success &&
+              res.data &&
+              typeof res.data.registrationNumber === "number"
+            ) {
+              setRegistrationNumber(res.data.registrationNumber);
+            }
+          })
+          .catch(() => {
+            setRegistrationNumber(null);
+          })
+          .finally(() => setRegLoading(false));
+      } else {
+        setRegLoading(false);
+      }
+    }
+  }, [contestantInfo, registrationNumber, matchSlug, setRegistrationNumber]);
+
+  // Redirect nếu không có thông tin thí sinh hoặc registrationNumber
+  useEffect(() => {
+    if (!loading && !regLoading && !contestantInfo) {
       navigate("/student/login");
     }
-  }, [isAuthenticated, navigate]);
-
-  // 🔥 NEW: Redirect nếu không có thông tin thí sinh
-  useEffect(() => {
-    if (isAuthenticated() && !contestantInfo) {
-      navigate("/student/login");
-    }
-  }, [isAuthenticated, contestantInfo, navigate]);
+  }, [loading, regLoading, contestantInfo, registrationNumber, navigate]);
 
   // 🔥 FIX: Tìm match bằng slug thay vì ID - với fallback cho ID
   const currentMatch = useMemo(() => {
     if (!contestantInfo?.matches || !matchSlug) return null;
-
-    // Thử tìm theo slug trước
-    let match = contestantInfo.matches.find((m) => m.slug === matchSlug);
-
-    // Nếu không tìm thấy theo slug, thử tìm theo ID (fallback)
+    let match = contestantInfo.matches.find((m: Match) => m.slug === matchSlug);
     if (!match) {
       const matchId = parseInt(matchSlug);
       if (!isNaN(matchId)) {
-        match = contestantInfo.matches.find((m) => m.id === matchId);
+        match = contestantInfo.matches.find((m: Match) => m.id === matchId);
       }
     }
-
     if (!match) {
       return null;
     }
-
     return {
       id: match.id,
-      slug: match.slug || matchSlug, // Sử dụng slug từ match hoặc fallback về matchSlug
+      slug: match.slug || matchSlug,
       name: match.name,
       status: match.status,
       currentQuestion: match.currentQuestion,
@@ -76,7 +121,6 @@ const StudentWaitingRoom: React.FC = () => {
   // 🔥 NEW: Tạo contestantInfo object từ dữ liệu thực tế
   const realContestantInfo = useMemo(() => {
     if (!contestantInfo) return null;
-
     return {
       student: {
         fullName: contestantInfo.contestant.fullName,
@@ -85,21 +129,18 @@ const StudentWaitingRoom: React.FC = () => {
       contest: {
         name: contestantInfo.contest.name,
         slug: contestantInfo.contest.slug,
-        status: "active", // 🔧 Có thể cần API riêng để lấy status
+        status: "active",
       },
       round: {
-        name: "Vòng thi", // 🔧 Có thể cần API riêng để lấy thông tin round
+        name: "Vòng thi",
       },
-      status: "compete", // 🔧 Có thể cần API riêng để lấy status
+      status: "compete",
     };
   }, [contestantInfo]);
 
   const isConnected = true;
-
-  // Sử dụng real-time hook để lắng nghe events
   const { realTimeState, isConnected: isRealTimeConnected } =
     useStudentRealTime(matchSlug);
-
   const isRealTimeStarted = realTimeState.isMatchStarted;
 
   useEffect(() => {
@@ -110,7 +151,6 @@ const StudentWaitingRoom: React.FC = () => {
       );
     }
   }, [realTimeState.isRescued, showSuccessNotification]);
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "upcoming":
@@ -169,8 +209,8 @@ const StudentWaitingRoom: React.FC = () => {
       );
     }
   }, [enterFullscreen]);
-  // 🔥 NEW: Loading state khi chưa có thông tin thí sinh
-  if (!contestantInfo || !realContestantInfo) {
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-lg p-8 text-center">
@@ -184,7 +224,7 @@ const StudentWaitingRoom: React.FC = () => {
     );
   }
 
-  if (!currentMatch) {
+  if (!contestantInfo || !realContestantInfo) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-lg p-8 text-center">
@@ -238,7 +278,6 @@ const StudentWaitingRoom: React.FC = () => {
                   ? "🟢 Đã kết nối"
                   : "🔴 Mất kết nối"}
               </div>
-     
             </div>
           </div>
         </div>
