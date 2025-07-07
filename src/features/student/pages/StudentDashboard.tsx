@@ -301,18 +301,18 @@ const StudentDashboard: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
         <div className="bg-white rounded-xl shadow-lg p-6 text-center w-full max-w-sm">
-          <ExclamationTriangleIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <ExclamationTriangleIcon className="w-16 h-16 text-blue-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-800 mb-2">
-            Không tìm thấy thông tin
+            Bạn chưa được thêm vào cuộc thi
           </h2>
           <p className="text-gray-600 mb-4 text-sm">
-            Không thể tải thông tin thí sinh. Vui lòng đăng nhập lại.
+            Vui lòng liên hệ Admin để được thêm vào cuộc thi
           </p>
           <button
-            onClick={() => navigate("/student/login")}
+            onClick={() => navigate("/")}
             className="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
           >
-            Đăng nhập lại
+            Về trang chủ
           </button>
         </div>
       </div>
