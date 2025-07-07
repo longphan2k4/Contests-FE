@@ -164,9 +164,8 @@ const ControlsPage: React.FC = () => {
   useEffect(() => {
     if (isSuccessMatch) {
       setMatchInfo(matchInfoRes.data);
-      document.title = `Điều khiển trận đấu - ${
-        matchInfoRes?.data?.name || "Chưa có trận đấu"
-      }`;
+      document.title = `Điều khiển trận đấu - ${matchInfoRes?.data?.name || "Chưa có trận đấu"
+        }`;
     }
   }, [isSuccessMatch, matchInfoRes]);
 
@@ -193,7 +192,7 @@ const ControlsPage: React.FC = () => {
 
   useEffect(() => {
     if (!socket) {
-      return () => {};
+      return () => { };
     }
 
     const handleScreenUpdate = (data: { updatedScreen: SceenControl }) => {
@@ -440,8 +439,6 @@ const ControlsPage: React.FC = () => {
             currentQuestionOrder={currentQuestion?.questionOrder || 0}
           />
 
-          <ContestantsWinnerControlPanel matchId={matchInfo?.id ?? 0} currentQuestionOrder={currentQuestion?.questionOrder || 0}/>
-
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <AudienceRescueControl
               currentQuestionOrder={currentQuestion?.questionOrder}
@@ -457,6 +454,9 @@ const ControlsPage: React.FC = () => {
               MatchInfo={matchInfo || null}
             />
           </div>
+
+          {/** Phần điều khiển thí sinh chiến thắng */}
+          <ContestantsWinnerControlPanel matchId={matchInfo?.id ?? 0} />
           <div>
             <Link
               className="block text-center w-full btn bg-red-500 hover:bg-red-600 cursor-pointer text-white font-bold p-2 rounded-lg"
