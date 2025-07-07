@@ -10,6 +10,7 @@ import {
   VideoControl,
   StatusControl,
   RescueControl,
+  ContestantsWinnerControlPanel,
 } from "../components";
 import { OnlineExamControl } from "../../controlsOnline";
 import QuestionDetails from "../components/QuestionDetails";
@@ -429,6 +430,8 @@ const ControlsPage: React.FC = () => {
             matchId={matchInfo?.id ?? 0}
             currentQuestionOrder={currentQuestion?.questionOrder || 0}
           />
+
+          <ContestantsWinnerControlPanel matchId={matchInfo?.id ?? 0} currentQuestionOrder={currentQuestion?.questionOrder || 0}/>
 
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <AudienceRescueControl
