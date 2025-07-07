@@ -43,7 +43,6 @@ import {
   Role,
 } from "../types/user.shame";
 import SearchIcon from "@mui/icons-material/Search";
-import { id } from "date-fns/locale";
 
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);

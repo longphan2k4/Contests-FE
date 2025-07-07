@@ -14,17 +14,18 @@ import type {
   ValidationError,
 } from "../types";
 import { useNotification } from "../../../contexts/NotificationContext";
+import { useToast } from "@contexts/toastContext";
 
 export const useStudentAuth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<LoginFormErrors>({});
+  const { showToast } = useToast();
 
   const login = useCallback(
     async (formData: LoginSchemaType) => {
       setIsLoading(true);
       setErrors({});
-
       try {
         const validatedData = LoginSchema.parse(formData);
 
@@ -36,8 +37,13 @@ export const useStudentAuth = () => {
           setErrors({ general: response.message });
           return { success: false, error: response.message };
         }
-      } catch (error) {
-        console.error("Login error:", error);
+      } catch (error: unknown) {
+        showToast("Tài khoản hoặc mật khẩu không đúng:", "error");
+        // showToast(
+        //   (error as { message?: string }).message || "Đăng nhập thất bại",
+        //   "error"
+        // );
+
         return { success: false, error: "Đăng nhập thất bại" };
       } finally {
         setIsLoading(false);
@@ -120,7 +126,7 @@ export const useStudentRegister = () => {
           const validationErrors: RegisterFormErrors = {};
           (
             error as { errors: Array<{ path: string[]; message: string }> }
-          ).errors.forEach((err) => {
+          ).errors.forEach(err => {
             if (err.path) {
               validationErrors[err.path[0] as keyof RegisterFormErrors] =
                 err.message;
@@ -270,7 +276,7 @@ export const useClassList = () => {
 
   // Lấy danh sách trường duy nhất
   const getUniqueSchools = useCallback(() => {
-    const schools = classes.map((cls) => cls.school.name);
+    const schools = classes.map(cls => cls.school.name);
     return [...new Set(schools)].sort();
   }, [classes]);
 
@@ -278,7 +284,7 @@ export const useClassList = () => {
   const getClassesBySchool = useCallback(
     (schoolName: string) => {
       return classes
-        .filter((cls) => cls.school.name === schoolName && cls.isActive)
+        .filter(cls => cls.school.name === schoolName && cls.isActive)
         .sort((a, b) => a.name.localeCompare(b.name));
     },
     [classes]
