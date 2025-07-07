@@ -60,3 +60,27 @@ export const ToggleActive = async (id: number) => {
   const res = await axiosInstance.patch(`/match/${id}/toggle-active`);
   return res.data;
 };
+
+export const ExportExcel = async (matchId: number | null) => {
+  const response = await axiosInstance.post(
+    `/group-division/export/excel`,
+    { matchId, fileName: "danhsach" },
+    {
+      responseType: "blob",
+    }
+  );
+
+  const blob = new Blob([response.data], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "danhsach.xlsx");
+  document.body.appendChild(link);
+  link.click();
+
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};

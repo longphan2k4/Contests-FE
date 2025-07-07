@@ -31,6 +31,7 @@ import { useActive } from "../hook/useActive";
 import { useDeleteMany } from "../hook/useDeleteMany";
 import { useDelete } from "../hook/useDelete";
 import AddIcon from "@mui/icons-material/Add";
+import { useExportExcel } from "@/hooks/useExportExcel";
 
 import {
   type User,
@@ -42,6 +43,7 @@ import {
   Role,
 } from "../types/user.shame";
 import SearchIcon from "@mui/icons-material/Search";
+import { id } from "date-fns/locale";
 
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -75,6 +77,8 @@ const UsersPage: React.FC = () => {
   const { mutate: mutateDeleteMany } = useDeleteMany();
 
   const { mutate: mutateDelete } = useDelete();
+
+  const { mutate: exportExcel } = useExportExcel();
 
   useEffect(() => {
     refetchUsers();
@@ -189,6 +193,35 @@ const UsersPage: React.FC = () => {
     setIsConfirmDeleteMany(true);
   };
 
+  const handleExportExcel = () => {
+    const data = users.map(user => ({
+      id: user.id,
+      "Tên tài khoản": user.username,
+      "Địa chỉ email": user.email,
+      "Vai trò":
+        user.role === "Admin"
+          ? "Admin"
+          : user.role === "Judge"
+          ? "Trọng tài"
+          : "Sinh viên",
+    }));
+
+    exportExcel(
+      {
+        data: data,
+        fileName: "users.xlsx",
+      },
+      {
+        onSuccess: () => {
+          showToast(`Xuất Excel thành công`, "success");
+        },
+        onError: (err: any) => {
+          showToast(err.response?.data?.message, "error");
+        },
+      }
+    );
+  };
+
   if (isUsersLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
@@ -213,13 +246,25 @@ const UsersPage: React.FC = () => {
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Typography variant="h5">Quản lý người dùng</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={openCreate}
-        >
-          Thêm người dùng
-        </Button>
+
+        {/* Buttons */}
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
+          >
+            Thêm người dùng
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<AddIcon />}
+            onClick={handleExportExcel}
+          >
+            Xuất Excel
+          </Button>
+        </Box>
       </Box>
 
       {/* User list card */}
