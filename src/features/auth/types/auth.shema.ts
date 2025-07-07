@@ -66,6 +66,7 @@ export const OtpSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
   otp: z.string().length(6, "Mã OTP phải có 6 kí tự"),
 });
+
 export type LoginSchemaType = z.infer<typeof LoginSchema>;
 export type UserType = z.infer<typeof UserType>;
 export type ForgotPasswordSchemaType = z.infer<typeof ForgotPasswordSchema>;

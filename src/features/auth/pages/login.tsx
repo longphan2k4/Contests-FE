@@ -42,7 +42,7 @@ const LoginPage = () => {
           const expires = new Date();
           expires.setDate(expires.getDate() + 30);
           document.cookie = `feAccessToken=${
-            data.data.accessToken
+            true
           }; path=/; expires=${expires.toUTCString()}`;
           localStorage.setItem("feAccessToken", data.data.accessToken);
         }

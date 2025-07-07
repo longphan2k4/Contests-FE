@@ -15,7 +15,8 @@ const Header: React.FC = () => {
 
   const [activeItem, setActiveItem] = useState("home");
 
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false); // cho user đã đăng nhập
+  const [showLoginMenu, setShowLoginMenu] = useState(false); // cho dropdown đăng nhập
 
   const { showSuccessNotification } = useNotification();
 
@@ -38,6 +39,8 @@ const Header: React.FC = () => {
     document.cookie =
       "feAccessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
     localStorage.removeItem("feAccessToken");
+    localStorage.removeItem("contestantInfo");
+    localStorage.removeItem("accessToken");
     showSuccessNotification("Đăng xuất thành công");
     navigate("/");
     window.location.reload();
@@ -78,6 +81,9 @@ const Header: React.FC = () => {
       const target = event.target as HTMLElement;
       if (!target.closest(".user-menu-container")) {
         setShowUserMenu(false);
+      }
+      if (!target.closest(".login-menu-container")) {
+        setShowLoginMenu(false);
       }
       if (
         !target.closest(".mobile-menu-container") &&
@@ -276,13 +282,16 @@ const Header: React.FC = () => {
 
                           {/* Menu Item: Trang quản lý hoặc Trang giám khảo dựa trên role */}
                           {(user?.role === "Admin" ||
-                            user?.role === "Judge") && (
+                            user?.role === "Judge" ||
+                            user?.role === "Student") && (
                             <button
                               onClick={() => {
                                 if (user?.role === "Admin") {
                                   navigate("/admin/dashboard");
                                 } else if (user?.role === "Judge") {
                                   navigate("/cuoc-thi");
+                                } else if (user?.role === "Student") {
+                                  navigate("/student/dashboard");
                                 }
                                 setShowUserMenu(false);
                               }}
@@ -305,7 +314,9 @@ const Header: React.FC = () => {
                                 <span>
                                   {user?.role === "Admin"
                                     ? "Trang quản lý"
-                                    : "Trang giám khảo"}
+                                    : user?.role === "Judge"
+                                    ? "Trang giám khảo"
+                                    : "Trang thí sinh"}
                                 </span>
                               </div>
                             </button>
@@ -340,14 +351,53 @@ const Header: React.FC = () => {
                       )}
                     </div>
                   ) : (
-                    <button
-                      onClick={handleLoginClick}
-                      className="relative overflow-hidden bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 group text-sm sm:text-base"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 group-hover:opacity-20 blur transition-all duration-300"></div>
-                      <span className="relative z-10">Đăng nhập</span>
-                    </button>
+                    <div className="relative login-menu-container">
+                      <button
+                        onClick={() => setShowLoginMenu(!showLoginMenu)}
+                        className="relative overflow-hidden bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 group text-sm sm:text-base flex items-center"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 group-hover:opacity-20 blur transition-all duration-300"></div>
+                        <span className="relative z-10">Đăng nhập</span>
+                        <svg
+                          className={`w-4 h-4 ml-2 transition-transform duration-200 ${
+                            showLoginMenu ? "rotate-180" : ""
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </button>
+                      {showLoginMenu && (
+                        <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in slide-in-from-top-2 duration-200">
+                          <button
+                            onClick={() => {
+                              navigate("/login");
+                              setShowLoginMenu(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 transition-colors duration-200"
+                          >
+                            Đăng nhập Admin
+                          </button>
+                          <button
+                            onClick={() => {
+                              navigate("/student/login");
+                              setShowLoginMenu(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 transition-colors duration-200"
+                          >
+                            Đăng nhập Thí sinh
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </>
               )}
