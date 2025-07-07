@@ -11,13 +11,16 @@ const StudentPrivateRoute: React.FC<StudentPrivateRouteProps> = ({
 }) => {
   const location = useLocation();
 
+  const feAccessToken = localStorage.getItem("feAccessToken");
+  if (feAccessToken) {
+    return <Navigate to="/" state={{ from: location }} replace />;
+  }
   // Kiểm tra authentication cho student
   const isAuthenticated = StudentApiService.isAuthenticated();
 
   if (!isAuthenticated) {
     return <Navigate to="/student/login" state={{ from: location }} replace />;
   }
-
   return children ? <>{children}</> : <Outlet />;
 };
 

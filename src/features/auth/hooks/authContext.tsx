@@ -16,7 +16,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const hasToken = document.cookie.includes("feAccessToken=");
+    const hasToken =
+      document.cookie.includes("feAccessToken=") ||
+      localStorage.getItem("accessToken");
 
     if (hasToken) {
       setUser(null); // reset user
