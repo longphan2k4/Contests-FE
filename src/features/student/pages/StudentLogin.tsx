@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useStudentAuth } from "../hooks/useStudentAuth";
 import type { LoginFormData } from "../types";
 import {
@@ -45,12 +45,12 @@ const StudentLogin: React.FC = () => {
     await login(formData);
   };
 
-  const handleDemoLogin = () => {
-    setFormData({
-      identifier: "khoa5",
-      password: "Khoa12345@",
-    });
-  };
+  // const handleDemoLogin = () => {
+  //   setFormData({
+  //     identifier: "khoa5",
+  //     password: "Khoa12345@",
+  //   });
+  // };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 flex items-center justify-center px-4">
@@ -210,34 +210,30 @@ const StudentLogin: React.FC = () => {
               </div>
             </div>
 
-            <button
+            {/* <button
               type="button"
               onClick={handleDemoLogin}
               disabled={isLoading}
               className="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Điền thông tin demo
-            </button>
+            </button> */}
           </form>
 
           {/* Additional Info */}
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
               Chưa có tài khoản?{" "}
-              <a
-                href="#"
+              <Link
+                to="/student/register"
                 className="text-indigo-600 hover:text-indigo-500 font-medium transition-colors"
               >
-                Liên hệ ban tổ chức
-              </a>
+                Đăng ký ngay
+              </Link>
             </p>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="text-center mt-8 text-blue-100 text-sm">
-          <p>© 2024 Cuộc thi Lập trình Olympic. Tất cả quyền được bảo lưu.</p>
-        </div>
       </div>
     </div>
   );

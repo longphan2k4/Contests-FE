@@ -20,6 +20,7 @@ import QuestionResult from "./QuestionResult";
 import AntiCheatStatus from "./AntiCheatStatus";
 import OtherStudentNotification from "./OtherStudentNotification";
 import MediaModal from "./MediaModal";
+import EssayInput from "./EssayInput";
 // import DebugStatus from "./DebugStatus";
 
 interface MediaData {
@@ -35,7 +36,7 @@ interface QuestionData {
   id: number;
   content: string;
   intro?: string;
-  questionType: string;
+  questionType: string; // Đây là field chính xác từ server
   difficulty: string;
   score: number;
   defaultTime: number;
@@ -208,7 +209,11 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
     handleViolation,
     handleAntiCheatTerminate
   );
-
+  useEffect(() => {
+    if (isBanned) {
+      stopMonitoring();
+    }
+  }, [isBanned, stopMonitoring]);
   // 🛡️ NEW: Start anti-cheat monitoring khi có câu hỏi
   useEffect(() => {
     if (currentQuestion && !isEliminatedState) {
@@ -323,17 +328,14 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
 
   // 🔥 NEW: Sync local state with props from parent
   useEffect(() => {
-
     setIsEliminatedState(isEliminated);
     setEliminationMessageState(eliminationMessage);
   }, [isEliminated, eliminationMessage]);
 
   // 🔥 NEW: Logic hiển thị kết quả khi có pendingResult
   useEffect(() => {
-
     // 🔧 SỬA: Chỉ hiển thị kết quả khi canShowResult = true (remainingTime < 1)
     if (pendingResult && canShowResult && !answerResult) {
-
       setAnswerResult(pendingResult);
       setPendingResult(null);
 
@@ -351,7 +353,6 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
           4000
         );
       }
-
     }
   }, [
     pendingResult,
@@ -373,7 +374,6 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
   // 🎉 NEW: Effect để xử lý rescue animation
   useEffect(() => {
     if (isRescued && !showRescueAnimation) {
-
       setIsInRescueMode(true);
       setShowRescueAnimation(true);
       setRescueMessage("Bạn được một cơ hội mới!");
@@ -391,7 +391,6 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
 
   // 🎉 NEW: Callback khi rescue animation hoàn thành
   const handleRescueAnimationComplete = useCallback(() => {
-
     setShowRescueAnimation(false);
     setIsInRescueMode(false);
     setJustRescued(true);
@@ -400,9 +399,7 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
     setIsSubmitted(false);
     setAnswerResult(null);
     setPendingResult(null);
-    setIsEliminatedState(false)
-
-
+    setIsEliminatedState(false);
   }, []);
 
   // 🚀 NEW: Submit answer using API instead of socket
@@ -417,8 +414,6 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
     }
 
     const answerToSubmit = currentAnswer || selectedAnswer;
-
-
 
     if (!currentQuestion?.question) {
       alert("Không có câu hỏi để trả lời!");
@@ -677,24 +672,47 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
         {(() => {
           const isActuallyEliminated =
             isEliminatedState || !!answerResult?.eliminated;
-          return (
-            <QuestionOptions
-              options={currentQuestion.question.options}
-              selectedAnswer={selectedAnswer}
-              isSubmitted={isSubmitted}
-              isEliminated={isActuallyEliminated}
-              isBanned={isBanned}
-              banMessage={banMessage}
-              eliminationMessage={eliminationMessageState}
-              answerResult={answerResult}
-              canShowResult={canShowResult}
-              isApiSubmitting={isApiSubmitting}
-              isRescued={isRescued}
-              isInRescueMode={isInRescueMode}
-              onAnswerSelect={handleAnswerSelect}
-              onSubmitAnswer={() => handleSubmitAnswer()}
-            />
-          );
+
+          const questionType =
+            currentQuestion.question.questionType?.toLowerCase();
+
+ 
+
+          if (questionType === "essay") {
+            return (
+              <EssayInput
+                value={selectedAnswer}
+                isSubmitted={isSubmitted}
+                isEliminated={isActuallyEliminated}
+                isBanned={isBanned}
+                banMessage={banMessage}
+                isApiSubmitting={isApiSubmitting}
+                isRescued={isRescued}
+                isInRescueMode={isInRescueMode}
+                onAnswerChange={setSelectedAnswer}
+                onSubmitAnswer={() => handleSubmitAnswer()}
+              />
+            );
+          } else {
+            return (
+              <QuestionOptions
+                options={currentQuestion.question.options}
+                selectedAnswer={selectedAnswer}
+                isSubmitted={isSubmitted}
+                isEliminated={isActuallyEliminated}
+                isBanned={isBanned}
+                banMessage={banMessage}
+                eliminationMessage={eliminationMessageState}
+                answerResult={answerResult}
+                canShowResult={canShowResult}
+                isApiSubmitting={isApiSubmitting}
+                isRescued={isRescued}
+                isInRescueMode={isInRescueMode}
+                onAnswerSelect={handleAnswerSelect}
+                onSubmitAnswer={() => handleSubmitAnswer()}
+              />
+            );
+          }
         })()}
       </QuestionContent>
 

@@ -5,10 +5,13 @@ import StudentWaitingRoom from "../pages/StudentWaitingRoom";
 import StudentDashboard from "../pages/StudentDashboard";
 import AntiCheatDemo from "../components/AntiCheatDemo";
 import { SocketProvider } from "../../../contexts/SocketContext";
+import StudentRegister from "../pages/StudentRegister";
+import { StudentProvider } from "../contexts/StudentContext";
 
 const StudentRoutes = () => {
   return (
     <>
+      <Route path="/student/register" element={<StudentRegister />} />
       <Route path="/student/login" element={<StudentLogin />} />
 
       {/* Demo route - không cần authentication */}
@@ -18,17 +21,21 @@ const StudentRoutes = () => {
         <Route
           path="/student/dashboard"
           element={
-            <SocketProvider>
-              <StudentDashboard />
-            </SocketProvider>
+            <StudentProvider>
+              <SocketProvider>
+                <StudentDashboard />
+              </SocketProvider>
+            </StudentProvider>
           }
         />
         <Route
           path="/student/match/:matchSlug"
           element={
-            <SocketProvider>
-              <StudentWaitingRoom />
-            </SocketProvider>
+            <StudentProvider>
+              <SocketProvider>
+                <StudentWaitingRoom />
+              </SocketProvider>
+            </StudentProvider>
           }
         />
       </Route>

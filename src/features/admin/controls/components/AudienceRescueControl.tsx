@@ -32,7 +32,7 @@ const AudienceRescueControl: React.FC<AudienceRescueControlProps> = ({
 
   // Get status color for rescue
   const getStatusColor = (
-    status: "notUsed" | "used" | "passed" | "notEligible"
+    status: "notUsed" | "used" | "passed" | "notEligible" | "proposed"
   ) => {
     switch (status) {
       case "notUsed":
@@ -41,23 +41,27 @@ const AudienceRescueControl: React.FC<AudienceRescueControlProps> = ({
         return "bg-blue-100 text-blue-800";
       case "passed":
         return "bg-gray-100 text-gray-600";
+      case "proposed":
+        return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-600";
     }
   };
 
   const getStatusText = (
-    status: "notUsed" | "used" | "passed" | "notEligible"
+    status: "notUsed" | "used" | "passed" | "notEligible" | "proposed"
   ) => {
     switch (status) {
       case "notUsed":
         return "Chưa sử dụng";
       case "used":
-        return "Đang sử dụng";
-      case "passed":
         return "Đã sử dụng";
+      case "passed":
+        return "Đã qua";
       case "notEligible":
         return "Không đủ điều kiện";
+      case "proposed":
+        return "Khán giả đang cứu trợ";
       default:
         return status;
     }
@@ -298,7 +302,7 @@ const AudienceRescueControl: React.FC<AudienceRescueControlProps> = ({
             !match ||
             !currentQuestionOrder ||
             ListRescueLifelineUsed?.find(r => r.id === selectedRescueId)
-              ?.status === "passed"
+              ?.status === "used"
           }
           className={`
     relative p-4 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 active:scale-95

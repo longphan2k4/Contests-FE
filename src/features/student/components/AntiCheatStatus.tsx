@@ -10,7 +10,6 @@ interface AntiCheatStatusProps {
 
 const AntiCheatStatus: React.FC<AntiCheatStatusProps> = ({
   isMonitoring,
-  isFullscreen,
   warningCount,
   maxViolations,
 }) => {
@@ -23,7 +22,7 @@ const AntiCheatStatus: React.FC<AntiCheatStatusProps> = ({
               variant="subtitle1"
               className="font-bold text-orange-800"
             >
-              🛡️ Trạng thái chống gian lận
+              🛡️ chống gian lận
             </Typography>
             <div
               className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -32,21 +31,13 @@ const AntiCheatStatus: React.FC<AntiCheatStatusProps> = ({
                   : "text-red-600 bg-red-100"
               }`}
             >
-              {isMonitoring ? "🟢 Đang giám sát" : "🔴 Không giám sát"}
+              {isMonitoring ? "🟢" : "🔴 "}
             </div>
           </Box>
 
           <Box className="flex items-center gap-2">
-            {/* Fullscreen Status */}
-            <div
-              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                isFullscreen
-                  ? "text-blue-600 bg-blue-100"
-                  : "text-orange-600 bg-orange-100"
-              }`}
-            >
-              {isFullscreen ? "🔒 Toàn màn hình" : "⚠️ Chưa toàn màn hình"}
-            </div>
+
+
 
             {/* Violation Count */}
             {warningCount > 0 && (

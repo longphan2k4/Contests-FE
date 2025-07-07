@@ -7,7 +7,7 @@ import {
   Chip,
   LinearProgress,
 } from "@mui/material";
-import { Quiz, Timer, Star } from "@mui/icons-material";
+import { Quiz, Timer } from "@mui/icons-material";
 
 interface QuestionHeaderProps {
   questionOrder: number;
@@ -22,7 +22,6 @@ const QuestionHeader: React.FC<QuestionHeaderProps> = ({
   questionOrder,
   remainingTime,
   defaultTime,
-  score,
   difficulty,
   questionType,
 }) => {
@@ -70,12 +69,7 @@ const QuestionHeader: React.FC<QuestionHeaderProps> = ({
               size="small"
               className={remainingTime <= 10 ? "animate-pulse" : ""}
             />
-            <Chip
-              icon={<Star />}
-              label={`${score} điểm`}
-              variant="outlined"
-              size="small"
-            />
+
           </Box>
         </Box>
 

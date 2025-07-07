@@ -17,6 +17,7 @@ import {
   getStatus,
   getListQuestionPackage,
   ToggleActive,
+  ExportExcel,
 } from "../service/api";
 
 export const useGetAll = (filter: MatchQueryInput, slug: string | null) => {
@@ -90,5 +91,11 @@ export const useListQuestionPackage = () => {
 export const useToggleIsActive = () => {
   return useMutation({
     mutationFn: (id: number) => ToggleActive(id),
+  });
+};
+
+export const useExportExcel = () => {
+  return useMutation({
+    mutationFn: (matchId: number | null) => ExportExcel(matchId),
   });
 };

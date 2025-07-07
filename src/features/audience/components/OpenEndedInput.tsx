@@ -3,7 +3,6 @@ import { BackspaceIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@contexts/toastContext";
 import { useSocket } from "@contexts/SocketContext";
 import { useSubmitSupportAnswer } from "../hooks/useRescue";
-import { set } from "zod";
 
 // Shuffle utility function
 const shuffle = (array: string[]): string[] => {

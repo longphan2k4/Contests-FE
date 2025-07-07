@@ -44,8 +44,6 @@ const QuestionOptions: React.FC<QuestionOptionsProps> = ({
   isSubmitted,
   isEliminated,
   isBanned,
-  banMessage,
-  eliminationMessage,
   answerResult,
   canShowResult,
   isApiSubmitting,
@@ -187,12 +185,7 @@ const QuestionOptions: React.FC<QuestionOptionsProps> = ({
             <Typography variant="h6" className="font-bold text-red-800">
               Bạn đã bị cấm tham gia vì vi phạm quy chế!
             </Typography>
-            <Typography variant="body2" className="text-red-700">
-              {banMessage}
-            </Typography>
-            <Typography variant="body2" className="text-red-600">
-              💡 Bạn vẫn có thể theo dõi câu hỏi nhưng không thể trả lời.
-            </Typography>
+
           </Box>
         </Alert>
       )}
@@ -206,15 +199,12 @@ const QuestionOptions: React.FC<QuestionOptionsProps> = ({
         >
           <AlertTitle>Đã bị loại</AlertTitle>
           <Box className="space-y-3">
-            <Typography variant="h6" className="font-bold text-orange-800">
-              Bạn đã bị loại khỏi trận đấu!
+            <Typography variant="h6" className="font-bold text-blue-800">
+              Bạn có thể được hồi sinh!
             </Typography>
-            <Typography variant="body2" className="text-orange-700">
-              {eliminationMessage ||
-                "Do trả lời sai hoặc không trả lời câu hỏi."}
-            </Typography>
-            <Typography variant="body2" className="text-orange-600">
-              💡 Bạn vẫn có thể theo dõi câu hỏi nhưng không thể trả lời.
+
+            <Typography variant="body2" className="text-blue-800">
+              💡 Đừng rời đi nhé
             </Typography>
           </Box>
         </Alert>

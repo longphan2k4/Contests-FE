@@ -53,6 +53,7 @@ import { CreateUser as CreateUserAPI } from "../../../admin/user/service/api";
 import { type CreateUserInput } from "../../../admin/user/types/user.shame";
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 import ResizablePanel from "../../../../components/ResizablePanel";
+import { useExportExcel } from "../hook/useMatch";
 
 import {
   useGetAll,
@@ -192,6 +193,19 @@ const ContestantMatchPage: React.FC = () => {
   useEffect(() => {
     document.title = "Quản lý nhóm thí sinh";
   }, []);
+
+  const { mutate: mutateExport } = useExportExcel();
+
+  const handleExportExcel = () => {
+    mutateExport(matchId, {
+      onSuccess: () => {
+        showToast("Xuất file thành công", "success");
+      },
+      onError: () => {
+        showToast("Xuất file thất bại", "error");
+      },
+    });
+  };
 
   // Điều kiện để quyết định sử dụng hook nàoAdd commentMore actions
   const shouldUseMatchFilter = !!(filter.matchId && filter.matchId > 0);
@@ -1469,6 +1483,14 @@ const ContestantMatchPage: React.FC = () => {
               onClick={openCreate}
             >
               Thêm thí sinh
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<AddIcon />}
+              onClick={handleExportExcel}
+            >
+              Xuất Excel
             </Button>
           </Box>
         </Box>{" "}

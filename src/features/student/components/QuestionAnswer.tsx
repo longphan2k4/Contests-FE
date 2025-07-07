@@ -413,7 +413,6 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
       // 🔧 SỬA: Cập nhật elimination state ngay lập tức
       setIsEliminatedState(false);
 
-
       setEliminationMessageState("");
       // Block auto-submit và interactions
       setIsInRescueMode(true);
@@ -443,7 +442,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
     setIsSubmitted(false);
     setAnswerResult(null);
     setPendingResult(null);
-    
+
     console.log(
       "🎉 [RESCUE] Đã reset states, đang chờ tín hiệu câu hỏi mới từ server"
     );
@@ -561,7 +560,6 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
       setIsApiSubmitting(false);
     }
   };
-
   // 🔧 UPDATE: Auto-submit logic với rescue protection (MOVED HERE - sau handleSubmitAnswer)
   useEffect(() => {
     if (
@@ -1282,18 +1280,12 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
               >
                 <AlertTitle>Đã bị loại</AlertTitle>
                 <Box className="space-y-3">
-                  <Typography
-                    variant="h6"
-                    className="font-bold text-orange-800"
-                  >
-                    Bạn đã bị loại khỏi trận đấu!
+                  <Typography variant="h6" className="font-bold text-blue-800">
+                    Bạn có thể được hồi sinh!
                   </Typography>
-                  <Typography variant="body2" className="text-orange-700">
-                    {eliminationMessageState ||
-                      "Do trả lời sai hoặc không trả lời câu hỏi."}
-                  </Typography>
-                  <Typography variant="body2" className="text-orange-600">
-                    💡 Bạn vẫn có thể theo dõi câu hỏi nhưng không thể trả lời.
+
+                  <Typography variant="body2" className="text-blue-800">
+                    💡 Đừng rời đi nhé
                   </Typography>
                 </Box>
               </Alert>

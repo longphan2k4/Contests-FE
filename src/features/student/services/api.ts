@@ -1,12 +1,24 @@
 import axiosStudent from "../../../config/axiosStudent";
 import axiosInstance from "../../../config/axiosInstance";
-import type { LoginRequest, LoginResponse, ContestantInfo } from "../types";
+import type {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
+  RegisterErrorResponse,
+  RegisterApiResponse,
+  ClassListResponse,
+} from "../types";
 
 // Interface cho error response
 interface ApiError {
   response?: {
     data?: {
       message?: string;
+      error?: {
+        type: string;
+        details: Array<{ field: string; message: string }>;
+      };
     };
     status?: number;
   };
@@ -28,12 +40,6 @@ export class StudentApiService {
 
       // Lưu token và thông tin contestant
       if (response.data.success) {
-        // ✅ Lưu toàn bộ object data vào localStorage
-        localStorage.setItem(
-          "contestantInfo",
-          JSON.stringify(response.data.data)
-        );
-
         // ✅ Lưu token vào localStorage để có thể thêm vào Authorization header
         localStorage.setItem("accessToken", response.data.data.accessToken);
 
@@ -55,14 +61,67 @@ export class StudentApiService {
   }
 
   /**
-   * Lấy thông tin contestant từ localStorage
+   * Đăng ký thí sinh
    */
-  static getContestantInfo(): ContestantInfo | null {
+  static async register(
+    registerData: RegisterRequest
+  ): Promise<RegisterResponse> {
     try {
-      const stored = localStorage.getItem("contestantInfo");
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
+      const response = await axiosInstance.post<RegisterApiResponse>(
+        "/auth/register-student",
+        registerData
+      );
+
+      // Kiểm tra nếu response là error
+      if (!response.data.success) {
+        const errorResponse = response.data as RegisterErrorResponse;
+        throw new Error(errorResponse.message || "Đăng ký thất bại");
+      }
+
+      return response.data as RegisterResponse;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+
+      // Xử lý lỗi API với cấu trúc mới
+      if (apiError.response?.data) {
+        const errorData = apiError.response.data;
+
+        // Nếu có validation errors
+        if (
+          errorData.error?.type === "VALIDATION_ERROR" &&
+          errorData.error.details
+        ) {
+          throw new Error(
+            JSON.stringify({
+              type: "VALIDATION_ERROR",
+              details: errorData.error.details,
+            })
+          );
+        }
+
+        // Nếu có message chung
+        if (errorData.message) {
+          throw new Error(errorData.message);
+        }
+      }
+
+      throw new Error("Có lỗi xảy ra trong quá trình đăng ký");
+    }
+  }
+
+  /**
+   * Lấy thông tin profile thí sinh từ API
+   */
+  static async getProfileStudent() {
+    try {
+      const response = await axiosInstance.get("/auth/profile-student");
+      return response.data;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      if (apiError.response?.data?.message) {
+        throw new Error(apiError.response.data.message);
+      }
+      throw new Error("Không thể lấy thông tin thí sinh");
     }
   }
 
@@ -86,9 +145,9 @@ export class StudentApiService {
   static isAuthenticated(): boolean {
     // ✅ Chỉ kiểm tra localStorage vì httpOnly cookie không đọc được từ JS
     const localToken = this.getAccessToken();
-    const contestantInfo = this.getContestantInfo();
-
-    return !!(localToken && contestantInfo);
+    // Đã bỏ localStorage contestantInfo, chỉ kiểm tra token
+    const feAccessToken = localStorage.getItem("feAccessToken");
+    return !!localToken || !!feAccessToken;
   }
 
   /**
@@ -117,10 +176,23 @@ export class StudentApiService {
   }
 
   /**
-   * Cập nhật thông tin contestant trong localStorage
+   * Lấy danh sách lớp và trường
    */
-  static updateContestantInfo(contestantInfo: ContestantInfo): void {
-    localStorage.setItem("contestantInfo", JSON.stringify(contestantInfo));
+  static async getClassList(): Promise<ClassListResponse> {
+    try {
+      const response = await axiosInstance.get<ClassListResponse>(
+        "/class/list-with-school"
+      );
+
+      return response.data;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      // Xử lý lỗi API
+      if (apiError.response?.data?.message) {
+        throw new Error(apiError.response.data.message);
+      }
+      throw new Error("Có lỗi xảy ra khi lấy danh sách lớp");
+    }
   }
 
   /**
@@ -148,6 +220,25 @@ export class StudentApiService {
     } catch (error) {
       console.error("Manual refresh token failed:", error);
       return false;
+    }
+  }
+
+  /**
+   * Lấy registrationNumber cho thí sinh trong trận đấu
+   */
+  static async getRegistrationNumber(contestantId: number, matchId: number) {
+    try {
+      const response = await axiosInstance.get(
+        `/auth/registration-number?contestantId=${contestantId}&matchId=${matchId}`
+      );
+      console.log("response waiting", response.data);
+      return response.data;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      if (apiError.response?.data?.message) {
+        throw new Error(apiError.response.data.message);
+      }
+      throw new Error("Không thể lấy registrationNumber");
     }
   }
 }

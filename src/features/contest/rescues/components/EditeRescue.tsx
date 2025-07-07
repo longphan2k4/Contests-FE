@@ -181,15 +181,6 @@ export default function EditRescue({
         />
 
         <FormInput
-          id="questionTo"
-          label="Câu kết thúc"
-          placeholder="Nhập câu kết thúc"
-          error={errors.questionTo}
-          register={register("questionTo", { valueAsNumber: true })}
-          type="number"
-        />
-
-        <FormInput
           id="remainingContestants"
           label="Số thi sinh còn lại"
           placeholder="Nhập số thi sinh còn lại"
