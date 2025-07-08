@@ -10,6 +10,7 @@ import {
   VideoControl,
   StatusControl,
   RescueControl,
+  ContestantsWinnerControlPanel,
 } from "../components";
 import { OnlineExamControl } from "../../controlsOnline";
 import QuestionDetails from "../components/QuestionDetails";
@@ -163,9 +164,8 @@ const ControlsPage: React.FC = () => {
   useEffect(() => {
     if (isSuccessMatch) {
       setMatchInfo(matchInfoRes.data);
-      document.title = `Điều khiển trận đấu - ${
-        matchInfoRes?.data?.name || "Chưa có trận đấu"
-      }`;
+      document.title = `Điều khiển trận đấu - ${matchInfoRes?.data?.name || "Chưa có trận đấu"
+        }`;
     }
   }, [isSuccessMatch, matchInfoRes]);
 
@@ -192,7 +192,7 @@ const ControlsPage: React.FC = () => {
 
   useEffect(() => {
     if (!socket) {
-      return () => {};
+      return () => { };
     }
 
     const handleScreenUpdate = (data: { updatedScreen: SceenControl }) => {
@@ -454,6 +454,9 @@ const ControlsPage: React.FC = () => {
               MatchInfo={matchInfo || null}
             />
           </div>
+
+          {/** Phần điều khiển thí sinh chiến thắng */}
+          <ContestantsWinnerControlPanel matchId={matchInfo?.id ?? 0} />
           <div>
             <Link
               className="block text-center w-full btn bg-red-500 hover:bg-red-600 cursor-pointer text-white font-bold p-2 rounded-lg"
