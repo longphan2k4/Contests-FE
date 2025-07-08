@@ -109,11 +109,12 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
     // Hàm xử lý cập nhật trạng thái rescue dựa vào câu hỏi hiện tại
     const handleSyncRescueStatus = async () => {
         try {
-            setStatusMessage({ type: 'info', text: 'Đang đồng bộ trạng thái cứu trợ...' });
+            // setStatusMessage({ type: 'info', text: 'Đang đồng bộ trạng thái cứu trợ...' });
             const result = await updateRescueStatusByQuestion(matchId, currentQuestionOrder, match);
             setStatusMessage({
                 type: 'success',
-                text: `Đồng bộ thành công! Đã cập nhật ${result.totalUpdated} rescue. (${result.summary.notUsed} ${getRescueStatusText('notUsed')}, ${result.summary.passed} ${getRescueStatusText('passed')}, ${result.summary.notEligible} ${getRescueStatusText('notEligible')})`
+                //text: `Đồng bộ thành công! Đã cập nhật ${result.totalUpdated} rescue. (${result.summary.notUsed} ${getRescueStatusText('notUsed')}, ${result.summary.passed} ${getRescueStatusText('passed')}, ${result.summary.notEligible} ${getRescueStatusText('notEligible')})`
+                text: `Đồng bộ thành công!`
             });
 
             // Tìm rescue phù hợp với câu hỏi hiện tại (lấy dòng đầu tiên nếu có nhiều kết quả)
@@ -164,10 +165,11 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
             }
 
         } catch (err) {
-            setStatusMessage({
-                type: 'error',
-                text: `Lỗi khi đồng bộ: ${err instanceof Error ? err.message : 'Đã xảy ra lỗi'}`
-            });
+            // setStatusMessage({
+            //     type: 'error',
+            //     text: `Lỗi khi đồng bộ: ${err instanceof Error ? err.message : 'Đã xảy ra lỗi'}`
+            // });
+            console.error('Error syncing rescue status:', err);
         }
     };
 
