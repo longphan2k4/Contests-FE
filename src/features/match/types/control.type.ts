@@ -212,6 +212,7 @@ export interface updateRescuedDataType {
 }
 
 export interface updatedRescuesType {
+  isEffect: boolean;
   name: string;
   id: number;
   status: string;

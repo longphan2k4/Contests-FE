@@ -45,8 +45,15 @@ export const GetChartData = async (id: number) => {
   return res.data;
 };
 
-export const GetAllRescues = async (matchSlug: string) => {
-  const res = await axiosInstance.get(`/rescue/list-all/${matchSlug}`);
+export const GetAllRescues = async (matchSlug: string, currentQuestionOrder: number | undefined) => {
+  if (!matchSlug) {
+    throw new Error("Match slug is required");
+  }
+  const res = await axiosInstance.get(`/rescue/list-all/${matchSlug}`, {
+    params: {
+      currentQuestionOrder
+    }
+  });
   return res.data;
 };
 

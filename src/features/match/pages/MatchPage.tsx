@@ -69,7 +69,7 @@ export default function MatchPage() {
     isLoading: isLoadingAllRescues,
     isSuccess: isSuccessAllRescues,
     isError: isErrorAllRescues,
-  } = useAllRescues(match ?? null);
+  } = useAllRescues(match ?? null, currentQuestion?.questionOrder);
 
   const {
     data: matchInfoRes,
@@ -168,7 +168,8 @@ export default function MatchPage() {
   useEffect(() => {
     if (isSuccessAllRescues && allRescuesRes?.data) {
       const formattedRescues: updatedRescuesType[] = allRescuesRes.data.map(
-        (rescue: any) => ({
+        (rescue: updatedRescuesType) => ({
+          isEffect: rescue.isEffect,
           id: rescue.id,
           name: rescue.name,
           rescueType: rescue.rescueType,
