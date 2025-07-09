@@ -517,7 +517,7 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                                         border: selectedRescueInfo?.status === 'used' ? '1px solid #4caf50' :
                                             selectedRescueInfo?.status === 'passed' ? '1px solid #9c27b0' :
                                                 selectedRescueInfo?.status === 'notEligible' ? '1px solid #ff9800' : '1px solid #ccc',
-                                        overflow: 'hidden',
+                                        overflow: 'unset',
                                     }}>
                                         <Typography variant="body2"
                                             color={selectedRescueInfo?.status === 'used' ? 'success.main' :
