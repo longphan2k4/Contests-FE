@@ -61,6 +61,7 @@ export const controlKey = {
   qrcode: "qrcode",
   chart: "chart",
   questionIntro: "questionIntro",
+  top20Winner: "top20Winner",
 } as const;
 
 export type ControlKey = (typeof controlKey)[keyof typeof controlKey];
