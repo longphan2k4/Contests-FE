@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useNotification } from "../../contexts/NotificationContext";
+import { useToast } from "@contexts/toastContext";
 import Logo from "../../assets/image/logo/logo-caothang.svg";
 
 import { useAuth } from "../../features/auth/hooks/authContext";
@@ -18,7 +18,7 @@ const Header: React.FC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false); // cho user đã đăng nhập
   const [showLoginMenu, setShowLoginMenu] = useState(false); // cho dropdown đăng nhập
 
-  const { showSuccessNotification } = useNotification();
+  const { showToast } = useToast();
 
   const handleHomeClick = () => {
     navigate("/");
@@ -41,7 +41,7 @@ const Header: React.FC = () => {
     localStorage.removeItem("feAccessToken");
     localStorage.removeItem("contestantInfo");
     localStorage.removeItem("accessToken");
-    showSuccessNotification("Đăng xuất thành công");
+    showToast("Đăng xuất thành công");
     navigate("/");
     window.location.reload();
   };

@@ -118,7 +118,7 @@ export const useStudentRealTime = (
 
   // Update real-time state
   const updateState = useCallback((updates: Partial<StudentRealTimeState>) => {
-    setRealTimeState((prev) => ({
+    setRealTimeState(prev => ({
       ...prev,
       ...updates,
       lastUpdated: new Date().toISOString(),

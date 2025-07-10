@@ -18,6 +18,8 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/outline";
 
+import { useLogout } from "../../../features/auth/hooks/useLogout"; // Giả sử bạn có hook này để đăng xuất
+
 interface MatchEventData {
   matchId: number;
   matchName: string;
@@ -50,11 +52,13 @@ const StudentDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  const { mutate: logout } = useLogout(); // Giả sử bạn có hook này để đăng xuất
+
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
     StudentApiService.getProfileStudent()
-      .then((data) => {
+      .then(data => {
         if (isMounted) setContestantInfo(data.data);
       })
       .catch(() => {
@@ -99,7 +103,7 @@ const StudentDashboard: React.FC = () => {
     const handleMatchStarted = (data: MatchEventData) => {
       // 🔥 DEBUG: Console toàn bộ thông tin matches để kiểm tra slug
 
-      const match = contestantInfo?.matches.find((m) => m.id === data.matchId);
+      const match = contestantInfo?.matches.find(m => m.id === data.matchId);
 
       if (contestantInfo?.contestant.id) {
         socket.emit("student:confirmStart", {
@@ -134,11 +138,11 @@ const StudentDashboard: React.FC = () => {
     const handleMatchUpdate = (data: MatchEventData) => {
       if (data.remainingTime !== undefined) {
         // Cập nhật state với thời gian còn lại mới
-        setContestantInfo((prev) => {
+        setContestantInfo(prev => {
           if (!prev) return prev;
           return {
             ...prev,
-            matches: prev.matches.map((match) =>
+            matches: prev.matches.map(match =>
               match.id === data.matchId
                 ? { ...match, remainingTime: data.remainingTime || null }
                 : match
@@ -151,11 +155,11 @@ const StudentDashboard: React.FC = () => {
     // 🔥 UPDATE: Handler mới cho timer:update event
     const handleTimerUpdate = (data: TimerUpdateData) => {
       // Timer update không có matchId, cần tìm match đang active
-      setContestantInfo((prev) => {
+      setContestantInfo(prev => {
         if (!prev) return prev;
         return {
           ...prev,
-          matches: prev.matches.map((match) =>
+          matches: prev.matches.map(match =>
             match.status === "active"
               ? { ...match, remainingTime: data.timeRemaining }
               : match
@@ -273,6 +277,26 @@ const StudentDashboard: React.FC = () => {
   // Hàm xử lý đăng xuất
   const handleLogout = () => {
     // Xóa thông tin đăng nhập khỏi localStorage
+    logout(undefined, {
+      onSuccess: () => {
+        // Xóa thông tin đăng nhập khỏi localStorage
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("contestantInfo");
+
+        // Ngắt kết nối socket nếu có
+        if (socket) {
+          socket.disconnect();
+        }
+
+        // Chuyển hướng về trang đăng nhập
+        navigate("/student/login");
+      },
+      onError: () => {
+        // Xử lý lỗi đăng xuất nếu cần
+        console.error("Đăng xuất không thành công");
+      },
+    });
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("contestantInfo");
@@ -470,7 +494,7 @@ const StudentDashboard: React.FC = () => {
               {contestantInfo.matches.length > 0 ? (
                 <>
                   <div className="space-y-4">
-                    {paginatedMatches.matches.map((match) => (
+                    {paginatedMatches.matches.map(match => (
                       <div
                         key={match.id}
                         className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow"
@@ -525,7 +549,7 @@ const StudentDashboard: React.FC = () => {
                           {Array.from(
                             { length: paginatedMatches.totalPages },
                             (_, i) => i + 1
-                          ).map((page) => (
+                          ).map(page => (
                             <button
                               key={page}
                               onClick={() => handlePageChange(page)}

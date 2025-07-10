@@ -10,6 +10,7 @@ import {
   GetListContestant,
   GetChartData,
   GetAllRescues,
+  GetStatistic,
   // GetLifelineUsedRescues,
 } from "../service/api";
 
@@ -89,6 +90,14 @@ export const useAllRescues = (matchSlug: string | null) => {
   return useQuery({
     queryKey: ["AllRescues", matchSlug],
     queryFn: () => GetAllRescues(matchSlug!),
+    enabled: !!matchSlug,
+  });
+};
+
+export const useStatistic = (matchSlug: string | null) => {
+  return useQuery({
+    queryKey: ["Statistic", matchSlug],
+    queryFn: () => GetStatistic(matchSlug!),
     enabled: !!matchSlug,
   });
 };

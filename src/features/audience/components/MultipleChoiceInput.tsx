@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useSocket } from "@contexts/SocketContext";
 import { useSubmitSupportAnswer } from "../hooks/useRescue";
 import { useToast } from "@/contexts/toastContext";
 
@@ -16,24 +15,8 @@ const MultipleChoiceInput: React.FC<Props> = ({
 }) => {
   const [selected, setSelected] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const { socket } = useSocket();
+
   const { showToast } = useToast();
-
-  useEffect(() => {
-    if (!socket) return;
-
-    const handletimerStart = (_data: any) => {
-      localStorage.removeItem("answer");
-      setIsSubmitted(false);
-    };
-    socket.on("timerStart:Rescue", handletimerStart);
-
-    return () => {
-      if (socket) {
-        socket.off("timerStart:Rescue", handletimerStart);
-      }
-    };
-  }, [socket, questionId]);
 
   // --- Helper functions
   const getLetter = (index: number) => String.fromCharCode(65 + index); // A, B, C...
@@ -54,7 +37,6 @@ const MultipleChoiceInput: React.FC<Props> = ({
   const handleSubmit = () => {
     if (!selected) return;
     setIsSubmitted(true);
-    localStorage.setItem("answer", "true");
     submitAnswer(
       { rescueId: rescueId || 0, supportAnswers: selected },
       {

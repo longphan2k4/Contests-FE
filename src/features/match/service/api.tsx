@@ -50,8 +50,12 @@ export const GetAllRescues = async (matchSlug: string) => {
   return res.data;
 };
 
+export const GetStatistic = async (matchSlug: string) => {
+  const res = await axiosInstance.get(`/results/${matchSlug}/statistics`);
+  return res.data;
+};
+
 // export const GetLifelineUsedRescues = async (matchSlug: string) => {
 //   const res = await axiosInstance.get(`/rescues/list-lifelineUsed/${matchSlug}`);
 //   return res.data;
 // };
-

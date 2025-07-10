@@ -7,6 +7,7 @@ import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerD
 import EliminateDisplay from "../components/Eliminate/EliminateDisplay";
 import QRCodeDisplay from "../components/QuestionDisplay/QRCodeDisplay";
 import RescueStatsDisplay from "../components/QuestionDisplay/RescueStatsDisplays";
+import ChartDisplay from "../components/QuestionDisplay/ChartDisplay";
 import Info from "../components/QuestionDisplay/Info";
 
 import { mockContestants } from "../constants";
@@ -34,6 +35,7 @@ import {
   useListContestant,
   useListRescues,
   useAllRescues,
+  useStatistic,
 } from "../hooks/useControls";
 import { useParams } from "react-router-dom";
 
@@ -62,6 +64,10 @@ export default function MatchPage() {
     updatedRescuesType[]
   >([]);
 
+  const [statistic, setStatistic] = useState<
+    { label: string; value: number }[] | null
+  >([]);
+
   // Use rescue hook to fetch initial data
   const {
     data: allRescuesRes,
@@ -69,6 +75,13 @@ export default function MatchPage() {
     isSuccess: isSuccessAllRescues,
     isError: isErrorAllRescues,
   } = useAllRescues(match ?? null);
+
+  const {
+    data: statisticRes,
+    isLoading: isLoadingStatistic,
+    isSuccess: isSuccessStatistic,
+    isError: isErrorStatistic,
+  } = useStatistic(match ?? null);
 
   const {
     data: matchInfoRes,
@@ -138,6 +151,10 @@ export default function MatchPage() {
   useEffect(() => {
     if (isSuccessCurrentQuestion) setCurrentQuestion(currentQuestionRes.data);
   }, [isSuccessCurrentQuestion, currentQuestionRes]);
+
+  useEffect(() => {
+    if (isSuccessStatistic) setStatistic(statisticRes.data);
+  }, [isSuccessStatistic, statisticRes]);
 
   useEffect(() => {
     if (isSuccessRescues) setListRescue(listRescueRes.data);
@@ -254,11 +271,17 @@ export default function MatchPage() {
     };
 
     const getRescueStatus = (data: unknown) => {
+      console.log("getRescueStatus", data);
+
       const typedData = data as {
         data: { updatedRescues: updatedRescuesType[] };
       };
-      console.log("Rescue status data:", typedData);
       setUpdateRescuedData(typedData.data.updatedRescues);
+    };
+
+    const handleStatistics = (data: any) => {
+      setStatistic(data?.statistics);
+      setScreenControl(data?.updatedScreen);
     };
 
     socket.on("rescue:statusUpdated", getRescueStatus);
@@ -271,6 +294,7 @@ export default function MatchPage() {
     socket.on("update:Rescused", handleUpdateRescued);
     socket.on("showQrRescue", handleShowQrRescue);
     socket.on("showQrChart", handleShowQrChart);
+    socket.on("statistics:update", handleStatistics);
 
     return () => {
       socket.off("rescue:statusUpdated", getRescueStatus);
@@ -281,12 +305,16 @@ export default function MatchPage() {
       // socket.off("contestant:status-update", handleUpdateStatus);
       socket.off("update:Eliminated", handleUpdateEliminate);
       socket.off("update:Rescused", handleUpdateRescued);
+      socket.off("showQrRescue", handleShowQrRescue);
+      socket.off("showQrChart", handleShowQrChart);
+      socket.off("statistics:update", handleStatistics);
     };
   }, [socket]);
 
   const isLoading =
     isLoadingMatch ||
     isLoadingBg ||
+    isLoadingStatistic ||
     isLoadingCurrentQuestion ||
     isLoadingRescues ||
     isLoadingContestants ||
@@ -309,6 +337,7 @@ export default function MatchPage() {
 
   if (
     isErrorMatch ||
+    isErrorStatistic ||
     isErrorBg ||
     isErrorCurrentQuestion ||
     isErrorRescues ||
@@ -332,6 +361,12 @@ export default function MatchPage() {
 
   return (
     <>
+      {screenControl?.controlKey === "statistic" && (
+        <div key="statistic">
+          <ChartDisplay chartData={statistic} />
+        </div>
+      )}
+
       {screenControl?.controlKey === "qrcode" && (
         <div key="qrCode">
           <QRCodeDisplay

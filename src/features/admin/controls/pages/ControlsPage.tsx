@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import React, { useState, useEffect } from "react";
+import ChartControl from "../components/ChartControl";
 import {
   QuestionControl,
   AnswerControl,
@@ -164,8 +165,9 @@ const ControlsPage: React.FC = () => {
   useEffect(() => {
     if (isSuccessMatch) {
       setMatchInfo(matchInfoRes.data);
-      document.title = `Điều khiển trận đấu - ${matchInfoRes?.data?.name || "Chưa có trận đấu"
-        }`;
+      document.title = `Điều khiển trận đấu - ${
+        matchInfoRes?.data?.name || "Chưa có trận đấu"
+      }`;
     }
   }, [isSuccessMatch, matchInfoRes]);
 
@@ -192,7 +194,7 @@ const ControlsPage: React.FC = () => {
 
   useEffect(() => {
     if (!socket) {
-      return () => { };
+      return () => {};
     }
 
     const handleScreenUpdate = (data: { updatedScreen: SceenControl }) => {
@@ -252,6 +254,10 @@ const ControlsPage: React.FC = () => {
       setListRescueLifelineUsed(data?.ListRescue);
     };
 
+    const handstatistics = (data: any) => {
+      setScreenControl(data?.updatedScreen);
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
@@ -263,6 +269,7 @@ const ControlsPage: React.FC = () => {
     socket.on("timerEnd:Rescue", handleTimerRescue);
     socket.on("showQrChart", handleShowQrChart);
     socket.on("rescue:updateStatus", handleUpdateRescued);
+    socket.on("statistics:update", handstatistics);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
@@ -453,6 +460,9 @@ const ControlsPage: React.FC = () => {
               ListContestant={listContestant}
               MatchInfo={matchInfo || null}
             />
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+            <ChartControl />
           </div>
 
           {/** Phần điều khiển thí sinh chiến thắng */}
