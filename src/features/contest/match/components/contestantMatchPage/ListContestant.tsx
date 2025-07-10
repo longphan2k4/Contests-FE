@@ -106,18 +106,18 @@ export default function Listcontestant({
     //     return <Chip label={groupName} size="small" color="primary" />;
     //   },
     // },
-    {
-      field: "status",
-      headerName: "Trạng thái",
-      flex: 1,
-      renderCell: (params: GridRenderCellParams<Contestant, string>) => {
-        const status = params.row.status.trim();
+    // {
+    //   field: "status",
+    //   headerName: "Trạng thái",
+    //   flex: 1,
+    //   renderCell: (params: GridRenderCellParams<Contestant, string>) => {
+    //     const status = params.row.status.trim();
 
-        if (status === "compete") return <Chip label="Thi đấu" size="small" color="success" />;
-        if (status === "eliminate") return <Chip label="Bị loại" size="small" color="error" />;
-        return <Chip label="Qua vòng" size="small" color="info" />;
-      },
-    },
+    //     if (status === "compete") return <Chip label="Thi đấu" size="small" color="success" />;
+    //     if (status === "eliminate") return <Chip label="Bị loại" size="small" color="error" />;
+    //     return <Chip label="Qua vòng" size="small" color="info" />;
+    //   },
+    // },
     {
       field: "actions",
       headerName: "Thao tác",

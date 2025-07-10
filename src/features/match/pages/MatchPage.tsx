@@ -43,6 +43,7 @@ import QuestionExplanation from "../components/QuestionDisplay/QuestionExplanati
 import QuestionIntro from "../components/QuestionDisplay/QuestionIntro";
 import { useSocket } from "../../../contexts/SocketContext";
 import FullScreenVideo from "../components/Media/FullScreenVideo";
+import TopWinner from "@features/match/components/ContestantsWinner/Top20Winner";
 
 export default function MatchPage() {
   const { match } = useParams();
@@ -68,7 +69,7 @@ export default function MatchPage() {
     isLoading: isLoadingAllRescues,
     isSuccess: isSuccessAllRescues,
     isError: isErrorAllRescues,
-  } = useAllRescues(match ?? null);
+  } = useAllRescues(match ?? null, currentQuestion?.questionOrder);
 
   const {
     data: matchInfoRes,
@@ -167,7 +168,8 @@ export default function MatchPage() {
   useEffect(() => {
     if (isSuccessAllRescues && allRescuesRes?.data) {
       const formattedRescues: updatedRescuesType[] = allRescuesRes.data.map(
-        (rescue: any) => ({
+        (rescue: updatedRescuesType) => ({
+          isEffect: rescue.isEffect,
           id: rescue.id,
           name: rescue.name,
           rescueType: rescue.rescueType,
@@ -268,7 +270,7 @@ export default function MatchPage() {
     socket.on("update:winGold", handleUpdateGold);
     // socket.on("contestant:status-update", handleUpdateStatus);
     socket.on("update:Eliminated", handleUpdateEliminate);
-    socket.on("update:Rescused", handleUpdateRescued);
+    socket.on("update:Rescued", handleUpdateRescued);
     socket.on("showQrRescue", handleShowQrRescue);
     socket.on("showQrChart", handleShowQrChart);
 
@@ -280,7 +282,7 @@ export default function MatchPage() {
       socket.off("update:winGold", handleUpdateGold);
       // socket.off("contestant:status-update", handleUpdateStatus);
       socket.off("update:Eliminated", handleUpdateEliminate);
-      socket.off("update:Rescused", handleUpdateRescued);
+      socket.off("update:Rescued", handleUpdateRescued);
     };
   }, [socket]);
 
@@ -470,6 +472,11 @@ export default function MatchPage() {
       {screenControl?.controlKey === "questionInfo" && (
         <div key="questionInfo">
           <Info currentQuestion={currentQuestion} />
+        </div>
+      )}
+      {screenControl?.controlKey === "top20Winner" && (
+        <div key="top20Winner">
+          <TopWinner match_id={matchInfo?.id ?? ""} />
         </div>
       )}
     </>

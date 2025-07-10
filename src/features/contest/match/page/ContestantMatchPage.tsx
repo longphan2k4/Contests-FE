@@ -138,7 +138,7 @@ const ContestantMatchPage: React.FC = () => {
 
   const [filter, setFilter] = useState<ContestantQueryInput>({});
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [listStatus, setListStatus] = useState<listStatus[]>([]);
+  const [_listStatus, setListStatus] = useState<listStatus[]>([]);
   const [listRound, setListRound] = useState<listRound[]>([]);
 
   // Judge-related states
@@ -1573,7 +1573,7 @@ const ContestantMatchPage: React.FC = () => {
           />
 
           {/* Trạng thái */}
-          <FormAutocompleteFilter
+          {/* <FormAutocompleteFilter
             label="Trạng thái"
             options={[
               { label: "Tất cả", value: "all" },
@@ -1594,7 +1594,7 @@ const ContestantMatchPage: React.FC = () => {
             }
             sx={{ flex: 1, minWidth: 200 }}
             disableClearable
-          />
+          /> */}
 
           {/* Trường học */}
           {/* <FormAutocompleteFilter
