@@ -8,12 +8,15 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import EliminatedContestantDialog, { type EliminatedContestant } from './EliminatedContestantDialog';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@config/axiosInstance';
 import { useCompletedContestants, useUpdateToCompleted, useUpdateAllCompletedToEliminated } from '../../hook/useControls';
 import { useParams } from 'react-router-dom';
+import { useSocket } from '@/contexts/SocketContext';
 
 // CSS for shimmer animation
 const shimmerKeyframes = `
@@ -46,6 +49,7 @@ interface WinnerProps {
 
 const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
     const { match } = useParams();
+    const { socket } = useSocket();
     const [suggestCount, setSuggestCount] = useState<number>(1);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isLoadingSuggest, setIsLoadingSuggest] = useState(false);
@@ -54,6 +58,8 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
     const [isSyncing, setIsSyncing] = useState(false);
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
     const [goldId, setGoldId] = useState<number | null>(null);
+    const [isShowingTop20, setIsShowingTop20] = useState(false);
+    const [isLoadingTop20, setIsLoadingTop20] = useState(false);
     const queryClient = useQueryClient();
 
     // dữ liệu thí sinh đã hoàn thành (completed) trong trận đấu nếu có
@@ -245,10 +251,96 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
             }
         );
     };
+
+    // Xử lý hiển thị/ẩn Top20 Winner trên màn chiếu
+    const handleToggleTop20 = () => {
+        if (!socket) return;
+
+        setIsLoadingTop20(true);
+
+        if (isShowingTop20) {
+            // Ẩn Top20 Winner
+            socket.emit("winner:hideTop20",
+                {
+                    matchId,
+                    match
+                },
+                (error: unknown, response: { success?: boolean; message?: string }) => {
+                    setIsLoadingTop20(false);
+                    if (error) {
+                        console.error('Lỗi khi ẩn Top20:', error);
+                        return;
+                    }
+
+                    if (response?.success) {
+                        setIsShowingTop20(false);
+                        console.log('Đã ẩn Top20 Winner:', response.message);
+                    } else {
+                        console.error('Lỗi khi ẩn Top20:', response?.message);
+                    }
+                }
+            );
+        } else {
+            // Hiển thị Top20 Winner
+            socket.emit("winner:showTop20",
+                {
+                    matchId,
+                    match,
+                    limit: contestantData.length
+                },
+                (error: unknown, response: { success?: boolean; message?: string }) => {
+                    setIsLoadingTop20(false);
+                    if (error) {
+                        console.error('Lỗi khi hiển thị Top20:', error);
+                        return;
+                    }
+
+                    if (response?.success) {
+                        setIsShowingTop20(true);
+                        console.log('Đã hiển thị Top20 Winner:', response.message);
+                    } else {
+                        console.error('Lỗi khi hiển thị Top20:', response?.message);
+                    }
+                }
+            );
+        }
+    };
     return (
         <Paper sx={{ p: 3, mb: "calc(var(--spacing) * 8)" }} elevation={3}>
             <Typography variant="h5" component="h2" gutterBottom>
                 Thí Sinh Qua Vòng
+                {isShowingTop20 && (
+                    <Box component="span" sx={{
+                        ml: 1,
+                        px: 1.5,
+                        py: 0.5,
+                        backgroundColor: 'success.light',
+                        color: 'success.contrastText',
+                        borderRadius: '12px',
+                        fontSize: '0.80rem',
+                        fontWeight: 'bold',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        animation: 'pulse 2s infinite',
+                        '@keyframes pulse': {
+                            '0%': {
+                                opacity: 1,
+                                transform: 'scale(1)'
+                            },
+                            '50%': {
+                                opacity: 0.8,
+                                transform: 'scale(1.02)'
+                            },
+                            '100%': {
+                                opacity: 1,
+                                transform: 'scale(1)'
+                            }
+                        }
+                    }}>
+                        🔴 Đang hiển thị - không thể chỉnh sửa
+                    </Box>
+                )}
             </Typography>
 
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
@@ -298,7 +390,7 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
                                     variant="outlined"
                                     color="primary"
                                     onClick={handleSync}
-                                    disabled={isSyncing}
+                                    disabled={isSyncing || isShowingTop20}
                                     startIcon={isSyncing ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />}
                                     sx={{ ml: 'auto' }}
                                 >
@@ -309,7 +401,7 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
                                     variant="outlined"
                                     color="error"
                                     onClick={handleReset}
-                                    disabled={resetAllCompletedMutation.isPending || !contestantCompletedData?.data?.candidates?.length}
+                                    disabled={resetAllCompletedMutation.isPending || !contestantCompletedData?.data?.candidates?.length || isShowingTop20}
                                     startIcon={resetAllCompletedMutation.isPending ? <CircularProgress size={16} color="inherit" /> : <DeleteIcon />}
                                 >
                                     Reset
@@ -331,8 +423,8 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
                     <Typography variant="body1" color="text.secondary" gutterBottom>
                         Tổng số: {contestantData.length} thí sinh
                         {goldId && contestantData.some(c => c.contestantId === goldId) && (
-                            <Box component="span" sx={{ 
-                                ml: 2, 
+                            <Box component="span" sx={{
+                                ml: 2,
                                 color: '#FFD700',
                                 fontWeight: 'bold',
                                 display: 'inline-flex',
@@ -431,14 +523,14 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
                                                     } : {}}
                                                 >
                                                     <ListItemAvatar>
-                                                        <Tooltip 
+                                                        <Tooltip
                                                             title={isGold ? "🏆 Thí sinh gold - Được ưu tiên qua vòng" : ""}
                                                             placement="top"
                                                             arrow
                                                         >
-                                                            <Avatar sx={{ 
-                                                                width: 32, 
-                                                                height: 32, 
+                                                            <Avatar sx={{
+                                                                width: 32,
+                                                                height: 32,
                                                                 fontSize: '0.8rem',
                                                                 ...(isGold && {
                                                                     backgroundColor: '#8B4513',
@@ -448,15 +540,15 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
                                                                     boxShadow: '0 0 15px rgba(255, 215, 0, 0.6)',
                                                                     animation: 'pulse 2s infinite',
                                                                     '@keyframes pulse': {
-                                                                        '0%': { 
+                                                                        '0%': {
                                                                             boxShadow: '0 0 15px rgba(255, 215, 0, 0.6)',
                                                                             transform: 'scale(1)'
                                                                         },
-                                                                        '50%': { 
+                                                                        '50%': {
                                                                             boxShadow: '0 0 25px rgba(255, 215, 0, 0.8)',
                                                                             transform: 'scale(1.05)'
                                                                         },
-                                                                        '100%': { 
+                                                                        '100%': {
                                                                             boxShadow: '0 0 15px rgba(255, 215, 0, 0.6)',
                                                                             transform: 'scale(1)'
                                                                         }
@@ -469,9 +561,9 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
                                                     </ListItemAvatar>
                                                     <ListItemText
                                                         primary={
-                                                            <Typography 
-                                                                variant="body2" 
-                                                                fontWeight="medium" 
+                                                            <Typography
+                                                                variant="body2"
+                                                                fontWeight="medium"
                                                                 noWrap
                                                                 sx={isGold ? {
                                                                     color: '#8B4513',
@@ -487,8 +579,8 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
                                                             </Typography>
                                                         }
                                                         secondary={
-                                                            <Typography 
-                                                                variant="caption" 
+                                                            <Typography
+                                                                variant="caption"
                                                                 sx={isGold ? {
                                                                     color: '#A0522D',
                                                                     fontWeight: 'medium',
@@ -512,7 +604,34 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
                 </Box>
             </Stack >
 
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: isDisabled ? 'space-between' : 'flex-end', alignItems: 'center', gap: 2 }}>
+                {/* Nút hiển thị Top Winner */}
+                {isDisabled && <Button
+                    variant={isShowingTop20 ? "contained" : "outlined"}
+                    color={isShowingTop20 ? "success" : "primary"}
+                    onClick={handleToggleTop20}
+                    disabled={isLoadingTop20 || contestantData.length === 0}
+                    startIcon={
+                        isLoadingTop20 ? (
+                            <CircularProgress size={20} color="inherit" />
+                        ) : isShowingTop20 ? (
+                            <VisibilityOffIcon />
+                        ) : (
+                            <VisibilityIcon />
+                        )
+                    }
+                    sx={{ minWidth: 200 }}
+                >
+                    {isLoadingTop20
+                        ? 'Đang xử lý...'
+                        : isShowingTop20
+                            ? 'Ẩn Top Winner'
+                            : 'Hiển thị Top Winner'
+                    }
+                </Button>
+                }
+
+                {/* Nút xác nhận */}
                 <Button
                     variant="contained"
                     size="large"
