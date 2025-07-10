@@ -83,7 +83,7 @@ const HomePage = () => {
         <SponsorsSection />
       </div>
       <Footer />
-      <OlympicChatbotWidget/>
+      {/* <OlympicChatbotWidget/> */}
     </div>
   );
 };
