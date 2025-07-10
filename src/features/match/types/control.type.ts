@@ -62,6 +62,7 @@ export const controlKey = {
   chart: "chart",
   questionIntro: "questionIntro",
   statistic: "statistic",
+  top20Winner: "top20Winner",
 } as const;
 
 export type ControlKey = (typeof controlKey)[keyof typeof controlKey];
@@ -212,6 +213,7 @@ export interface updateRescuedDataType {
 }
 
 export interface updatedRescuesType {
+  isEffect: boolean;
   name: string;
   id: number;
   status: string;

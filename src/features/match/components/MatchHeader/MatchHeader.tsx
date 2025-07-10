@@ -58,7 +58,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   useEffect(() => {
     const availableHelp = updateRescuedData.some(
       rescue =>
-        rescue.status === RescueStatus.notUsed && isRescueEligible(rescue)
+        rescue.status === RescueStatus.notUsed && rescue.isEffect
     );
     if (availableHelp && !hasPlayedHelpStatusSound) {
       console.log("Phát âm thanh trợ giúp");
@@ -90,11 +90,12 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   //   };
   // }, [socket]);
 
-  const isRescueEligible = (rescue: updatedRescuesType): boolean => {
-    const currentContestants =
-      (countContestant?.total ?? 0) - (countContestant?.countEliminated ?? 0);
-    return currentContestants <= rescue.remainingContestants;
-  };
+  // hàm kiểm tra trên client xem rescue có đủ điều kiện để sử dụng hay không
+  // const isRescueEligible = (rescue: updatedRescuesType): boolean => {
+  //   const currentContestants =
+  //     (countContestant?.total ?? 0) - (countContestant?.countEliminated ?? 0);
+  //   return currentContestants <= rescue.remainingContestants;
+  // };
 
   const getRescueIcon = (rescueType: string): string => {
     if (rescueType === "lifelineUsed") {
@@ -105,7 +106,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
 
   const renderRescueIcon = (rescue: updatedRescuesType) => {
     const icon = getRescueIcon(rescue.rescueType);
-    const isEligible = isRescueEligible(rescue);
+    const isEligible = rescue.isEffect;
 
     let filterClass = "";
     let animationClass = "";

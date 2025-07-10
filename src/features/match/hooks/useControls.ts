@@ -86,10 +86,10 @@ export const userChartData = (id: number) => {
   });
 };
 
-export const useAllRescues = (matchSlug: string | null) => {
+export const useAllRescues = (matchSlug: string | null, currentQuestionOrder: number | undefined) => {
   return useQuery({
-    queryKey: ["AllRescues", matchSlug],
-    queryFn: () => GetAllRescues(matchSlug!),
+    queryKey: ["AllRescues", matchSlug, currentQuestionOrder],
+    queryFn: () => GetAllRescues(matchSlug!, currentQuestionOrder),
     enabled: !!matchSlug,
   });
 };
