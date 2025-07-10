@@ -1,8 +1,8 @@
 import React from "react";
-import { Box, IconButton, Chip } from "@mui/material";
+import { Box, IconButton } from "@mui/material";
 // import DataGrid from "../../../../../components/DataGrid";
 import DataGrid2 from "../../../../../components/DataGrid/index2";
-import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import type { GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -52,16 +52,16 @@ export default function Listcontestant({
       disableColumnMenu: true,
       renderCell: params =>
         removeFromGroup &&
-          activeGroupTab !== undefined &&
-          groups?.[activeGroupTab]?.some(c => c.id === params.row.id) ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        activeGroupTab !== undefined &&
+        groups?.[activeGroupTab]?.some(c => c.id === params.row.id) ? (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <IconButton
               color="error"
               size="small"
               title="Xóa khỏi nhóm này"
               disableRipple
               disableFocusRipple
-              sx={{ '&:hover': { backgroundColor: 'transparent' } }}
+              sx={{ "&:hover": { backgroundColor: "transparent" } }}
               onClick={e => {
                 e.stopPropagation();
                 removeFromGroup(activeGroupTab, params.row.id);
@@ -69,10 +69,9 @@ export default function Listcontestant({
             >
               ✕
             </IconButton>
-            <Box sx={{ fontWeight: 'bold', fontSize: 20 }}>
-              {
-                groups?.[activeGroupTab]?.find(c => c.id === params.row.id)?.registrationNumber || '-'
-              }
+            <Box sx={{ fontWeight: "bold", fontSize: 20 }}>
+              {groups?.[activeGroupTab]?.find(c => c.id === params.row.id)
+                ?.registrationNumber || "-"}
             </Box>
           </Box>
         ) : null,
@@ -136,25 +135,28 @@ export default function Listcontestant({
         </>
       ),
     },
-  ]; return (
-    <Box sx={{
-      overflow: "auto",
-      '&::-webkit-scrollbar': {
-        width: '4px',
-        height: '4px'
-      },
-      '&::-webkit-scrollbar-track': {
-        backgroundColor: '#f1f1f1',
-        borderRadius: '4px'
-      },
-      '&::-webkit-scrollbar-thumb': {
-        backgroundColor: '#c1c1c1',
-        borderRadius: '4px',
-        '&:hover': {
-          backgroundColor: '#a8a8a8'
-        }
-      }
-    }}>
+  ];
+  return (
+    <Box
+      sx={{
+        overflow: "auto",
+        "&::-webkit-scrollbar": {
+          width: "4px",
+          height: "4px",
+        },
+        "&::-webkit-scrollbar-track": {
+          backgroundColor: "#f1f1f1",
+          borderRadius: "4px",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "#c1c1c1",
+          borderRadius: "4px",
+          "&:hover": {
+            backgroundColor: "#a8a8a8",
+          },
+        },
+      }}
+    >
       {/* <DataGrid
         rows={contestants}
         columns={columns}
@@ -176,20 +178,17 @@ export default function Listcontestant({
         rows={contestants}
         columns={columns} // Truyền các cột dữ liệu
         getRowId={row => row.id}
-
         // Bật checkboxSelection tùy chỉnh của chúng ta
         checkboxSelection={true}
-
         // Truyền và nhận lại model lựa chọn
         selectionModel={selectedIds}
-        onSelectChange={(newSelection) => {
+        onSelectChange={newSelection => {
           setSelectedIds(newSelection.map(id => Number(id)));
         }}
-
         // Các props còn lại
         disabledRowIds={assignedContestantIds}
-        getRowClassName={(params) =>
-          assignedContestantIds.includes(params.row.id) ? 'disabled-row' : ''
+        getRowClassName={params =>
+          assignedContestantIds.includes(params.row.id) ? "disabled-row" : ""
         }
       />
     </Box>

@@ -57,11 +57,9 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
 
   useEffect(() => {
     const availableHelp = updateRescuedData.some(
-      rescue =>
-        rescue.status === RescueStatus.notUsed && rescue.isEffect
+      rescue => rescue.status === RescueStatus.notUsed && rescue.isEffect
     );
     if (availableHelp && !hasPlayedHelpStatusSound) {
-      console.log("Phát âm thanh trợ giúp");
       setHasPlayedHelpStatusSound(true);
     } else if (
       !availableHelp &&
