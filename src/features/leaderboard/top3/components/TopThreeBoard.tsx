@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import type { CardStyles } from "../types/CardStyles";
-import { useParticles } from "../hooks/useParticles";
+// import { useParticles } from "../hooks/useParticles";
 import ContestantCard from "./ContestantCard";
 import type { Award } from "@features/match/types/control.type";
 
@@ -14,13 +14,7 @@ type Top3Props = {
 
 const TopThreeBoard: React.FC<Top3Props> = ({ ListAward }) => {
   const particlesRef = useRef<HTMLDivElement>(null);
-  useParticles(particlesRef);
-
-  console.log("Awards", {
-    first: ListAward?.firstPrize,
-    second: ListAward?.secondPrize,
-    third: ListAward?.thirdPrize,
-  });
+  // useParticles(particlesRef);
 
   const getCardStyles = (actualRank: number): CardStyles => ({
     border:
