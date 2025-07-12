@@ -9,6 +9,7 @@ import { useAwardById } from "../hook/useAwardById";
 import FromSelect from "@/components/FormSelect";
 import { useParams } from "react-router-dom";
 import { useListContestants } from "../hook/useListContestants";
+import { useListMatch } from "../hook/useListMatch";
 
 interface EditAwardProps {
   id: number | null;
@@ -37,12 +38,15 @@ export default function EditeAward({
     { value: "firstPrize", label: "Giải Nhất" },
     { value: "secondPrize", label: "Giải Nhì" },
     { value: "thirdPrize", label: "Giải Ba" },
-    { value: "fourthPrize", label: "Giải Khuyến Khích" },
-    { value: "impressiveVideo", label: "Video Ấn Tượng" },
-    { value: "excellentVideo", label: "Video Xuất Sắc" },
   ];
 
   const { data: award, isLoading, isError, refetch } = useAwardById(id);
+  const {
+    data: matches,
+    isLoading: isLoadingMatches,
+    isError: isErrorMatches,
+    refetch: refetchMatches,
+  } = useListMatch(slug ?? "");
   const {
     data: contestants,
     isLoading: isLoadingContestants,
@@ -61,12 +65,22 @@ export default function EditeAward({
     }
   }, [contestants]);
 
+  const listMatches = useMemo(() => {
+    if (matches?.success && matches.data) {
+      return matches.data.map((match: { id: number; name: string }) => ({
+        label: match.name,
+        value: match.id,
+      }));
+    }
+  }, [matches]);
+
   useEffect(() => {
     if (isOpen) {
       refetchContestants();
       refetch();
+      refetchMatches();
     }
-  }, [isOpen, refetchContestants, refetch]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && award) {
@@ -74,6 +88,7 @@ export default function EditeAward({
         name: award.name,
         contestantId: award.contestantId,
         type: award.type,
+        matchId: award.matchId,
       });
     }
   }, [award, reset]);
@@ -83,7 +98,7 @@ export default function EditeAward({
     onClose();
   };
 
-  if (isLoading || isLoadingContestants) {
+  if (isLoading || isLoadingContestants || isLoadingMatches) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
@@ -91,7 +106,7 @@ export default function EditeAward({
     );
   }
 
-  if (isError || isErrorContestants) {
+  if (isError || isErrorContestants || isErrorMatches) {
     return <div>Không thể tải dữ liệu</div>;
   }
 
@@ -128,6 +143,15 @@ export default function EditeAward({
             options={options}
             control={control}
             error={errors.type}
+          />
+          <FromSelect
+            label="Trận đấu"
+            id="matchId"
+            name="matchId"
+            placeholder="Chọn trận đấu"
+            options={listMatches}
+            control={control}
+            error={errors.matchId}
           />
           <Button
             type="submit"

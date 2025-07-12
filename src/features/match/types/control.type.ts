@@ -50,7 +50,7 @@ export const controlKey = {
   fourthprize: "fourthprize",
   impressivevideo: "impressivevideo",
   excellentvideo: "excellentvideo",
-  allprize: "allprize",
+  allPrize: "allPrize",
   topwin: "topwin",
   listeliminated: "listeliminated",
   listrescued: "listrescued",
@@ -63,6 +63,7 @@ export const controlKey = {
   questionIntro: "questionIntro",
   statistic: "statistic",
   top20Winner: "top20Winner",
+  chartContestant: "chartContestant",
 } as const;
 
 export type ControlKey = (typeof controlKey)[keyof typeof controlKey];
@@ -223,3 +224,32 @@ export interface updatedRescuesType {
   questionTo: number;
   remainingContestants: number;
 }
+
+export interface contestStatistic {
+  label: string;
+  value: number;
+  fullName: string;
+  contestantId: number;
+}
+
+export type Award = {
+  id: number;
+  name: string;
+  type: "thirdPrize" | "secondPrize" | "firstPrize";
+  contestantId: number | null;
+  fullName: string | null;
+  registrationNumber: number | null;
+};
+
+export type ListAward = {
+  thirdPrize: Award | null;
+  secondPrize: Award | null;
+  firstPrize: Award | null;
+};
+
+export type ListResult = {
+  label: string;
+  value: number;
+  fullName: string;
+  contestantId: number;
+};

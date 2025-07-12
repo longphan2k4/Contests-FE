@@ -2,19 +2,15 @@ import { z } from "zod";
 
 export const CreateAwardSchema = z.object({
   name: z.string().min(1, "Tên giải thưởng không được để trống"),
-  type: z.enum(
-    [
-      "firstPrize",
-      "secondPrize",
-      "thirdPrize",
-      "fourthPrize",
-      "impressiveVideo",
-      "excellentVideo",
-    ],
-    {
-      errorMap: () => ({ message: "Vui lòng chọn loại giải" }),
-    }
-  ),
+  type: z.enum(["firstPrize", "secondPrize", "thirdPrize", "fourthPrize"], {
+    errorMap: () => ({ message: "Vui lòng chọn loại giải" }),
+  }),
+  matchId: z
+    .number({
+      invalid_type_error: "Vui lòng chọn trận đấu",
+      required_error: "Vui lòng chọn trận đấu",
+    })
+    .positive("ID trận đấu phải lớn hơn 0"),
 });
 
 export const AwardIdShema = z.object({
@@ -41,19 +37,16 @@ export const UpdateAwardSchema = z.object({
     ])
     .nullable(),
   type: z
-    .enum(
-      [
-        "firstPrize",
-        "secondPrize",
-        "thirdPrize",
-        "fourthPrize",
-        "impressiveVideo",
-        "excellentVideo",
-      ],
-      {
-        errorMap: () => ({ message: "Vui lòng chọn loại giải" }),
-      }
-    )
+    .enum(["firstPrize", "secondPrize", "thirdPrize"], {
+      errorMap: () => ({ message: "Vui lòng chọn loại giải" }),
+    })
+    .optional(),
+  matchId: z
+    .number({
+      invalid_type_error: "Vui lòng chọn trận đấu",
+      required_error: "Vui lòng chọn trận đấu",
+    })
+    .positive("ID trận đấu phải lớn hơn 0")
     .optional(),
 });
 
@@ -61,9 +54,7 @@ export type AwardQuery = {
   page?: number;
   limit?: number;
   search?: string;
-  type?: string;
-  contest_id?: number;
-  contestant_id?: number;
+  matchId?: number;
 };
 
 export type pagination = {

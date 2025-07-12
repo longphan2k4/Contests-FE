@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import MatchHeader from "../components/MatchHeader/MatchHeader";
 import Background from "../components/QuestionDisplay/Background";
 import FullScreenImage from "../components/Media/FullScreenImage";
+import TopThreeBoard from "@features/leaderboard/top3/components/TopThreeBoard";
 
 import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
 import EliminateDisplay from "../components/Eliminate/EliminateDisplay";
@@ -23,6 +24,8 @@ import {
   type SceenControl,
   type CurrentQuestion,
   type updatedRescuesType,
+  type contestStatistic,
+  type ListAward,
 } from "../types/control.type";
 
 import {
@@ -36,6 +39,8 @@ import {
   useListRescues,
   useAllRescues,
   useStatistic,
+  useStatisticsContestant,
+  useListAwards,
 } from "../hooks/useControls";
 import { useParams } from "react-router-dom";
 
@@ -49,12 +54,10 @@ import TopWinner from "@features/match/components/ContestantsWinner/Top20Winner"
 
 export default function MatchPage() {
   const { match } = useParams();
-
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
-
   const [listContestant, setListContestant] = useState<ListContestant[]>([]);
   const [_listRescue, setListRescue] = useState<ListRescue[]>([]);
-  const [_bgContest, setBgContest] = useState<BgContest | null>(null);
+  const [bgContest, setBgContest] = useState<BgContest | null>(null);
   const [currentQuestion, setCurrentQuestion] =
     useState<CurrentQuestion | null>(null);
   const [countContestant, setCountContestant] =
@@ -64,10 +67,15 @@ export default function MatchPage() {
   const [updateRescuedData, setUpdateRescuedData] = useState<
     updatedRescuesType[]
   >([]);
+  const [contestantsStatistic, setContestantsStatistic] = useState<
+    contestStatistic[] | null
+  >([]);
 
   const [statistic, setStatistic] = useState<
     { label: string; value: number }[] | null
   >([]);
+
+  const [listAward, setListAward] = useState<ListAward | null>(null);
 
   // Use rescue hook to fetch initial data
   const {
@@ -76,6 +84,13 @@ export default function MatchPage() {
     isSuccess: isSuccessAllRescues,
     isError: isErrorAllRescues,
   } = useAllRescues(match ?? null, currentQuestion?.questionOrder);
+
+  const {
+    data: listAwardRes,
+    isLoading: isLoadingListAward,
+    isSuccess: isSuccessListAward,
+    isError: isErrorListAward,
+  } = useListAwards(match ?? null);
 
   const {
     data: statisticRes,
@@ -140,14 +155,31 @@ export default function MatchPage() {
     isError: isErrorControl,
   } = useScreenControl(match ?? null);
 
+  const {
+    data: statisticsContestantRes,
+    isLoading: isLoadingStatisticsContestant,
+    isSuccess: isSuccessStatisticsContestant,
+    isError: isErrorStatisticsContestant,
+  } = useStatisticsContestant(match ?? null);
+
   // 3. useEffect gọn gàng với isSuccess
   useEffect(() => {
     if (isSuccessMatch) setMatchInfo(matchInfoRes.data);
   }, [isSuccessMatch, matchInfoRes]);
 
   useEffect(() => {
+    if (isSuccessListAward) setListAward(listAwardRes.data);
+  }, [isSuccessListAward, listAwardRes]);
+
+  useEffect(() => {
     if (isSuccessBg) setBgContest(bgContestRes.data);
   }, [isSuccessBg, bgContestRes]);
+
+  useEffect(() => {
+    if (isSuccessStatisticsContestant) {
+      setContestantsStatistic(statisticsContestantRes.data);
+    }
+  }, [isSuccessStatisticsContestant, statisticsContestantRes]);
 
   useEffect(() => {
     if (isSuccessCurrentQuestion) setCurrentQuestion(currentQuestionRes.data);
@@ -273,8 +305,6 @@ export default function MatchPage() {
     };
 
     const getRescueStatus = (data: unknown) => {
-      console.log("getRescueStatus", data);
-
       const typedData = data as {
         data: { updatedRescues: updatedRescuesType[] };
       };
@@ -284,6 +314,15 @@ export default function MatchPage() {
     const handleStatistics = (data: any) => {
       setStatistic(data?.statistics);
       setScreenControl(data?.updatedScreen);
+    };
+
+    const handleStatisticsContestant = (data: any) => {
+      setContestantsStatistic(data?.statisticsContestant);
+      setScreenControl(data?.updatedScreen);
+    };
+
+    const handleUpdateAward = (data: any) => {
+      setListAward(data);
     };
 
     socket.on("rescue:statusUpdated", getRescueStatus);
@@ -297,6 +336,8 @@ export default function MatchPage() {
     socket.on("showQrRescue", handleShowQrRescue);
     socket.on("showQrChart", handleShowQrChart);
     socket.on("statistics:update", handleStatistics);
+    socket.on("statisticsContestant:update", handleStatisticsContestant);
+    socket.on("update:award", handleUpdateAward);
 
     return () => {
       socket.off("rescue:statusUpdated", getRescueStatus);
@@ -311,6 +352,8 @@ export default function MatchPage() {
       socket.off("showQrChart", handleShowQrChart);
       socket.off("statistics:update", handleStatistics);
       socket.off("update:Rescued", handleUpdateRescued);
+      socket.off("statisticsContestant:update", handleStatisticsContestant);
+      socket.off("update:award", handleUpdateAward);
     };
   }, [socket]);
 
@@ -324,6 +367,8 @@ export default function MatchPage() {
     isLoadingCount ||
     isLoadingQuestions ||
     isLoadingControl ||
+    isLoadingStatisticsContestant ||
+    isLoadingListAward ||
     isLoadingAllRescues;
   if (isLoading) {
     return (
@@ -342,13 +387,16 @@ export default function MatchPage() {
     isErrorMatch ||
     isErrorStatistic ||
     isErrorBg ||
+    isErrorListAward ||
     isErrorCurrentQuestion ||
     isErrorRescues ||
     isErrorContestants ||
     isErrorCount ||
     isErrorQuestions ||
     isErrorControl ||
-    isErrorAllRescues
+    isErrorAllRescues ||
+    isErrorStatisticsContestant ||
+    isErrorStatisticsContestant
   ) {
     return (
       <Box
@@ -364,9 +412,24 @@ export default function MatchPage() {
 
   return (
     <>
+      {screenControl?.controlKey === "allPrize" && (
+        <div key="allPrize">
+          <TopThreeBoard ListAward={listAward} />
+        </div>
+      )}
+
       {screenControl?.controlKey === "statistic" && (
         <div key="statistic">
-          <ChartDisplay chartData={statistic} />
+          <ChartDisplay chartData={statistic} title="Thống kê câu hỏi " />
+        </div>
+      )}
+
+      {screenControl?.controlKey === "chartContestant" && (
+        <div key="chartContestant">
+          <ChartDisplay
+            chartData={contestantsStatistic}
+            title="Thống kê thí sinh"
+          />
         </div>
       )}
 
@@ -455,7 +518,9 @@ export default function MatchPage() {
           />
         </div>
       )}
-      {screenControl?.controlKey === "background" && <Background />}
+      {screenControl?.controlKey === "background" && (
+        <Background url={bgContest?.url || null} />
+      )}
       {screenControl?.controlKey === "explanation" && (
         <div key="explanation ">
           <MatchHeader

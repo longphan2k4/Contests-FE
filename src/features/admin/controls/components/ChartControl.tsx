@@ -19,13 +19,31 @@ const ChartControl: React.FC = ({}) => {
       }
     });
   };
+
+  const handleShowChartContestant = () => {
+    if (!socket) return;
+    socket.emit("statisticsContestant:update", { match }, (err: any) => {
+      if (err) {
+        showToast(err.message, "error");
+      } else {
+        showToast("Hiển thị biểu đồ thí sinh thành công", "success");
+      }
+    });
+  };
+
   return (
-    <div>
+    <div className="flex flex-row gap-2 p-4 bg-white rounded-lg shadow-md">
       <div
-        className="block text-center w-full btn bg-red-500 hover:bg-red-600 cursor-pointer text-white font-bold p-2 rounded-lg"
+        className="block text-center  w-full btn bg-red-500 hover:bg-red-600 cursor-pointer text-white font-bold p-2 rounded-lg"
         onClick={handleShowChart}
       >
-        Hiển thị biểu đồ thống kê
+        Hiển thị thống kê câu hỏi
+      </div>
+      <div
+        className="block text-center  w-full btn bg-red-500 hover:bg-red-600 cursor-pointer text-white font-bold p-2 rounded-lg"
+        onClick={handleShowChartContestant}
+      >
+        Hiển thị thống kê thí sinh
       </div>
     </div>
   );

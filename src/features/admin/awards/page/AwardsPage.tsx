@@ -31,7 +31,7 @@ import { useUpdate } from "../hook/useUpdate";
 import { useDeleteMany } from "../hook/useDeleteMany";
 import { useDelete } from "../hook/useDelete";
 import AddIcon from "@mui/icons-material/Add";
-
+import { useListMatch } from "../hook/useListMatch";
 import {
   type Award,
   type CreateAwardInput,
@@ -41,6 +41,7 @@ import {
   type deleteAwardsType,
 } from "../types/award.shame";
 import SearchIcon from "@mui/icons-material/Search";
+import FormAutocompleteFilter from "@components/FormAutocompleteFilter";
 
 const AwardsPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -54,6 +55,9 @@ const AwardsPage: React.FC = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isConfirmDeleteMany, setIsConfirmDeleteMany] = useState(false);
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
+  const [listMatch, setListMatch] = useState<
+    { id: number; name: string }[] | []
+  >([]);
 
   const [filter, setFilter] = useState<AwardQuery>({});
   const [selectedAwardIds, setSelectedAwardIds] = useState<number[]>([]);
@@ -65,11 +69,24 @@ const AwardsPage: React.FC = () => {
     refetch: refetchAwards,
   } = useAwards(slug || "", filter);
 
+  const {
+    data: matches,
+    isLoading: isLoadingMatches,
+    isError: isErrorMatches,
+    refetch: refetchMatches,
+  } = useListMatch(slug || "");
+
   const { mutate: mutateCreate } = useCreateAward(slug || "");
 
   const { mutate: mutateUpdate } = useUpdate();
 
   //const { mutate: mutateActive } = useActive();
+
+  useEffect(() => {
+    if (matches) {
+      setListMatch(matches.data);
+    }
+  }, [matches]);
 
   const { mutate: mutateDeleteMany } = useDeleteMany();
 
@@ -84,6 +101,7 @@ const AwardsPage: React.FC = () => {
 
   useEffect(() => {
     refetchAwards();
+    refetchMatches();
     document.title = "Quản lý giải thưởng";
   }, []);
 
@@ -187,14 +205,14 @@ const AwardsPage: React.FC = () => {
     );
   }
 
-  if (isAwardsLoading) {
+  if (isAwardsLoading || isLoadingMatches) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
-  if (isAwardsError) {
+  if (isAwardsError || isErrorMatches) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert
@@ -271,8 +289,25 @@ const AwardsPage: React.FC = () => {
                 flex: { sm: 1 },
                 minWidth: { xs: "100%", sm: 200 },
               }}
+            />{" "}
+            <FormAutocompleteFilter
+              label="Trận đấu"
+              options={[
+                { label: "Tất cả", value: "all" },
+                ...listMatch.map(s => ({
+                  label: s.name,
+                  value: s.id,
+                })),
+              ]}
+              value={filter.matchId ?? "all"}
+              onChange={(val: string | number | undefined) =>
+                setFilter(prev => ({
+                  ...prev,
+                  matchId: val === "all" ? undefined : Number(val),
+                }))
+              }
+              sx={{ flex: 1, minWidth: 200 }}
             />
-
             {/* Nút xoá người */}
             {selectedAwardIds.length > 0 && (
               <Button
@@ -288,7 +323,6 @@ const AwardsPage: React.FC = () => {
                 Xoá ({selectedAwardIds.length})
               </Button>
             )}
-
             {/* Tổng số người dùng */}
             <Box
               sx={{

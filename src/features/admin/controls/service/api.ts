@@ -80,11 +80,19 @@ export const GetListClassVideo = async (slug: string | null) => {
 // Lấy danh sách thí sinh bị loại có phân trang, lọc, tìm kiếm
 export const getEliminatedContestants = async (
   matchId: number | string,
-  params: { page?: number; limit?: number; search?: string; schoolId?: number; classId?: number; status?: string; registrationNumber?: string } = {}
+  params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    schoolId?: number;
+    classId?: number;
+    status?: string;
+    registrationNumber?: string;
+  } = {}
 ) => {
   // Convert registrationNumber to number if provided and valid
   const processedParams = { ...params };
-  if (params.registrationNumber && params.registrationNumber.trim() !== '') {
+  if (params.registrationNumber && params.registrationNumber.trim() !== "") {
     const regNum = Number(params.registrationNumber);
     if (!isNaN(regNum) && Number.isInteger(regNum)) {
       processedParams.registrationNumber = regNum.toString();
@@ -93,13 +101,20 @@ export const getEliminatedContestants = async (
       delete processedParams.registrationNumber;
     }
   }
-  
-  const res = await axiosInstance.get(`/contestant/eliminated/${matchId}/list`, { params: processedParams });
+
+  const res = await axiosInstance.get(
+    `/contestant/eliminated/${matchId}/list`,
+    { params: processedParams }
+  );
   return res.data;
 };
 
 // Lấy danh sách thí sinh bị loại theo tiêu chí cứu trợ (có thể truyền rescueId và limit)
-export const getRescueCandidates = async (matchId: number | string, rescueId?: number | null, limit?: number) => {
+export const getRescueCandidates = async (
+  matchId: number | string,
+  rescueId?: number | null,
+  limit?: number
+) => {
   const url = `/contestant/rescue-candidates/${matchId}`;
   const params: Record<string, unknown> = {};
   if (rescueId) params.rescueId = rescueId;
@@ -109,7 +124,9 @@ export const getRescueCandidates = async (matchId: number | string, rescueId?: n
 };
 
 // Lấy danh sách thí sinh đã được cứu trợ theo rescueId
-export const getRescuedContestantsByRescueId = async (rescueId: number | string) => {
+export const getRescuedContestantsByRescueId = async (
+  rescueId: number | string
+) => {
   const res = await axiosInstance.get(`/contestant/rescued/${rescueId}`);
   return res.data;
 };
@@ -117,9 +134,16 @@ export const getRescuedContestantsByRescueId = async (rescueId: number | string)
 // Cứu trợ hàng loạt thí sinh
 export const rescueManyContestants = async (
   matchId: number | string,
-  data: { contestantIds: number[]; currentQuestionOrder: number; rescueId?: number }
+  data: {
+    contestantIds: number[];
+    currentQuestionOrder: number;
+    rescueId?: number;
+  }
 ) => {
-  const res = await axiosInstance.post(`/contestant/rescue-candidates/${matchId}/rescue-many`, data);
+  const res = await axiosInstance.post(
+    `/contestant/rescue-candidates/${matchId}/rescue-many`,
+    data
+  );
   return res.data;
 };
 
@@ -128,9 +152,9 @@ export const addStudentsToRescue = async (
   rescueId: number,
   studentIds: number[]
 ) => {
-  const res = await axiosInstance.post('/contestant/rescue/add-students', {
+  const res = await axiosInstance.post("/contestant/rescue/add-students", {
     rescueId,
-    studentIds
+    studentIds,
   });
   return res.data;
 };
@@ -140,19 +164,19 @@ export const removeStudentFromRescue = async (
   rescueId: number,
   studentId: number
 ) => {
-  const res = await axiosInstance.delete('/contestant/rescue/remove-student', {
+  const res = await axiosInstance.delete("/contestant/rescue/remove-student", {
     data: {
       rescueId,
-      studentId
-    }
+      studentId,
+    },
   });
   return res.data;
 };
 
 // API: Lấy danh sách rescue theo matchId và rescueType (mặc định 'resurrected')
 export const getRescuesByMatchIdAndType = async (
-  matchId: number, 
-  rescueType: string = 'resurrected'
+  matchId: number,
+  rescueType: string = "resurrected"
 ): Promise<{
   message: string;
   data: Array<{
@@ -167,7 +191,9 @@ export const getRescuesByMatchIdAndType = async (
     questionTo: number;
   }>;
 }> => {
-  const response = await axiosInstance.get(`/rescue/match/${matchId}?rescueType=${rescueType}`);
+  const response = await axiosInstance.get(
+    `/rescue/match/${matchId}?rescueType=${rescueType}`
+  );
   return response.data;
 };
 
@@ -176,17 +202,18 @@ export const updateRescueStatusByCurrentQuestion = async (
   matchId: number,
   currentQuestionOrder: number
 ) => {
-  const res = await axiosInstance.post('/rescues/update-status-by-question',
-    {
-      matchId,
-      currentQuestionOrder,
-    }
-  );
+  const res = await axiosInstance.post("/rescues/update-status-by-question", {
+    matchId,
+    currentQuestionOrder,
+  });
   return res.data;
 };
 
 // Lấy danh sách thí sinh ứng cử viên cứu trợ (chỉ lấy dữ liệu, không cập nhật bảng rescue)
-export const getCandidatesList = async (matchId: number | string, limit?: number) => {
+export const getCandidatesList = async (
+  matchId: number | string,
+  limit?: number
+) => {
   const url = `/contestant/candidates-list/${matchId}`;
   const params: Record<string, unknown> = {};
   if (limit !== undefined && limit > 0) params.limit = limit;
@@ -195,7 +222,10 @@ export const getCandidatesList = async (matchId: number | string, limit?: number
 };
 
 // Lấy danh sách thí sinh đã hoàn thành (completed) trong trận đấu
-export const getCompletedContestants = async (matchId: number | string, limit?: number) => {
+export const getCompletedContestants = async (
+  matchId: number | string,
+  limit?: number
+) => {
   const url = `/contestant/completed-contestants/${matchId}`;
   const params: Record<string, unknown> = {};
   if (limit !== undefined && limit > 0) params.limit = limit;
@@ -208,9 +238,12 @@ export const updateToCompleted = async (
   matchId: number | string,
   contestantIds: number[]
 ) => {
-  const res = await axiosInstance.put(`/contestant/update-to-completed/${matchId}`, {
-    contestantIds
-  });
+  const res = await axiosInstance.put(
+    `/contestant/update-to-completed/${matchId}`,
+    {
+      contestantIds,
+    }
+  );
   return res.data;
 };
 
@@ -219,15 +252,33 @@ export const updateToEliminated = async (
   matchId: number | string,
   contestantIds: number[]
 ) => {
-  const res = await axiosInstance.put(`/contestant/update-to-eliminated/${matchId}`, {
-    contestantIds
-  });
+  const res = await axiosInstance.put(
+    `/contestant/update-to-eliminated/${matchId}`,
+    {
+      contestantIds,
+    }
+  );
   return res.data;
 };
 
 // Cập nhật tất cả thí sinh completed về eliminated trong trận đấu
-export const updateAllCompletedToEliminated = async (matchId: number | string) => {
-  const res = await axiosInstance.put(`/contestant/update-all-completed-to-eliminated/${matchId}`);
+export const updateAllCompletedToEliminated = async (
+  matchId: number | string
+) => {
+  const res = await axiosInstance.put(
+    `/contestant/update-all-completed-to-eliminated/${matchId}`
+  );
   return res.data;
 };
 
+export const getListAwards = async (matchSlug: string | null) => {
+  const res = await axiosInstance.get(`/awards/match/${matchSlug}`);
+  return res.data;
+};
+
+export const getResultsByMatchSlug = async (matchSlug: string | null) => {
+  const res = await axiosInstance.get(
+    `/results/${matchSlug}/contestant-statistics`
+  );
+  return res.data;
+};

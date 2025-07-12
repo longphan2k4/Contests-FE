@@ -333,7 +333,10 @@ const StudentDashboard: React.FC = () => {
             Vui lòng liên hệ Admin để được thêm vào cuộc thi
           </p>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => {
+              navigate("/");
+              window.location.reload();
+            }}
             className="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
           >
             Về trang chủ

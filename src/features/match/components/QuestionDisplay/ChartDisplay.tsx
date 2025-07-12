@@ -14,10 +14,14 @@ import {
 import { ChartBarIcon, TrophyIcon } from "@heroicons/react/24/outline";
 
 interface ChartDisplayProps {
+  title?: string;
   chartData?: { label: string; value: number }[] | null;
 }
 
-const ChartDisplay: React.FC<ChartDisplayProps> = ({ chartData = [] }) => {
+const ChartDisplay: React.FC<ChartDisplayProps> = ({
+  chartData = [],
+  title,
+}) => {
   const COLORS = [
     "#8B5CF6",
     "#06B6D4",
@@ -59,7 +63,7 @@ const ChartDisplay: React.FC<ChartDisplayProps> = ({ chartData = [] }) => {
               <TrophyIcon className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
             </div>
             <h1 className="text-lg sm:text-2xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              THỐNG KÊ KẾT QUẢ
+              {title || "Biểu đồ thống kê câu hỏi"}
             </h1>
           </div>
         </div>

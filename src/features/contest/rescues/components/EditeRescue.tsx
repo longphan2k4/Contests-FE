@@ -113,7 +113,6 @@ export default function EditRescue({
         questionFrom: rescueData.questionFrom,
         questionTo: rescueData.questionTo,
         status: rescueData.status,
-        index: rescueData.index,
         remainingContestants: rescueData.remainingContestants,
         matchId: rescueData.matchId,
       });
@@ -189,14 +188,14 @@ export default function EditRescue({
           type="number"
         />
 
-        <FormInput
+        {/* <FormInput
           id="index"
           label="Số thứ tự"
           placeholder="Nhập số thứ tự"
           error={errors.index}
           register={register("index", { valueAsNumber: true })}
           type="number"
-        />
+        /> */}
 
         <FormSelect
           id="matchId"
@@ -221,7 +220,7 @@ export default function EditRescue({
           variant="contained"
           sx={{ mt: 2, display: "block ", float: "right", marginTop: "24px" }}
         >
-          Thêm
+          Cập nhật
         </Button>
       </form>
     </AppFormDialog>

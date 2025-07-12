@@ -4,7 +4,7 @@ import { type AnswerContentProps } from "../../types/question.types";
 const AnswerContent: React.FC<AnswerContentProps> = ({
   answermedia = [],
   correctAnswer,
-  controlValue = "start",
+  controlValue = "",
 }) => {
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(
     null
@@ -132,9 +132,6 @@ const AnswerContent: React.FC<AnswerContentProps> = ({
             <source src={media.url} type="audio/ogg" />
             Trình duyệt của bạn không hỗ trợ audio.
           </audio>
-          <p className="text-sm text-gray-600 mt-2 text-center">
-            Audio giải thích {index + 1}
-          </p>
         </div>
       );
     }

@@ -47,7 +47,7 @@ export const CreateRescuesShema = z.object({
       "Id cuộc thi là một số nguyên dương"
     ),
   status: z.enum(["notUsed", "used", "passed"]).optional(),
-  index: z.number(),
+  index: z.number().optional(),
 });
 
 export const RescuesIdShame = z.object({
@@ -101,7 +101,7 @@ export const UpdateRescuesShema = z.object({
     .refine(val => !isNaN(val) && val > 0, "Id cuộc thi là một số nguyên dương")
     .optional(),
   status: z.enum(["notUsed", "used", "passed"]).optional(),
-  index: z.number().optional(),
+  // index: z.number().optional(),
 });
 
 export const RescuesQuerySchema = z.object({

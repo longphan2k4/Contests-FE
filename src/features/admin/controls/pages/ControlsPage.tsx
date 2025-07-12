@@ -17,7 +17,6 @@ import { OnlineExamControl } from "../../controlsOnline";
 import QuestionDetails from "../components/QuestionDetails";
 import BackgroundControl from "../components/BackgroundControl";
 import CurrentContestants from "../components/CurrentContestants";
-import AwardControl from "../components/AwardControl";
 import {
   useCurrentQuestion,
   useListQuestion,
@@ -28,6 +27,8 @@ import {
   useListSponsorMedia,
   useListContestant,
   useListRescueLifelineUsed,
+  useListAwards,
+  useResultsByMatchSlug,
 } from "../hook/useControls";
 import {
   type MatchInfo,
@@ -38,9 +39,12 @@ import {
   type MediaType,
   type ListContestant,
   type ListRescueLifelineUsed,
+  type ListAward,
+  type ListResult,
 } from "../type/control.type";
 import { useSocket } from "@contexts/SocketContext";
 import { Box, CircularProgress } from "@mui/material";
+import AwardControl from "../components/AwardControl";
 
 // Define types for socket responses
 
@@ -57,6 +61,7 @@ const ControlsPage: React.FC = () => {
   const { socket, isConnected } = useSocket();
 
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
+  const [listAward, setListAward] = useState<ListAward | null>(null);
   const [currentQuestion, setCurrentQuestion] =
     useState<CurrentQuestion | null>(null);
   const [countContestant, setCountContestant] =
@@ -66,9 +71,11 @@ const ControlsPage: React.FC = () => {
   const [listContestant, setListContestant] = useState<ListContestant[]>([]);
   const [sponsorMedia, setSponsorMedia] = useState<MediaType[]>([]);
   const [classVideo, setClassVideo] = useState<MediaType[]>([]);
+  const [listResult, setListResult] = useState<ListResult[]>([]);
   const [listRescueLifelineUsed, setListRescueLifelineUsed] = useState<
     ListRescueLifelineUsed[]
   >([]);
+
   const {
     data: matchInfoRes,
     isLoading: isLoadingMatch,
@@ -136,6 +143,22 @@ const ControlsPage: React.FC = () => {
     refetch: refetchListContestant,
   } = useListContestant(match ?? null);
 
+  const {
+    data: listAwardRes,
+    isLoading: isLoadingListAward,
+    isSuccess: isSuccessListAward,
+    isError: isErrorListAward,
+    refetch: refetchListAward,
+  } = useListAwards(match ?? null);
+
+  const {
+    data: listResultRes,
+    isLoading: isLoadingListResult,
+    isSuccess: isSuccessListResult,
+    isError: isErrorListResult,
+    refetch: refetchListResult,
+  } = useResultsByMatchSlug(match ?? null);
+
   useEffect(() => {
     refetchMatchInfo();
     refetchCurrentQuestion();
@@ -144,9 +167,17 @@ const ControlsPage: React.FC = () => {
     refetchScreenControl();
     refetchSponsorMedia();
     refetchClassVideo();
+    refetchListAward();
+    refetchListResult();
     refetchListContestant();
     refetchListRescueLifelineUsed();
   }, [match]);
+
+  useEffect(() => {
+    if (isSuccessListResult) {
+      setListResult(listResultRes.data);
+    }
+  }, [isSuccessListResult, listResultRes]);
 
   useEffect(() => {
     if (isSuccessSponsorMedia) setSponsorMedia(sponsorMediaRes.data);
@@ -155,6 +186,18 @@ const ControlsPage: React.FC = () => {
   useEffect(() => {
     if (isSuccessClassVideo) setClassVideo(classVideoRes.data);
   }, [isSuccessClassVideo, classVideoRes]);
+
+  useEffect(() => {
+    if (isSuccessListAward) {
+      setListAward(listAwardRes.data);
+    }
+  }, [isSuccessListAward, listAwardRes]);
+
+  useEffect(() => {
+    if (isSuccessListResult) {
+      setListResult(listResultRes.data);
+    }
+  }, [isSuccessListResult, listResultRes]);
 
   useEffect(() => {
     if (isSuccessListRescueLifelineUsed) {
@@ -258,6 +301,10 @@ const ControlsPage: React.FC = () => {
       setScreenControl(data?.updatedScreen);
     };
 
+    const handleUpdateAward = (data: any) => {
+      setListAward(data);
+    };
+
     socket.on("screen:update", handleScreenUpdate);
     socket.on("currentQuestion:get", handleCurrentQuestion);
     socket.on("timer:update", handleUpdateTime);
@@ -270,6 +317,7 @@ const ControlsPage: React.FC = () => {
     socket.on("showQrChart", handleShowQrChart);
     socket.on("rescue:updateStatus", handleUpdateRescued);
     socket.on("statistics:update", handstatistics);
+    socket.on("update:award", handleUpdateAward);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
@@ -283,6 +331,7 @@ const ControlsPage: React.FC = () => {
       socket.off("timerEnd:Rescue", handleTimerRescue);
       socket.off("showQrChart", handleShowQrChart);
       socket.off("rescue:updateStatus", handleUpdateRescued);
+      socket.off("update:award", handleUpdateAward);
       // socket.off("update:Rescued", handleUpdateRescued);
     };
   }, [socket]);
@@ -325,7 +374,9 @@ const ControlsPage: React.FC = () => {
     isLoadingSponsorMedia ||
     isLoadingClassVideo ||
     isLoadingListRescueLifelineUsed ||
-    isLoadingContestants;
+    isLoadingContestants ||
+    isLoadingListResult ||
+    isLoadingListAward;
 
   if (isLoading) {
     return (
@@ -349,7 +400,9 @@ const ControlsPage: React.FC = () => {
     isErrorSponsorMedia ||
     isErrorClassVideo ||
     isErrorListRescueLifelineUsed ||
-    isErrorContestants
+    isErrorContestants ||
+    isErrorListAward ||
+    isErrorListResult
   ) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -457,8 +510,9 @@ const ControlsPage: React.FC = () => {
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
             <AwardControl
-              ListContestant={listContestant}
+              ListAward={listAward || null}
               MatchInfo={matchInfo || null}
+              ListResult={listResult || null}
             />
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
