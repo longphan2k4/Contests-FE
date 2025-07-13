@@ -9,6 +9,8 @@ import khangia from "./images/khangia.png";
 import close from "./images/close.png";
 import lifesaver from "./images/lifesaver.png";
 import QuestionInfo from "../../components/QuestionDisplay/QuestionInfo";
+import pip from "./sounds/pip.mp3";
+import Pum from "./sounds/pum1s.mp3";
 
 import {
   type CurrentQuestion,
@@ -39,6 +41,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   );
   const [hasPlayedHelpStatusSound, setHasPlayedHelpStatusSound] =
     useState(false);
+  const [hasPlayedEndSound, setHasPlayedEndSound] = useState(false);
 
   // const { socket } = useSocket();
   // const [updateRescuedData, setUpdateRescuedData] = useState<updatedRescuesType[]>(
@@ -47,13 +50,23 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
 
   useEffect(() => {
     setTimeRemaining(remainingTime ?? 30);
+    setHasPlayedEndSound(false); // Reset end sound when new time is set
   }, [remainingTime]);
 
   useEffect(() => {
     if (timeRemaining === 0) {
-    } else if (timeRemaining <= 10) {
+      // Play end sound when time runs out
+      if (!hasPlayedEndSound) {
+        const endAudio = new Audio(Pum);
+        endAudio.play().catch(console.error);
+        setHasPlayedEndSound(true);
+      }
+    } else if (timeRemaining > 0) {
+      // Play pip sound every second
+      const pipAudio = new Audio(pip);
+      pipAudio.play().catch(console.error);
     }
-  }, [timeRemaining]);
+  }, [timeRemaining, hasPlayedEndSound]);
 
   useEffect(() => {
     const availableHelp = updateRescuedData.some(
@@ -69,7 +82,6 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
     ) {
       setHasPlayedHelpStatusSound(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateRescuedData, countContestant, hasPlayedHelpStatusSound]);
 
   // Lắng nghe sự kiện rescue:statusUpdated từ server
