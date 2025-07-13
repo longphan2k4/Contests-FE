@@ -10,6 +10,9 @@ import {
   GetListContestant,
   GetChartData,
   GetAllRescues,
+  GetStatistic,
+  GetStatisticsContestant,
+  getListAwards,
   // GetLifelineUsedRescues,
 } from "../service/api";
 
@@ -85,10 +88,37 @@ export const userChartData = (id: number) => {
   });
 };
 
-export const useAllRescues = (matchSlug: string | null, currentQuestionOrder: number | undefined) => {
+export const useAllRescues = (
+  matchSlug: string | null,
+  currentQuestionOrder: number | undefined
+) => {
   return useQuery({
     queryKey: ["AllRescues", matchSlug, currentQuestionOrder],
     queryFn: () => GetAllRescues(matchSlug!, currentQuestionOrder),
+    enabled: !!matchSlug,
+  });
+};
+
+export const useStatistic = (matchSlug: string | null) => {
+  return useQuery({
+    queryKey: ["Statistic", matchSlug],
+    queryFn: () => GetStatistic(matchSlug!),
+    enabled: !!matchSlug,
+  });
+};
+
+export const useStatisticsContestant = (matchSlug: string | null) => {
+  return useQuery({
+    queryKey: ["StatisticsContestant", matchSlug],
+    queryFn: () => GetStatisticsContestant(matchSlug!),
+    enabled: !!matchSlug,
+  });
+};
+
+export const useListAwards = (matchSlug: string | null) => {
+  return useQuery({
+    queryKey: ["ListAwards", matchSlug],
+    queryFn: () => getListAwards(matchSlug),
     enabled: !!matchSlug,
   });
 };

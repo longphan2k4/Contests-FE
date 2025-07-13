@@ -31,7 +31,11 @@ interface Particle {
   color: string;
 }
 
-const Background: React.FC = () => {
+interface BackgroundProps {
+  url: string | null;
+}
+
+const Background: React.FC<BackgroundProps> = ({ url }) => {
   const [scanlineActive, _setScanlineActive] = useState<boolean>(true);
   const [overlayOpacity, setOverlayOpacity] = useState<number>(0.3);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
@@ -403,7 +407,7 @@ const Background: React.FC = () => {
 
       <div className="absolute inset-0">
         <img
-          src={banner}
+          src={url || banner}
           alt="Tech Banner"
           className="w-full h-full object-cover"
         />

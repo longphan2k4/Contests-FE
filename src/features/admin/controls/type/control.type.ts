@@ -43,13 +43,7 @@ export const controlKey = {
   answer: "answer",
   matchDiagram: "matchDiagram",
   explanation: "explanation",
-  firstprize: "firstprize",
-  secondprize: "secondprize",
-  thirdprize: "thirdprize",
-  fourthprize: "fourthprize",
-  impressivevideo: "impressivevideo",
-  excellentvideo: "excellentvideo",
-  allprize: "allprize",
+  allPrize: "allPrize",
   topwin: "topwin",
   listeliminated: "listeliminated",
   listrescued: "listrescued",
@@ -203,4 +197,26 @@ export type ListRescueLifelineUsed = {
   questionFrom?: number;
   questionTo?: number;
   rescueType?: "resurrected" | "lifelineUsed";
+};
+
+export type Award = {
+  id: number;
+  name: string;
+  type: "thirdPrize" | "secondPrize" | "firstPrize";
+  contestantId: number | null;
+  fullName: string | null;
+  registrationNumber: number | null;
+};
+
+export type ListAward = {
+  thirdPrize: Award | null;
+  secondPrize: Award | null;
+  firstPrize: Award | null;
+};
+
+export type ListResult = {
+  label: string;
+  value: number;
+  fullName: string;
+  contestantId: number;
 };

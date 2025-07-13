@@ -13,7 +13,6 @@ interface VideoControlProps {
 const VideoControl: React.FC<VideoControlProps> = ({
   sponsorMedia,
   classVideo,
-  controlKey,
 }) => {
   const [activeTab, setActiveTab] = React.useState<"sponsor" | "classVideo">(
     "sponsor"
@@ -43,11 +42,6 @@ const VideoControl: React.FC<VideoControlProps> = ({
     msg: string
   ) => {
     if (!socket || !match) return;
-
-    if (controlKey !== "video") {
-      showToast("Vui lòng hiển thị video trước", "error");
-      return;
-    }
 
     if (!control) return;
 

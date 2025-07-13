@@ -49,6 +49,8 @@ const ContestHeader: React.FC<ContestHeaderProps> = ({ onToggle }) => {
         document.cookie =
           "feAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         showToast("Đăng xuất thành công", "success");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("feAccessToken");
         setTimeout(() => setUser(null), 500);
       },
       onError: error => {

@@ -45,15 +45,35 @@ export const GetChartData = async (id: number) => {
   return res.data;
 };
 
-export const GetAllRescues = async (matchSlug: string, currentQuestionOrder: number | undefined) => {
+export const GetAllRescues = async (
+  matchSlug: string,
+  currentQuestionOrder: number | undefined
+) => {
   if (!matchSlug) {
     throw new Error("Match slug is required");
   }
   const res = await axiosInstance.get(`/rescue/list-all/${matchSlug}`, {
     params: {
-      currentQuestionOrder
-    }
+      currentQuestionOrder,
+    },
   });
+  return res.data;
+};
+
+export const GetStatistic = async (matchSlug: string) => {
+  const res = await axiosInstance.get(`/results/${matchSlug}/statistics`);
+  return res.data;
+};
+
+export const GetStatisticsContestant = async (matchSlug: string) => {
+  const res = await axiosInstance.get(
+    `/results/${matchSlug}/contestant-statistics`
+  );
+  return res.data;
+};
+
+export const getListAwards = async (matchSlug: string | null) => {
+  const res = await axiosInstance.get(`/awards/match/${matchSlug}`);
   return res.data;
 };
 
@@ -61,4 +81,3 @@ export const GetAllRescues = async (matchSlug: string, currentQuestionOrder: num
 //   const res = await axiosInstance.get(`/rescues/list-lifelineUsed/${matchSlug}`);
 //   return res.data;
 // };
-

@@ -91,7 +91,7 @@ export default function EditeUser({
             id="password"
             placeholder="Nhập mật khẩu"
             error={errors.password}
-            type="password"
+            type="text"
             register={register("password")}
           />
           <FormSelect

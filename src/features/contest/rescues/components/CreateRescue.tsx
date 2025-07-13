@@ -172,14 +172,14 @@ export default function CreateRescue({
           type="number"
         />
 
-        <FormInput
+        {/* <FormInput
           id="index"
           label="Số thứ tự"
           placeholder="Nhập số thứ tự"
           error={errors.index}
           register={register("index", { valueAsNumber: true })}
           type="number"
-        />
+        /> */}
 
         <FormSelect
           id="matchId"

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import Header from "../../../layouts/HomeLayout/HomeHeader";
 import BannerSlideshow from "../components/contest/Banner";
 import VideoSection from "../components/contest/Video";
@@ -9,11 +9,11 @@ import SponsorsSection from "../components/contest/SponsorsSection";
 import ContestRulesSection from "../components/contest/ContestRulesSection";
 import Footer from "../../../layouts/HomeLayout/HomeFooter";
 import BackgroundEffects from "../components/contest/Background";
-import { Box, CircularProgress } from "@mui/material";
+// import { Box, CircularProgress } from "@mui/material";
 import OlympicChatbotWidget from "../../chatbot/components/Chatbot";
 const HomePage = () => {
   // Trạng thái để kiểm soát việc tải
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
 
   // Thêm useEffect để set title cho trang và giả lập tải
   useEffect(() => {
@@ -21,14 +21,14 @@ const HomePage = () => {
     document.title = "Cuộc thi - Olympic Tin học";
 
     // Giả lập thời gian tải (thay thế bằng logic tải thực tế nếu có)
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000); // Tải trong 2 giây
+    // const timer = setTimeout(() => {
+    //   setIsLoading(false);
+    // }, 10); // Tải trong 2 giây
 
     // Cleanup function
     return () => {
       document.title = "My App"; // hoặc title mặc định của app
-      clearTimeout(timer);
+      // clearTimeout(timer);
     };
   }, []);
 
@@ -40,19 +40,19 @@ const HomePage = () => {
   const sponsorRef = useRef<HTMLDivElement>(null);
 
   // Nếu đang tải, hiển thị LargeSpinner
-  if (isLoading)
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh", // căn giữa theo toàn màn hình
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+  // if (isLoading)
+  //   return (
+  //     <Box
+  //       sx={{
+  //         display: "flex",
+  //         justifyContent: "center",
+  //         alignItems: "center",
+  //         height: "100vh", // căn giữa theo toàn màn hình
+  //       }}
+  //     >
+  //       <CircularProgress />
+  //     </Box>
+  //   );
 
   // Nội dung chính khi tải xong
   return (
@@ -83,7 +83,7 @@ const HomePage = () => {
         <SponsorsSection />
       </div>
       <Footer />
-      <OlympicChatbotWidget/>
+      <OlympicChatbotWidget />
     </div>
   );
 };

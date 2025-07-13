@@ -79,7 +79,7 @@ export default function CreateSchoolDialog({
             id="password"
             placeholder="Nhập mật khẩu"
             error={errors.password}
-            type="password"
+            type="text"
             register={register("password")}
           />
           <FormSelect

@@ -12,6 +12,7 @@ export const getAllAwards = async (slug: string, filter: AwardQuery = {}) => {
   if (filter.search) params.append("search", filter.search);
   if (filter.page) params.append("page", String(filter.page));
   if (filter.limit) params.append("limit", String(filter.limit));
+  if (filter.matchId) params.append("matchId", String(filter.matchId));
 
   const res = await axiosInstance.get(`/awards/contest/${slug}?${params}`);
   return res.data;
@@ -53,5 +54,10 @@ export const ListContestant = async (slug: string | null) => {
   const res = await axiosInstance.get(
     `/contestant/list-contestant/${slug}/list`
   );
+  return res.data;
+};
+
+export const ListMatch = async (slug: string | null) => {
+  const res = await axiosInstance.get(`/match/contest/${slug}`);
   return res.data;
 };

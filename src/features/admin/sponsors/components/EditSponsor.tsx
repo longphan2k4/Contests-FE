@@ -51,6 +51,7 @@ function EditSponsorDialog({
     data: sponsorData,
     isLoading: isLoadingSponsor,
     isError: isErrorSponsor,
+    refetch: refetchSponsor,
   } = useSponsorById(id);
 
   // Track file removal states
@@ -64,16 +65,22 @@ function EditSponsorDialog({
     videos: false,
   });
 
+  useEffect(() => {
+    if (isOpen) {
+      refetchSponsor();
+    }
+  }, [isOpen]);
+
   const logoFile = watch("logo");
   const imagesFile = watch("images");
   const videosFile = watch("videos");
   useEffect(() => {
-    if (isOpen) {
+    if (sponsorData) {
       reset({
-        name: sponsorData.name,
-        logo: sponsorData.logo,
-        images: sponsorData.images,
-        videos: sponsorData.videos,
+        name: sponsorData?.name,
+        logo: sponsorData?.logo,
+        images: sponsorData?.images,
+        videos: sponsorData?.videos,
       });
 
       // Reset removed files state
@@ -83,7 +90,7 @@ function EditSponsorDialog({
         videos: false,
       });
     }
-  }, [isOpen, reset]);
+  }, [reset, sponsorData]);
   useEffect(() => {
     let url: string | undefined;
     if (logoFile instanceof File) {

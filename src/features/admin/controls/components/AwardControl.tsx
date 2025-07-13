@@ -1,5 +1,9 @@
 import React from "react";
-import { type MatchInfo, type ListContestant } from "../type/control.type";
+import {
+  type MatchInfo,
+  type ListAward,
+  type ListResult,
+} from "../type/control.type";
 import { useParams } from "react-router-dom";
 import { useSocket } from "@contexts/SocketContext";
 import { useToast } from "@contexts/toastContext";
@@ -8,40 +12,32 @@ import { Button } from "@mui/material";
 
 interface AwardControlProps {
   MatchInfo: MatchInfo | null;
-  ListContestant: ListContestant[] | [];
+  ListAward: ListAward | null;
+  ListResult?: ListResult[] | [];
 }
 
 const AwardControl: React.FC<AwardControlProps> = ({
   MatchInfo,
-  ListContestant,
+  ListAward,
+  ListResult,
 }) => {
   const { match } = useParams();
   const { socket } = useSocket();
   const { showToast } = useToast();
 
   const [gold, setGold] = React.useState<number | undefined>();
-  const [silver, setSilver] = React.useState<number | undefined>();
-  const [bronze, setBronze] = React.useState<number | undefined>();
+  const [firstPrize, setFirstPrize] = React.useState<number | undefined>();
+  const [secondPrize, setSecondPrize] = React.useState<number | undefined>();
+  const [thirdPrize, setThirdPrize] = React.useState<number | undefined>();
 
-  // Gộp danh sách thí sinh từ tất cả group
-  const allContestants = React.useMemo(() => {
-    return ListContestant.flatMap(group =>
-      group.contestantMatches
-        .filter(c => c.status === "in_progress")
-        .map(c => ({
-          registrationNumber: c.registrationNumber,
-          fullName: `${c.registrationNumber} - ${c.contestant.student.fullName} `,
-        }))
+  const ListResults = React.useMemo(() => {
+    return (
+      ListResult?.map(result => ({
+        label: `${result.label} - ${result.fullName} - ${result.value} câu`,
+        value: result.contestantId,
+      })) ?? []
     );
-  }, [ListContestant]);
-  const getOptions = (exclude: number[] = []) => {
-    return allContestants
-      .filter(c => !exclude.includes(c.registrationNumber))
-      .map(c => ({
-        label: c.fullName,
-        value: c.registrationNumber,
-      }));
-  };
+  }, [ListResult]);
 
   const EmitScreenUpdate = (controlKey: string) => {
     if (!socket || !match) {
@@ -73,7 +69,32 @@ const AwardControl: React.FC<AwardControlProps> = ({
     );
   };
 
-  const EmitAwardUpdate = () => {
+  const EmitAwardUpdate = (
+    contestantId: number | undefined,
+    awardId: number | undefined
+  ) => {
+    if (!socket || !match) {
+      showToast(`Cập nhật giải thưởng thất bại`, "error");
+      return;
+    }
+    socket.emit(
+      "update:award",
+      {
+        match: match,
+        contestantId: contestantId,
+        awardId: awardId,
+      },
+      (err: any, response: any) => {
+        if (err) {
+          showToast(err.message, "error");
+        } else {
+          showToast(response.message, "success");
+        }
+      }
+    );
+  };
+
+  const EmitGoldUpdate = () => {
     if (!socket || !match) {
       showToast(`Cập nhật giải thưởng thất bại`, "error");
       return;
@@ -98,20 +119,20 @@ const AwardControl: React.FC<AwardControlProps> = ({
   return (
     <div className="">
       <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-        Quản lý giải thưởng
+        Giải thưởng
       </h2>
-
-      <div className="bg-white rounded-xl border border-gray-100 grid gap-4 p-4 overflow-hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="bg-white rounded-xl border border-gray-100 grid gap-4 p-4 overflow-hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Gold */}
         <div className="flex flex-col bg-white rounded-xl shadow-md border border-gray-100 p-4">
-          <h2 className="text-xl font-bold text-yellow-600 mb-4 text-center">
-            Giải thưởng Gold 🥇
-          </h2>
+          <h2 className="text-xl font-bold mb-4 text-center">Giải Gold</h2>
+          <h6 className=" font-bold    mb-4 text-center">
+            {MatchInfo?.studentName ?? "Không có thí sinh"}
+          </h6>
           <FormAutocompleteFilter
             label="Thí sinh"
-            options={getOptions([silver, bronze].filter(Boolean) as number[])}
+            options={ListResults}
             value={gold}
-            onChange={val => setGold(typeof val === "number" ? val : undefined)}
+            onChange={val => setGold(Number(val))}
             sx={{ flex: 1, minWidth: { xs: "100%", sm: 200 } }}
           />
           <div className="flex justify-center mt-6">
@@ -119,7 +140,7 @@ const AwardControl: React.FC<AwardControlProps> = ({
               fullWidth
               variant="contained"
               color="primary"
-              onClick={() => EmitAwardUpdate()}
+              onClick={() => EmitGoldUpdate()}
             >
               Cập nhật
             </Button>
@@ -137,39 +158,140 @@ const AwardControl: React.FC<AwardControlProps> = ({
         </div>
 
         {/* Silver */}
-        <div className="flex flex-col bg-white rounded-xl shadow-md border border-gray-100 p-4">
-          <h2 className="text-xl font-bold text-gray-500 mb-4 text-center">
-            Giải thưởng Silver 🥈
-          </h2>
-          <FormAutocompleteFilter
-            label="Thí sinh"
-            options={getOptions([gold, bronze].filter(Boolean) as number[])}
-            value={silver}
-            onChange={val =>
-              setSilver(typeof val === "number" ? val : undefined)
-            }
-            sx={{ flex: 1, minWidth: { xs: "100%", sm: 200 } }}
-          />
-        </div>
-
-        {/* Bronze */}
-        <div className="flex flex-col bg-white rounded-xl shadow-md border border-gray-100 p-4">
-          <h2 className="text-xl font-bold text-orange-700 mb-4 text-center">
-            Giải thưởng Bronze 🥉
-          </h2>
-          <FormAutocompleteFilter
-            label="Thí sinh"
-            options={getOptions([gold, silver].filter(Boolean) as number[])}
-            value={bronze}
-            onChange={val =>
-              setBronze(typeof val === "number" ? val : undefined)
-            }
-            sx={{ flex: 1, minWidth: { xs: "100%", sm: 200 } }}
-          />
-        </div>
+        {ListAward?.firstPrize && ListAward && (
+          <div className="flex flex-col bg-white rounded-xl shadow-md border border-gray-100 p-4">
+            <h2 className="text-xl font-bold text-gray-500 mb-4 text-center">
+              Giải Nhất
+            </h2>
+            <h6 className="font-bold text-gray-500 mb-4 text-center">
+              {ListAward?.firstPrize?.contestantId !== null
+                ? `${ListAward?.firstPrize.registrationNumber} -
+                ${ListAward?.firstPrize?.fullName || ""}`
+                : "Không có thí sinh"}
+            </h6>
+            <FormAutocompleteFilter
+              label="Thí sinh"
+              options={ListResults}
+              value={firstPrize}
+              onChange={val =>
+                setFirstPrize(typeof val === "number" ? val : undefined)
+              }
+              sx={{ flex: 1, minWidth: { xs: "100%", sm: 200 } }}
+            />
+            <div className="flex justify-center mt-6">
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={() =>
+                  EmitAwardUpdate(firstPrize, ListAward?.firstPrize?.id)
+                }
+              >
+                Cập nhật
+              </Button>
+            </div>
+            <div className="flex justify-center mt-6 ">
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={() => EmitScreenUpdate("allPrize")}
+              >
+                Show
+              </Button>
+            </div>
+          </div>
+        )}
+        {ListAward?.secondPrize && ListAward && (
+          <div className="flex flex-col bg-white rounded-xl shadow-md border border-gray-100 p-4">
+            <h2 className="text-xl font-bold text-gray-500 mb-4 text-center">
+              Giải Nhì
+            </h2>
+            <h6 className="font-bold text-gray-500 mb-4 text-center">
+              {ListAward?.secondPrize?.contestantId !== null
+                ? `${ListAward?.secondPrize.registrationNumber} -
+                ${ListAward?.secondPrize?.fullName || ""}`
+                : "Không có thí sinh"}
+            </h6>
+            <FormAutocompleteFilter
+              label="Thí sinh"
+              options={ListResults}
+              value={secondPrize}
+              onChange={val =>
+                setSecondPrize(typeof val === "number" ? val : undefined)
+              }
+              sx={{ flex: 1, minWidth: { xs: "100%", sm: 200 } }}
+            />
+            <div className="flex justify-center mt-6">
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={() =>
+                  EmitAwardUpdate(secondPrize, ListAward?.secondPrize?.id)
+                }
+              >
+                Cập nhật
+              </Button>
+            </div>
+            <div className="flex justify-center mt-6 ">
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={() => EmitScreenUpdate("allPrize")}
+              >
+                Show
+              </Button>
+            </div>
+          </div>
+        )}
+        {ListAward?.thirdPrize && ListAward && (
+          <div className="flex flex-col bg-white rounded-xl shadow-md border border-gray-100 p-4">
+            <h2 className="text-xl font-bold text-gray-500 mb-4 text-center">
+              Giải Ba
+            </h2>
+            <h6 className="font-bold text-gray-500 mb-4 text-center">
+              {ListAward?.thirdPrize?.contestantId !== null
+                ? `${ListAward?.thirdPrize.registrationNumber} -
+                ${ListAward?.thirdPrize?.fullName || ""}`
+                : "Không có thí sinh"}
+            </h6>
+            <FormAutocompleteFilter
+              label="Thí sinh"
+              options={ListResults}
+              value={thirdPrize}
+              onChange={val =>
+                setThirdPrize(typeof val === "number" ? val : undefined)
+              }
+              sx={{ flex: 1, minWidth: { xs: "100%", sm: 200 } }}
+            />
+            <div className="flex justify-center mt-6">
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={() =>
+                  EmitAwardUpdate(thirdPrize, ListAward?.thirdPrize?.id)
+                }
+              >
+                Cập nhật
+              </Button>
+            </div>
+            <div className="flex justify-center mt-6 ">
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={() => EmitScreenUpdate("allPrize")}
+              >
+                Show
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
-
 export default AwardControl;

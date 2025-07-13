@@ -1,12 +1,13 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
-import { Box, Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateAwardSchema, type CreateAwardInput } from "../types/award.shame";
-
+import { useListMatch } from "../hook/useListMatch";
 import FormSelect from "@/components/FormSelect";
+import { useParams } from "react-router-dom";
 
 interface CreateAwardDialogProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export default function CreateAwardDialog({
   onClose,
   onSubmit,
 }: CreateAwardDialogProps): React.ReactElement {
+  const { slug } = useParams();
   const {
     register,
     handleSubmit,
@@ -34,21 +36,46 @@ export default function CreateAwardDialog({
     { value: "firstPrize", label: "Giải Nhất" },
     { value: "secondPrize", label: "Giải Nhì" },
     { value: "thirdPrize", label: "Giải Ba" },
-    { value: "fourthPrize", label: "Giải Khuyến Khích" },
-    { value: "impressiveVideo", label: "Video Ấn Tượng" },
-    { value: "excellentVideo", label: "Video Xuất Sắc" },
   ];
+
+  const {
+    data: matches,
+    isLoading,
+    isError,
+    refetch,
+  } = useListMatch(slug ?? "");
 
   useEffect(() => {
     if (isOpen) {
       reset();
+      refetch();
     }
   }, [isOpen, reset]);
+
+  const ListMatch = useMemo(() => {
+    if (matches?.success && matches.data) {
+      return matches.data.map((match: { id: number; name: string }) => ({
+        label: match.name,
+        value: match.id,
+      }));
+    }
+    return [];
+  }, [matches]);
 
   const handleFormSubmit = (data: CreateAwardInput) => {
     onSubmit(data);
     onClose();
   };
+  if (isLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  if (isError) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
 
   return (
     <Box>
@@ -76,6 +103,16 @@ export default function CreateAwardDialog({
             control={control}
             error={errors.type}
           />
+          <FormSelect
+            label="Trận đấu"
+            id="matchId"
+            name="matchId"
+            placeholder="Chọn trận đấu"
+            options={ListMatch}
+            control={control}
+            error={errors.matchId}
+          />
+
           <Button
             type="submit"
             variant="contained"

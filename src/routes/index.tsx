@@ -21,7 +21,7 @@ import ContestList from "../features/judge/components/selector/ContestList";
 import MatchList from "../features/judge/components/selector/MatchList";
 import OlympicIT2025Rules from "@features/rule/RulePage";
 //leaderboard
-import TopThreeReveal from "@features/leaderboard/top3/pages/TopThreeReveal";
+// import TopThreeReveal from "@features/leaderboard/top3/pages/TopThreeReveal";
 // import GoldWinnerDisplay from "@features/leaderboard/gold/components/GoldWinnerDisplay";
 
 import NotFound404 from "@components/404";
@@ -94,7 +94,7 @@ const AppRoutes: React.FC = () => {
         element={<AudienceOpinionPage />}
       />
       {/* <Route path="/match/eliminate" element={<EliminatePage />} /> */}
-      <Route path="/match/top3" element={<TopThreeReveal />} />
+      {/* <Route path="/match/top3" element={<TopThreeReveal />} /> */}
       {/* Tech Banner Route */}
       <Route path="/banner" element={<TechBanner />} />
       <Route path="/rule" element={<OlympicIT2025Rules />} />

@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useNotification } from "../../contexts/NotificationContext";
+import { useToast } from "@contexts/toastContext";
 import Logo from "../../assets/image/logo/logo-caothang.svg";
 
 import { useAuth } from "../../features/auth/hooks/authContext";
+import { useLogout } from "@features/auth/hooks/useLogout";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const { user, loading } = useAuth();
+  const { user, loading, setUser } = useAuth();
 
   const [activeItem, setActiveItem] = useState("home");
+  const { mutate: logout } = useLogout();
 
   const [showUserMenu, setShowUserMenu] = useState(false); // cho user đã đăng nhập
   const [showLoginMenu, setShowLoginMenu] = useState(false); // cho dropdown đăng nhập
 
-  const { showSuccessNotification } = useNotification();
+  const { showToast } = useToast();
 
   const handleHomeClick = () => {
     navigate("/");
@@ -36,14 +38,21 @@ const Header: React.FC = () => {
   };
 
   const handleLogout = () => {
-    document.cookie =
-      "feAccessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-    localStorage.removeItem("feAccessToken");
-    localStorage.removeItem("contestantInfo");
-    localStorage.removeItem("accessToken");
-    showSuccessNotification("Đăng xuất thành công");
-    navigate("/");
-    window.location.reload();
+    logout(undefined, {
+      onSuccess: () => {
+        setShowUserMenu(false);
+        document.cookie =
+          "feAccessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+        localStorage.removeItem("feAccessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("contestantInfo");
+        localStorage.removeItem("accessToken");
+        showToast("Đăng xuất thành công");
+        navigate("/");
+        setUser(null);
+        // window.location.reload();
+      },
+    });
   };
 
   const navItems = [

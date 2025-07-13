@@ -55,6 +55,9 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggle }) => {
         handleMenuClose();
         document.cookie =
           "feAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("feAccessToken");
+        localStorage.removeItem("accessToken");
         showToast("Đăng xuất thành công", "success");
         setTimeout(() => setUser(null), 500);
       },

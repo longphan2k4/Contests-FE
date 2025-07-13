@@ -33,6 +33,8 @@ axiosInstance.interceptors.response.use(
       if (code === "USER_NOT_FOUND_OR_INACTIVE") {
         document.cookie =
           "feAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        localStorage.removeItem("refreshToken");
+
         // Chuyển hướng login
         alert("Tài khoản đã bị khóa");
         window.location.href = "/login";
@@ -40,6 +42,8 @@ axiosInstance.interceptors.response.use(
       } else if (code === "INVALID_OR_EXPIRED_TOKEN") {
         document.cookie =
           "feAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        localStorage.removeItem("refreshToken");
+
         // Chuyển hướng login
         alert("Tài khoản đã đăng nhập trên thiết bị khác");
         window.location.href = "/login";
@@ -64,6 +68,7 @@ axiosInstance.interceptors.response.use(
         // Xoá cookie frontend
         document.cookie =
           "feAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        localStorage.removeItem("refreshToken");
 
         // Chuyển hướng login
         window.location.href = "/login";

@@ -4,10 +4,8 @@ import MultipleChoiceInput from "../components/MultipleChoiceInput";
 import OpenEndedInput from "../components/OpenEndedInput";
 import { useRescueQuestion } from "../hooks/useRescue";
 
-import { useSocket } from "../../../contexts/SocketContext";
 import type { Question } from "../types";
 import {
-  ClockIcon,
   UserGroupIcon,
   TrophyIcon,
   InformationCircleIcon,
@@ -42,33 +40,6 @@ const AudienceOpinionPage: React.FC = () => {
       setQuestion(questionData.data);
     }
   }, [questionData]);
-
-  const [timeLeft, setTimeLeft] = useState(0);
-
-  const { socket } = useSocket();
-
-  React.useEffect(() => {
-    if (!socket) return;
-
-    const handleTimerLeft = (data: any) => {
-      // console.log("Received timerLeft:Rescue event", data);
-      setTimeLeft(data.timerLeft);
-    };
-
-    // Lắng nghe sự kiện từ server
-    socket.on("timerLeft:Rescue", handleTimerLeft);
-
-    // Cleanup listener khi component unmount
-    return () => {
-      socket.off("timerLeft:Rescue", handleTimerLeft);
-    };
-  }, [socket]);
-
-  const getTimeColor = (time: number) => {
-    if (time > 30) return "text-green-600";
-    if (time > 10) return "text-yellow-600";
-    return "text-red-600";
-  };
 
   // Kiểm tra params hợp lệ
   if (!match || !rescueId) {
@@ -122,17 +93,6 @@ const AudienceOpinionPage: React.FC = () => {
                 </span>
               </div>
               <div className="text-sm text-gray-500">ID: {question?.id}</div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div
-                className={`flex items-center space-x-2 px-3 py-2 rounded-full ${getTimeColor(
-                  timeLeft
-                )} bg-white border-2`}
-              >
-                <ClockIcon className="w-5 h-5" />
-                <span className="font-bold text-lg">{timeLeft}s</span>
-              </div>
             </div>
           </div>
         </div>

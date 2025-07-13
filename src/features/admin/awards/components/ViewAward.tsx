@@ -37,16 +37,9 @@ export default function ViewAward({
           ? "Giải Nhất"
           : award?.type === "secondPrize"
           ? "Giải Nhì"
-          : award?.type === "thirdPrize"
-          ? "Giải Ba"
-          : award?.type === "fourthPrize"
-          ? "Giải Khuyến Khích"
-          : award?.type === "impressiveVideo"
-          ? "Video Ấn Tượng"
-          : award?.type === "excellentVideo"
-          ? "Video Xuất Sắc"
-          : "Không xác định",
+          : "Giải Ba",
     },
+    { label: "Trận đấu", value: award?.match?.name ?? "Không có" },
     { label: "Ngày tạo", value: award?.createdAt },
     { label: "Cập nhật gần nhất", value: award?.updatedAt },
   ];

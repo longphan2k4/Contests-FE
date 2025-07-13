@@ -41,10 +41,8 @@ const LoginPage = () => {
         if (data.data?.accessToken) {
           const expires = new Date();
           expires.setDate(expires.getDate() + 30);
-          document.cookie = `feAccessToken=${
-            true
-          }; path=/; expires=${expires.toUTCString()}`;
-          localStorage.setItem("feAccessToken", data.data.accessToken);
+          document.cookie = `feAccessToken=${true}; path=/; expires=${expires.toUTCString()}`;
+          // localStorage.setItem("feAccessToken", data.data.accessToken);
         }
         // Đảm bảo context user được cập nhật trước khi chuyển trang
         await refetch();

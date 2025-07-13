@@ -44,7 +44,7 @@ axiosStudent.interceptors.response.use(
       try {
         // Thử refresh token - backend sẽ đọc từ httpOnly cookie
         const refreshResponse = await axiosInstance.get("/auth/refresh-token", {
-          withCredentials: true // Quan trọng: để gửi httpOnly refresh cookie
+          withCredentials: true, // Quan trọng: để gửi httpOnly refresh cookie
         });
 
         if (refreshResponse.data.success) {
@@ -77,13 +77,11 @@ export const debugStudentToken = () => {
   const localToken = getTokenFromLocalStorage("accessToken");
   const contestantInfo = getTokenFromLocalStorage("contestantInfo");
 
-
-
   return {
     localToken,
     hasContestantInfo: !!contestantInfo,
-    withCredentials: true
+    withCredentials: true,
   };
 };
 
-export default axiosStudent; 
+export default axiosStudent;

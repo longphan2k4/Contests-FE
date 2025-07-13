@@ -1,4 +1,4 @@
-import { useAllRescues } from './useControls';
+import { useAllRescues } from "./useControls";
 
 export interface RescueItem {
   id: number;
@@ -18,8 +18,14 @@ export interface UseRescueReturn {
   refetch: () => void;
 }
 
-export const useRescue = (matchSlug: string | null): UseRescueReturn => {
-  const { data, isLoading, error, refetch } = useAllRescues(matchSlug);
+export const useRescue = (
+  matchSlug: string | null,
+  questionOrder: number
+): UseRescueReturn => {
+  const { data, isLoading, error, refetch } = useAllRescues(
+    matchSlug || "",
+    questionOrder
+  );
 
   return {
     rescues: data?.data || [],

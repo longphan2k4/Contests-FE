@@ -46,12 +46,6 @@ export default function AwardList({
             return "Giải Nhì";
           case "thirdPrize":
             return "Giải Ba";
-          case "fourthPrize":
-            return "Giải Khuyến Khích";
-          case "impressiveVideo":
-            return "Video Ấn Tượng";
-          case "excellentVideo":
-            return "Video Xuất Sắc";
           default:
             return "Không xác định";
         }

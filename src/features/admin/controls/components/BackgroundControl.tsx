@@ -35,15 +35,18 @@ const BackgroundControl: React.FC = () => {
           Màn hình chờ
         </button>
 
-        <button className="px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 shadow-md font-medium">
-          Sơ đồ trận
+        <button
+          onClick={() => window.open(`/tran-dau/${match}`, "_blank")}
+          className="px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 shadow-md font-medium"
+        >
+          Màn hình chiếu
         </button>
-        <button className="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-md font-medium">
+        {/* <button className="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-md font-medium">
           Bắt đầu
         </button>
         <button className="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-md font-medium">
           Kết thúc
-        </button>
+        </button> */}
       </div>
     </div>
   );
