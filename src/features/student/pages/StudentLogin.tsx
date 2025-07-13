@@ -64,9 +64,6 @@ const StudentLogin: React.FC = () => {
           <h1 className="text-3xl font-bold text-white mb-2">
             Đăng nhập Thí sinh
           </h1>
-          <p className="text-blue-100">
-            Tham gia cuộc thi lập trình Olympic 2024
-          </p>
         </div>
 
         {/* Login Form */}
@@ -172,7 +169,7 @@ const StudentLogin: React.FC = () => {
               </div>
               <div className="text-sm">
                 <a
-                  href="#"
+                  onClick={() => navigate("/forgot-password")}
                   className="text-indigo-600 hover:text-indigo-500 transition-colors"
                 >
                   Quên mật khẩu?

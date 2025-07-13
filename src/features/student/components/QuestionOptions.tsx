@@ -53,19 +53,23 @@ const QuestionOptions: React.FC<QuestionOptionsProps> = ({
   onSubmitAnswer,
 }) => {
   // 🔥 NEW: Điều kiện hiển thị options - hiển thị khi:
-  // 1. Chưa bị cấm
+  // 1. Chưa bị cấm HOẶC đã được cứu trợ
   // 2. Chưa bị loại HOẶC (bị loại nhưng có kết quả để hiển thị)
   const shouldShowOptions =
-    !isBanned &&
+    (!isBanned || isRescued) &&
     (!isEliminated || (isEliminated && canShowResult && answerResult));
 
   // 🔥 NEW: Điều kiện disable tương tác - disable khi:
   // 1. Đã submit
-  // 2. Bị loại
-  // 3. Bị cấm
+  // 2. Bị loại và chưa được cứu trợ
+  // 3. Bị cấm và chưa được cứu trợ
   // 4. Đang trong rescue mode
   const shouldDisableInteraction =
-    isSubmitted || isEliminated || isBanned || isInRescueMode || isRescued;
+    isSubmitted ||
+    (isEliminated && !isRescued) ||
+    (isBanned && !isRescued) ||
+    isInRescueMode ||
+    isRescued;
 
   const getOptionClass = (option: string) => {
     // 🔥 NEW: Nếu đang rescue mode, hiển thị màu xám
@@ -173,8 +177,8 @@ const QuestionOptions: React.FC<QuestionOptionsProps> = ({
         </FormControl>
       )}
 
-      {/* 🔥 NEW: Hiển thị thông báo ban (chỉ khi bị cấm) */}
-      {isBanned && (
+      {/* 🔥 NEW: Hiển thị thông báo ban (chỉ khi bị cấm và chưa được cứu trợ) */}
+      {isBanned && !isRescued && (
         <Alert
           severity="error"
           icon={<Cancel />}
@@ -185,7 +189,6 @@ const QuestionOptions: React.FC<QuestionOptionsProps> = ({
             <Typography variant="h6" className="font-bold text-red-800">
               Bạn đã bị cấm tham gia vì vi phạm quy chế!
             </Typography>
-
           </Box>
         </Alert>
       )}
@@ -226,8 +229,8 @@ const QuestionOptions: React.FC<QuestionOptionsProps> = ({
       {/* Nút submit */}
       {/* 🔥 NEW: Ẩn submit button nếu thí sinh bị loại, bị cấm hoặc đang rescue */}
       {!isSubmitted &&
-        !isEliminated &&
-        !isBanned &&
+        (!isEliminated || isRescued) &&
+        (!isBanned || isRescued) &&
         !isInRescueMode &&
         !isRescued && (
           <Box className="flex justify-end mt-4">
