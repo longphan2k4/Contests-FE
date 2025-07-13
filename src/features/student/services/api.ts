@@ -40,8 +40,10 @@ export class StudentApiService {
 
       // Lưu token và thông tin contestant
       if (response.data.success) {
-        // ✅ Lưu token vào localStorage để có thể thêm vào Authorization header
-        localStorage.setItem("accessToken", response.data.data.accessToken);
+        // ✅ Lưu feAccessToken vào cookie để kiểm tra trạng thái đăng nhập
+        const expires = new Date();
+        expires.setDate(expires.getDate() + 30);
+        document.cookie = `feAccessToken=${true}; path=/; expires=${expires.toUTCString()}`;
 
         // ⚠️ Không cần set cookie bằng JavaScript vì backend đã set httpOnly cookie
         // Backend sẽ tự động set:
@@ -114,7 +116,7 @@ export class StudentApiService {
    */
   static async getProfileStudent() {
     try {
-      const response = await axiosInstance.get("/auth/profile-student");
+      const response = await axiosStudent.get("/auth/profile-student");
       return response.data;
     } catch (error: unknown) {
       const apiError = error as ApiError;
@@ -125,29 +127,13 @@ export class StudentApiService {
     }
   }
 
-  /**
-   * Lấy access token từ localStorage
-   */
-  static getAccessToken(): string | null {
-    return localStorage.getItem("accessToken");
-  }
-
-  /**
-   * Lấy refresh token từ localStorage
-   */
-  static getRefreshToken(): string | null {
-    return localStorage.getItem("refreshToken");
-  }
 
   /**
    * Kiểm tra xem thí sinh đã đăng nhập chưa
    */
   static isAuthenticated(): boolean {
-    // ✅ Chỉ kiểm tra localStorage vì httpOnly cookie không đọc được từ JS
-    const localToken = this.getAccessToken();
-    // Đã bỏ localStorage contestantInfo, chỉ kiểm tra token
-    const feAccessToken = localStorage.getItem("feAccessToken");
-    return !!localToken || !!feAccessToken;
+    // ✅ Chỉ kiểm tra cookie vì không sử dụng localStorage
+    return document.cookie.includes("feAccessToken=");
   }
 
   /**
@@ -200,20 +186,13 @@ export class StudentApiService {
    */
   static async refreshToken(): Promise<boolean> {
     try {
-      const refreshToken = this.getRefreshToken();
-      if (!refreshToken) {
-        return false;
-      }
-
-      const response = await axiosInstance.post("/auth/refresh-token", {
-        refreshToken,
+      // ✅ Không cần lấy refreshToken từ localStorage vì backend sẽ đọc từ httpOnly cookie
+      const response = await axiosInstance.get("/auth/refresh-token", {
+        withCredentials: true, // Quan trọng: để gửi httpOnly refresh cookie
       });
 
       if (response.data.success) {
-        localStorage.setItem("accessToken", response.data.data.accessToken);
-        if (response.data.data.refreshToken) {
-          localStorage.setItem("refreshToken", response.data.data.refreshToken);
-        }
+        // ✅ Backend sẽ tự động set cookie mới, không cần lưu vào localStorage
         return true;
       }
       return false;

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from "react";
 
 // Mở rộng interface Document và HTMLElement để hỗ trợ fullscreen API
 interface ExtendedDocument extends Document {
@@ -14,7 +14,14 @@ interface ExtendedHTMLElement extends HTMLElement {
 }
 
 export interface AntiCheatViolation {
-  type: 'tab_switch' | 'escape_key' | 'minimize' | 'fullscreen_exit' | 'copy_paste' | 'context_menu' | 'dev_tools';
+  type:
+    | "tab_switch"
+    | "escape_key"
+    | "minimize"
+    | "fullscreen_exit"
+    | "copy_paste"
+    | "context_menu"
+    | "dev_tools";
   timestamp: Date;
   description: string;
 }
@@ -50,35 +57,42 @@ export const useAntiCheat = (
   const [warningCount, setWarningCount] = useState(0);
   const isActive = useRef(true);
 
-  const addViolation = useCallback((violation: AntiCheatViolation) => {
-    
-    if (!isActive.current) {
-      return;
-    }
-    
-    setViolations(prev => {
-      const newViolations = [...prev, violation];
-      return newViolations;
-    });
-    
-    onViolation?.(violation);
-    
-    setWarningCount(prev => {
-      const newCount = prev + 1;
-      
-      if (newCount >= finalConfig.maxViolations) {
-        if (finalConfig.warningBeforeTermination) {
-          // Hiển thị cảnh báo cuối cùng trước khi kết thúc
-          setTimeout(() => {
-            onTerminate?.();
-          }, 3000);
-        } else {
-          onTerminate?.();
-        }
+  const addViolation = useCallback(
+    (violation: AntiCheatViolation) => {
+      if (!isActive.current) {
+        return;
       }
-      return newCount;
-    });
-  }, [finalConfig.maxViolations, finalConfig.warningBeforeTermination, onViolation, onTerminate]);
+
+      setViolations((prev) => {
+        const newViolations = [...prev, violation];
+        return newViolations;
+      });
+
+      onViolation?.(violation);
+
+      setWarningCount((prev) => {
+        const newCount = prev + 1;
+
+        if (newCount >= finalConfig.maxViolations) {
+          if (finalConfig.warningBeforeTermination) {
+            // Hiển thị cảnh báo cuối cùng trước khi kết thúc
+            setTimeout(() => {
+              onTerminate?.();
+            }, 3000);
+          } else {
+            onTerminate?.();
+          }
+        }
+        return newCount;
+      });
+    },
+    [
+      finalConfig.maxViolations,
+      finalConfig.warningBeforeTermination,
+      onViolation,
+      onTerminate,
+    ]
+  );
 
   // Enter fullscreen
   const enterFullscreen = useCallback(async () => {
@@ -111,7 +125,7 @@ export const useAntiCheat = (
       }
       return true;
     } catch (error) {
-      console.warn('Không thể vào chế độ toàn màn hình:', error);
+      console.warn("Không thể vào chế độ toàn màn hình:", error);
       return false;
     }
   }, []);
@@ -120,7 +134,7 @@ export const useAntiCheat = (
   const exitFullscreen = useCallback(async () => {
     try {
       const extendedDoc = document as ExtendedDocument;
-      
+
       // Kiểm tra xem có đang ở fullscreen không
       const isCurrentlyFullscreen = !!(
         extendedDoc.fullscreenElement ||
@@ -141,7 +155,7 @@ export const useAntiCheat = (
         await extendedDoc.msExitFullscreen();
       }
     } catch (error) {
-      console.warn('Không thể thoát chế độ toàn màn hình:', error);
+      console.warn("Không thể thoát chế độ toàn màn hình:", error);
     }
     setIsFullscreen(false);
   }, []);
@@ -153,7 +167,7 @@ export const useAntiCheat = (
     // Thay vào đó, chỉ báo cho user biết cần vào fullscreen
   }, []);
 
-  // Stop anti-cheat monitoring  
+  // Stop anti-cheat monitoring
   const stopMonitoring = useCallback(async () => {
     isActive.current = false;
     if (isFullscreen) {
@@ -161,12 +175,19 @@ export const useAntiCheat = (
     }
   }, [isFullscreen, exitFullscreen]);
 
-  useEffect(() => {
-    
+  const resetViolations = useCallback(() => {
     if (!isActive.current) {
       return;
     }
 
+    setViolations([]);
+    setWarningCount(0);
+  }, []);
+
+  useEffect(() => {
+    if (!isActive.current) {
+      return;
+    }
 
     // Phát hiện thay đổi trạng thái fullscreen
     const handleFullscreenChange = () => {
@@ -176,14 +197,14 @@ export const useAntiCheat = (
         extendedDoc.webkitFullscreenElement ||
         extendedDoc.msFullscreenElement
       );
-      
+
       setIsFullscreen(isNowFullscreen);
-      
+
       if (!isNowFullscreen && finalConfig.enableFullscreen) {
         addViolation({
-          type: 'fullscreen_exit',
+          type: "fullscreen_exit",
           timestamp: new Date(),
-          description: 'Thí sinh đã thoát khỏi chế độ toàn màn hình'
+          description: "Thí sinh đã thoát khỏi chế độ toàn màn hình",
         });
       }
     };
@@ -192,33 +213,38 @@ export const useAntiCheat = (
     const handleVisibilityChange = () => {
       if (document.hidden && finalConfig.enableTabSwitchDetection) {
         addViolation({
-          type: 'tab_switch',
+          type: "tab_switch",
           timestamp: new Date(),
-          description: 'Thí sinh đã chuyển tab hoặc minimize cửa sổ'
+          description: "Thí sinh đã chuyển tab hoặc minimize cửa sổ",
         });
       }
     };
 
     // Phát hiện phím ESC và các phím khác
     const handleKeyDown = (e: KeyboardEvent) => {
-      
       // Phím ESC
-      if (e.key === 'Escape') {        e.preventDefault();
+      if (e.key === "Escape") {
+        e.preventDefault();
         addViolation({
-          type: 'escape_key',
+          type: "escape_key",
           timestamp: new Date(),
-          description: 'Thí sinh đã nhấn phím ESC'
+          description: "Thí sinh đã nhấn phím ESC",
         });
       }
 
       // Chặn Copy/Paste
       if (finalConfig.enableCopyPasteBlocking) {
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'x')) {
+        if (
+          (e.ctrlKey || e.metaKey) &&
+          (e.key === "c" || e.key === "v" || e.key === "x")
+        ) {
           e.preventDefault();
           addViolation({
-            type: 'copy_paste',
+            type: "copy_paste",
             timestamp: new Date(),
-            description: `Thí sinh đã thử ${e.key === 'c' ? 'copy' : e.key === 'v' ? 'paste' : 'cut'}`
+            description: `Thí sinh đã thử ${
+              e.key === "c" ? "copy" : e.key === "v" ? "paste" : "cut"
+            }`,
           });
         }
       }
@@ -226,16 +252,16 @@ export const useAntiCheat = (
       // Chặn F12, Ctrl+Shift+I (Developer Tools)
       if (finalConfig.enableDevToolsBlocking) {
         if (
-          e.key === 'F12' ||
-          (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-          (e.ctrlKey && e.shiftKey && e.key === 'J') ||
-          (e.ctrlKey && e.key === 'U')
+          e.key === "F12" ||
+          (e.ctrlKey && e.shiftKey && e.key === "I") ||
+          (e.ctrlKey && e.shiftKey && e.key === "J") ||
+          (e.ctrlKey && e.key === "U")
         ) {
           e.preventDefault();
           addViolation({
-            type: 'dev_tools',
+            type: "dev_tools",
             timestamp: new Date(),
-            description: 'Thí sinh đã thử mở Developer Tools'
+            description: "Thí sinh đã thử mở Developer Tools",
           });
         }
       }
@@ -246,9 +272,9 @@ export const useAntiCheat = (
       if (finalConfig.enableContextMenuBlocking) {
         e.preventDefault();
         addViolation({
-          type: 'context_menu',
+          type: "context_menu",
           timestamp: new Date(),
-          description: 'Thí sinh đã thử mở context menu'
+          description: "Thí sinh đã thử mở context menu",
         });
       }
     };
@@ -257,9 +283,9 @@ export const useAntiCheat = (
     const handleBlur = () => {
       if (finalConfig.enableTabSwitchDetection) {
         addViolation({
-          type: 'minimize',
+          type: "minimize",
           timestamp: new Date(),
-          description: 'Cửa sổ đã mất focus (có thể do chuyển ứng dụng)'
+          description: "Cửa sổ đã mất focus (có thể do chuyển ứng dụng)",
         });
       }
     };
@@ -268,9 +294,9 @@ export const useAntiCheat = (
     const handleOrientationChange = () => {
       if (finalConfig.enableTabSwitchDetection) {
         addViolation({
-          type: 'minimize',
+          type: "minimize",
           timestamp: new Date(),
-          description: 'Thí sinh đã xoay màn hình hoặc thay đổi orientation'
+          description: "Thí sinh đã xoay màn hình hoặc thay đổi orientation",
         });
       }
     };
@@ -280,9 +306,9 @@ export const useAntiCheat = (
       if (finalConfig.enableContextMenuBlocking && e.touches.length > 1) {
         e.preventDefault();
         addViolation({
-          type: 'context_menu',
+          type: "context_menu",
           timestamp: new Date(),
-          description: 'Thí sinh đã thử sử dụng multi-touch gesture'
+          description: "Thí sinh đã thử sử dụng multi-touch gesture",
         });
       }
     };
@@ -291,37 +317,45 @@ export const useAntiCheat = (
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       addViolation({
-        type: 'minimize',
+        type: "minimize",
         timestamp: new Date(),
-        description: 'Thí sinh đã thử thoát khỏi trang thi'
+        description: "Thí sinh đã thử thoát khỏi trang thi",
       });
-      e.returnValue = 'Bạn có chắc muốn thoát khỏi bài thi?';
+      e.returnValue = "Bạn có chắc muốn thoát khỏi bài thi?";
     };
 
     // Event listeners
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('msfullscreenchange', handleFullscreenChange);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('contextmenu', handleContextMenu);
-    document.addEventListener('touchstart', handleTouchStart, { passive: false });
-    window.addEventListener('blur', handleBlur);
-    window.addEventListener('orientationchange', handleOrientationChange);
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("msfullscreenchange", handleFullscreenChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("touchstart", handleTouchStart, {
+      passive: false,
+    });
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("orientationchange", handleOrientationChange);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     // Cleanup
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('blur', handleBlur);
-      window.removeEventListener('orientationchange', handleOrientationChange);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "msfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("orientationchange", handleOrientationChange);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [finalConfig, addViolation]);
 
@@ -333,6 +367,7 @@ export const useAntiCheat = (
     stopMonitoring,
     enterFullscreen,
     exitFullscreen,
+    resetViolations, // 🔥 NEW: Thêm function reset violations
     maxViolations: finalConfig.maxViolations,
     isMonitoring: isActive.current,
   };
