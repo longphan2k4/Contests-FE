@@ -26,12 +26,12 @@ const StudentWaitingRoom: React.FC = () => {
     setRegistrationNumber,
   } = useStudentContext();
 
-  // 🔥 NEW: State for banned status, lifted up from QuestionAnswer
-  const [isBanned, setIsBanned] = useState(false);
-  const [banMessage, setBanMessage] = useState("");
+  // 🔥 REMOVED: State for banned status - now using realTimeState
+  // const [isBanned, setIsBanned] = useState(false);
+  // const [banMessage, setBanMessage] = useState("");
   const handleContestantBanned = (message: string) => {
-    setIsBanned(true);
-    setBanMessage(message);
+    // 🔥 NEW: Cập nhật trạng thái banned thông qua realTimeState
+    updateBannedStatus(true, message);
   };
 
   const [loading, setLoading] = useState(true);
@@ -139,9 +139,16 @@ const StudentWaitingRoom: React.FC = () => {
   }, [contestantInfo]);
 
   const isConnected = true;
-  const { realTimeState, isConnected: isRealTimeConnected } =
-    useStudentRealTime(matchSlug);
+  const {
+    realTimeState,
+    isConnected: isRealTimeConnected,
+    updateBannedStatus,
+  } = useStudentRealTime(matchSlug);
   const isRealTimeStarted = realTimeState.isMatchStarted;
+
+  // 🔥 NEW: Sử dụng trạng thái banned từ realTimeState thay vì state local
+  const isBanned = realTimeState.isBanned;
+  const banMessage = realTimeState.banMessage;
 
   useEffect(() => {
     if (realTimeState.isRescued) {

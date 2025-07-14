@@ -223,6 +223,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
     isFullscreen,
     startMonitoring,
     stopMonitoring,
+    resetViolations, // 🔥 NEW: Thêm resetViolations
     maxViolations,
     // enterFullscreen,
     isMonitoring,
@@ -420,6 +421,10 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
       // Fade out current content
       setShowRescueAnimation(true);
       setRescueMessage("Bạn được một cơ hội mới!");
+
+      // 🔥 NEW: Reset số lần vi phạm về 0 khi được cứu trợ
+      resetViolations();
+
       // Show success notification
       showSuccessNotification(
         "🎉 Bạn đã được cứu trợ thành công!",
@@ -427,7 +432,12 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
         3000
       );
     }
-  }, [isRescued, showRescueAnimation, showSuccessNotification]);
+  }, [
+    isRescued,
+    showRescueAnimation,
+    showSuccessNotification,
+    resetViolations,
+  ]);
 
   // 🎉 NEW: Callback khi rescue animation hoàn thành
   const handleRescueAnimationComplete = useCallback(() => {
