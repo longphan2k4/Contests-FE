@@ -60,13 +60,18 @@ export default defineConfig({
     include: ["tinymce"],
   },
   build: {
+    sourcemap: true, // Enable sourcemap để debug
     rollupOptions: {
-      treeshake: {
-        preset: "smallest",
-        propertyReadSideEffects: false,
-        unknownGlobalSideEffects: false,
+      treeshake: false, // Tắt treeshake để tránh mất CSS/components
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],  
+          mui: ['@mui/material', '@mui/icons-material'],
+          query: ['@tanstack/react-query'],
+        },
       },
     },
-    minify: 'esbuild',
+    minify: "esbuild",
   },
 });
