@@ -1,0 +1,10 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80" # Quan trọng! Mapping ra cổng 80 máy chủ
+    volumes:
+      - .:/app
+    restart: always

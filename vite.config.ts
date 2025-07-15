@@ -59,4 +59,14 @@ export default defineConfig({
   optimizeDeps: {
     include: ["tinymce"],
   },
+  build: {
+    rollupOptions: {
+      treeshake: {
+        preset: "smallest",
+        propertyReadSideEffects: false,
+        unknownGlobalSideEffects: false,
+      },
+    },
+    minify: 'esbuild',
+  },
 });
