@@ -16,12 +16,6 @@ const TopThreeBoard: React.FC<Top3Props> = ({ ListAward }) => {
   const particlesRef = useRef<HTMLDivElement>(null);
   // useParticles(particlesRef);
 
-  console.log("Awards", {
-    first: ListAward?.firstPrize,
-    second: ListAward?.secondPrize,
-    third: ListAward?.thirdPrize,
-  });
-
   const getCardStyles = (actualRank: number): CardStyles => ({
     border:
       actualRank === 1
