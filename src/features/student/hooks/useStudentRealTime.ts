@@ -29,6 +29,9 @@ interface StudentRealTimeState {
   isEliminated: boolean;
   eliminationMessage: string;
   isRescued: boolean;
+  // 🔥 NEW: Thêm trạng thái banned
+  isBanned: boolean;
+  banMessage: string;
   lastUpdated: string;
 }
 
@@ -37,6 +40,8 @@ interface StudentRealTimeReturn {
   isConnected: boolean;
   joinMatchRoom: (matchSlug: string) => void;
   leaveMatchRoom: (matchSlug: string) => void;
+  // 🔥 NEW: Thêm callback để cập nhật trạng thái banned
+  updateBannedStatus: (isBanned: boolean, banMessage?: string) => void;
 }
 
 // Socket event types
@@ -113,17 +118,30 @@ export const useStudentRealTime = (
     isEliminated: false,
     eliminationMessage: "",
     isRescued: false,
+    isBanned: false,
+    banMessage: "",
     lastUpdated: new Date().toISOString(),
   });
 
   // Update real-time state
   const updateState = useCallback((updates: Partial<StudentRealTimeState>) => {
-    setRealTimeState(prev => ({
+    setRealTimeState((prev) => ({
       ...prev,
       ...updates,
       lastUpdated: new Date().toISOString(),
     }));
   }, []);
+
+  // 🔥 NEW: Callback để cập nhật trạng thái banned
+  const updateBannedStatus = useCallback(
+    (isBanned: boolean, banMessage: string = "") => {
+      updateState({
+        isBanned,
+        banMessage,
+      });
+    },
+    [updateState]
+  );
 
   // Join room khi có matchIdentifier và socket connected
   useEffect(() => {
@@ -252,6 +270,9 @@ export const useStudentRealTime = (
           isEliminated: false,
           eliminationMessage: "",
           isRescued: true, // Mark as rescued
+          // 🔥 NEW: Reset banned status khi được cứu trợ
+          isBanned: false, // Reset banned status
+          banMessage: "", // Clear ban message
         });
         setTimeout(() => {
           updateState({ isRescued: false });
@@ -310,5 +331,6 @@ export const useStudentRealTime = (
     isConnected,
     joinMatchRoom: (matchSlug: string) => joinMatchForAnswering(matchSlug),
     leaveMatchRoom,
+    updateBannedStatus,
   };
 };
