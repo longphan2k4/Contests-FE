@@ -30,15 +30,15 @@ const EssayInput: React.FC<EssayInputProps> = ({
 }) => {
   const isDisabled =
     isSubmitted ||
-    isEliminated ||
-    isBanned ||
+    (isEliminated && !isRescued) ||
+    (isBanned && !isRescued) ||
     isApiSubmitting ||
     isRescued ||
     isInRescueMode;
   return (
     <Box className="space-y-4 p-4">
       {/* Alert bị cấm */}
-      {isBanned && (
+      {isBanned && !isRescued && (
         <Alert
           severity="error"
           icon={<Cancel />}
@@ -53,7 +53,7 @@ const EssayInput: React.FC<EssayInputProps> = ({
         </Alert>
       )}
       {/* Alert bị loại */}
-      {isEliminated && !canShowResult && (
+      {isEliminated && !canShowResult && !isRescued && (
         <Alert
           severity="warning"
           icon={<Cancel />}
@@ -70,7 +70,7 @@ const EssayInput: React.FC<EssayInputProps> = ({
           </Box>
         </Alert>
       )}
-      {!isEliminated && !isBanned && (
+      {(!isEliminated || isRescued) && (!isBanned || isRescued) && (
         <>
           <textarea
             value={value}

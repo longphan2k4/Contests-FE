@@ -27,6 +27,7 @@ const AntiCheatDemo: React.FC = () => {
     isFullscreen,
     startMonitoring,
     stopMonitoring,
+    resetViolations, // 🔥 NEW: Thêm resetViolations
     enterFullscreen,
     exitFullscreen,
     maxViolations,
@@ -53,6 +54,11 @@ const AntiCheatDemo: React.FC = () => {
   const handleStopDemo = () => {
     stopMonitoring();
     addLog("Dừng giám sát chống gian lận");
+  };
+
+  const handleResetViolations = () => {
+    resetViolations();
+    addLog("Đã reset số lần vi phạm về 0");
   };
 
   const handleContinueAfterWarning = () => {
@@ -136,6 +142,14 @@ const AntiCheatDemo: React.FC = () => {
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-400"
           >
             Dừng Demo
+          </button>
+
+          <button
+            onClick={handleResetViolations}
+            disabled={violations.length === 0}
+            className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:bg-gray-400"
+          >
+            Reset Violations
           </button>
 
           <button

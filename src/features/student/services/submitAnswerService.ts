@@ -1,4 +1,4 @@
-import axiosStudent, { debugStudentToken } from "../../../config/axiosStudent";
+import axiosStudent from "@config/axiosStudent";
 
 // Types - Cập nhật interface để phù hợp với API backend
 export interface SubmitAnswerRequest {
@@ -50,7 +50,6 @@ export class SubmitAnswerService {
     correctAnswers?: number[]
   ): Promise<SubmitAnswerResponse> {
     try {
-      debugStudentToken();
 
       const requestData: SubmitAnswerRequest = {
         matchId,
@@ -168,7 +167,6 @@ export class BanContestantService {
     bannedBy?: string
   ): Promise<BanContestantResponse> {
     try {
-      debugStudentToken();
 
       const requestData: BanContestantRequest = {
         matchId,

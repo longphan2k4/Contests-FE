@@ -21,20 +21,20 @@ const axiosStudent = axiosInstance.create({
 
 // Request interceptor - không cần thêm Authorization header vì backend dùng cookie
 axiosStudent.interceptors.request.use(
-  config => {
+  (config) => {
     // Backend authenticate thông qua req.cookies.accessToken
     // Không cần thêm Authorization header
     return config;
   },
-  error => {
+  (error) => {
     return Promise.reject(error);
   }
 );
 
 // Response interceptor để handle token expiry và auto refresh
 axiosStudent.interceptors.response.use(
-  response => response,
-  async error => {
+  (response) => response,
+  async (error) => {
     const originalRequest = error.config;
 
     // Nếu bị 401 và chưa retry

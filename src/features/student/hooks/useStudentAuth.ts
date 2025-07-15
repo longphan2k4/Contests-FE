@@ -31,25 +31,55 @@ export const useStudentAuth = () => {
 
         const response = await StudentApiService.login(validatedData);
         if (response.success) {
+          // ✅ Hiển thị thông báo thành công
+          showToast("Đăng nhập thành công", "success");
+
+          // ✅ Chuyển hướng đến dashboard
           navigate("/student/dashboard");
           return { success: true, data: response.data };
         } else {
           setErrors({ general: response.message });
+          showToast(response.message || "Đăng nhập thất bại", "error");
           return { success: false, error: response.message };
         }
       } catch (error: unknown) {
-        showToast("Tài khoản hoặc mật khẩu không đúng:", "error");
-        // showToast(
-        //   (error as { message?: string }).message || "Đăng nhập thất bại",
-        //   "error"
-        // );
+        // ✅ Cải thiện error handling tương tự như admin
+        const errWithResponse = error as Error & {
+          response?: {
+            data?: {
+              message?: string;
+              error?: {
+                details?: Array<{ field: string; message: string }>;
+              };
+            };
+          };
+        };
+
+        if (errWithResponse?.response?.data?.error?.details) {
+          // Xử lý validation errors từ backend
+          errWithResponse.response.data.error.details.forEach(
+            (err: { field: string; message: string }) => {
+              if (err.field === "identifier" || err.field === "password") {
+                setErrors((prev) => ({
+                  ...prev,
+                  [err.field]: err.message,
+                }));
+              }
+            }
+          );
+          showToast("Đăng nhập thất bại", "error");
+        } else if (errWithResponse?.response?.data?.message) {
+          showToast(errWithResponse.response.data.message, "error");
+        } else {
+          showToast("Tài khoản hoặc mật khẩu không đúng", "error");
+        }
 
         return { success: false, error: "Đăng nhập thất bại" };
       } finally {
         setIsLoading(false);
       }
     },
-    [navigate]
+    [navigate, showToast]
   );
 
   // const logout = useCallback(() => {
@@ -126,7 +156,7 @@ export const useStudentRegister = () => {
           const validationErrors: RegisterFormErrors = {};
           (
             error as { errors: Array<{ path: string[]; message: string }> }
-          ).errors.forEach(err => {
+          ).errors.forEach((err) => {
             if (err.path) {
               validationErrors[err.path[0] as keyof RegisterFormErrors] =
                 err.message;
@@ -276,7 +306,7 @@ export const useClassList = () => {
 
   // Lấy danh sách trường duy nhất
   const getUniqueSchools = useCallback(() => {
-    const schools = classes.map(cls => cls.school.name);
+    const schools = classes.map((cls) => cls.school.name);
     return [...new Set(schools)].sort();
   }, [classes]);
 
@@ -284,7 +314,7 @@ export const useClassList = () => {
   const getClassesBySchool = useCallback(
     (schoolName: string) => {
       return classes
-        .filter(cls => cls.school.name === schoolName && cls.isActive)
+        .filter((cls) => cls.school.name === schoolName && cls.isActive)
         .sort((a, b) => a.name.localeCompare(b.name));
     },
     [classes]

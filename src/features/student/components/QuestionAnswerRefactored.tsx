@@ -194,6 +194,7 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
     isFullscreen,
     startMonitoring,
     stopMonitoring,
+    resetViolations, // 🔥 NEW: Thêm resetViolations
     maxViolations,
     isMonitoring,
   } = useAntiCheat(
@@ -210,23 +211,29 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
     handleAntiCheatTerminate
   );
   useEffect(() => {
-    if (isBanned) {
+    if (isBanned && !isRescued) {
       stopMonitoring();
     }
-  }, [isBanned, stopMonitoring]);
+  }, [isBanned, isRescued, stopMonitoring]);
   // 🛡️ NEW: Start anti-cheat monitoring khi có câu hỏi
   useEffect(() => {
-    if (currentQuestion && !isEliminatedState) {
+    if (currentQuestion && (!isEliminatedState || isRescued)) {
       startMonitoring();
     }
     return () => {
       stopMonitoring();
     };
-  }, [currentQuestion, isEliminatedState, startMonitoring, stopMonitoring]);
+  }, [
+    currentQuestion,
+    isEliminatedState,
+    isRescued,
+    startMonitoring,
+    stopMonitoring,
+  ]);
 
   // 🛡️ NEW: Gọi API ban khi đủ số lần vi phạm
   useEffect(() => {
-    if (warningCount >= maxViolations && matchId && !isBanned) {
+    if (warningCount >= maxViolations && matchId && !isBanned && !isRescued) {
       const banContestant = async () => {
         try {
           const violationTypes = violations.map((v) => v.type).join(", ");
@@ -271,6 +278,7 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
     violations,
     showErrorNotification,
     isBanned,
+    isRescued,
     onContestantBanned,
   ]);
 
@@ -379,15 +387,23 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
       setRescueMessage("Bạn được một cơ hội mới!");
 
       setIsEliminatedState(false);
-
       setEliminationMessageState("");
+
+      // 🔥 NEW: Reset số lần vi phạm về 0 khi được cứu trợ
+      resetViolations();
+
       showSuccessNotification(
         "🎉 Bạn đã được cứu trợ thành công!",
         "Cứu trợ",
         3000
       );
     }
-  }, [isRescued, showRescueAnimation, showSuccessNotification]);
+  }, [
+    isRescued,
+    showRescueAnimation,
+    showSuccessNotification,
+    resetViolations,
+  ]);
 
   // 🎉 NEW: Callback khi rescue animation hoàn thành
   const handleRescueAnimationComplete = useCallback(() => {
@@ -404,11 +420,11 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
 
   // 🚀 NEW: Submit answer using API instead of socket
   const handleSubmitAnswer = async (currentAnswer?: string) => {
-    if (isBanned) {
+    if (isBanned && !isRescued) {
       alert(`🚫 ${banMessage || "Bạn đã bị cấm tham gia trận đấu này."}`);
       return;
     }
-    if (isEliminatedState) {
+    if (isEliminatedState && !isRescued) {
       alert(`🚫 ${eliminationMessageState || "Bạn đã bị loại khỏi trận đấu"}`);
       return;
     }
@@ -494,9 +510,8 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
     if (
       remainingTime === 0 &&
       !isSubmitted &&
-      !isEliminatedState &&
-      !isBanned &&
-      !isRescued &&
+      (!isEliminatedState || isRescued) &&
+      (!isBanned || isRescued) &&
       !isInRescueMode &&
       !showRescueAnimation &&
       !justRescued &&
@@ -570,11 +585,11 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
   }, [answerResult?.eliminated, isEliminatedState]);
 
   const handleAnswerSelect = (answer: string) => {
-    if (isBanned) {
+    if (isBanned && !isRescued) {
       alert(`🚫 ${banMessage || "Bạn đã bị cấm tham gia trận đấu này."}`);
       return;
     }
-    if (isEliminatedState) {
+    if (isEliminatedState && !isRescued) {
       alert(`🚫 ${eliminationMessageState || "Bạn đã bị loại khỏi trận đấu"}`);
       return;
     }
@@ -675,8 +690,6 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
 
           const questionType =
             currentQuestion.question.questionType?.toLowerCase();
-
- 
 
           if (questionType === "essay") {
             return (
