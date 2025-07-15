@@ -324,7 +324,7 @@ const JudgeHomePage: React.FC = () => {
       <AnimatedBackground />
 
       <div
-        className={`relative z-10 flex-1 transition-all duration-1000 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+        className={`relative z-10 flex-1 transition-all duration-1000 pt-16 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
       >
         <JudgeHeader
           username={user?.username ?? "Giám khảo"}
@@ -337,7 +337,7 @@ const JudgeHomePage: React.FC = () => {
           setActiveTab={setActiveTab}
           counts={getContestantCounts()}
         />
-        <div className="bg-white/10 rounded-2xl shadow-2xl p-4 sm:p-8 border border-white/20">
+        <div className="bg-white/10 rounded-2xl shadow-2xl p-4 sm:p-8 border border-white/20 mt-4">
           {activeTab === "Đăng xuất" ? (
             <LogoutSection handleLogout={() => {}} />
           ) : (

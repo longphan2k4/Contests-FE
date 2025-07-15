@@ -39,6 +39,7 @@ export default function CreateMatch({
     defaultValues: {
       isActive: true,
       currentQuestion: 1,
+      maxContestantColumn: 10,
     },
   });
 
@@ -86,7 +87,7 @@ export default function CreateMatch({
 
   useEffect(() => {
     if (!isOpen) reset(); // Reset lại khi đóng form
-  }, [isOpen]);
+  }, [isOpen, reset]);
   return (
     <AppFormDialog
       open={isOpen}
@@ -118,6 +119,15 @@ export default function CreateMatch({
           placeholder="Nhập số câu hiện tại"
           error={errors.currentQuestion}
           register={register("currentQuestion")}
+          type="number"
+        />
+
+        <FormInput
+          id="maxContestantColumn"
+          label="Số cột hiển thị thí sinh tối đa"
+          placeholder="Nhập số cột (mặc định: 10)"
+          error={errors.maxContestantColumn}
+          register={register("maxContestantColumn")}
           type="number"
         />
 

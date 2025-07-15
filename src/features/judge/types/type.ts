@@ -24,6 +24,9 @@ export type MatchInfo = {
 export interface Contestant {
   registrationNumber: string;
   status: "in_progress" | "confirmed1" | "confirmed2";
+  match: {
+    maxContestantColumn: number;
+  };
 }
 
 export type groupInfo = {

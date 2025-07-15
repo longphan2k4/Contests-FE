@@ -79,7 +79,7 @@ export default function EditeMatch({
       refetchRound();
       refetchQuestionPackage();
     }
-  }, [refetchRound, refetchStatus, refetchQuestionPackage, isOpen]);
+  }, [refetchMatch, refetchRound, refetchStatus, refetchQuestionPackage, isOpen]);
 
   // Memo hóa danh sách trường học để tránh re-render thừa
   const round = useMemo(() => {
@@ -125,6 +125,7 @@ export default function EditeMatch({
         status: matchData.status,
         currentQuestion: matchData.currentQuestion,
         questionPackageId: matchData.questionPackageId,
+        maxContestantColumn: matchData.maxContestantColumn,
         isActive: matchData.isActive,
         startTime: dayjs(matchData.startTime).format("YYYY-MM-DDTHH:mm"),
         endTime: dayjs(matchData.endTime).format("YYYY-MM-DDTHH:mm"),
@@ -192,6 +193,15 @@ export default function EditeMatch({
           placeholder="Nhập xác nhận ở câu"
           error={errors.currentQuestion}
           register={register("currentQuestion")}
+          type="number"
+        />
+
+        <FormInput
+          id="maxContestantColumn"
+          label="Số cột hiển thị thí sinh tối đa"
+          placeholder="Nhập số cột (mặc định: 10)"
+          error={errors.maxContestantColumn}
+          register={register("maxContestantColumn")}
           type="number"
         />
 

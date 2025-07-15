@@ -163,6 +163,9 @@ export type ListContestant = {
     username: string;
   };
   contestantMatches: Contestant[];
+  match: {
+    maxContestantColumn: number;
+  };
 };
 
 export type countContestant = {

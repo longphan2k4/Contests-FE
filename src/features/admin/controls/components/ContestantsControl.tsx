@@ -124,33 +124,42 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
       <h2 className="text-xl font-bold mb-4 text-center">Danh sách thí sinh</h2>
 
       <div className="flex flex-wrap gap-4">
-        {ListContestant?.map(group => (
-          <div
-            key={group.id}
-            className={`border-2 ${
-              group?.confirmCurrentQuestion >= questionOrder
-                ? "border-blue-500"
-                : "border-red-500"
-            } rounded-lg p-3 w-full`}
-          >
-            <div className="grid grid-cols-10 gap-2">
-              {group?.contestantMatches.map(contestant => (
-                <button
-                  key={contestant?.registrationNumber}
-                  onClick={() => toggleSelect(contestant?.registrationNumber)}
-                  className={`relative p-2 rounded-md font-semibold text-sm transition
-             ${getStatusClass(contestant?.status)}
-            `}
-                >
-                  {contestant?.registrationNumber}
-                  {selectedIds.includes(contestant?.registrationNumber) && (
-                    <CheckCircleIcon className="absolute top-0 right-0 h-6 w-6 text-white drop-shadow" />
-                  )}
-                </button>
-              ))}
+        {ListContestant?.map(group => {
+          const maxColumns = group?.match?.maxContestantColumn || 10;
+          // Giới hạn tối đa 12 cột để tránh layout bị vỡ
+          const actualColumns = Math.min(maxColumns, 12);
+          
+          return (
+            <div
+              key={group.id}
+              className={`border-2 ${
+                group?.confirmCurrentQuestion >= questionOrder
+                  ? "border-blue-500"
+                  : "border-red-500"
+              } rounded-lg p-3 w-full`}
+            >
+              <div 
+                className="grid gap-2"
+                style={{ gridTemplateColumns: `repeat(${actualColumns}, minmax(0, 1fr))` }}
+              >
+                {group?.contestantMatches.map(contestant => (
+                  <button
+                    key={contestant?.registrationNumber}
+                    onClick={() => toggleSelect(contestant?.registrationNumber)}
+                    className={`relative p-2 rounded-md font-semibold text-sm transition
+               ${getStatusClass(contestant?.status)}
+              `}
+                  >
+                    {contestant?.registrationNumber}
+                    {selectedIds.includes(contestant?.registrationNumber) && (
+                      <CheckCircleIcon className="absolute top-0 right-0 h-6 w-6 text-white drop-shadow" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <div className="flex gap-2 mt-4 flex-wrap ">
         <div className="flex flex-wrap gap-2 flex-row w-full justify-center">
