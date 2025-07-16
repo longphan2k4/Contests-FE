@@ -13,6 +13,7 @@ export const MatchSchema = z.object({
   contestId: z.number().int(),
   roundName: z.string(),
   isActive: z.boolean().optional(), // Prisma đã có default
+  maxContestantColumn: z.number().int().optional(),
   studentId: z.number().int().optional(),
   studentFullName: z.string(),
   contestName: z.string(),
@@ -75,6 +76,15 @@ export const CreateMatchSchema = z.object({
     errorMap: () => ({ message: "Vui lòng chọn trạng thái" }),
   }),
 
+  maxContestantColumn: z.coerce
+    .number({
+      invalid_type_error: "Số cột hiển thị phải là số",
+    })
+    .int("Số cột hiển thị phải là số nguyên")
+    .min(1, "Số cột hiển thị phải ít nhất là 1")
+    .max(20, "Số cột hiển thị tối đa là 20")
+    .optional(),
+
   isActive: z.boolean().optional(),
 });
 
@@ -136,6 +146,15 @@ export const UpdateMatchSchema = z.object({
     .optional(),
 
   status: z.enum(["upcoming", "ongoing", "finished"]),
+
+  maxContestantColumn: z.coerce
+    .number({
+      invalid_type_error: "Số cột hiển thị phải là số",
+    })
+    .int("Số cột hiển thị phải là số nguyên")
+    .min(1, "Số cột hiển thị phải ít nhất là 1")
+    .max(20, "Số cột hiển thị tối đa là 20")
+    .optional(),
 
   isActive: z.boolean().optional(),
 });

@@ -30,6 +30,17 @@ const ContestantList: React.FC<ContestantListProps> = ({
   chotDisabled,
   questionOrder,
 }) => {
+  // Lấy maxContestantColumn từ contestant đầu tiên (giả định tất cả cùng match)
+  const maxContestantColumn = contestants.length > 0 ? contestants[0].match.maxContestantColumn : 10;
+  
+  // Tạo grid template columns dựa trên maxContestantColumn
+  const getGridCols = () => {
+    const cols = Math.min(maxContestantColumn, 12); // Giới hạn tối đa 12 cột
+    return {
+      gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`
+    };
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="text-center bg-blue-50 p-4 rounded-xl border border-blue-200">
@@ -59,7 +70,10 @@ const ContestantList: React.FC<ContestantListProps> = ({
       </div>
 
       {activeTab === "Đang thi" && (
-        <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-10 lg:grid-cols-10 gap-3 sm:gap-4 mb-6 sm:mb-8 touch-action-manipulation">
+        <div 
+          className="grid gap-3 sm:gap-4 mb-6 sm:mb-8 touch-action-manipulation"
+          style={getGridCols()}
+        >
           {contestants.map(contestant => {
             const isSelected = selectedIds.includes(
               contestant.registrationNumber
@@ -94,7 +108,10 @@ const ContestantList: React.FC<ContestantListProps> = ({
       )}
 
       {activeTab === "Xác nhận 1" && (
-        <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-10 lg:grid-cols-10 gap-3 sm:gap-4 mb-6 sm:mb-8 touch-action-manipulation">
+        <div 
+          className="grid gap-3 sm:gap-4 mb-6 sm:mb-8 touch-action-manipulation"
+          style={getGridCols()}
+        >
           {contestants.map(contestant => {
             const isSelected = selectedIds.includes(
               contestant.registrationNumber
@@ -129,7 +146,10 @@ const ContestantList: React.FC<ContestantListProps> = ({
       )}
 
       {activeTab === "Xác nhận 2" && (
-        <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-10 lg:grid-cols-10 gap-3 sm:gap-4 mb-6 sm:mb-8 touch-action-manipulation">
+        <div 
+          className="grid gap-3 sm:gap-4 mb-6 sm:mb-8 touch-action-manipulation"
+          style={getGridCols()}
+        >
           {contestants.map(contestant => {
             const isSelected = selectedIds.includes(
               contestant.registrationNumber

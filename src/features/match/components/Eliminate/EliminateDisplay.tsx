@@ -9,14 +9,14 @@ export interface Contestant {
   registration_number: number;
   fullname: string;
   status:
-    | "not_started"
-    | "in_progress"
-    | "confirmed1"
-    | "confirmed2"
-    | "eliminated"
-    | "rescued"
-    | "banned"
-    | "completed";
+  | "not_started"
+  | "in_progress"
+  | "confirmed1"
+  | "confirmed2"
+  | "eliminated"
+  | "rescued"
+  | "banned"
+  | "completed";
   eliminated_at_question_order: number | null;
   rescued_at_question_order?: number | null;
 }
@@ -42,7 +42,7 @@ export default function EliminateDisplay({
   const [actionInProgress, setActionInProgress] = useState(false);
   const [fadingOutContestants, setFadingOutContestants] = useState<number[]>([]);
   const [displayMode, setDisplayMode] = useState<"eliminated" | "rescued">("eliminated");
-  
+
   console.log("Control value changed:", controlValue);
 
   useEffect(() => {
@@ -79,12 +79,12 @@ export default function EliminateDisplay({
           name: contestant?.fullname || "",
           isDisintegrated: contestant
             ? ![
-                "in_progress",
-                "not_started",
-                "confirmed1",
-                "confirmed2",
-                "rescued",
-              ].includes(contestant.status)
+              "in_progress",
+              "not_started",
+              "confirmed1",
+              "confirmed2",
+              "rescued",
+            ].includes(contestant.status)
             : true,
           isRescued: contestant?.status === "rescued",
           particles: [],
@@ -129,10 +129,10 @@ export default function EliminateDisplay({
       prev.map(c =>
         deleteList.includes(c.registration_number)
           ? {
-              ...c,
-              status: "eliminated",
-              eliminated_at_question_order: currentQuestionOrder,
-            }
+            ...c,
+            status: "eliminated",
+            eliminated_at_question_order: currentQuestionOrder,
+          }
           : c
       )
     );
@@ -150,11 +150,11 @@ export default function EliminateDisplay({
         prev.map(icon =>
           deleteList.includes(icon.registrationNumber)
             ? {
-                ...icon,
-                isDisintegrated: true,
-                isFading: false,
-                particles: createParticles(icon.registrationNumber),
-              }
+              ...icon,
+              isDisintegrated: true,
+              isFading: false,
+              particles: createParticles(icon.registrationNumber),
+            }
             : icon
         )
       );
@@ -202,10 +202,10 @@ export default function EliminateDisplay({
       prev.map(c =>
         toBeRescued.includes(c.registration_number)
           ? {
-              ...c,
-              status: "rescued",
-              rescued_at_question_order: currentQuestionOrder,
-            }
+            ...c,
+            status: "rescued",
+            rescued_at_question_order: currentQuestionOrder,
+          }
           : c
       )
     );
@@ -220,11 +220,11 @@ export default function EliminateDisplay({
         prev.map(icon =>
           toBeRescued.includes(icon.registrationNumber)
             ? {
-                ...icon,
-                isDisintegrated: false,
-                isFading: false,
-                particles: [],
-              }
+              ...icon,
+              isDisintegrated: false,
+              isFading: false,
+              particles: [],
+            }
             : icon
         )
       );
@@ -244,9 +244,9 @@ export default function EliminateDisplay({
   return (
     <AnimatePresence>
       {/* Container với chiều cao tính toán động */}
-      <div 
+      <div
         className="flex overflow-hidden"
-        style={{ 
+        style={{
           height: 'calc(100vh - 200px)', // Trừ đi chiều cao header (khoảng 200px)
           minHeight: '500px' // Đảm bảo chiều cao tối thiểu
         }}
@@ -259,13 +259,15 @@ export default function EliminateDisplay({
           className="flex flex-1 overflow-hidden"
         >
           {/* Grid Container - chiếm không gian còn lại */}
-          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-6 pb-6 pt-1">
             <EliminateGrid
+              listContestant={ListContestant}
+              maxContestantColumn={ListContestant[0]?.match?.maxContestantColumn}
               icons={icons}
               recentlyRestored={recentlyRestored}
             />
           </div>
-          
+
           {/* Sidebar với chiều cao cố định */}
           {showSidebar && (
             <div className="w-85 md:w-96 flex-shrink-0">

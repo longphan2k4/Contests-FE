@@ -187,6 +187,9 @@ export type ListContestant = {
     username: string;
   };
   contestantMatches: contestant[];
+  match: {
+    maxContestantColumn: number;
+  };
 };
 
 export type ListRescueLifelineUsed = {

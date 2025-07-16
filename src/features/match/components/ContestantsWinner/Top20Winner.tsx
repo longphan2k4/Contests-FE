@@ -3,8 +3,8 @@ import { useSocket } from '@/contexts/SocketContext';
 import axiosInstance from "@config/axiosInstance";
 
 // Giả định các file âm thanh
-// import revealSound from "../../assets/audio/loading2.mp3"; // Âm thanh khi lộ diện thí sinh
-// import celebrateSound from "../../assets/audio/20winners.mp3"; // Âm thanh chúc mừng
+import revealSound from "./audio/loading2.mp3"; // Âm thanh khi lộ diện thí sinh
+import celebrateSound from "./audio/20winners.mp3"; // Âm thanh chúc mừng
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -215,12 +215,12 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
       }`}
     >
       {/* Thêm các phần tử audio */}
-      {/* <audio ref={revealAudioRef}>
+      <audio ref={revealAudioRef}>
         <source src={revealSound} type="audio/wav" />
       </audio>
       <audio ref={celebrateAudioRef}>
         <source src={celebrateSound} type="audio/wav" />
-      </audio> */}
+      </audio>
 
       {/* Background grid pattern */}
       <div className="absolute inset-0 overflow-hidden rounded-lg">
