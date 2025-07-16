@@ -1,3 +1,4 @@
+
 // import { useEffect } from "react";
 
 // export const useParticles = (
@@ -25,6 +26,7 @@
 //           shape: {
 //             type: "circle",
 //             stroke: { width: 0, color: "#000000" },
+
 //             polygon: { nb_sides: 5 },
 //           },
 //           opacity: {
