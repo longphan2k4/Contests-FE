@@ -52,6 +52,7 @@ export const useDeleteSchool = () => {
       if (error.response?.data) {
         const errorResponse = error.response.data;
         const errorMessage = errorResponse.message || `Lỗi khi xóa trường học`;
+        console.error("Chi tiết lỗi từ server:", errorResponse);
         setError(errorMessage);
         showToast(errorMessage, "error");
       } else {
