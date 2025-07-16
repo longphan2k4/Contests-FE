@@ -60,8 +60,7 @@ export default defineConfig({
     include: ["tinymce"],
   },
   build: {
-    sourcemap: false, // Tắt sourcemap để giảm complexity
-    target: 'esnext',
+    sourcemap: true, // Enable sourcemap để debug
     rollupOptions: {
       treeshake: false, // Tắt treeshake để tránh mất CSS/components
       output: {
@@ -73,7 +72,6 @@ export default defineConfig({
         },
       },
     },
-    minify: "esbuild", // Dùng esbuild thay vì rollup để minify
-    chunkSizeWarningLimit: 1000,
+    minify: "esbuild",
   },
 });
