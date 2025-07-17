@@ -39,6 +39,15 @@ const AwardControl: React.FC<AwardControlProps> = ({
     );
   }, [ListResult]);
 
+  const ListGold = React.useMemo(() => {
+    return (
+      ListResult?.map(result => ({
+        label: `${result.label} - ${result.fullName} - ${result.value} câu`,
+        value: result.label,
+      })) ?? []
+    );
+  }, [ListResult]);
+
   const EmitScreenUpdate = (controlKey: string) => {
     if (!socket || !match) {
       showToast(`Cập nhật màn hình thất bại`, "error");
@@ -130,7 +139,7 @@ const AwardControl: React.FC<AwardControlProps> = ({
           </h6>
           <FormAutocompleteFilter
             label="Thí sinh"
-            options={ListResults}
+            options={ListGold}
             value={gold}
             onChange={val => setGold(Number(val))}
             sx={{ flex: 1, minWidth: { xs: "100%", sm: 200 } }}
