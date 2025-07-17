@@ -50,10 +50,10 @@ export default function ViewRescue({
           ? "Đã sử dụng"
           : "Đã qua",
     },
-    // {
-    //   label: "Id các thí sinh được cứu",
-    //   value: rescue?.studentIds.length > 0 ? rescue?.studentIds : "Không có",
-    // },
+    {
+      label: "Id các thí sinh được cứu",
+      value: rescue?.studentIds.length > 0 ? rescue?.studentIds : "Không có",
+    },
     {
       label: "Đáp án cứu trợ",
       value:
@@ -70,8 +70,7 @@ export default function ViewRescue({
         open={isOpen}
         onClose={onClose}
         title={`Xem cứu trợ : ${rescue?.name}`}
-        maxWidth="sm"
-      >
+        maxWidth="lg"     >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <tbody>
             {fields.map(({ label, value }) => (
