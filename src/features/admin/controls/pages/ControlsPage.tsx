@@ -61,40 +61,43 @@ const ControlsPage: React.FC = () => {
   const { socket, isConnected } = useSocket();
 
   const [isBackgroundControlOpen, setIsBackgroundControlOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>('');
+  const [activeSection, setActiveSection] = useState<string>("");
   const panelRef = useRef<HTMLDivElement>(null);
-  
+
   // Handle click outside to close panel
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(event.target as Node)
+      ) {
         setIsBackgroundControlOpen(false);
       }
     };
 
     if (isBackgroundControlOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isBackgroundControlOpen]);
 
   // Handle ESC key to close panel
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setIsBackgroundControlOpen(false);
       }
     };
 
     if (isBackgroundControlOpen) {
-      document.addEventListener('keydown', handleEscKey);
+      document.addEventListener("keydown", handleEscKey);
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscKey);
+      document.removeEventListener("keydown", handleEscKey);
     };
   }, [isBackgroundControlOpen]);
   const questionControlRef = useRef<HTMLDivElement>(null);
@@ -255,8 +258,9 @@ const ControlsPage: React.FC = () => {
   useEffect(() => {
     if (isSuccessMatch) {
       setMatchInfo(matchInfoRes.data);
-      document.title = `Điều khiển trận đấu - ${matchInfoRes?.data?.name || "Chưa có trận đấu"
-        }`;
+      document.title = `Điều khiển trận đấu - ${
+        matchInfoRes?.data?.name || "Chưa có trận đấu"
+      }`;
     }
   }, [isSuccessMatch, matchInfoRes]);
 
@@ -283,7 +287,7 @@ const ControlsPage: React.FC = () => {
 
   useEffect(() => {
     if (!socket) {
-      return () => { };
+      return () => {};
     }
 
     const handleScreenUpdate = (data: { updatedScreen: SceenControl }) => {
@@ -344,11 +348,16 @@ const ControlsPage: React.FC = () => {
     };
 
     const handstatistics = (data: any) => {
+      console.log("Statistics data:", data);
       setScreenControl(data?.updatedScreen);
     };
 
     const handleUpdateAward = (data: any) => {
       setListAward(data);
+    };
+
+    const handListResult = (data: any) => {
+      setListResult(data?.data);
     };
 
     socket.on("screen:update", handleScreenUpdate);
@@ -364,6 +373,7 @@ const ControlsPage: React.FC = () => {
     socket.on("rescue:updateStatus", handleUpdateRescued);
     socket.on("statistics:update", handstatistics);
     socket.on("update:award", handleUpdateAward);
+    socket.on("listResult", handListResult);
 
     return () => {
       socket.off("screen:update", handleScreenUpdate);
@@ -378,6 +388,7 @@ const ControlsPage: React.FC = () => {
       socket.off("showQrChart", handleShowQrChart);
       socket.off("rescue:updateStatus", handleUpdateRescued);
       socket.off("update:award", handleUpdateAward);
+      socket.off("listResult", handListResult);
       // socket.off("update:Rescued", handleUpdateRescued);
     };
   }, [socket]);
@@ -413,21 +424,51 @@ const ControlsPage: React.FC = () => {
 
   // Navigation sections data
   const navigationSections = [
-    { id: 'question-control', name: 'Điều khiển câu hỏi', ref: questionControlRef, icon: '❓' },
-    { id: 'online-exam', name: 'Thi online', ref: onlineExamControlRef, icon: '💻' },
-    { id: 'supplier-video', name: 'Video nhà tài trợ', ref: supplierVideoRef, icon: '🎬' },
-    { id: 'video-control', name: 'Điều khiển video', ref: videoControlRef, icon: '📹' },
-    { id: 'contestants', name: 'Thí sinh', ref: contestantsControlRef, icon: '👥' },
-    { id: 'rescue', name: 'Cứu trợ', ref: rescueControlRef, icon: '🆘' },
-    { id: 'audience-rescue', name: 'Cứu trợ khán giả', ref: audienceRescueControlRef, icon: '🙋' },
-    { id: 'award', name: 'Giải thưởng', ref: awardControlRef, icon: '🏆' },
-    { id: 'chart', name: 'Biểu đồ', ref: chartControlRef, icon: '📊' },
+    {
+      id: "question-control",
+      name: "Điều khiển câu hỏi",
+      ref: questionControlRef,
+      icon: "❓",
+    },
+    {
+      id: "online-exam",
+      name: "Thi online",
+      ref: onlineExamControlRef,
+      icon: "💻",
+    },
+    {
+      id: "supplier-video",
+      name: "Video nhà tài trợ",
+      ref: supplierVideoRef,
+      icon: "🎬",
+    },
+    {
+      id: "video-control",
+      name: "Điều khiển video",
+      ref: videoControlRef,
+      icon: "📹",
+    },
+    {
+      id: "contestants",
+      name: "Thí sinh",
+      ref: contestantsControlRef,
+      icon: "👥",
+    },
+    { id: "rescue", name: "Cứu trợ", ref: rescueControlRef, icon: "🆘" },
+    {
+      id: "audience-rescue",
+      name: "Cứu trợ khán giả",
+      ref: audienceRescueControlRef,
+      icon: "🙋",
+    },
+    { id: "award", name: "Giải thưởng", ref: awardControlRef, icon: "🏆" },
+    { id: "chart", name: "Biểu đồ", ref: chartControlRef, icon: "📊" },
   ] as const;
 
   // Scroll to section function
   const scrollToSection = (ref: React.RefObject<HTMLDivElement | null>) => {
     if (ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -435,28 +476,28 @@ const ControlsPage: React.FC = () => {
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
     const sections = [
-      { id: 'question-control', ref: questionControlRef },
-      { id: 'online-exam', ref: onlineExamControlRef },
-      { id: 'supplier-video', ref: supplierVideoRef },
-      { id: 'video-control', ref: videoControlRef },
-      { id: 'contestants', ref: contestantsControlRef },
-      { id: 'rescue', ref: rescueControlRef },
-      { id: 'audience-rescue', ref: audienceRescueControlRef },
-      { id: 'award', ref: awardControlRef },
-      { id: 'chart', ref: chartControlRef },
+      { id: "question-control", ref: questionControlRef },
+      { id: "online-exam", ref: onlineExamControlRef },
+      { id: "supplier-video", ref: supplierVideoRef },
+      { id: "video-control", ref: videoControlRef },
+      { id: "contestants", ref: contestantsControlRef },
+      { id: "rescue", ref: rescueControlRef },
+      { id: "audience-rescue", ref: audienceRescueControlRef },
+      { id: "award", ref: awardControlRef },
+      { id: "chart", ref: chartControlRef },
     ];
-    
+
     sections.forEach(section => {
       if (section.ref.current) {
         const observer = new IntersectionObserver(
-          (entries) => {
+          entries => {
             entries.forEach(entry => {
               if (entry.isIntersecting) {
                 setActiveSection(section.id);
               }
             });
           },
-          { threshold: 0.3, rootMargin: '-100px 0px -50% 0px' }
+          { threshold: 0.3, rootMargin: "-100px 0px -50% 0px" }
         );
         observer.observe(section.ref.current);
         observers.push(observer);
@@ -562,18 +603,28 @@ const ControlsPage: React.FC = () => {
           </button>
 
           {/* Sliding Panel */}
-          <div 
+          <div
             ref={panelRef}
             className={`fixed top-0 right-0 h-full w-70 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
-              isBackgroundControlOpen ? 'translate-x-0' : 'translate-x-full'
+              isBackgroundControlOpen ? "translate-x-0" : "translate-x-full"
             }`}
           >
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
                 <div className="flex items-center gap-3">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
                   </svg>
                   <h3 className="font-semibold text-lg">Điều khiển nhanh</h3>
                 </div>
@@ -581,8 +632,18 @@ const ControlsPage: React.FC = () => {
                   onClick={() => setIsBackgroundControlOpen(false)}
                   className="text-white hover:text-gray-200 p-2 hover:bg-blue-700 rounded-lg transition-colors duration-200"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
@@ -591,9 +652,8 @@ const ControlsPage: React.FC = () => {
               <div className="flex-1 overflow-y-auto">
                 <div className="p-6">
                   <div className="mb-6">
-                   
                     <div className="space-y-2">
-                      {navigationSections.map((section) => (
+                      {navigationSections.map(section => (
                         <button
                           key={section.id}
                           onClick={() => {
@@ -602,12 +662,14 @@ const ControlsPage: React.FC = () => {
                           }}
                           className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center gap-3 ${
                             activeSection === section.id
-                              ? 'bg-blue-50 border border-blue-200 text-blue-700 shadow-sm'
-                              : 'hover:bg-gray-50 text-gray-600 hover:text-gray-800'
+                              ? "bg-blue-50 border border-blue-200 text-blue-700 shadow-sm"
+                              : "hover:bg-gray-50 text-gray-600 hover:text-gray-800"
                           }`}
                         >
                           <span className="text-xl">{section.icon}</span>
-                          <span className="font-medium flex-1">{section.name}</span>
+                          <span className="font-medium flex-1">
+                            {section.name}
+                          </span>
                           {activeSection === section.id && (
                             <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                           )}
@@ -628,7 +690,10 @@ const ControlsPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <div ref={questionControlRef} className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+            <div
+              ref={questionControlRef}
+              className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100"
+            >
               <QuestionControl
                 remainingTime={matchInfo?.remainingTime}
                 controlKey={screenControl?.controlKey}
@@ -647,7 +712,10 @@ const ControlsPage: React.FC = () => {
               </div>
             </div>
           </div>
-          <div ref={onlineExamControlRef} className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+          <div
+            ref={onlineExamControlRef}
+            className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100"
+          >
             <OnlineExamControl
               currentQuestionData={(() => {
                 const transformed =
@@ -664,20 +732,29 @@ const ControlsPage: React.FC = () => {
               isTimerPaused={false}
             />
           </div>
-          <div ref={supplierVideoRef} className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+          <div
+            ref={supplierVideoRef}
+            className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100"
+          >
             <SupplierVideo
               currentQuestion={currentQuestion}
               controlKey={screenControl?.controlKey}
             />
           </div>
-          <div ref={videoControlRef} className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+          <div
+            ref={videoControlRef}
+            className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100"
+          >
             <VideoControl
               sponsorMedia={sponsorMedia}
               classVideo={classVideo}
               controlKey={screenControl?.controlKey}
             />
           </div>
-          <div ref={contestantsControlRef} className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+          <div
+            ref={contestantsControlRef}
+            className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100"
+          >
             <ContestantsControl
               ListContestant={listContestant}
               questionOrder={currentQuestion?.questionOrder || 0}
@@ -693,7 +770,10 @@ const ControlsPage: React.FC = () => {
             />
           </div>
 
-          <div ref={audienceRescueControlRef} className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+          <div
+            ref={audienceRescueControlRef}
+            className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100"
+          >
             <AudienceRescueControl
               currentQuestionOrder={currentQuestion?.questionOrder}
               totalQuestions={listQuestion.length}
@@ -702,14 +782,20 @@ const ControlsPage: React.FC = () => {
               matchId={matchInfo?.id || null}
             />
           </div>
-          <div ref={awardControlRef} className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+          <div
+            ref={awardControlRef}
+            className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100"
+          >
             <AwardControl
               ListAward={listAward || null}
               MatchInfo={matchInfo || null}
               ListResult={listResult || null}
             />
           </div>
-          <div ref={chartControlRef} className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+          <div
+            ref={chartControlRef}
+            className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100"
+          >
             <ChartControl />
           </div>
 

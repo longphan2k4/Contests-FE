@@ -89,6 +89,7 @@ const JudgeHomePage: React.FC = () => {
     };
 
     const handleContestantUpdate = (data: any) => {
+      console.log("Contestant update data:", data);
       if (data.data) {
         setContestants(data.data);
       }

@@ -125,7 +125,7 @@ const AwardControl: React.FC<AwardControlProps> = ({
         {/* Gold */}
         <div className="flex flex-col bg-white rounded-xl shadow-md border border-gray-100 p-4">
           <h2 className="text-xl font-bold mb-4 text-center">Giải Gold</h2>
-          <h6 className=" font-bold    mb-4 text-center">
+          <h6 className="font-bold mb-4 text-center">
             {MatchInfo?.studentName ?? "Không có thí sinh"}
           </h6>
           <FormAutocompleteFilter
@@ -160,10 +160,8 @@ const AwardControl: React.FC<AwardControlProps> = ({
         {/* Silver */}
         {ListAward?.firstPrize && ListAward && (
           <div className="flex flex-col bg-white rounded-xl shadow-md border border-gray-100 p-4">
-            <h2 className="text-xl font-bold text-gray-500 mb-4 text-center">
-              Giải Nhất
-            </h2>
-            <h6 className="font-bold text-gray-500 mb-4 text-center">
+            <h2 className="text-xl font-bold mb-4 text-center">Giải Nhất</h2>
+            <h6 className="font-bold mb-4 text-center">
               {ListAward?.firstPrize?.contestantId !== null
                 ? `${ListAward?.firstPrize.registrationNumber} -
                 ${ListAward?.firstPrize?.fullName || ""}`
@@ -204,10 +202,8 @@ const AwardControl: React.FC<AwardControlProps> = ({
         )}
         {ListAward?.secondPrize && ListAward && (
           <div className="flex flex-col bg-white rounded-xl shadow-md border border-gray-100 p-4">
-            <h2 className="text-xl font-bold text-gray-500 mb-4 text-center">
-              Giải Nhì
-            </h2>
-            <h6 className="font-bold text-gray-500 mb-4 text-center">
+            <h2 className="font-bold mb-4 text-center">Giải Nhì</h2>
+            <h6 className="font-bold  mb-4 text-center">
               {ListAward?.secondPrize?.contestantId !== null
                 ? `${ListAward?.secondPrize.registrationNumber} -
                 ${ListAward?.secondPrize?.fullName || ""}`
@@ -248,10 +244,8 @@ const AwardControl: React.FC<AwardControlProps> = ({
         )}
         {ListAward?.thirdPrize && ListAward && (
           <div className="flex flex-col bg-white rounded-xl shadow-md border border-gray-100 p-4">
-            <h2 className="text-xl font-bold text-gray-500 mb-4 text-center">
-              Giải Ba
-            </h2>
-            <h6 className="font-bold text-gray-500 mb-4 text-center">
+            <h2 className="text-xl font-bold  mb-4 text-center">Giải Ba</h2>
+            <h6 className="font-bold mb-4 text-center">
               {ListAward?.thirdPrize?.contestantId !== null
                 ? `${ListAward?.thirdPrize.registrationNumber} -
                 ${ListAward?.thirdPrize?.fullName || ""}`
