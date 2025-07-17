@@ -27,7 +27,7 @@ const ChangeAccountInfoForm: React.FC<ChangeAccountInfoFormProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<ChangeAccountInfoData>(initialData);
-  const [usernameError, setUsernameError] = useState("");
+  const [_usernameError, setUsernameError] = useState("");
   const [emailError, setEmailError] = useState("");
 
   // Reset form khi initialData thay đổi
