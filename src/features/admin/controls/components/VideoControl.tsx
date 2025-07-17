@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { type MediaType, type UpdateSceenControl } from "../type/control.type";
 import { useParams } from "react-router-dom";
 import { useSocket } from "@contexts/SocketContext";
@@ -17,6 +17,25 @@ const VideoControl: React.FC<VideoControlProps> = ({
   const [activeTab, setActiveTab] = React.useState<"sponsor" | "classVideo">(
     "sponsor"
   );
+  const [control, setControl] = React.useState<
+    "start" | "pause" | "reset" | null
+  >(null);
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (control === "start") {
+      video.play().catch(() => {});
+    } else if (control === "pause") {
+      video.pause();
+    } else if (control === "reset") {
+      video.currentTime = 0;
+      video.play().catch(() => {});
+    }
+  }, [control]);
 
   const { match } = useParams();
   const { socket } = useSocket();
@@ -54,6 +73,7 @@ const VideoControl: React.FC<VideoControlProps> = ({
         showToast(err.message, "error");
       } else {
         showToast(msg, "success");
+        setControl(control);
       }
     });
   };
@@ -144,7 +164,7 @@ const VideoControl: React.FC<VideoControlProps> = ({
               {select ? (
                 <video
                   src={select}
-                  controls
+                  ref={videoRef}
                   className="w-full max-h-[250px] object-contain rounded-lg"
                 ></video>
               ) : (

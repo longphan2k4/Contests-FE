@@ -39,3 +39,11 @@ export const DeleteUser = async (id: number) => {
   const res = await axiosInstance.delete(`/user/${id}`);
   return res.data;
 };
+
+export const ImportExcel = async (file: any) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await axiosInstance.post("/user/import/excel", formData);
+  return res.data;
+};

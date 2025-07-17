@@ -77,7 +77,7 @@ const ContestantCard: React.FC<ContestantCardProps> = ({
                   : "Hạng Ba"}
               </h3>
               <h4 className="text-lg md:text-xl font-bold mb-1 text-white drop-shadow-md">
-                {fullName || "Chưa có thí sinh"}
+                {fullName || ""}
               </h4>
               {/* <div
                 className={`px-4 py-1 md:px-6 md:py-2 rounded-full font-bold text-base md:text-lg ${styles.badge} shadow-md`}

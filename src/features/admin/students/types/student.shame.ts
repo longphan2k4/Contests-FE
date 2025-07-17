@@ -78,6 +78,12 @@ export const UpdateStudentSchema = z.object({
     .optional(),
 });
 
+export const ImportExcelSchema = z.object({
+  file: z.instanceof(FileList).refine(files => files.length > 0, {
+    message: "Vui lòng chọn một file Excel",
+  }),
+});
+
 export type StudentQuery = {
   page?: number; // trang hiện tại, mặc định 1
   limit?: number; // số item trên 1 trang, mặc định 10
@@ -117,3 +123,4 @@ export type CreateStudentInput = z.infer<typeof CreateStudentSchema>;
 export type UpdateStudentInput = z.infer<typeof UpdateStudentSchema>;
 export type StudentIdParam = z.infer<typeof StudentIdShema>;
 export type deleteStudentsType = z.infer<typeof deleteStudentsSchema>;
+export type ImportExcelInput = z.infer<typeof ImportExcelSchema>;

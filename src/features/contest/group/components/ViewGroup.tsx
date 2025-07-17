@@ -34,7 +34,7 @@ export default function ViewClass({
     { label: "ID", value: group?.id },
     { label: "Tên nhóm", value: group?.name },
     { label: "Trận đấu", value: group?.match.name },
-    { label: "Trọng tài", value: group?.user.username },
+    { label: "Trọng tài", value: group?.user?.username },
   ];
   return (
     <Box>

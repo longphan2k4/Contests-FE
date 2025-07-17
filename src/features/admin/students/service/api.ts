@@ -56,3 +56,10 @@ export const getListStudentCurrent = async (userId: string | null) => {
   const res = await axiosInstance.get(`/user/get-student/${userId}`);
   return res.data;
 };
+
+export const ImportExcel = async (file: any) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await axiosInstance.post("/student/import/excel", formData);
+  return res.data;
+};

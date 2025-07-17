@@ -82,9 +82,9 @@ export default function EditClass({
   useEffect(() => {
     if (isOpen && groupData) {
       reset({
-        name: groupData.name,
-        userId: groupData.userId,
-        matchId: groupData.matchId,
+        name: groupData?.name,
+        userId: groupData?.userId,
+        matchId: groupData?.matchId,
       });
     }
   }, [isOpen, groupData, reset]);
