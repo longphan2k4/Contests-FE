@@ -90,8 +90,15 @@ export const deleteUsersSchema = z.object({
     .min(1, "Phải chọn ít nhất 1 ID để xoá"),
 });
 
+export const ImportExcelSchema = z.object({
+  file: z.instanceof(FileList).refine(files => files.length > 0, {
+    message: "Vui lòng chọn một file Excel",
+  }),
+});
+
 export type User = z.infer<typeof UserShema>;
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
 export type UserIdParam = z.infer<typeof UserIdShema>;
 export type deleteUsersType = z.infer<typeof deleteUsersSchema>;
+export type ImportExcelInput = z.infer<typeof ImportExcelSchema>;

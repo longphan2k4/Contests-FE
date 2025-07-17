@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect } from "react";
-import { Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,9 +45,24 @@ export default function CreateMatch({
 
   const { slug } = useParams();
 
-  const { data: listStatus } = useStatus();
-  const { data: listRound } = useListRound(slug ?? null);
-  const { data: listQuestionPackage } = useListQuestionPackage();
+  const {
+    data: listStatus,
+    refetch: refetchStatus,
+    isError: isStatusError,
+    isLoading: isStatusLoading,
+  } = useStatus();
+  const {
+    data: listRound,
+    refetch: refetchRound,
+    isError: isRoundError,
+    isLoading: isRoundLoading,
+  } = useListRound(slug ?? null);
+  const {
+    data: listQuestionPackage,
+    refetch: refetchQuestionPackage,
+    isError: isQuestionPackageError,
+    isLoading: isQuestionPackageLoading,
+  } = useListQuestionPackage();
 
   const roundOptions = useMemo(() => {
     if (listRound?.success) {
@@ -69,6 +84,14 @@ export default function CreateMatch({
     return [];
   }, [listQuestionPackage]);
 
+  useEffect(() => {
+    if (isOpen) {
+      refetchRound();
+      refetchQuestionPackage();
+      refetchStatus();
+    }
+  }, [isOpen]);
+
   const statusOptions = useMemo(() => {
     if (listStatus?.success && Array.isArray(listStatus.data.options)) {
       return listStatus.data.options.map((item: any) => ({
@@ -88,6 +111,17 @@ export default function CreateMatch({
   useEffect(() => {
     if (!isOpen) reset(); // Reset lại khi đóng form
   }, [isOpen, reset]);
+
+  if (isStatusLoading || isRoundLoading || isQuestionPackageLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  if (isStatusError || isRoundError || isQuestionPackageError) {
+    return <div>Không thể tải dữ liệu</div>;
+  }
   return (
     <AppFormDialog
       open={isOpen}
@@ -115,8 +149,8 @@ export default function CreateMatch({
 
         <FormInput
           id="currentQuestion"
-          label="Xác nhận ở câu"
-          placeholder="Nhập số câu hiện tại"
+          label="Câu hỏi hiện tại"
+          placeholder="Nhập câu hỏi hiện tại"
           error={errors.currentQuestion}
           register={register("currentQuestion")}
           type="number"

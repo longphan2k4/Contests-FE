@@ -33,9 +33,6 @@ const FullScreenVideo: FC<FullScreenVideoProps> = ({
         ref={videoRef}
         src={videoUrl}
         className="w-full h-full object-cover"
-        muted
-        controls={false}
-        autoPlay={false}
       />
     </div>
   );

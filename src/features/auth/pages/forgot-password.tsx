@@ -96,7 +96,10 @@ const ForgotPasswordPage = () => {
         onError: error => {
           const errWithResponse = error as Error & { response?: any };
           const apiMessage = errWithResponse?.response?.data?.message;
-          showToast(apiMessage || error.message || "Xác thực OTP thất bại!");
+          showToast(
+            apiMessage || error.message || "Xác thực OTP thất bại!",
+            "error"
+          );
         },
       }
     );

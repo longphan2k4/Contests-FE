@@ -23,6 +23,7 @@ import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDeleteMany from "../../../../components/Confirm";
 import ConfirmDelete from "../../../../components/Confirm";
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
+import ImportExcelDialog from "../components/ImportExcel";
 import { useClasses } from "../hook/useGetClass";
 import { useStudents } from "../hook/useStudents";
 import { useCreateStudent } from "../hook/useCreate";
@@ -30,6 +31,7 @@ import { useUpdate } from "../hook/useUpdate";
 import { useActive } from "../hook/useActive";
 import { useDeleteMany } from "../hook/useDeleteMany";
 import { useDelete } from "../hook/useDelete";
+import { useExportExcel } from "@/hooks/useExportExcel";
 import AddIcon from "@mui/icons-material/Add";
 import {
   type Student,
@@ -51,7 +53,7 @@ const StudentsPage: React.FC = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isConfirmDeleteMany, setIsConfirmDeleteMany] = useState(false);
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
-
+  const [isImportExcelOpen, setIsImportExcelOpen] = useState(false);
   const [filter, setFilter] = useState<StudentQuery>({});
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
   const [listClass, setListClass] = useState<{ id: number; name: string }[]>(
@@ -76,6 +78,8 @@ const StudentsPage: React.FC = () => {
   const { mutate: mutateDeleteMany } = useDeleteMany();
 
   const { mutate: mutateDelete } = useDelete();
+
+  const { mutate: exportExcel } = useExportExcel();
   const {
     data: classData,
     isLoading: isClassLoading,
@@ -204,6 +208,31 @@ const StudentsPage: React.FC = () => {
     setIsConfirmDeleteMany(true);
   };
 
+  const handleExportExcel = () => {
+    const data: any = students.map(student => ({
+      id: student.id,
+      fullName: student.fullName,
+      studentCode: student.studentCode,
+      isActive: student.isActive,
+      className: student.className,
+    }));
+
+    exportExcel(
+      {
+        data: data,
+        fileName: "Student.xlsx",
+      },
+      {
+        onSuccess: () => {
+          showToast(`Xuất Excel thành công`, "success");
+        },
+        onError: (err: any) => {
+          showToast(err.response?.data?.message, "error");
+        },
+      }
+    );
+  };
+
   if (isStudentsLoading || isClassLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
@@ -229,16 +258,35 @@ const StudentsPage: React.FC = () => {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h5">Quản lý Sinh viên</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={openCreate}
-        >
-          Thêm Sinh viên
-        </Button>
-      </Box>
+        <Typography variant="h5">Quản lý sinh viên</Typography>
 
+        {/* Buttons */}
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
+          >
+            Thêm sinh viên
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<AddIcon />}
+            onClick={handleExportExcel}
+          >
+            Xuất Excel
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<AddIcon />}
+            onClick={() => setIsImportExcelOpen(true)}
+          >
+            Nhập từ Excel
+          </Button>
+        </Box>
+      </Box>
       {/* Student list card */}
       <Box
         sx={{
@@ -480,6 +528,14 @@ const StudentsPage: React.FC = () => {
         title="Xác nhận sinh viên dùng "
         description={`Bạn có chắc chắn xóa sinh viên này không`}
         onConfirm={() => handleDelete(selectedStudentId)}
+      />
+
+      <ImportExcelDialog
+        isOpen={isImportExcelOpen}
+        onClose={() => {
+          setIsImportExcelOpen(false);
+          refetchStudents();
+        }}
       />
     </Box>
   );

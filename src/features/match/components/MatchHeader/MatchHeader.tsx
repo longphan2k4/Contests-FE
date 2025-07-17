@@ -61,7 +61,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
         endAudio.play().catch(console.error);
         setHasPlayedEndSound(true);
       }
-    } else if (timeRemaining > 0) {
+    } else if (timeRemaining > 0 && timeRemaining <= 10) {
       // Play pip sound every second
       const pipAudio = new Audio(pip);
       pipAudio.play().catch(console.error);
