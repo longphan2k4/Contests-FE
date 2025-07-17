@@ -50,10 +50,10 @@ export default function ViewRescue({
           ? "Đã sử dụng"
           : "Đã qua",
     },
-    {
-      label: "Id các thí sinh được cứu",
-      value: rescue?.studentIds.length > 0 ? rescue?.studentIds : "Không có",
-    },
+    // {
+    //   label: "Id các thí sinh được cứu",
+    //   value: rescue?.studentIds.length > 0 ? rescue?.studentIds : "Không có",
+    // },
     {
       label: "Đáp án cứu trợ",
       value:

@@ -6,10 +6,10 @@ import {
   CircularProgress,
   Alert,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  // FormControl,
+  // InputLabel,
+  // Select,
+  // MenuItem,
   Stack,
   InputAdornment,
   FormControlLabel,
@@ -1690,6 +1690,55 @@ const ContestantMatchPage: React.FC = () => {
           >
             Bộ lọc nâng cao
           </Button>
+
+          {/* Số lượng hiển thị */}
+          <Autocomplete
+            freeSolo
+            options={[5, 10, 25, 50, 100, 200, 500]}
+            value={filter.limit || 10}
+            onChange={(_, newValue) => {
+              const limit = typeof newValue === 'string' ? Number(newValue) : newValue;
+              if (limit && limit > 0) {
+                setFilter(prev => ({
+                  ...prev,
+                  limit: limit,
+                  page: 1, // Reset về trang 1 khi thay đổi limit
+                }));
+              }
+            }}
+            onInputChange={(_, newInputValue) => {
+              const limit = Number(newInputValue);
+              if (limit && limit > 0) {
+                setFilter(prev => ({
+                  ...prev,
+                  limit: limit,
+                  page: 1, // Reset về trang 1 khi thay đổi limit
+                }));
+              }
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Hiển thị"
+                size="small"
+                type="number"
+                inputProps={{
+                  ...params.inputProps,
+                  min: 1,
+                  max: 1000,
+                }}
+                sx={{ minWidth: 100 }}
+              />
+            )}
+            renderOption={(props, option) => (
+              <Box component="li" {...props}>
+                {option}
+              </Box>
+            )}
+            getOptionLabel={(option) => String(option)}
+            isOptionEqualToValue={(option, value) => option === value}
+            sx={{ minWidth: 100, alignSelf: "center" }}
+          />
           {isFilterOpen && (
             <Box
               sx={{
@@ -1913,33 +1962,57 @@ const ContestantMatchPage: React.FC = () => {
             sx={{
               mt: 2,
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "end",
               alignItems: "center",
             }}
           >
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
-              <InputLabel id="page-size-select-label">Hiển thị</InputLabel>
-              <Select
-                labelId="page-size-select-label"
-                value={String(filter.limit || 10)}
-                onChange={e => {
+            {/* <Autocomplete
+              freeSolo
+              options={[5, 10, 25, 50, 100, 200, 500]}
+              value={filter.limit || 10}
+              onChange={(_, newValue) => {
+                const limit = typeof newValue === 'string' ? Number(newValue) : newValue;
+                if (limit && limit > 0) {
                   setFilter(prev => ({
                     ...prev,
-                    limit: Number(e.target.value),
+                    limit: limit,
                     page: 1, // Reset về trang 1 khi thay đổi limit
                   }));
-                }}
-                label="Hiển thị"
-              >
-                <MenuItem value={5}>5</MenuItem>
-                <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={25}>25</MenuItem>
-                <MenuItem value={50}>50</MenuItem>
-                <MenuItem value={100}>100</MenuItem>
-                <MenuItem value={200}>200</MenuItem>
-                <MenuItem value={500}>500</MenuItem>
-              </Select>
-            </FormControl>
+                }
+              }}
+              onInputChange={(_, newInputValue) => {
+                const limit = Number(newInputValue);
+                if (limit && limit > 0) {
+                  setFilter(prev => ({
+                    ...prev,
+                    limit: limit,
+                    page: 1, // Reset về trang 1 khi thay đổi limit
+                  }));
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Hiển thị"
+                  size="small"
+                  type="number"
+                  inputProps={{
+                    ...params.inputProps,
+                    min: 1,
+                    max: 1000,
+                  }}
+                  sx={{ minWidth: 100 }}
+                />
+              )}
+              renderOption={(props, option) => (
+                <Box component="li" {...props}>
+                  {option}
+                </Box>
+              )}
+              getOptionLabel={(option) => String(option)}
+              isOptionEqualToValue={(option, value) => option === value}
+              sx={{ minWidth: 100 }}
+            /> */}
             <Typography>
               Trang {filter.page || 1} / {pagination.totalPages}
             </Typography>
