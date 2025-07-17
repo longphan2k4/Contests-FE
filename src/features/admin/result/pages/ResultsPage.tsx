@@ -3,6 +3,7 @@ import {
   Container,
   Typography,
   Box,
+  Button,
   CircularProgress,
   FormControl,
   InputLabel,
@@ -27,6 +28,8 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import PeopleIcon from "@mui/icons-material/People";
 import QuizIcon from "@mui/icons-material/Quiz";
+import { useExportExcel } from "@/hooks/useExportExcel";
+import { useToast } from "@/contexts/toastContext";
 
 const ResultsPage: React.FC = () => {
   const theme = useTheme();
@@ -49,6 +52,71 @@ const ResultsPage: React.FC = () => {
     totalPages,
     totalResults,
   } = useResults({ contestSlug: slug });
+
+  const { mutate: exportExcel } = useExportExcel();
+  const { showToast } = useToast();
+
+  const handleExportExcel = () => {
+    // Tạo danh sách thí sinh từ results với thông tin chi tiết
+    const studentMap = new Map();
+
+    results.forEach(result => {
+      const studentName = result.contestant.student.fullName;
+      const studentCode = result.contestant.student.studentCode;
+
+      if (!studentMap.has(studentName)) {
+        studentMap.set(studentName, {
+          studentName,
+          studentCode,
+          correct: 0,
+          total: 0,
+          matches: 0
+        });
+      }
+
+      const student = studentMap.get(studentName);
+      student.total += 1;
+      student.matches += 1;
+      if (result.isCorrect) {
+        student.correct += 1;
+      }
+    });
+
+    // Chuyển đổi Map thành array và sắp xếp theo số câu đúng
+    const allStudents = Array.from(studentMap.values())
+      .sort((a, b) => {
+        // Sắp xếp theo số câu đúng giảm dần, nếu bằng nhau thì theo tỷ lệ chính xác
+        if (b.correct !== a.correct) {
+          return b.correct - a.correct;
+        }
+        return (b.correct / b.total) - (a.correct / a.total);
+      });
+
+    const data = allStudents.map((student, index) => ({
+      "Hạng": index + 1,
+      "Thí sinh": student.studentName || "N/A",
+      "Mã SV": student.studentCode || "N/A",
+      "Số câu đúng": student.correct,
+      "Tổng câu": student.total,
+      "Tỉ lệ chính xác": student.total > 0 ? `${((student.correct / student.total) * 100).toFixed(1)}%` : "0%",
+      "Số trận": student.matches,
+    }));
+
+    exportExcel(
+      {
+        data: data,
+        fileName: "results.xlsx",
+      },
+      {
+        onSuccess: () => {
+          showToast(`Xuất Excel thành công - ${data.length} thí sinh`, "success");
+        },
+        onError: (err: any) => {
+          showToast(err.response?.data?.message, "error");
+        },
+      }
+    );
+  };
 
   const summary = getResultSummary;
 
@@ -85,14 +153,25 @@ const ResultsPage: React.FC = () => {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{ display: "flex", alignItems: "center", gap: 2 }}
-        >
-          <AssessmentIcon sx={{ color: "primary.main", fontSize: 40 }} />
-          Kết quả cuộc thi
-        </Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Typography
+            variant="h4"
+            sx={{ display: "flex", alignItems: "center", gap: 2 }}
+          >
+            <AssessmentIcon sx={{ color: "primary.main", fontSize: 40 }} />
+            Kết quả cuộc thi
+          </Typography>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleExportExcel}
+              disabled={!summary.topStudents.length}
+            >
+              Xuất Excel
+            </Button>
+          </Box>
+        </Box>
         <Typography variant="body1" color="text.secondary">
           Xem và phân tích kết quả chi tiết của các cuộc thi
         </Typography>
@@ -309,3 +388,4 @@ const ResultsPage: React.FC = () => {
 };
 
 export default ResultsPage;
+

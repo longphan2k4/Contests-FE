@@ -17,7 +17,10 @@ import CreateSchoolDialog from "../components/CreateSchoolDialog";
 import SchoolDetailPopup from "../components/SchoolDetailPopup";
 import EditSchoolDialog from "../components/EditSchoolDialog";
 import { useToast } from "@contexts/toastContext";
+import { useExportExcel } from "@/hooks/useExportExcel";
 const SchoolsPage: React.FC = () => {
+  const { mutate: exportExcel } = useExportExcel();
+
   const { schools, loading, filter, updateFilter, pagination, refresh } =
     useSchools();
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
@@ -38,6 +41,31 @@ const SchoolsPage: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const { mutate: deleteSchool } = useDeleteSchool();
+
+  const handleExportExcel = () => {
+    const data = schools.map(school => ({
+      id: school.id,
+      "Tên trường": school.name,
+      "Địa chỉ": school.address,
+      "Số điện thoại": school.phone,
+    }));
+
+    exportExcel(
+      {
+        data: data,
+        fileName: "schools.xlsx",
+      },
+      {
+        onSuccess: () => {
+          showToast(`Xuất Excel thành công`, "success");
+        },
+        onError: (err: any) => {
+          showToast(err.response?.data?.message, "error");
+        },
+      }
+    );
+  };
+
 
   const handleFilterChange = (newFilter: SchoolFilter) => {
     updateFilter(newFilter);
@@ -119,14 +147,24 @@ const SchoolsPage: React.FC = () => {
           >
             Quản lý trường học
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleOpenCreateDialog}
-            fullWidth={isMobile}
-          >
-            Thêm trường học
-          </Button>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleOpenCreateDialog}
+              fullWidth={isMobile}
+            >
+              Thêm trường học
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<AddIcon />}
+              onClick={handleExportExcel}
+            >
+              Xuất Excel
+            </Button>
+          </Box>
         </Box>
 
         <Paper
