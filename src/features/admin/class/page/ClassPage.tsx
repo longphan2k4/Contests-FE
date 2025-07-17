@@ -31,6 +31,7 @@ import { useActive } from "../hook/useActive";
 import { useDeleteMany } from "../hook/useDeleteMany";
 import { useDelete } from "../hook/useDelete";
 import AddIcon from "@mui/icons-material/Add";
+import { useExportExcel } from "@/hooks/useExportExcel";
 
 import {
   type Classes,
@@ -84,6 +85,8 @@ const ClassesPage: React.FC = () => {
 
   const { mutate: mutateDelete } = useDelete();
   const { mutate: mutateDeleteMany } = useDeleteMany();
+
+  const { mutate: exportExcel } = useExportExcel();
 
   useEffect(() => {
     refetchClasss();
@@ -201,6 +204,30 @@ const ClassesPage: React.FC = () => {
     [handleDelete]
   );
 
+  const handleExportExcel = () => {
+    const data = Classes.map(_class => ({
+      id: _class.id,
+      "Tên trường": _class.shoolName,
+      "Tên lớp": _class.name,
+    }));
+
+    exportExcel(
+      {
+        data: data,
+        fileName: "Classes.xlsx",
+      },
+      {
+        onSuccess: () => {
+          showToast(`Xuất Excel thành công`, "success");
+        },
+        onError: (err: any) => {
+          showToast(err.response?.data?.message, "error");
+        },
+      }
+    );
+  };
+
+
   useEffect(() => {
     document.title = "Quản lý lớp học";
   }, []);
@@ -229,13 +256,23 @@ const ClassesPage: React.FC = () => {
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Typography variant="h5">Quản lý lớp học</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={openCreate}
-        >
-          Thêm lớp học
-        </Button>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
+          >
+            Thêm lớp học
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<AddIcon />}
+            onClick={handleExportExcel}
+          >
+            Xuất Excel
+          </Button>
+        </Box>
       </Box>
 
       {/* Class list card */}
@@ -300,8 +337,8 @@ const ClassesPage: React.FC = () => {
                 filter.isActive === undefined
                   ? "all"
                   : filter.isActive
-                  ? "active"
-                  : "inactive"
+                    ? "active"
+                    : "inactive"
               }
               onChange={val => {
                 setFilter(prev => ({
@@ -310,10 +347,10 @@ const ClassesPage: React.FC = () => {
                     val === "all"
                       ? undefined
                       : val === "active"
-                      ? true
-                      : val === "inactive"
-                      ? false
-                      : undefined, // fallback nếu Autocomplete trả undefined
+                        ? true
+                        : val === "inactive"
+                          ? false
+                          : undefined, // fallback nếu Autocomplete trả undefined
                 }));
               }}
               sx={{ flex: 1, minWidth: { xs: "100%", sm: 200 } }}
