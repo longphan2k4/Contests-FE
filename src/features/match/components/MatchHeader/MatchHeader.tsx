@@ -10,7 +10,7 @@ import close from "./images/close.png";
 import lifesaver from "./images/lifesaver.png";
 import QuestionInfo from "../../components/QuestionDisplay/QuestionInfo";
 import pip from "./sounds/pip.mp3";
-import Pum from "./sounds/pum1s.mp3";
+// import Pum from "./sounds/pum1s.mp3";
 
 import {
   type CurrentQuestion,
