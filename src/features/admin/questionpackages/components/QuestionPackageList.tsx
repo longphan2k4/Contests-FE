@@ -36,7 +36,7 @@ export default function QuestionPackageList({
       headerName: "Id",
       width: 70,
     },
-    { field: "name", headerName: "Tên tài khoản", flex: 1 },
+    { field: "name", headerName: "Tên gói câu hỏi", flex: 1 },
     {
       field: "isActive",
       headerName: "Trạng thái",

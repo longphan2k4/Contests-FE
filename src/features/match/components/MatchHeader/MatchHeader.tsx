@@ -56,12 +56,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   useEffect(() => {
     if (timeRemaining === 0) {
       // Play end sound when time runs out
-      if (!hasPlayedEndSound) {
-        const endAudio = new Audio(Pum);
-        endAudio.play().catch(console.error);
-        setHasPlayedEndSound(true);
-      }
-    } else if (timeRemaining > 0 && timeRemaining <= 10) {
+    } else if (timeRemaining >= 0 && timeRemaining <= 10) {
       // Play pip sound every second
       const pipAudio = new Audio(pip);
       pipAudio.play().catch(console.error);
