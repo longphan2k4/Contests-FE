@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   type CurrentQuestion,
   type MediaFile,
@@ -29,6 +29,23 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({
   const [videoThumbnails, setVideoThumbnails] = useState<
     Record<string, string>
   >({});
+  const [control, setControl] = useState<"start" | "pause" | "reset" | null>(
+    null
+  );
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (control === "start") {
+      video.play().catch(() => {});
+    } else if (control === "pause") {
+      video.pause();
+    } else if (control === "reset") {
+      video.currentTime = 0;
+      video.play().catch(() => {});
+    }
+  }, [control]);
 
   const getMediaArray = (
     media: MediaFile[] | string | null | undefined
@@ -104,6 +121,7 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({
         return;
       }
       showToast(msg, "success");
+      setControl(control); // Cập nhật state control để videoRef có thể nhận
     });
   };
 
@@ -376,7 +394,7 @@ const SupplierVideo: React.FC<SupplierVideoProps> = ({
         ) : isVideo ? (
           <video
             src={selectedMedia.url}
-            controls
+            ref={videoRef}
             className="w-full h-full rounded-lg object-contain"
           >
             Trình duyệt không hỗ trợ video

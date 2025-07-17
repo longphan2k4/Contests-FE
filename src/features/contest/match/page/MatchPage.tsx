@@ -35,6 +35,8 @@ import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDelete from "../../../../components/Confirm";
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 
+import { useExportExcel } from "@/hooks/useExportExcel";
+
 import {
   useGetAll,
   useCreate,
@@ -90,9 +92,12 @@ const MatchPage: React.FC = () => {
 
   const { mutate: mutateToggleIsActive } = useToggleIsActive();
 
+  const { mutate: exportExcel } = useExportExcel();
+
   const { data: roundData } = useListRound(slug ?? null);
 
   const { data: statusData } = useStatus();
+
 
   useEffect(() => {
     if (roundData) {
@@ -116,6 +121,40 @@ const MatchPage: React.FC = () => {
 
   const openCreate = () => setIsCreateOpen(true);
   const closeCreate = () => setIsCreateOpen(false);
+
+  const handleExportExcel = () => {
+    const data = Match.map(match => ({
+      id: match.id,
+      "Tên trận đấu": match.name,
+      "Vòng đấu": match.roundName,
+      "Tên cuộc thi": match.contestName,
+      "Thời gian bắt đầu": match.startTime ? new Date(match.startTime).toLocaleString('vi-VN') : "",
+      "Thời gian kết thúc": match.endTime ? new Date(match.endTime).toLocaleString('vi-VN') : "",
+      "Trạng thái": match.status === "upcoming" ? "Sắp diễn ra" : 
+                   match.status === "ongoing" ? "Đang diễn ra" : 
+                   match.status === "finished" ? "Đã kết thúc" : match.status,
+      "Câu hỏi hiện tại": match.currentQuestion,
+      "Thời gian còn lại (phút)": match.remainingTime,
+      "Số cột hiển thị tối đa": match.maxContestantColumn,
+      "Trạng thái hoạt động": match.isActive ? "Hoạt động" : "Không hoạt động",
+      "Thí sinh Gold": match.studentFullName || "Chưa có",
+    }));
+
+    exportExcel(
+      {
+        data: data,
+        fileName: "matches.xlsx",
+      },
+      {
+        onSuccess: () => {
+          showToast(`Xuất Excel thành công`, "success");
+        },
+        onError: (err: any) => {
+          showToast(err.response?.data?.message, "error");
+        },
+      }
+    );
+  };
 
   const handeDeletes = (ids: DeleteMatchInput) => {
     mutateDeletes(ids, {
@@ -245,13 +284,24 @@ const MatchPage: React.FC = () => {
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Typography variant="h5">Quản lý trận đấu </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={openCreate}
-        >
-          Thêm trận đấu
-        </Button>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
+          >
+            Thêm trận đấu
+          </Button>
+
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<AddIcon />}
+            onClick={handleExportExcel}
+          >
+            Xuất Excel
+          </Button>
+        </Box>
       </Box>
 
       {/*  list card */}
@@ -354,8 +404,8 @@ const MatchPage: React.FC = () => {
               filter.isActive === undefined
                 ? "all"
                 : filter.isActive
-                ? "active"
-                : "inactive"
+                  ? "active"
+                  : "inactive"
             }
             onChange={val => {
               setFilter(prev => ({
@@ -364,10 +414,10 @@ const MatchPage: React.FC = () => {
                   val === "all"
                     ? undefined
                     : val === "active"
-                    ? true
-                    : val === "inactive"
-                    ? false
-                    : undefined,
+                      ? true
+                      : val === "inactive"
+                        ? false
+                        : undefined,
               }));
             }}
             sx={{ flex: 1, minWidth: 200 }}

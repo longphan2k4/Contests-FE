@@ -32,6 +32,7 @@ import ListRound from "../components/ListRound";
 import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDelete from "../../../../components/Confirm";
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
+import { useExportExcel } from "@/hooks/useExportExcel";
 
 import {
   useGetAll,
@@ -79,6 +80,8 @@ const RoundPage: React.FC = () => {
 
   const { mutate: mutateDeletes } = useDeletes();
 
+  const { mutate: exportExcel } = useExportExcel();
+
   useEffect(() => {
     if (roundData) {
       setRound(roundData.data.rounds);
@@ -106,6 +109,33 @@ const RoundPage: React.FC = () => {
       },
     });
   }, []);
+
+  const handleExportExcel = () => {
+    const data = [...round]
+      .sort((a, b) => a.index - b.index) // Sắp xếp theo thứ tự vòng đấu từ thấp đến cao
+      .map(_round => ({
+        id: _round.id,
+        "Tên vòng đấu": _round.name,
+        "Thứ tự vòng đấu": _round.index,
+        "Thời gian bắt đầu": _round.startTime,
+        "Thời gian kết thúc": _round.endTime,
+      }));
+
+    exportExcel(
+      {
+        data: data,
+        fileName: "rounds.xlsx",
+      },
+      {
+        onSuccess: () => {
+          showToast(`Xuất Excel thành công`, "success");
+        },
+        onError: (err: any) => {
+          showToast(err.response?.data?.message, "error");
+        },
+      }
+    );
+  };
 
   const handeDeletes = (ids: DeleteRoundsInput) => {
     mutateDeletes(ids, {
@@ -218,13 +248,24 @@ const RoundPage: React.FC = () => {
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Typography variant="h5">Quản lý vòng đấu </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={openCreate}
-        >
-          Thêm vòng đấu
-        </Button>
+        <Box sx={{ display: "flex", gap: 2 }}>
+
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
+          >
+            Thêm vòng đấu
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<AddIcon />}
+            onClick={handleExportExcel}
+          >
+            Xuất Excel
+          </Button>
+        </Box>
       </Box>
 
       {/*  list card */}
@@ -289,8 +330,8 @@ const RoundPage: React.FC = () => {
                 filter.isActive === undefined
                   ? "all"
                   : filter.isActive
-                  ? "active"
-                  : "inactive"
+                    ? "active"
+                    : "inactive"
               }
               onChange={val => {
                 setFilter(prev => ({
@@ -299,10 +340,10 @@ const RoundPage: React.FC = () => {
                     val === "all"
                       ? undefined
                       : val === "active"
-                      ? true
-                      : val === "inactive"
-                      ? false
-                      : undefined, // fallback nếu Autocomplete trả undefined
+                        ? true
+                        : val === "inactive"
+                          ? false
+                          : undefined, // fallback nếu Autocomplete trả undefined
                 }));
               }}
               sx={{ flex: 1, minWidth: 200 }}

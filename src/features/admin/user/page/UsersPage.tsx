@@ -22,6 +22,7 @@ import UserList from "../components/UserList";
 import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDeleteMany from "../../../../components/Confirm";
 import ConfirmDelete from "../../../../components/Confirm";
+import ImportExcel from "../components/ImportExcel";
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
 
 import { useUsers } from "../hook/useUsers";
@@ -48,7 +49,7 @@ const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [pagination, setPagination] = useState<pagination>({});
-
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -262,6 +263,14 @@ const UsersPage: React.FC = () => {
             onClick={handleExportExcel}
           >
             Xuất Excel
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<AddIcon />}
+            onClick={() => setIsImportOpen(true)}
+          >
+            Nhập từ Excel
           </Button>
         </Box>
       </Box>
@@ -507,6 +516,13 @@ const UsersPage: React.FC = () => {
         title="Xác nhận xóa người dùng "
         description={`Bạn có chắc chắn xóa tài khoản này không`}
         onConfirm={() => handleDelete(selectedUserId)}
+      />
+      <ImportExcel
+        isOpen={isImportOpen}
+        onClose={() => {
+          setIsImportOpen(false);
+          refetchUsers();
+        }}
       />
     </Box>
   );

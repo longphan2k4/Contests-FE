@@ -58,7 +58,7 @@ export default function ViewMatch({
         open={isOpen}
         onClose={onClose}
         title={`Xem trận đấu: ${match?.name}`}
-        maxWidth="sm"
+        maxWidth="md"
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <tbody>

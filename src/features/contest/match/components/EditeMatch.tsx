@@ -79,7 +79,13 @@ export default function EditeMatch({
       refetchRound();
       refetchQuestionPackage();
     }
-  }, [refetchMatch, refetchRound, refetchStatus, refetchQuestionPackage, isOpen]);
+  }, [
+    refetchMatch,
+    refetchRound,
+    refetchStatus,
+    refetchQuestionPackage,
+    isOpen,
+  ]);
 
   // Memo hóa danh sách trường học để tránh re-render thừa
   const round = useMemo(() => {
@@ -189,8 +195,8 @@ export default function EditeMatch({
         />
         <FormInput
           id="currentQuestion"
-          label="Xác nhận ở câu"
-          placeholder="Nhập xác nhận ở câu"
+          label="Câu hỏi hiện tại"
+          placeholder="Nhập câu hỏi hiện tại"
           error={errors.currentQuestion}
           register={register("currentQuestion")}
           type="number"

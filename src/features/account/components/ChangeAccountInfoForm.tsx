@@ -14,7 +14,10 @@ import {
 } from "@mui/material";
 import { Person, Email } from "@mui/icons-material";
 import { CAO_THANG_COLORS } from "../../../common/theme";
-import type { ChangeAccountInfoData, ChangeAccountInfoFormProps } from "../types/ChangeAccountInfoForm.types";
+import type {
+  ChangeAccountInfoData,
+  ChangeAccountInfoFormProps,
+} from "../types/ChangeAccountInfoForm.types";
 
 const ChangeAccountInfoForm: React.FC<ChangeAccountInfoFormProps> = ({
   onSubmit,
@@ -48,7 +51,7 @@ const ChangeAccountInfoForm: React.FC<ChangeAccountInfoFormProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (name === "username") {
       setUsernameError("");
     } else if (name === "email") {
@@ -111,16 +114,21 @@ const ChangeAccountInfoForm: React.FC<ChangeAccountInfoFormProps> = ({
           sx: { borderRadius: "16px", p: 2 },
         }}
       >
-       <DialogTitle sx={{ pb: 2 }}>
-  <Typography
-    variant="h6"
-    component="span" // Hoặc component="div"
-    sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}
-  >
-    <Person sx={{ color: CAO_THANG_COLORS.secondary }} />
-    Đổi thông tin tài khoản
-  </Typography>
-</DialogTitle>
+        <DialogTitle sx={{ pb: 2 }}>
+          <Typography
+            variant="h6"
+            component="span" // Hoặc component="div"
+            sx={{
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Person sx={{ color: CAO_THANG_COLORS.secondary }} />
+            Đổi thông tin tài khoản
+          </Typography>
+        </DialogTitle>
 
         <DialogContent sx={{ pb: 1 }}>
           {error && (
@@ -139,29 +147,6 @@ const ChangeAccountInfoForm: React.FC<ChangeAccountInfoFormProps> = ({
 
           <form onSubmit={handleSubmit} id="change-account-info-form">
             <Box sx={{ my: 2 }}>
-              <TextField
-                required
-                fullWidth
-                name="username"
-                label="Tên người dùng"
-                value={formData.username}
-                onChange={handleChange}
-                error={!!usernameError}
-                sx={{ mb: usernameError ? 0 : 3 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Person sx={{ color: CAO_THANG_COLORS.secondary }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              {usernameError && (
-                <FormHelperText error sx={{ mb: 2, ml: 2 }}>
-                  {usernameError}
-                </FormHelperText>
-              )}
-
               <TextField
                 required
                 fullWidth
@@ -212,7 +197,9 @@ const ChangeAccountInfoForm: React.FC<ChangeAccountInfoFormProps> = ({
               minWidth: "140px",
             }}
           >
-            {changeAccountInfoStatus === "pending" ? "Đang xử lý..." : "Cập nhật"}
+            {changeAccountInfoStatus === "pending"
+              ? "Đang xử lý..."
+              : "Cập nhật"}
           </Button>
         </DialogActions>
       </Dialog>
