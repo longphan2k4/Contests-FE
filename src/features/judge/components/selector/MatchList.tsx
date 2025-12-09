@@ -166,7 +166,7 @@ const MatchList: React.FC = () => {
       )}
 
       {/* Custom CSS for animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes slideUp {
           to {
             opacity: 1;

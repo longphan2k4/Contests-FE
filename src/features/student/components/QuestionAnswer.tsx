@@ -154,7 +154,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
 
   // 🛡️ NEW: Anti-cheat states
   const [showAntiCheatWarning, setShowAntiCheatWarning] = useState(false);
-  const antiCheatWarningTimer = useRef<NodeJS.Timeout | null>(null);
+  const antiCheatWarningTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
     socket: studentSocket,
@@ -273,7 +273,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
             // 🔥 NEW: Call parent callback instead of setting local state
             onContestantBanned(
               response.message ||
-                "Bạn đã bị cấm thi do vi phạm quy chế nhiều lần."
+              "Bạn đã bị cấm thi do vi phạm quy chế nhiều lần."
             );
           } else {
             console.error(
@@ -505,8 +505,8 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
       // Tìm correctAnswers (chỉ số của đáp án đúng)
       const correctAnswerIndex = currentQuestion.question.correctAnswer
         ? currentQuestion.question.options.indexOf(
-            currentQuestion.question.correctAnswer
-          )
+          currentQuestion.question.correctAnswer
+        )
         : -1;
       const correctAnswers =
         correctAnswerIndex !== -1 ? [correctAnswerIndex] : [];
@@ -1010,11 +1010,10 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
                 🛡️ Trạng thái chống gian lận
               </Typography>
               <div
-                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  isMonitoring
+                className={`px-2 py-1 rounded-full text-xs font-medium ${isMonitoring
                     ? "text-green-600 bg-green-100"
                     : "text-red-600 bg-red-100"
-                }`}
+                  }`}
               >
                 {isMonitoring ? "🟢 Đang giám sát" : "🔴 Không giám sát"}
               </div>
@@ -1023,11 +1022,10 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
             <Box className="flex items-center gap-2">
               {/* Fullscreen Status */}
               <div
-                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  isFullscreen
+                className={`px-2 py-1 rounded-full text-xs font-medium ${isFullscreen
                     ? "text-blue-600 bg-blue-100"
                     : "text-orange-600 bg-orange-100"
-                }`}
+                  }`}
               >
                 {isFullscreen ? "🔒 Toàn màn hình" : "⚠️ Chưa toàn màn hình"}
               </div>
@@ -1203,15 +1201,14 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
                     {currentQuestion.question.options?.map((option, index) => (
                       <Box
                         key={index}
-                        className={`p-3 rounded-lg border-2 transition-all ${
-                          isSubmitted ||
-                          isEliminatedState ||
-                          isBanned ||
-                          isInRescueMode ||
-                          showRescueAnimation
+                        className={`p-3 rounded-lg border-2 transition-all ${isSubmitted ||
+                            isEliminatedState ||
+                            isBanned ||
+                            isInRescueMode ||
+                            showRescueAnimation
                             ? "cursor-not-allowed"
                             : "cursor-pointer"
-                        } ${getOptionClass(option)}`}
+                          } ${getOptionClass(option)}`}
                         onClick={() =>
                           !(
                             isSubmitted ||
@@ -1377,8 +1374,8 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
                     {answerResult.isCorrect
                       ? `🎉 Chính xác!`
                       : selectedAnswer === "[KHÔNG CHỌN ĐÁP ÁN]"
-                      ? " Bạn không chọn đáp án nào!" // 🔧 Thông báo đặc biệt
-                      : " Chưa đúng rồi!"}
+                        ? " Bạn không chọn đáp án nào!" // 🔧 Thông báo đặc biệt
+                        : " Chưa đúng rồi!"}
                   </Typography>
 
                   <Typography variant="body1" className="font-medium">

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Result, ResultFilterParams } from '../types';
 
-const API_URL = process.env.REACT_APP_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 export const getResults = async (params?: ResultFilterParams): Promise<Result[]> => {
   const response = await axios.get(`${API_URL}/api/results`, { params });

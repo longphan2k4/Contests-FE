@@ -131,7 +131,7 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
 
   // 🛡️ NEW: Anti-cheat states
   const [showAntiCheatWarning, setShowAntiCheatWarning] = useState(false);
-  const antiCheatWarningTimer = useRef<NodeJS.Timeout | null>(null);
+  const antiCheatWarningTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
     socket: studentSocket,
@@ -250,7 +250,7 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
           if (response.success) {
             onContestantBanned(
               response.message ||
-                "Bạn đã bị cấm thi do vi phạm quy chế nhiều lần."
+              "Bạn đã bị cấm thi do vi phạm quy chế nhiều lần."
             );
           } else {
             console.error(
@@ -450,8 +450,8 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
 
       const correctAnswerIndex = currentQuestion.question.correctAnswer
         ? currentQuestion.question.options.indexOf(
-            currentQuestion.question.correctAnswer
-          )
+          currentQuestion.question.correctAnswer
+        )
         : -1;
       const correctAnswers =
         correctAnswerIndex !== -1 ? [correctAnswerIndex] : [];

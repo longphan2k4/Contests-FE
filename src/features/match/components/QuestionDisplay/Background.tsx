@@ -101,9 +101,8 @@ const Background: React.FC<BackgroundProps> = ({ url }) => {
         size: Math.random() * 30 + 20,
         rotation: Math.random() * 360,
         duration: Math.random() * 5 + 5,
-        color: `rgba(${Math.random() * 100 + 100}, ${
-          Math.random() * 100 + 150
-        }, ${Math.random() * 100 + 200}, 0.4)`,
+        color: `rgba(${Math.random() * 100 + 100}, ${Math.random() * 100 + 150
+          }, ${Math.random() * 100 + 200}, 0.4)`,
       };
 
       setVipEffects(prevEffects => [...prevEffects, effect]);
@@ -147,9 +146,8 @@ const Background: React.FC<BackgroundProps> = ({ url }) => {
           size: Math.random() * 2 + 0.5,
           speedX: (Math.random() - 0.5) * 0.5,
           speedY: (Math.random() - 0.5) * 0.5,
-          color: `rgba(${Math.random() * 50 + 100}, ${
-            Math.random() * 50 + 150
-          }, ${Math.random() * 50 + 200}, ${Math.random() * 0.5 + 0.3})`,
+          color: `rgba(${Math.random() * 50 + 100}, ${Math.random() * 50 + 150
+            }, ${Math.random() * 50 + 200}, ${Math.random() * 0.5 + 0.3})`,
         });
       }
 
@@ -186,9 +184,8 @@ const Background: React.FC<BackgroundProps> = ({ url }) => {
 
             if (distance < 100) {
               ctx.beginPath();
-              ctx.strokeStyle = `rgba(100, 150, 255, ${
-                0.1 * (1 - distance / 100)
-              })`;
+              ctx.strokeStyle = `rgba(100, 150, 255, ${0.1 * (1 - distance / 100)
+                })`;
               ctx.lineWidth = 0.5;
               ctx.moveTo(particle.x, particle.y);
               ctx.lineTo(otherParticle.x, otherParticle.y);
@@ -329,7 +326,7 @@ const Background: React.FC<BackgroundProps> = ({ url }) => {
         style={{ opacity: 0.7 }}
       />
 
-      <style jsx>{`
+      <style>{`
         @keyframes rayPulse {
           0%,
           100% {

@@ -51,6 +51,7 @@
     "@types/canvas-confetti": "^1.9.0",
     "@types/ckeditor": "^4.9.10",
     "@types/lodash": "^4.17.17",
+    "@types/node": "^24.10.2",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@types/react-slick": "^0.23.13",

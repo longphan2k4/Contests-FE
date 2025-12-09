@@ -72,17 +72,17 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleTop20Updated = (data: { 
-      success: boolean; 
-      data: { 
-        candidates: Contestant[]; 
+    const handleTop20Updated = (data: {
+      success: boolean;
+      data: {
+        candidates: Contestant[];
         meta: Record<string, unknown>
-      }; 
-      matchId: string | number; 
+      };
+      matchId: string | number;
       //limit: number 
     }) => {
       console.log('Nhận dữ liệu Top20 từ socket:', data);
-      
+
       if (data.success && data.data && data.matchId === match_id) {
         // Reset animation state với số lượng thí sinh động
         const totalContestants = data.data.candidates?.length || 0;
@@ -91,11 +91,11 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
         setCompleted(false);
         setCelebrating(false);
         setConfetti([]);
-        
+
         // Cập nhật dữ liệu mới
         setContestants(data.data.candidates || []);
         setLoading(false);
-        
+
         // Dừng âm thanh nếu đang phát
         if (celebrateAudioRef.current) {
           celebrateAudioRef.current.pause();
@@ -104,12 +104,12 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
       }
     };
 
-    const handleTop20Hidden = (data: { 
-      success: boolean; 
-      matchId: string | number 
+    const handleTop20Hidden = (data: {
+      success: boolean;
+      matchId: string | number
     }) => {
       console.log('Top20 Winner đã được ẩn:', data);
-      
+
       if (data.success && data.matchId === match_id) {
         // Reset về trạng thái ban đầu
         setRevealed([]);
@@ -119,7 +119,7 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
         setConfetti([]);
         setContestants([]);
         setLoading(true);
-        
+
         // Dừng âm thanh
         if (celebrateAudioRef.current) {
           celebrateAudioRef.current.pause();
@@ -140,7 +140,7 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
   useEffect(() => {
     // Reveal contestants one by one with a delay and sound
     const totalContestants = contestants.length;
-    
+
     if (currentIndex < totalContestants && contestants.length > 0) {
       const timer = setTimeout(() => {
         setRevealed(prev => {
@@ -208,11 +208,10 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
 
   return (
     <div
-      className={`flex flex-col items-center w-full h-screen p-2 sm:p-3 md:p-4 rounded-lg shadow-lg transition-all duration-1000 ${
-        celebrating
+      className={`flex flex-col items-center w-full h-screen p-2 sm:p-3 md:p-4 rounded-lg shadow-lg transition-all duration-1000 ${celebrating
           ? "bg-gradient-to-b from-yellow-200 to-white"
           : "bg-gradient-to-b from-blue-200 to-white"
-      }`}
+        }`}
     >
       {/* Thêm các phần tử audio */}
       <audio ref={revealAudioRef}>
@@ -228,9 +227,8 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
           {Array.from({ length: 10 }).map((_, i) => (
             <div
               key={`grid-${i}`}
-              className={`absolute opacity-20 transition-colors duration-1000 ${
-                celebrating ? "bg-yellow-400" : "bg-blue-400"
-              }`}
+              className={`absolute opacity-20 transition-colors duration-1000 ${celebrating ? "bg-yellow-400" : "bg-blue-400"
+                }`}
               style={{
                 height: "1px",
                 width: "100%",
@@ -241,9 +239,8 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
           {Array.from({ length: 10 }).map((_, i) => (
             <div
               key={`grid-v-${i}`}
-              className={`absolute opacity-20 transition-colors duration-1000 ${
-                celebrating ? "bg-yellow-400" : "bg-blue-400"
-              }`}
+              className={`absolute opacity-20 transition-colors duration-1000 ${celebrating ? "bg-yellow-400" : "bg-blue-400"
+                }`}
               style={{
                 width: "1px",
                 height: "100%",
@@ -279,26 +276,24 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
       {/* Header */}
       <div className="relative z-10 w-full text-center mb-1 sm:mb-2">
         <h1
-          className={`text-lg sm:text-xl md:text-3xl font-bold tracking-wider border inline-block px-2 py-1 transition-colors duration-1000 ${
-            celebrating
+          className={`text-lg sm:text-xl md:text-3xl font-bold tracking-wider border inline-block px-2 py-1 transition-colors duration-1000 ${celebrating
               ? "text-yellow-900 border-yellow-500 rounded animate-pulse"
               : "text-blue-900 border-blue-500 rounded"
-          }`}
+            }`}
         >
           TOP {contestants.length} THÍ SINH ĐIỂM CAO NHẤT
         </h1>
       </div>
 
       {/* Grid layout - responsive for different numbers of contestants */}
-      <div 
-        className={`grid gap-1 sm:gap-2 max-w-full flex-grow w-full justify-items-center ${
-          contestants.length <= 5 ? 'grid-cols-5' :
-          contestants.length <= 10 ? 'grid-cols-5' :
-          contestants.length <= 20 ? 'grid-cols-5' :
-          contestants.length <= 30 ? 'grid-cols-6' :
-          contestants.length <= 40 ? 'grid-cols-8' :
-          'grid-cols-10'
-        }`}
+      <div
+        className={`grid gap-1 sm:gap-2 max-w-full flex-grow w-full justify-items-center ${contestants.length <= 5 ? 'grid-cols-5' :
+            contestants.length <= 10 ? 'grid-cols-5' :
+              contestants.length <= 20 ? 'grid-cols-5' :
+                contestants.length <= 30 ? 'grid-cols-6' :
+                  contestants.length <= 40 ? 'grid-cols-8' :
+                    'grid-cols-10'
+          }`}
         style={{
           maxHeight: '100vh',
           overflowY: contestants.length > 40 ? 'auto' : 'visible'
@@ -307,63 +302,53 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
         {contestants.map((contestant, i) => (
           <div
             key={`contestant-${contestant.contestantId}`}
-            className={`${
-              contestants.length <= 20 ? 'w-34 h-34' : 
-              contestants.length <= 40 ? 'w-28 h-28' : 
-              'w-30 h-auto'
-            } mx-1 flex flex-col items-center justify-center rounded-sm sm:rounded relative overflow-hidden transition-all duration-500 border ${
-              celebrating
+            className={`${contestants.length <= 20 ? 'w-34 h-34' :
+                contestants.length <= 40 ? 'w-28 h-28' :
+                  'w-30 h-auto'
+              } mx-1 flex flex-col items-center justify-center rounded-sm sm:rounded relative overflow-hidden transition-all duration-500 border ${celebrating
                 ? "bg-yellow-900 border-yellow-500 " +
-                  (revealed[i] ? "animate-wiggle" : "")
+                (revealed[i] ? "animate-wiggle" : "")
                 : "bg-blue-900 border-blue-700"
-            } ${
-              revealed[i]
+              } ${revealed[i]
                 ? "shadow-sm " +
-                  (celebrating ? "shadow-yellow-500/20" : "shadow-blue-500/20")
+                (celebrating ? "shadow-yellow-500/20" : "shadow-blue-500/20")
                 : "opacity-40"
-            }`}
+              }`}
             style={{
               animationDelay: `${i * 0.05}s`,
             }}
           >
             {/* Tech frame */}
             <div
-              className={`absolute top-0 left-0 h-0.5 transition-all duration-1000 ${
-                revealed[i] ? "w-full" : "w-0"
-              } ${celebrating ? "bg-yellow-400" : "bg-blue-400"}`}
+              className={`absolute top-0 left-0 h-0.5 transition-all duration-1000 ${revealed[i] ? "w-full" : "w-0"
+                } ${celebrating ? "bg-yellow-400" : "bg-blue-400"}`}
             />
             <div
-              className={`absolute bottom-0 right-0 h-0.5 transition-all duration-1000 ${
-                revealed[i] ? "w-full" : "w-0"
-              } ${celebrating ? "bg-yellow-400" : "bg-blue-400"}`}
+              className={`absolute bottom-0 right-0 h-0.5 transition-all duration-1000 ${revealed[i] ? "w-full" : "w-0"
+                } ${celebrating ? "bg-yellow-400" : "bg-blue-400"}`}
             />
 
             {/* Contestant info display */}
             <div
-              className={`transition-all duration-700 transform ${
-                revealed[i] ? "opacity-100 scale-100" : "opacity-0 scale-50"
-              } flex flex-col items-center justify-center text-center w-full h-full`}
+              className={`transition-all duration-700 transform ${revealed[i] ? "opacity-100 scale-100" : "opacity-0 scale-50"
+                } flex flex-col items-center justify-center text-center w-full h-full`}
             >
-                <span
-                className={`${
-                  contestants.length <= 20 ? 'text-6xl' : 
-                  contestants.length <= 40 ? 'text-6xl' : 
-                  'text-6xl'
-                } font-mono ${
-                  celebrating ? "text-yellow-100" : "text-blue-100"
-                }`}
-                >
+              <span
+                className={`${contestants.length <= 20 ? 'text-6xl' :
+                    contestants.length <= 40 ? 'text-6xl' :
+                      'text-6xl'
+                  } font-mono ${celebrating ? "text-yellow-100" : "text-blue-100"
+                  }`}
+              >
                 {contestant.registrationNumber}
-                </span>
+              </span>
               {/* Đang ẩn đi vì lỗi hiển thị sai câu bị loại nếu ts gold đã được cứu trước đó */}
               <span
-                className={`invisible ${
-                  contestants.length <= 20 ? 'text-2xl' : 
-                  contestants.length <= 40 ? 'text-lg' : 
-                  'text-sm'
-                } font-mono ${
-                  celebrating ? "text-yellow-100" : "text-blue-100"
-                }`}
+                className={`invisible ${contestants.length <= 20 ? 'text-2xl' :
+                    contestants.length <= 40 ? 'text-lg' :
+                      'text-sm'
+                  } font-mono ${celebrating ? "text-yellow-100" : "text-blue-100"
+                  }`}
               >
                 câu {contestant.eliminatedAtQuestionOrder || 13}
               </span>
@@ -371,11 +356,10 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
               {/* Scanning effect */}
               {revealed[i] && (
                 <div
-                  className={`absolute inset-0 bg-gradient-to-b from-transparent to-transparent h-full w-full ${
-                    celebrating
+                  className={`absolute inset-0 bg-gradient-to-b from-transparent to-transparent h-full w-full ${celebrating
                       ? "via-yellow-400/10 animate-scan-fast"
                       : "via-blue-400/10 animate-scan"
-                  }`}
+                    }`}
                 />
               )}
             </div>
@@ -390,11 +374,10 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
           style={{ backgroundColor: celebrating ? "#FBBF24" : "#1E3A8A" }}
         >
           <div
-            className={`h-full transition-all duration-500 ${
-              celebrating ? "bg-yellow-500" : "bg-blue-500"
-            }`}
-            style={{ 
-              width: `${contestants.length > 0 ? (currentIndex / contestants.length) * 100 : 0}%` 
+            className={`h-full transition-all duration-500 ${celebrating ? "bg-yellow-500" : "bg-blue-500"
+              }`}
+            style={{
+              width: `${contestants.length > 0 ? (currentIndex / contestants.length) * 100 : 0}%`
             }}
           />
         </div>
@@ -404,7 +387,7 @@ const TopWinner = ({ match_id }: { match_id: string | number }) => {
       </div>
 
       {/* Add custom animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes scan {
           0% {
             transform: translateY(-100%);

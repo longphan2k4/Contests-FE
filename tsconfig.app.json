@@ -26,6 +26,9 @@
     "skipLibCheck": true,
     "isolatedModules": true,
 
+    /* Types */
+    "types": ["node"],
+
     /* Linting & Type Safety */
     "strict": true,
     "noUnusedLocals": true,

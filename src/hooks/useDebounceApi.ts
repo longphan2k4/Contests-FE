@@ -11,7 +11,7 @@ export const useDebounceApi = <T extends (...args: any[]) => Promise<any>>(
 ): [(...args: Parameters<T>) => Promise<ReturnType<T>>, () => void] => {
   const { delay = 300, immediate = false } = options;
 
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const cancel = useCallback(() => {

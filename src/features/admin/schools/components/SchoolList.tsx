@@ -65,7 +65,7 @@ const SchoolList: React.FC<SchoolListProps> = ({
   );
 
   const [searchValue, setSearchValue] = useState(filter.search || "");
-  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
+  const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(
     null
   );
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
