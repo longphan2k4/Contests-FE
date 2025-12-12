@@ -32,6 +32,7 @@
     "dayjs": "^1.11.13",
     "dompurify": "^3.2.6",
     "framer-motion": "^12.18.1",
+    "lightningcss": "^1.30.2",
     "lottie-web": "^5.13.0",
     "particles.js": "^2.0.0",
     "qrcode.react": "^4.2.0",
