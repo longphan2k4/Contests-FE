@@ -10,6 +10,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
+
+  // Lấy URL server từ env, fallback về localhost:3000
+  const serverUrl = env.VITE_SOCKET_URL || env.VITE_PUBLIC_BASE_URL_SERVER || "http://localhost:3000";
+
   return {
     plugins: [
       react(),
@@ -45,13 +49,13 @@ export default defineConfig(({ mode }) => {
       proxy: {
         // Cấu hình proxy cho API
         "/api": {
-          target: env.VITE_PUBLIC_BASE_URL_SERVER,
+          target: serverUrl,
           changeOrigin: true,
           secure: false,
         },
         // Cấu hình proxy cho uploads
         "/uploads": {
-          target: env.VITE_PUBLIC_BASE_URL_SERVER,
+          target: serverUrl,
           changeOrigin: true,
           secure: false,
         },
