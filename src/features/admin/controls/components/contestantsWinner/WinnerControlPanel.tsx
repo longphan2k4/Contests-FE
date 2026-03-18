@@ -18,6 +18,9 @@ import { useCompletedContestants, useUpdateToCompleted, useUpdateAllCompletedToE
 import { useParams } from 'react-router-dom';
 import { useSocket } from '@/contexts/SocketContext';
 
+//tuankiet
+import {useUpdate} from "../../../../contest/contestant/hook/useContestant"
+
 // CSS for shimmer animation
 const shimmerKeyframes = `
   @keyframes shimmer {
@@ -45,9 +48,11 @@ type WinnerContestants = {
 
 interface WinnerProps {
     matchId: number;
+    //tuankiet
+    matchInfoRes: any;
 }
 
-const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
+const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId,matchInfoRes }) => {
     const { match } = useParams();
     const { socket } = useSocket();
     const [suggestCount, setSuggestCount] = useState<number>(1);
@@ -61,6 +66,9 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
     const [isShowingTop20, setIsShowingTop20] = useState(false);
     const [isLoadingTop20, setIsLoadingTop20] = useState(false);
     const queryClient = useQueryClient();
+
+    //tuankiet su dung cap nhat thisinh- constant
+    const { mutate: mutateUpdate } = useUpdate();
 
     // dữ liệu thí sinh đã hoàn thành (completed) trong trận đấu nếu có
     const { data: contestantCompletedData } = useCompletedContestants(matchId || null);
@@ -185,7 +193,8 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
         setIsConfirmDialogOpen(true);
     };
 
-    const handleConfirmUpdate = () => {
+    const handleConfirmUpdate = async() => {
+        console.log("contestantData at confirm:", contestantData);
         const contestantIds = contestantData.map(c => c.contestantId);
 
         updateToCompletedMutation.mutate(
@@ -214,6 +223,30 @@ const WinnerControlPanel: React.FC<WinnerProps> = ({ matchId }) => {
                 }
             }
         );
+        //tuankiet: Cập nhật trạng thái hoàn thành vòng đấu cho thí sinh
+            contestantData.forEach(c=>{
+            mutateUpdate(
+            {   id: c.contestantId,
+                payload:{
+                    status: "advanced",
+                    roundId: matchInfoRes.data.roundId,//gan cung
+                } 
+            },
+            {
+            onSuccess: () => {
+                console.log('Cập nhật constestant thành công:',contestantData);
+                console.log("contestantCompletedData:",contestantCompletedData);
+                // setSelectedId(null);
+                // refetchs();
+            },
+            onError: (err: any) => {
+                if (err.response?.data?.message)
+                console.log(err.response?.data?.message, "error");
+            },
+            }
+            );
+        })
+
     };
 
     // Reset tất cả thí sinh completed về eliminated
