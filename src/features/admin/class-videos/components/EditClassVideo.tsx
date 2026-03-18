@@ -2,7 +2,8 @@ import React, { useEffect, useMemo } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
 import { Box, Button, CircularProgress, Typography } from "@mui/material";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import FormSwitch from "../../../../components/FormSwitch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   UpdateClassVideoSchema,
@@ -73,9 +74,11 @@ export default function EditClassVideo({
         slogan: video.slogan,
         videos: undefined,
         classId: video.classId,
+        isWinner: video.isWinner, //them truong isWinner
       });
     }
   }, [video, reset, isOpen]);
+
 
   const handleFormSubmit = (data: UpdateClassVideoInput) => {
     onSubmit({
@@ -188,6 +191,18 @@ export default function EditClassVideo({
             {errors.videos.message as string}
           </Typography>
         )}
+        {/* Trạng thái đạt giải */}
+        <Controller
+          name="isWinner"
+          control={control}
+          render={({ field }) => (
+            <FormSwitch
+              value={field.value ?? false}
+              onChange={(val) => field.onChange(val)}
+              label={field.value ? "Đạt giải" : "Không đạt giải"}
+            />
+          )}
+        />
 
         <Button
           type="submit"

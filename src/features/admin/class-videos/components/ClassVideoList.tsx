@@ -35,6 +35,13 @@ export default function ClassVideoList({
     { field: "name", headerName: "Tên video", flex: 1 },
     { field: "slogan", headerName: "slogan", flex: 1 },
     { field: "className", headerName: "Lớp", flex: 1 },
+    //Thêm field isWinner để hiển thị và renderCell để thay đổi 
+    //từ true/false sang đạt giải và không đạt giải
+    { field: "isWinner", headerName: "Trạng thái", flex: 1,
+       renderCell: (params) => (
+        <div>{params.value ? "Đạt giải" : "Không đạt giải"}</div>
+      ),
+     },
 
     {
       field: "actions",
