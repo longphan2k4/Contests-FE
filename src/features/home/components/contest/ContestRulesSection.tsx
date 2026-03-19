@@ -70,7 +70,7 @@ const ContestRulesSection = () => {
             Thể lệ cuộc thi
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
-            Olympic Tin Học 2025 - Đấu Trường Số
+            Olympic Tin Học 2026 - Đấu Trường Số
           </p>
         </div>
 

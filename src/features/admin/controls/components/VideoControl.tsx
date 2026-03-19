@@ -7,14 +7,16 @@ import { useToast } from "@contexts/toastContext";
 interface VideoControlProps {
   sponsorMedia: MediaType[];
   classVideo: MediaType[];
+  classVideoWinner: MediaType[];
   controlKey?: string;
 }
 
 const VideoControl: React.FC<VideoControlProps> = ({
   sponsorMedia,
   classVideo,
+  classVideoWinner,
 }) => {
-  const [activeTab, setActiveTab] = React.useState<"sponsor" | "classVideo">(
+  const [activeTab, setActiveTab] = React.useState<"sponsor" | "classVideo" | "classVideoWinner">(
     "sponsor"
   );
   const [control, setControl] = React.useState<
@@ -91,7 +93,7 @@ const VideoControl: React.FC<VideoControlProps> = ({
           {/* Tab Header với bo tròn */}
           <div className="flex rounded-t-xl overflow-hidden">
             <button
-              className={`flex-1 p-3 text-center font-medium transition-colors rounded-tl-xl ${
+              className={`flex-1 p-4 flex items-center justify-center font-medium transition-colors rounded-tl-xl ${
                 activeTab === "sponsor"
                   ? "bg-gray-800 text-white"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -101,7 +103,7 @@ const VideoControl: React.FC<VideoControlProps> = ({
               Video nhà tài trợ
             </button>
             <button
-              className={`flex-1 p-3 text-center font-medium transition-colors rounded-tr-xl ${
+              className={`flex-1 p-3 flex items-center justify-center font-medium transition-colors ${
                 activeTab === "classVideo"
                   ? "bg-gray-800 text-white"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -109,6 +111,16 @@ const VideoControl: React.FC<VideoControlProps> = ({
               onClick={() => setActiveTab("classVideo")}
             >
               Video lớp
+            </button>
+            <button
+              className={`flex-1 p-3 flex items-center justify-center font-medium transition-colors rounded-tr-xl ${
+                activeTab === "classVideoWinner"
+                  ? "bg-gray-800 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+              onClick={() => setActiveTab("classVideoWinner")}
+            >
+              Video lớp đoạt giải
             </button>
           </div>
 
@@ -118,14 +130,14 @@ const VideoControl: React.FC<VideoControlProps> = ({
               <ul className="space-y-2">
                 {sponsorMedia.length > 0 ? (
                   sponsorMedia.map(media => (
-                    <li
+                    <div
                       onClick={() => setSelect(media.videos)}
                       key={`sp-${media.id}`}
                       className="p-3 rounded-lg cursor-pointer bg-gray-200 text-gray-800 hover:bg-gray-300"
                     >
                       {" "}
                       {media.name}
-                    </li>
+                    </div>
                   ))
                 ) : (
                   <div className="text-center text-gray-500 py-8">
@@ -133,22 +145,41 @@ const VideoControl: React.FC<VideoControlProps> = ({
                   </div>
                 )}
               </ul>
-            ) : (
+            ) : activeTab === "classVideo" ?(
               <div className="space-y-2">
                 {classVideo.length > 0 ? (
                   classVideo.map(media => (
-                    <li
+                    <div
                       onClick={() => setSelect(media.videos)}
                       key={`class-${media.id}`}
                       className="p-3 rounded-lg cursor-pointer bg-gray-200 text-gray-800 hover:bg-gray-300"
                     >
                       {" "}
                       {media.name}
-                    </li>
+                    </div>
                   ))
                 ) : (
                   <div className="text-center text-gray-500 py-8">
                     Không có video lớp
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {classVideoWinner.length > 0 ? (
+                  classVideoWinner.map(media => (
+                    <div
+                      onClick={() => setSelect(media.videos)}
+                      key={`class-${media.id}`}
+                      className="p-3 rounded-lg cursor-pointer bg-gray-200 text-gray-800 hover:bg-gray-300"
+                    >
+                      {" "}
+                      {media.name}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-gray-500 py-8">
+                    Không có video lớp đoạt giải
                   </div>
                 )}
               </div>

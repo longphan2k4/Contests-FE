@@ -24,6 +24,7 @@ import {
   useScreenControl,
   useCountContestant,
   useListClassVideo,
+  useListClassVideoWinner,
   useListSponsorMedia,
   useListContestant,
   useListRescueLifelineUsed,
@@ -121,6 +122,7 @@ const ControlsPage: React.FC = () => {
   const [listContestant, setListContestant] = useState<ListContestant[]>([]);
   const [sponsorMedia, setSponsorMedia] = useState<MediaType[]>([]);
   const [classVideo, setClassVideo] = useState<MediaType[]>([]);
+  const [classVideoWinner, setClassVideoWinner] = useState<MediaType[]>([]);
   const [listResult, setListResult] = useState<ListResult[]>([]);
   const [listRescueLifelineUsed, setListRescueLifelineUsed] = useState<
     ListRescueLifelineUsed[]
@@ -186,6 +188,13 @@ const ControlsPage: React.FC = () => {
     refetch: refetchClassVideo,
   } = useListClassVideo(slug ?? null);
   const {
+    data: classVideoWinnerRes,
+    isLoading: isLoadingClassVideoWinner,
+    isSuccess: isSuccessClassVideoWinner,
+    isError: isErrorClassVideoWinner,
+    refetch: refetchClassVideoWinner,
+  } = useListClassVideoWinner(slug ?? null);
+  const {
     data: listContestantRes,
     isLoading: isLoadingContestants,
     isSuccess: isSuccessContestants,
@@ -217,6 +226,7 @@ const ControlsPage: React.FC = () => {
     refetchScreenControl();
     refetchSponsorMedia();
     refetchClassVideo();
+    refetchClassVideoWinner();
     refetchListAward();
     refetchListResult();
     refetchListContestant();
@@ -236,6 +246,10 @@ const ControlsPage: React.FC = () => {
   useEffect(() => {
     if (isSuccessClassVideo) setClassVideo(classVideoRes.data);
   }, [isSuccessClassVideo, classVideoRes]);
+
+  useEffect(() => {
+    if (isSuccessClassVideoWinner) setClassVideoWinner(classVideoWinnerRes.data);
+  }, [isSuccessClassVideoWinner, classVideoWinnerRes]);
 
   useEffect(() => {
     if (isSuccessListAward) {
@@ -517,6 +531,7 @@ const ControlsPage: React.FC = () => {
     isLoadingControl ||
     isLoadingSponsorMedia ||
     isLoadingClassVideo ||
+    isLoadingClassVideoWinner ||
     isLoadingListRescueLifelineUsed ||
     isLoadingContestants ||
     isLoadingListResult ||
@@ -543,6 +558,7 @@ const ControlsPage: React.FC = () => {
     isErrorControl ||
     isErrorSponsorMedia ||
     isErrorClassVideo ||
+    isErrorClassVideoWinner ||
     isErrorListRescueLifelineUsed ||
     isErrorContestants ||
     isErrorListAward ||
@@ -748,6 +764,7 @@ const ControlsPage: React.FC = () => {
             <VideoControl
               sponsorMedia={sponsorMedia}
               classVideo={classVideo}
+              classVideoWinner={classVideoWinner}
               controlKey={screenControl?.controlKey}
             />
           </div>

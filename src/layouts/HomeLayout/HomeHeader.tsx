@@ -176,7 +176,7 @@ const Header: React.FC = () => {
                     isScrolled ? "text-sm sm:text-lg" : "text-base sm:text-xl"
                   }`}
                 >
-                  Olympic Tin học 2025
+                  Olympic Tin học 2026
                 </h1>
                 <p className="text-xs sm:text-sm text-cyan-600/80 font-medium">
                   Khoa Công Nghệ Thông Tin

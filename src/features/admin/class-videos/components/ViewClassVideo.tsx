@@ -36,6 +36,7 @@ export default function ViewClassVideo({
     { label: "Tên Video", value: video?.name },
     { label: "Slogan", value: video?.slogan },
     { label: "Lớp", value: video?.class?.name || "Không có lớp" },
+    { label: "Trạng thái", value: video?.isWinner ? "Đạt giải" : "Không đạt giải" },
     {
       label: "Video",
       value: video?.videos ? (

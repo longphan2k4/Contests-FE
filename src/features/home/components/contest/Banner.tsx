@@ -4,7 +4,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
  const banners = [
     {
       id: 1,
-      title: "Cuộc Thi Lập Trình 2025",
+      title: "Cuộc Thi Lập Trình 2026",
       subtitle: "Thách thức coding hấp dẫn nhất năm",
       image: "https://scontent.fsgn2-4.fna.fbcdn.net/v/t39.30808-6/492537042_1238852174906685_7413700368025108558_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=cc71e4&_nc_eui2=AeGYwuWS2EPq20J7j3jndx6V6ZtZoo9cSQ3pm1mij1xJDS39nR3ecQ_aSUdsd7ngWWHwjrDsmSwkr0NUbkqeRfqy&_nc_ohc=ACy8-bc2_00Q7kNvwG7yCNM&_nc_oc=AdnNan77c1lWy0aZgnc8jFPrsQjSmlHmrtWTQlnRxizBuBszVmSTEkSzdUqweL54hBvYdXd2CqZixXf5-hTs_25h&_nc_zt=23&_nc_ht=scontent.fsgn2-4.fna&_nc_gid=rCNxYXsifdJ1QaIt2U0m0g&oh=00_AfPlwyspMYSMudTMKInjYbFWOllydkeLeII48ikI3hwFVw&oe=68629277",
       cta: "Đăng ký ngay"

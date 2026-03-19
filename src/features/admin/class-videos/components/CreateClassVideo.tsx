@@ -2,7 +2,8 @@ import React, { useEffect, useMemo } from "react";
 import AppFormDialog from "../../../../components/AppFormDialog";
 import FormInput from "../../../../components/FormInput";
 import { Box, Button, CircularProgress, Typography } from "@mui/material";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import FormSwitch from "../../../../components/FormSwitch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useListClass } from "../hook/useListClass";
 import {
@@ -20,6 +21,7 @@ interface CreateClassVideoDialogProps {
     classId: number;
     videos?: File;
     image?: File;
+    isWinner?: boolean;
   }) => void;
 }
 
@@ -37,6 +39,9 @@ export default function CreateClassVideoDialog({
     watch,
   } = useForm<CreateClassVideoInput>({
     resolver: zodResolver(CreateClassVideoSchema),
+    defaultValues: {
+      isWinner: false,
+    },
   });
 
   const {
@@ -72,6 +77,7 @@ export default function CreateClassVideoDialog({
       slogan: data.slogan,
       classId: data.classId,
       videos: videoFile,
+      isWinner: data.isWinner,
     });
 
     onClose();
@@ -163,6 +169,17 @@ export default function CreateClassVideoDialog({
             {errors.videos.message as string}
           </Typography>
         )}
+
+        <Controller
+          name="isWinner"
+          control={control}
+          render={({ field }) => (
+            <FormSwitch 
+              value={field.value ?? false} onChange={field.onChange} 
+              label={field.value ? "Đạt giải" : "Không đạt giải"}
+            />
+          )}
+        />
 
         <Button
           type="submit"
