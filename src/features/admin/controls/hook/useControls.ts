@@ -18,6 +18,7 @@ import {
   updateAllCompletedToEliminated,
   getListAwards,
   getResultsByMatchSlug,
+  GetListClassVideoWinner,
 } from "../service/api";
 
 export const useMatchInfo = (match: string | null) => {
@@ -96,6 +97,15 @@ export const useListClassVideo = (slug: string | null) => {
   return useQuery({
     queryKey: ["ListClassVideo", slug],
     queryFn: () => GetListClassVideo(slug),
+    enabled: !!slug,
+  });
+};
+
+//Video lớp đoạt giải
+export const useListClassVideoWinner = (slug: string | null) => {
+  return useQuery({
+    queryKey: ["ListClassVideoWinner", slug],
+    queryFn: () => GetListClassVideoWinner(slug),
     enabled: !!slug,
   });
 };

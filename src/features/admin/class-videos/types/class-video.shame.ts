@@ -9,6 +9,7 @@ export const CreateClassVideoSchema = z.object({
       message: "Bạn phải chọn một video",
     })
     .transform(val => val[0]), // 👉 Lấy ra file đầu tiên
+  isWinner: z.boolean().optional(),
 });
 
 export const ClassVideoIdShema = z.object({
@@ -22,6 +23,7 @@ export const ClassVideoShema = z.object({
   classId: z.number(),
   contestId: z.number(),
   videos: z.any(),
+  isWinner: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -35,6 +37,7 @@ export const UpdateClassVideoSchema = z.object({
     .int()
     .positive("ID lớp phải là số nguyên dương")
     .optional(),
+  isWinner: z.boolean().optional(),
 });
 
 export type ClassVideoQuery = {
