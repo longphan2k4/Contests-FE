@@ -817,7 +817,7 @@ const ControlsPage: React.FC = () => {
           </div>
 
           {/** Phần điều khiển thí sinh chiến thắng */}
-          <ContestantsWinnerControlPanel matchId={matchInfo?.id ?? 0} />
+          <ContestantsWinnerControlPanel matchId={matchInfo?.id ?? 0} matchInfoRes={matchInfoRes ?? null} />
           <div>
             <Link
               className="block text-center w-full btn bg-red-500 hover:bg-red-600 cursor-pointer text-white font-bold p-2 rounded-lg"

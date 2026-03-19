@@ -34,6 +34,8 @@ import Listcontestant from "../components/ListContestant";
 import { useToast } from "../../../../contexts/toastContext";
 import ConfirmDelete from "../../../../components/Confirm";
 import FormAutocompleteFilter from "../../../../components/FormAutocompleteFilter";
+//tuankiet
+import UpdateRoundContestant from "../components/UpdateRoundContestant"
 
 import {
   useGetAll,
@@ -46,6 +48,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 
 import SearchIcon from "@mui/icons-material/Search";
+import { round } from "lodash";
 
 const ContestantPage: React.FC = () => {
   const [contestant, setcontestant] = useState<Contestant[]>([]);
@@ -55,6 +58,10 @@ const ContestantPage: React.FC = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  //tuankiet
+  const [isUpdateRoundOpen, setIsUpdateRoundOpen] = useState(false);
+
+  
   const [isComfirmDelete, setIsComfirmDelete] = useState(false);
   const [isComfirmDeleteMany, setIsComfirmDeleteMany] = useState(false);
 
@@ -159,6 +166,32 @@ const ContestantPage: React.FC = () => {
       );
     }
   };
+  //tuankiet
+  const handleUpdateRoundContestants =(formData: { roundId: number })=>{
+    console.log("cap nhat qua vong",formData)//{roundId=11}
+    selectedIds.forEach(id=>{
+                  mutateUpdate(
+            {   id: id,
+                payload:{
+                    status: "compete",
+                    roundId: formData.roundId,//gan cung
+                } 
+            },
+            {
+            onSuccess: () => {
+                console.log('Cập nhật constestant thành công:',contestantData);
+                // setSelectedId(null);
+                refetchs();
+            },
+            onError: (err: any) => {
+                if (err.response?.data?.message)
+                console.log(err.response?.data?.message, "error");
+               refetchs();  
+            },
+            }
+            );
+    })
+  }
 
   const handleDelete = useCallback((id: number | null) => {
     if (!id) return;
@@ -308,8 +341,9 @@ const ContestantPage: React.FC = () => {
             sx={{ flex: 1, minWidth: 200 }}
           />
 
-          {/* Nút Xoá nhiều */}
+          {/* Nút Xoá nhiều và qua vòng nhiều*/}
           {selectedIds.length > 0 && (
+            <>
             <Button
               variant="contained"
               color="error"
@@ -318,6 +352,16 @@ const ContestantPage: React.FC = () => {
             >
               Xoá ({selectedIds.length})
             </Button>
+            {/*tuankiet*/}
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ width: { xs: "100%", sm: "auto" }, alignSelf: "center" }}
+              onClick={() => {setIsUpdateRoundOpen(true)}}
+            >
+              Vòng tiếp ({selectedIds.length})
+            </Button>
+            </>
           )}
         </Stack>
 
@@ -424,6 +468,14 @@ const ContestantPage: React.FC = () => {
           onClose={() => setIsEditOpen(false)}
           id={selectedId}
           onSubmit={handleUpdate}
+        />
+        {/*tuankiet*/}
+        <UpdateRoundContestant
+          isOpen={isUpdateRoundOpen}
+          onClose={() => setIsUpdateRoundOpen(false)}
+          ids={selectedIds}
+          onSubmit={handleUpdateRoundContestants}
+          rounds={roundData.data ?? []}
         />
         <ConfirmDelete
           open={isComfirmDelete}
