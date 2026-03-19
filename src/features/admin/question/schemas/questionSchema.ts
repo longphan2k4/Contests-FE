@@ -373,8 +373,16 @@ export const validateMediaFiles = (files: File[]): { isValid: boolean; error?: s
     return { isValid: false, error: "Danh sách file không hợp lệ" };
   }
 };
+//tuankiet
+export const ImportExcelSchema = z.object({
+  file: z.instanceof(FileList).refine(files => files.length > 0, {
+    message: "Vui lòng chọn một file Excel",
+  }),
+});
 
 // Type exports
 export type QuestionFormData = z.infer<typeof questionFormSchema>;
 export type CreateQuestionData = z.infer<typeof createQuestionSchema>;
 export type UpdateQuestionData = z.infer<typeof updateQuestionSchema>; 
+//tuankiet
+export type ImportExcelInput = z.infer<typeof ImportExcelSchema>;
