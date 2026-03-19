@@ -50,12 +50,12 @@ const Footer: React.FC = () => {
             <div className="flex items-center space-x-3 mb-6">
                <img src={Logo} alt="Logo" className="w-7 h-10 object-cover" />
               <div>
-                <h3 className="font-bold">Olympic Tin học 2025</h3>
+                <h3 className="font-bold">Olympic Tin học 2026</h3>
                 <p className="text-sm text-gray-400">Khoa CNTT</p>
               </div>
             </div>
             <p className="text-gray-400 leading-relaxed">
-              Cuộc thi Olympic Tin học 2025 do Khoa Công nghệ Thông tin, Trường Cao đẳng Kỹ Thuật Cao Thắng tổ chức nhằm tạo sân chơi bổ ích cho sinh viên đam mê công nghệ thông tin.
+              Cuộc thi Olympic Tin học 2026 do Khoa Công nghệ Thông tin, Trường Cao đẳng Kỹ Thuật Cao Thắng tổ chức nhằm tạo sân chơi bổ ích cho sinh viên đam mê công nghệ thông tin.
             </p>
           </div>
 
@@ -98,7 +98,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>© 2025 Olympic Tin Học - Khoa Công nghệ Thông tin. All rights reserved.</p>
+          <p>© 2026 Olympic Tin Học - Khoa Công nghệ Thông tin. All rights reserved.</p>
         </div>
       </div>
     </footer>

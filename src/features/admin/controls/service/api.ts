@@ -76,6 +76,13 @@ export const GetListClassVideo = async (slug: string | null) => {
   return res.data;
 };
 
+export const GetListClassVideoWinner = async (slug: string | null) => {
+  const res = await axiosInstance.get(
+    `/class-video/contest/winner/${slug}`
+  );
+  return res.data;
+}; //Lấy video lớp đoạt giải của cuộc thi
+
 /**==================================CỨU TRỢ======================================== */
 // Lấy danh sách thí sinh bị loại có phân trang, lọc, tìm kiếm
 export const getEliminatedContestants = async (
