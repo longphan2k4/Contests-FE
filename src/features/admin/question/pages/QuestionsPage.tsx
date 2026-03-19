@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useExportExcel } from "@/hooks/useExportExcel";
 import {
   Box,
   Button,
@@ -62,6 +63,7 @@ const QuestionsPage: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const [openConfirmBatchDelete, setOpenConfirmBatchDelete] = useState(false);
 
+  const { mutate: exportExcel } = useExportExcel(); //quy
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { showToast } = useToast();
@@ -229,6 +231,39 @@ const QuestionsPage: React.FC = () => {
       );
     }
   };
+  //quy: export excel questions
+  const handleExportExcel = () => {
+    console.log(questions);
+    const data = questions.map(question => ({
+    "ID": question.id,
+    "Giới thiệu": question.intro,
+    "Thời gian mặc định": question.defaultTime,
+    "Loại câu hỏi": question.questionType === "multiple_choice" ? "Trắc nghiệm" : "Tự luận",
+    "Nội dung câu hỏi": question.content.replace(/<[^>]*>/g, ''),
+    "Lựa chọn": question.options ? question.options.join(' | ') : '',
+    "Đáp án đúng": question.correctAnswer,
+    "Điểm": question.score,
+    "Độ khó": question.difficulty,
+    "Giải thích": question.explanation || '',
+    "Chủ đề": question.questionTopic?.name,
+    "Trạng thái": question.isActive ? "Hoạt động" : "Không hoạt động",
+  }));
+
+    exportExcel(
+      {
+        data: data,
+        fileName: "Questions.xlsx",
+      },
+      {
+        onSuccess: () => {
+          showToast(`Xuất Excel thành công`, "success");
+        },
+        onError: (err: any) => {
+          showToast(err.response?.data?.message, "error");
+        },
+      }
+    );
+  };
 
   return (
     <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
@@ -256,6 +291,14 @@ const QuestionsPage: React.FC = () => {
           fullWidth={isMobile}
         >
           Thêm câu hỏi mới
+        </Button>
+        <Button
+          variant="contained"
+          color="success"
+          startIcon={<AddIcon />}
+          onClick={handleExportExcel}
+        >
+          Xuất Excel
         </Button>
       </Box>
 
