@@ -38,6 +38,7 @@ export const CreateClassVideo = async (
   }
   formData.append("classId", String(payload.classId));
   formData.append("videos", payload.videos);
+  formData.append("isWinner", payload.isWinner ? "true" : "false");
 
   const res = await axiosInstance.post(
     `/class-video/contest/${slug}`,
@@ -60,6 +61,9 @@ export const UpdateClassVideo = async (
   payload.name && formData.append("name", payload.name);
   payload.slogan && formData.append("slogan", payload.slogan);
   payload.videos && formData.append("videos", payload.videos);
+  if (payload.isWinner !== undefined) {
+    formData.append("isWinner", payload.isWinner ? "true" : "false");
+  }
 
   const res = await axiosInstance.patch(`/class-video/${id}`, formData, {
     headers: {
