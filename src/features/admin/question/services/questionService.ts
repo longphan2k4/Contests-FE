@@ -204,3 +204,10 @@ export const questionService = {
     }
   }
 }; 
+//tuankiet
+export const ImportExcel = async (file: any) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await axiosInstance.post("/questions/import/excel", formData);
+  return res.data;
+};
