@@ -2,35 +2,35 @@ import { UserPlusIcon, ClockIcon, ComputerDesktopIcon, SpeakerWaveIcon, Academic
 
  const timeline = [
   {
-    date: "03/04/2025",
+    date: "03/04/2026",
     title: "Tứ kết 1 - Tứ kết 2",
     description: "...",
     status: "completed",
     icon: "registration"
   },
   {
-    date: "04/04/2025",
+    date: "04/04/2026",
     title: "Tứ kết 3 - Tứ kết 4",
     description: "...",
     status: "completed",
     icon: "deadline"
   },
   {
-    date: "09/04/2025",
+    date: "09/04/2026",
     title: "Bán kết 1- Bán kết 2 - bán kết 3",
     description: "...",
     status: "completed",
     icon: "online"
   },
   {
-    date: "17/04/2025",
+    date: "17/04/2026",
     title: "Vòng chung kết",
     description: "Thi đấu trực tiếp tại trường, tranh tài các giải thưởng",
     status: "completed",
     icon: "final"
   },
   {
-    date: "17/04/2025",
+    date: "17/04/2026",
     title: "Lễ trao giải",
     description: "Trao giải thưởng và chứng nhận cho các thí sinh xuất sắc",
     status: "completed",
