@@ -696,6 +696,7 @@ const QuestionsPage: React.FC = () => {
       {/*tuankiet*/}
       <ImportExcelDialog
         isOpen={isImportExcelOpen}
+        topics={topics}
         onClose={() => {
           setIsImportExcelOpen(false);
           // refetchStudents();

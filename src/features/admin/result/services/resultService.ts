@@ -1,4 +1,5 @@
 import axios from 'axios';
+import axiosInstance from "../../../../config/axiosInstance";
 import type { Result, ResultFilterParams } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -19,4 +20,19 @@ export const getResultsByMatchId = async (matchId: number): Promise<Result[]> =>
 
 export const getResultsByContestantId = async (contestantId: number): Promise<Result[]> => {
   return getResults({ contestantId });
-}; 
+};
+
+//tuankiet
+export const updateResult = async (
+  id:number,
+  data: {
+    contestantId: number | undefined;
+    matchId: number | undefined;
+    isCorrect: boolean | undefined;
+    questionOrder: number | undefined;
+    name: string | undefined;
+  }
+): Promise<Result> => {
+  const response = await axiosInstance.patch(`${API_URL}/results/${id}`, data);
+  return response.data;
+};
