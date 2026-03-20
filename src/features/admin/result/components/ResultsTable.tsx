@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Paper,
   Table,
@@ -14,7 +14,8 @@ import {
   Tooltip,
   Avatar,
   Card,
-  CardContent
+  CardContent,
+  Button
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -25,56 +26,63 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import type { Result } from '../types';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
+//tuankiet
+import Confirm from '@components/Confirm';
+import {updateResult} from "../services/resultService"
 
 interface ResultsTableProps {
   results: Result[];
+  //tuankiet
+  fetchResults: () => void;
 }
 
-const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
+const ResultsTable: React.FC<ResultsTableProps> = ({ results, fetchResults }) => {
+  //tuankiet
+  const [isEditResult, setIsEditResult] = useState(Boolean(false))
   // Nhóm kết quả theo thí sinh và tính điểm
   const contestantScores = useMemo(() => {
-    const scoreMap: Record<string, { 
+    const scoreMap: Record<string, {
       contestant: Result['contestant'];
-      correct: number; 
-      total: number; 
+      correct: number;
+      total: number;
       accuracy: number;
       matches: Set<string>;
     }> = {};
-    
+
     results.forEach(result => {
       const key = result.contestant.student.id.toString();
       if (!scoreMap[key]) {
-        scoreMap[key] = { 
+        scoreMap[key] = {
           contestant: result.contestant,
-          correct: 0, 
-          total: 0, 
+          correct: 0,
+          total: 0,
           accuracy: 0,
           matches: new Set()
         };
       }
-      
+
       scoreMap[key].total += 1;
       scoreMap[key].matches.add(result.match.name);
       if (result.isCorrect) {
         scoreMap[key].correct += 1;
       }
     });
-    
+
     // Tính tỉ lệ chính xác
     Object.keys(scoreMap).forEach(key => {
       const { correct, total } = scoreMap[key];
       scoreMap[key].accuracy = total > 0 ? (correct / total) * 100 : 0;
     });
-    
+
     // Sắp xếp theo số câu đúng giảm dần
     return Object.entries(scoreMap)
-      .map(([key, stats]) => ({ 
+      .map(([key, stats]) => ({
         studentId: key,
-        ...stats 
+        ...stats
       }))
       .sort((a, b) => b.correct - a.correct || b.accuracy - a.accuracy);
   }, [results]);
-  
+
   if (results.length === 0) {
     return (
       <Paper elevation={2} sx={{ p: 3 }}>
@@ -96,12 +104,12 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
     }
   };
 
-  // Lấy màu cho chip result
+  // Lấy màu cho chip result 
   const getResultChipProps = (isCorrect: boolean) => ({
-    icon: isCorrect ? <CheckCircleIcon /> : <CancelIcon />,
+    startIcon: isCorrect ? <CheckCircleIcon /> : <CancelIcon />,//icon: isCorrect ? <CheckCircleIcon /> : <CancelIcon />,//tuankiet da sua
     label: isCorrect ? 'Đúng' : 'Sai',
     color: isCorrect ? 'success' as const : 'error' as const,
-    variant: 'filled' as const
+    variant: 'contained' as const//variant: 'filled' as const//tuankiet da sua
   });
 
   // Hiển thị bảng xếp hạng
@@ -130,9 +138,9 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
           </TableHead>
           <TableBody>
             {contestantScores.map((contestant, index) => (
-              <TableRow 
+              <TableRow
                 key={contestant.studentId}
-                sx={{ 
+                sx={{
                   bgcolor: index < 3 ? `rgba(255, 215, 0, ${0.1 - index * 0.02})` : 'inherit',
                   '&:hover': { bgcolor: 'action.hover' }
                 }}
@@ -172,7 +180,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  <Chip 
+                  <Chip
                     icon={<SchoolIcon />}
                     label={contestant.contestant.student.studentCode}
                     variant="outlined"
@@ -192,9 +200,9 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 120 }}>
                     <Box sx={{ width: '100%', mr: 1 }}>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={contestant.accuracy} 
+                      <LinearProgress
+                        variant="determinate"
+                        value={contestant.accuracy}
                         color={contestant.accuracy > 70 ? "success" : contestant.accuracy > 40 ? "warning" : "error"}
                         sx={{ height: 8, borderRadius: 4 }}
                       />
@@ -205,7 +213,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
                   </Box>
                 </TableCell>
                 <TableCell align="center">
-                  <Chip 
+                  <Chip
                     label={contestant.matches.size}
                     color="primary"
                     variant="outlined"
@@ -247,76 +255,122 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
           </TableHead>
           <TableBody>
             {results.map((row, index) => (
-              <TableRow
-                key={row.id}
-                sx={{ 
-                  '&:last-child td, &:last-child th': { border: 0 },
-                  '&:hover': { bgcolor: 'action.hover' }
-                }}
-              >
-                <TableCell>
-                  <Typography variant="body2" color="text.secondary">
-                    {index + 1}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" fontWeight="medium">
-                    {row.name}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar sx={{ mr: 1, width: 32, height: 32, bgcolor: 'secondary.main' }}>
-                      <PersonIcon fontSize="small" />
-                    </Avatar>
-                    <Box>
-                      <Typography variant="body2" fontWeight="medium">
-                        {row.contestant.student.fullName}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {row.contestant.student.studentCode}
-                      </Typography>
+              <>
+                <TableRow
+                  key={row.id}
+                  sx={{
+                    '&:last-child td, &:last-child th': { border: 0 },
+                    '&:hover': { bgcolor: 'action.hover' }
+                  }}
+                >
+                  <TableCell>
+                    <Typography variant="body2" color="text.secondary">
+                      {index + 1}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight="medium">
+                      {row.name}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Avatar sx={{ mr: 1, width: 32, height: 32, bgcolor: 'secondary.main' }}>
+                        <PersonIcon fontSize="small" />
+                      </Avatar>
+                      <Box>
+                        <Typography variant="body2" fontWeight="medium">
+                          {row.contestant.student.fullName}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {row.contestant.student.studentCode}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={row.match.name}
-                    variant="outlined"
-                    size="small"
-                    color="primary"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={row.match.round.name}
-                    variant="filled"
-                    size="small"
-                    color="secondary"
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    label={row.questionOrder}
-                    variant="outlined"
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <Chip {...getResultChipProps(row.isCorrect)} />
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" color="text.secondary">
-                    {formatDate(row.createdAt)}
-                  </Typography>
-                </TableCell>
-              </TableRow>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={row.match.name}
+                      variant="outlined"
+                      size="small"
+                      color="primary"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={row.match.round.name}
+                      variant="filled"
+                      size="small"
+                      color="secondary"
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      label={row.questionOrder}
+                      variant="outlined"
+                      size="small"
+                    />
+                  </TableCell>
+                  {/*tuankiet*/}
+                  <TableCell align="center">
+                    <Button
+                      {...getResultChipProps(row.isCorrect)}
+                      onClick={() => {
+                        console.log("edit_result:", row)
+                        setIsEditResult(true)
+                      }}
+                    >
+                      {/* <Chip {...getResultChipProps(row.isCorrect)}
+                    /> */}
+                    </Button>
+
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" color="text.secondary">
+                      {formatDate(row.createdAt)}
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+
+                <Confirm
+                  open={isEditResult}
+                  title="Xác nhận xóa"
+                  description={`Bạn có chắc sửa đáp án "${row.contestant.student.fullName}" từ \'${row.isCorrect?"Đúng":"Sai"}\' thành \'${row.isCorrect?"Sai":"Đúng"}\' Không?`}
+                  // loading={loading}
+                  onClose={() => setIsEditResult(false)}
+                  onConfirm={() => {
+                    console.log("Thong tin gui di",{
+                      id:row.id,
+                      contestantId: row.contestant.id,
+                      matchId: row.matchId,
+                      isCorrect: !row.isCorrect,
+                      questionOrder: row.questionOrder,
+                      name: row.contestant.student.fullName
+                    })
+                    //hanleUpdate
+                    updateResult(row.id,{
+                      contestantId: row.contestant.id,
+                      matchId: row.matchId,
+                      isCorrect: !row.isCorrect,
+                      questionOrder: row.questionOrder,
+                      name: row.contestant.student.fullName
+                    })
+                    console.log("da sua dap an thanh",row.isCorrect?"sai":"dung")
+                    fetchResults()
+                  }}
+                />
+              </>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
     </Card>
+
+    //xac nhan sua dap an
+
   );
+
+
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

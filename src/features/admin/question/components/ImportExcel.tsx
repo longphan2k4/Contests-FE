@@ -15,11 +15,16 @@ import { useExportExcel } from "@/hooks/useExportExcel";
 interface ImportExcelDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  topics: any[];
 }
-
+// interface Topic{
+//   id: number;
+//   name: string;
+// }
 export default function ImportExcelDialog({
   isOpen,
   onClose,
+  topics,
 }: ImportExcelDialogProps): React.ReactElement {
   const { mutate: importExcel, isPending } = useImportExcel();
   const { mutate: exportExcel } = useExportExcel();
@@ -37,6 +42,7 @@ export default function ImportExcelDialog({
 
   useEffect(() => {
     if (isOpen) {
+      console.log(topics);
       reset();
     }
   }, [isOpen, reset]);
@@ -54,49 +60,50 @@ export default function ImportExcelDialog({
   };
 
   const handleExportExcel = () => {//sua
+    const topic_arr=topics.map((t,i)=>{
+        return{  
+        STT: i+2,
+        "Giới thiệu": "",
+        "Thời gian mặc định (>10s) ": "",
+        "Loại câu hỏi": "",
+        "Nội dung câu hỏi": "",
+        "Lựa chọn":"",
+        "Đáp án đúng":"",
+        "Điểm":"",
+        "Độ khó(Alpha|Beta|Rc|Gold)":"",
+        "Giải thích":"",
+        "Chủ đề":"",
+        "Trạng thái":"",
+        "loaicau":"",//loai cau tu generate
+        "chude":"",//chu de tu generate
+        "question topic id":t.id,
+        "Tên chủ Đề":t.name,
+        "question type":"",
+        "loại câu hỏi":"",
+      }
+      })
     const data: any = [
        {
         STT: 1,
         "Giới thiệu": "Câu hỏi Toán học nâng cao",
-        "Thời gian mặc định (s) ": 1,
-        "Loại câu hỏi(tam thoi ko sua)": "multiple_choice",
+        "Thời gian mặc định (>10s) ": 10,
+        "Loại câu hỏi": ``,
         "Nội dung câu hỏi": "Đạo hàm của hàm số y = x² là?",
         "Lựa chọn":"x | 2x | x² | 2x²",
         "Đáp án đúng":"2x",
         "Điểm":"20",
         "Độ khó(Alpha|Beta|Rc|Gold)":"Alpha",
         "Giải thích":"Đạo hàm của x² là 2x",
-        "Chủ đề(id chu de)":"3",
+        "Chủ đề":"3",
         "Trạng thái":"Hoạt động",
+        "loaicau":"",
+        "chude":"",
+        "question topic id":"",
+        "Tên chủ Đề":"",
+        "question type":"",
+        "loại câu hỏi":"",
       },
-          {
-        STT: 2,
-        "Giới thiệu": "Câu hỏi Toán học nâng cao",
-        "Thời gian mặc định (s) ": 1,
-        "Loại câu hỏi(tam thoi ko sua)": "multiple_choice",
-        "Nội dung câu hỏi": "Đạo hàm của hàm số y = x² là?",
-        "Lựa chọn":"x | 2x | x² | 2x²",
-        "Đáp án đúng":"2x",
-        "Điểm":"20",
-        "Độ khó(Alpha|Beta|Rc|Gold)":"Beta",
-        "Giải thích":"Đạo hàm của x² là 2x",
-        "Chủ đề(id chu de)":"3",
-        "Trạng thái":"Hoạt động",
-      },
-          {
-        STT: 3,
-        "Giới thiệu": "Câu hỏi Toán học nâng cao",
-        "Thời gian mặc định (s) ": 1,
-        "Loại câu hỏi(tam thoi ko sua)": "multiple_choice",
-        "Nội dung câu hỏi": "Đạo hàm của hàm số y = x² là?",
-        "Lựa chọn":"x | 2x | x² | 2x²",
-        "Đáp án đúng":"2x",
-        "Điểm":"20",
-        "Độ khó(Alpha|Beta|Rc|Gold)":"Alpha",
-        "Giải thích":"Đạo hàm của x² là 2x",
-        "Chủ đề(id chu de)":"3",
-        "Trạng thái":"Hoạt động",
-      },
+      ...topic_arr
     ];
 
     exportExcel(//sua

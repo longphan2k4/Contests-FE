@@ -306,7 +306,7 @@ const ResultsPage: React.FC = () => {
               </Alert>
             ) : (
               <>
-                <ResultsTable results={results} />
+                <ResultsTable results={results} fetchResults={fetchResults}/>
 
                 {/* Phân trang */}
                 {totalPages > 0 && (
