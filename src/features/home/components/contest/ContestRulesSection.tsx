@@ -12,17 +12,19 @@ const ContestRulesSection = () => {
     {
       icon: <UsersIcon className="w-8 h-8" />,
       title: "Đối tượng tham gia",
-      description: "Tất cả các lớp thuộc khoa CNTT"
+      description: "Tất cả sinh viên đang học tập tại Khoa Công nghệ thông tin - Trường Cao Đẳng Kỹ Thuật Cao Thắng"
     },
     {
       icon: <CalendarDaysIcon className="w-8 h-8" />,
       title: "Thời gian tổ chức",
-      description: "24/03 - 30/03: Vòng sơ loại • 31/03 - 13/04: Tứ kết & Bán kết • 14/04 - 20/04: Chung kết"
+      description: "23/03 - 03/04: Vòng sơ loại • 06/04 - 17/04: Vòng tứ kết & Bán kết • 20/04 - 24/04: Chung kết"
     },
     {
       icon: <BookOpenIcon className="w-8 h-8" />,
       title: "8 Lĩnh vực kiến thức",
-      description: "Lập trình C/C++, CSDL, Phần cứng & Mạng, Ứng dụng CNTT, Thiết kế Website, Công nghệ phần mềm, Tin tức công nghệ, Anh văn chuyên ngành"
+      description: `Ngôn ngữ lập trình C++, Cơ sở dữ liệu, Ứng dụng CNTT cơ bản, Phần cứng máy tính,
+      Hệ điều hành Windows/Internet, Mạng máy tính, Thiết kế website, Anh văn chuyên ngành CNTT, 
+      Trí tuệ nhân tạo (AI) và tin tức/xu hướng công nghệ hiện nay, Công nghệ phần mềm`
     }
   ];
 
@@ -31,19 +33,25 @@ const ContestRulesSection = () => {
       icon: <AcademicCapIcon className="w-6 h-6" />,
       title: "Vòng sơ loại",
       format: "Thi trực tiếp tại lớp",
-      details: "30 câu hỏi trắc nghiệm • Chọn 20 thí sinh xuất sắc nhất"
+      details: "30 câu hỏi trắc nghiệm • Mỗi lớp chọn 1 đội gồm 20 sinh viên (15 chính thức và 5 dự bị)"
     },
     {
       icon: <PlayIcon className="w-6 h-6" />,
-      title: "Tứ kết & Bán kết", 
+      title: "Tứ kết", 
       format: "Đấu trường số",
-      details: "Video giới thiệu đội • 13 câu hỏi 4 mức độ • Chọn 60 thí sinh vào chung kết"
+      details: "13 câu hỏi 4 mức độ • 5 trận đấu • Mỗi trận 4 đội • Chọn 24 thí sinh vào Bán Kết"
+    },
+     {
+      icon: <PlayIcon className="w-6 h-6" />,
+      title: "Bán kết", 
+      format: "Đấu trường số",
+      details: "13 câu hỏi 4 mức độ • 2 trận đấu • Mỗi trận 60 thí sinh • Chọn 60 thí sinh vào chung kết"
     },
     {
       icon: <TrophyIcon className="w-6 h-6" />,
       title: "Chung kết",
       format: "Đấu trường số",
-      details: "Tranh tài quyết liệt • Chọn 3 thí sinh xuất sắc nhất • Cơ hội nhận nút GOLD"
+      details: "60 thí sinh xuất sắc nhất • Tranh tài quyết liệt • Chọn 3 thí sinh xuất sắc nhất"
     }
   ];
 
@@ -58,7 +66,11 @@ const ContestRulesSection = () => {
     { rank: "Giải Nhất", amount: "3.000.000đ", icon: "🥇" },
     { rank: "Giải Nhì", amount: "2.000.000đ", icon: "🥈" },
     { rank: "Giải Ba", amount: "1.000.000đ", icon: "🥉" },
-    { rank: "Video ấn tượng", amount: "1.000.000đ", icon: "🎬" }
+    { rank: "Video xuất sắc nhất", amount: "1.000.000đ", icon: "🎥" },
+    { rank: "Video sáng tạo nhất", amount: "500.000đ", icon: "🎬" },
+    { rank: "Lớp có tổng số câu trả lời đúng nhiều nhất giải đấu", amount: "500.000đ", icon: "💡" },
+    { rank: "Câu hỏi Gold (Trận tứ kết và bán kết)", amount: "500.000đ", icon: "🏆" },
+    { rank: "Câu hỏi Gold (Trận chung kết)", amount: "1.000.000đ", icon: "👑" }
   ];
 
   return (
@@ -99,7 +111,7 @@ const ContestRulesSection = () => {
           <h3 className="text-3xl font-bold text-center mb-12 text-gray-800">
             Các vòng thi
           </h3>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {rounds.map((round, index) => (
               <div key={index} className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300">
                 <div className="flex items-center mb-4">

@@ -89,7 +89,7 @@ const Footer: React.FC = () => {
                 { icon: 't', color: 'bg-blue-400 hover:bg-blue-500' },
                 { icon: 'y', color: 'bg-red-600 hover:bg-red-700' }
               ].map((social, index) => (
-                <a key={index} href="https://www.facebook.com/cntt.caothang.edu.vn" className={`w-10 h-10 ${social.color} rounded-full flex items-center justify-center transition-colors`}>
+                <a key={index} href="https://www.facebook.com/olympicit.caothang" className={`w-10 h-10 ${social.color} rounded-full flex items-center justify-center transition-colors`}>
                   <span className="text-sm font-semibold">{social.icon}</span>
                 </a>
               ))}
