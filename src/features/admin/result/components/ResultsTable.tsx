@@ -41,11 +41,15 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results, fetchResults }) =>
   const [isEditResult, setIsEditResult] = useState(Boolean(false))
   // Nhóm kết quả theo thí sinh và tính điểm
   const contestantScores = useMemo(() => {
-    const scoreMap: Record<string, {
+    //quy
+    console.log(results);
+    const scoreMap: Record<string, { 
       contestant: Result['contestant'];
-      correct: number;
-      total: number;
+      correct: number; 
+      //quy: thêm totalScore
+      total: number; 
       accuracy: number;
+      totalScore: number;
       matches: Set<string>;
     }> = {};
 
@@ -57,11 +61,15 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results, fetchResults }) =>
           correct: 0,
           total: 0,
           accuracy: 0,
+          //quy: thêm totalScore
+          totalScore: 0,
           matches: new Set()
         };
       }
 
       scoreMap[key].total += 1;
+      //quy: cộng điểm
+      scoreMap[key].totalScore += result.score;
       scoreMap[key].matches.add(result.match.name);
       if (result.isCorrect) {
         scoreMap[key].correct += 1;
@@ -132,6 +140,8 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results, fetchResults }) =>
               <TableCell><strong>Mã SV</strong></TableCell>
               <TableCell align="center"><strong>Số câu đúng</strong></TableCell>
               <TableCell align="center"><strong>Tổng câu</strong></TableCell>
+              {/* quy: thêm cột tổng điểm */}
+              <TableCell align="center"><strong>Tổng điểm</strong></TableCell>
               <TableCell><strong>Tỉ lệ chính xác</strong></TableCell>
               <TableCell align="center"><strong>Số trận</strong></TableCell>
             </TableRow>
@@ -195,6 +205,12 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results, fetchResults }) =>
                 <TableCell align="center">
                   <Typography variant="body1">
                     {contestant.total}
+                  </Typography>
+                </TableCell>
+                {/* quy: thêm cột tổng điểm */}
+                <TableCell align="center">
+                  <Typography variant="h6" color="primary.main" fontWeight="bold">
+                    {contestant.totalScore}
                   </Typography>
                 </TableCell>
                 <TableCell>
