@@ -39,6 +39,7 @@ interface ResultsTableProps {
 const ResultsTable: React.FC<ResultsTableProps> = ({ results, fetchResults }) => {
   //tuankiet
   const [isEditResult, setIsEditResult] = useState(Boolean(false))
+  const [selectedRow, setSelectedRow] = useState<Result | null>(null)
   // Nhóm kết quả theo thí sinh và tính điểm
   const contestantScores = useMemo(() => {
     //quy
@@ -334,6 +335,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results, fetchResults }) =>
                       onClick={() => {
                         console.log("edit_result:", row)
                         setIsEditResult(true)
+                        setSelectedRow(row)
                       }}
                     >
                       {/* <Chip {...getResultChipProps(row.isCorrect)}
@@ -346,35 +348,36 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results, fetchResults }) =>
                       {formatDate(row.createdAt)}
                     </Typography>
                   </TableCell>
-                </TableRow>
-
-                <Confirm
+                  {selectedRow && (
+                  <Confirm
                   open={isEditResult}
                   title="Xác nhận xóa"
-                  description={`Bạn có chắc sửa đáp án "${row.contestant.student.fullName}" từ \'${row.isCorrect?"Đúng":"Sai"}\' thành \'${row.isCorrect?"Sai":"Đúng"}\' Không?`}
+                  description={`Bạn có chắc sửa đáp án "${selectedRow.contestant.student.fullName}" từ \'${selectedRow.isCorrect?"Đúng":"Sai"}\' thành \'${row.isCorrect?"Sai":"Đúng"}\' Không?`}
                   // loading={loading}
                   onClose={() => setIsEditResult(false)}
                   onConfirm={() => {
                     console.log("Thong tin gui di",{
-                      id:row.id,
-                      contestantId: row.contestant.id,
-                      matchId: row.matchId,
-                      isCorrect: !row.isCorrect,
-                      questionOrder: row.questionOrder,
-                      name: row.contestant.student.fullName
+                      id:selectedRow.id,
+                      contestantId: selectedRow.contestant.id,
+                      matchId: selectedRow.matchId,
+                      isCorrect: !selectedRow.isCorrect,
+                      questionOrder:selectedRow.questionOrder,
+                      name: selectedRow.contestant.student.fullName
                     })
                     //hanleUpdate
                     updateResult(row.id,{
-                      contestantId: row.contestant.id,
-                      matchId: row.matchId,
-                      isCorrect: !row.isCorrect,
-                      questionOrder: row.questionOrder,
-                      name: row.contestant.student.fullName
+                      contestantId: selectedRow.contestant.id,
+                      matchId: selectedRow.matchId,
+                      isCorrect: !selectedRow.isCorrect,
+                      questionOrder:selectedRow.questionOrder,
+                      name: selectedRow.contestant.student.fullName
                     })
-                    console.log("da sua dap an thanh",row.isCorrect?"sai":"dung")
+                    console.log("da sua dap an thanh",selectedRow.isCorrect?"sai":"dung")
                     fetchResults()
                   }}
                 />
+                )}
+                </TableRow>
               </>
             ))}
           </TableBody>
