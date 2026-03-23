@@ -17,6 +17,8 @@ export interface Contestant {
 export interface Icon {
   id: number;
   registrationNumber: number;
+  //tuankiet
+  currentAnswer?:any;
   name: string;
   isDisintegrated: boolean;
   isRescued: boolean;

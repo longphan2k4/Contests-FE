@@ -352,7 +352,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results, fetchResults }) =>
                   <Confirm
                   open={isEditResult}
                   title="Xác nhận xóa"
-                  description={`Bạn có chắc sửa đáp án "${selectedRow.contestant.student.fullName}" từ \'${selectedRow.isCorrect?"Đúng":"Sai"}\' thành \'${row.isCorrect?"Sai":"Đúng"}\' Không?`}
+                  description={`Bạn có chắc sửa đáp án "${selectedRow.contestant.student.fullName}" từ \'${selectedRow.isCorrect?"Đúng":"Sai"}\' thành \'${selectedRow.isCorrect?"Sai":"Đúng"}\' Không?`}
                   // loading={loading}
                   onClose={() => setIsEditResult(false)}
                   onConfirm={() => {

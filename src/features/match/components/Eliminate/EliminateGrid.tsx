@@ -35,62 +35,63 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
   recentlyRestored,
 }) => {
   const totalContestants = icons.length;
-  
+
   if (totalContestants === 0) {
     return <div className="w-full h-full flex items-center justify-center text-gray-500">No contestants</div>;
   }
-  
+
   // Tính toán layout tối ưu
   const calculateBestLayout = (total: number, maxCols: number) => {
     const maxColumns = Math.min(maxCols || 10, total);
-    
+
     // Tìm layout tối ưu dựa trên tỷ lệ màn hình
     let bestCols = 1;
     let bestRows = total;
     let bestScore = 0;
-    
+
     for (let cols = 1; cols <= maxColumns; cols++) {
       const rows = Math.ceil(total / cols);
-      
+
       // Tính điểm dựa trên tỷ lệ và tận dụng không gian
       const aspectRatio = cols / rows;
       const spaceUtilization = total / (cols * rows);
-      
+
       // Ưu tiên tỷ lệ gần với 16:9 và tận dụng không gian tốt
-      const aspectScore = 1 - Math.abs(aspectRatio - 16/9) / (16/9);
+      const aspectScore = 1 - Math.abs(aspectRatio - 16 / 9) / (16 / 9);
       const utilScore = spaceUtilization;
-      
+
       const score = aspectScore * 0.3 + utilScore * 0.7;
-      
+
       if (score > bestScore) {
         bestScore = score;
         bestCols = cols;
         bestRows = rows;
       }
     }
-    
+
     return { columns: bestCols, rows: bestRows };
   };
-  
+
   const { columns, rows } = calculateBestLayout(totalContestants, maxContestantColumn);
-  
+
   // Tính toán kích thước item dựa trên container
   // const containerPadding = 16; // 4 * 4px
   const gapSize = Math.max(2, Math.min(5, 100 / Math.sqrt(totalContestants)));
-  
+
   // Nếu có listContestant, tạo array với line break
   let iconsWithBreaks: IconOrBreak[] = icons;
   if (listContestant && listContestant.length > 0) {
+
     iconsWithBreaks = [];
     listContestant.forEach((group, groupIndex) => {
-      const groupIcons = icons.filter(icon => 
-        group?.contestantMatches?.some(contestant => 
+      const groupIcons = icons.filter(icon =>
+        group?.contestantMatches?.some(contestant =>
           contestant?.registrationNumber === icon.registrationNumber
         )
       ).filter(icon => icon.isActive);
-      
+
       iconsWithBreaks.push(...groupIcons);
-      
+
       // Thêm line break sau mỗi group (trừ group cuối)
       if (groupIndex < listContestant.length - 1 && groupIcons.length > 0) {
         iconsWithBreaks.push({ id: `break-${groupIndex}`, isLineBreak: true });
@@ -100,10 +101,10 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
 
   return (
     <div className="w-full h-full overflow-hidden p-0 sm:p-0">
-      <div 
+      <div
         className="w-full h-full grid place-items-center"
         style={{
-          gridTemplateColumns: `repeat(${columns}, 1fr)`, 
+          gridTemplateColumns: `repeat(${columns}, 1fr)`,
           // gridTemplateRows: `repeat(${rows}, 1fr)`,
           gap: `${gapSize}px`,
           // padding: `${containerPadding}px`,
@@ -111,10 +112,11 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
         }}
       >
         {iconsWithBreaks.map((icon, index) => {
+          console.log(icon)
           // Render line break
           if ('isLineBreak' in icon) {
             return (
-              <div 
+              <div
                 key={icon.id}
                 className="col-span-full h-1 flex items-center justify-center"
               >
@@ -122,10 +124,10 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
               </div>
             );
           }
-          
+
           // Chỉ render các item active
           if (!icon.isActive) return null;
-          
+
           return (
             <motion.div
               key={icon.id}
@@ -139,26 +141,26 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                 aspectRatio: '1/1'
               }}
             >
-                <motion.div
+              <motion.div
                 variants={iconVariants}
                 initial="hidden"
                 animate={
                   icon.isFading
-                  ? "disintegrating"
-                  : icon.isDisintegrated
-                    ? "hidden"
-                    : "visible"
+                    ? "disintegrating"
+                    : icon.isDisintegrated
+                      ? "hidden"
+                      : "visible"
                 }
                 className={`
                   w-full h-full rounded-lg flex items-center justify-center 
                   shadow-lg border-2
                   ${icon.isDisintegrated
-                  ? "bg-red-500 text-white border-red-400 shadow-red-500/30"
-                  : recentlyRestored.includes(icon.registrationNumber)
-                    ? "bg-green-500 text-white animate-pulse shadow-green-400/50 border-green-400"
-                    : icon.isRescued
-                    ? "bg-green-500 text-white animate-pulse shadow-green-400/50 border-green-400"
-                    : "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-400/50 border-blue-400"
+                    ? "bg-red-500 text-white border-red-400 shadow-red-500/30"
+                    : recentlyRestored.includes(icon.registrationNumber)
+                      ? "bg-green-500 text-white animate-pulse shadow-green-400/50 border-green-400"
+                      : icon.isRescued
+                        ? "bg-green-500 text-white animate-pulse shadow-green-400/50 border-green-400"
+                        : "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-400/50 border-blue-400"
                   }
                 `}
                 style={{
@@ -166,24 +168,35 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                   minWidth: '100%',
                   minHeight: '100%'
                 }}
-                >
-                <span 
+              >
+                <span
                   className="font-black leading-none text-center drop-shadow-lg select-none"
                   style={{
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-                  wordBreak: 'break-all',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '2px',
-                  width: '100%',
-                  height: '100%'
+                    textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                    wordBreak: 'break-all',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '2px',
+                    width: '100%',
+                    height: '100%'
                   }}
                 >
-                  {icon.registrationNumber}
+                  {/* {icon.registrationNumber} */}
+                  {/*tuankiet: noi hien the thi sinh*/}
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="font-black">
+                      {icon.registrationNumber}
+                    </span>
+
+                    <span className="text-[10px]">
+                      {icon?.currentAnswer?.answer}
+                    </span>
+                  </div>
+
                 </span>
-                </motion.div>
+              </motion.div>
 
               {/* Particles Effect */}
               {icon.particles.length > 0 &&

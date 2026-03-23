@@ -66,6 +66,37 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
       status: status,
       ids: selectedIds,
     };
+    //tuankiet
+    const contestantsData = ListContestant.flatMap(group =>
+      group.contestantMatches.map(c => ({
+        registration_number: c.registrationNumber,
+        fullname: `${c.contestant.student.fullName}`,
+        status: c.status,
+        eliminated_at_question_order: c.eliminatedAtQuestionOrder,
+        rescued_at_question_order: c.rescuedAtQuestionOrder,
+        // currentAnswer:c.contestant.results.find(  (r:any) => r.questionOrder == currentQuestionOrder) || null,
+      })))
+      console.log("da cap nhat ket qua")
+      console.log(contestantsData)
+                        // console.log("Thong tin gui di",{
+                        //   id:selectedRow.id,
+                        //   contestantId: selectedRow.contestant.id,
+                        //   matchId: selectedRow.matchId,
+                        //   isCorrect: !selectedRow.isCorrect,
+                        //   questionOrder:selectedRow.questionOrder,
+                        //   name: selectedRow.contestant.student.fullName
+                        // })
+                        //hanleUpdate
+                        // updateResult(row.id,{
+                        //   contestantId: selectedRow.contestant.id,
+                        //   matchId: selectedRow.matchId,
+                        //   isCorrect: !selectedRow.isCorrect,
+                        //   questionOrder:selectedRow.questionOrder,
+                        //   name: selectedRow.contestant.student.fullName
+                        // })
+                        // console.log("da sua dap an thanh",selectedRow.isCorrect?"sai":"dung")
+                        // fetchResults()
+                      // }
 
     socket.emit("contestant:status-update-admin", data, (err: any) => {
       if (err) {
@@ -187,7 +218,7 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
           >
             Chưa bắt đầu
           </button>
-
+          {/*tuankiet*/}
           <button
             onClick={() => EmitContestantUpdate("in_progress")}
             className="bg-blue-500 text-white px-4 py-2 rounded font-semibold text-sm"
