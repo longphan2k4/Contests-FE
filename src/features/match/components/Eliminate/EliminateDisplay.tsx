@@ -8,6 +8,8 @@ import type { Icon } from "../../types";
 export interface Contestant {
   registration_number: number;
   fullname: string;
+  //tuankiet
+  currentAnswer:any;
   status:
   | "not_started"
   | "in_progress"
@@ -61,9 +63,14 @@ export default function EliminateDisplay({
         status: c.status,
         eliminated_at_question_order: c.eliminatedAtQuestionOrder,
         rescued_at_question_order: c.rescuedAtQuestionOrder,
+        currentAnswer:c.contestant.results.find(  (r:any) => r.questionOrder == currentQuestionOrder) || null,
       }))
     );
     setContestants(contestantsData);
+    //tuankiet
+    console.log("cau hien tai",currentQuestionOrder)
+    // console.log(ListContestant)
+    console.log("hien so do",contestantsData)
   }, [ListContestant, currentQuestionOrder]);
 
   useEffect(() => {
@@ -75,6 +82,7 @@ export default function EliminateDisplay({
         );
         return {
           id: contestant?.registration_number || index + 1,
+          currentAnswer: contestant?.currentAnswer,
           registrationNumber: contestant?.registration_number || index + 1,
           name: contestant?.fullname || "",
           isDisintegrated: contestant

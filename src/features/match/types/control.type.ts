@@ -197,6 +197,7 @@ export interface Contestant {
   rescuedAtQuestionOrder: number | null;
   status: ContestantMatchStatus;
   contestant: {
+    results:any,
     student: {
       id: number;
       fullName: string;
