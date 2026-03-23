@@ -3,7 +3,8 @@ import { Box, Typography, Card, CardContent } from "@mui/material";
 
 interface AntiCheatStatusProps {
   isMonitoring: boolean;
-  isFullscreen: boolean;
+  //quy
+  // isFullscreen: boolean;
   warningCount: number;
   maxViolations: number;
 }

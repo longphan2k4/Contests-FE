@@ -191,7 +191,8 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
   const {
     violations,
     warningCount,
-    isFullscreen,
+    //quy
+    // isFullscreen,
     startMonitoring,
     stopMonitoring,
     resetViolations, // 🔥 NEW: Thêm resetViolations
@@ -655,7 +656,8 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
       {/* 🛡️ Anti-cheat Status Header */}
       <AntiCheatStatus
         isMonitoring={isMonitoring}
-        isFullscreen={isFullscreen}
+        //quy
+        // isFullscreen={isFullscreen}
         warningCount={warningCount}
         maxViolations={maxViolations}
       />
