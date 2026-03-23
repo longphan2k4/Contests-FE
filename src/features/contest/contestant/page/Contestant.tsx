@@ -48,7 +48,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 
 import SearchIcon from "@mui/icons-material/Search";
-import { round } from "lodash";
+// import { round } from "lodash";
 
 const ContestantPage: React.FC = () => {
   const [contestant, setcontestant] = useState<Contestant[]>([]);
