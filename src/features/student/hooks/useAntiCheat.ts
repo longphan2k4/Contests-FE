@@ -1,17 +1,18 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
-// Mở rộng interface Document và HTMLElement để hỗ trợ fullscreen API
-interface ExtendedDocument extends Document {
-  webkitExitFullscreen?: () => Promise<void>;
-  msExitFullscreen?: () => Promise<void>;
-  webkitFullscreenElement?: Element;
-  msFullscreenElement?: Element;
-}
+//quy
+// // Mở rộng interface Document và HTMLElement để hỗ trợ fullscreen API
+// interface ExtendedDocument extends Document {
+//   webkitExitFullscreen?: () => Promise<void>;
+//   msExitFullscreen?: () => Promise<void>;
+//   webkitFullscreenElement?: Element;
+//   msFullscreenElement?: Element;
+// }
 
-interface ExtendedHTMLElement extends HTMLElement {
-  webkitRequestFullscreen?: () => Promise<void>;
-  msRequestFullscreen?: () => Promise<void>;
-}
+// interface ExtendedHTMLElement extends HTMLElement {
+//   webkitRequestFullscreen?: () => Promise<void>;
+//   msRequestFullscreen?: () => Promise<void>;
+// }
 
 export interface AntiCheatViolation {
   type:
@@ -53,7 +54,8 @@ export const useAntiCheat = (
 ) => {
   const finalConfig = { ...defaultConfig, ...config };
   const [violations, setViolations] = useState<AntiCheatViolation[]>([]);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  //quy
+  // const [isFullscreen, setIsFullscreen] = useState(false);
   const [warningCount, setWarningCount] = useState(0);
   const isActive = useRef(true);
 
@@ -94,71 +96,72 @@ export const useAntiCheat = (
     ]
   );
 
+  //quy
   // Enter fullscreen
-  const enterFullscreen = useCallback(async () => {
-    try {
-      // Kiểm tra xem có thể request fullscreen không
-      if (!document.fullscreenEnabled) {
-        return false;
-      }
+  // const enterFullscreen = useCallback(async () => {
+  //   try {
+  //     // Kiểm tra xem có thể request fullscreen không
+  //     if (!document.fullscreenEnabled) {
+  //       return false;
+  //     }
 
-      // Kiểm tra xem đã ở fullscreen chưa
-      const extendedDoc = document as ExtendedDocument;
-      const isCurrentlyFullscreen = !!(
-        extendedDoc.fullscreenElement ||
-        extendedDoc.webkitFullscreenElement ||
-        extendedDoc.msFullscreenElement
-      );
+  //     // Kiểm tra xem đã ở fullscreen chưa
+  //     const extendedDoc = document as ExtendedDocument;
+  //     const isCurrentlyFullscreen = !!(
+  //       extendedDoc.fullscreenElement ||
+  //       extendedDoc.webkitFullscreenElement ||
+  //       extendedDoc.msFullscreenElement
+  //     );
 
-      if (isCurrentlyFullscreen) {
-        setIsFullscreen(true);
-        return true;
-      }
+  //     if (isCurrentlyFullscreen) {
+  //       setIsFullscreen(true);
+  //       return true;
+  //     }
 
-      const docElement = document.documentElement as ExtendedHTMLElement;
-      if (docElement.requestFullscreen) {
-        await docElement.requestFullscreen();
-      } else if (docElement.webkitRequestFullscreen) {
-        await docElement.webkitRequestFullscreen();
-      } else if (docElement.msRequestFullscreen) {
-        await docElement.msRequestFullscreen();
-      }
-      return true;
-    } catch (error) {
-      console.warn("Không thể vào chế độ toàn màn hình:", error);
-      return false;
-    }
-  }, []);
+  //     const docElement = document.documentElement as ExtendedHTMLElement;
+  //     if (docElement.requestFullscreen) {
+  //       await docElement.requestFullscreen();
+  //     } else if (docElement.webkitRequestFullscreen) {
+  //       await docElement.webkitRequestFullscreen();
+  //     } else if (docElement.msRequestFullscreen) {
+  //       await docElement.msRequestFullscreen();
+  //     }
+  //     return true;
+  //   } catch (error) {
+  //     console.warn("Không thể vào chế độ toàn màn hình:", error);
+  //     return false;
+  //   }
+  // }, []);
 
-  // Exit fullscreen
-  const exitFullscreen = useCallback(async () => {
-    try {
-      const extendedDoc = document as ExtendedDocument;
+  // // Exit fullscreen
+  // const exitFullscreen = useCallback(async () => {
+  //   try {
+  //     const extendedDoc = document as ExtendedDocument;
 
-      // Kiểm tra xem có đang ở fullscreen không
-      const isCurrentlyFullscreen = !!(
-        extendedDoc.fullscreenElement ||
-        extendedDoc.webkitFullscreenElement ||
-        extendedDoc.msFullscreenElement
-      );
+  //     // Kiểm tra xem có đang ở fullscreen không
+  //     const isCurrentlyFullscreen = !!(
+  //       extendedDoc.fullscreenElement ||
+  //       extendedDoc.webkitFullscreenElement ||
+  //       extendedDoc.msFullscreenElement
+  //     );
 
-      if (!isCurrentlyFullscreen) {
-        setIsFullscreen(false);
-        return;
-      }
+  //     if (!isCurrentlyFullscreen) {
+  //       setIsFullscreen(false);
+  //       return;
+  //     }
 
-      if (extendedDoc.exitFullscreen) {
-        await extendedDoc.exitFullscreen();
-      } else if (extendedDoc.webkitExitFullscreen) {
-        await extendedDoc.webkitExitFullscreen();
-      } else if (extendedDoc.msExitFullscreen) {
-        await extendedDoc.msExitFullscreen();
-      }
-    } catch (error) {
-      console.warn("Không thể thoát chế độ toàn màn hình:", error);
-    }
-    setIsFullscreen(false);
-  }, []);
+  //     if (extendedDoc.exitFullscreen) {
+  //       await extendedDoc.exitFullscreen();
+  //     } else if (extendedDoc.webkitExitFullscreen) {
+  //       await extendedDoc.webkitExitFullscreen();
+  //     } else if (extendedDoc.msExitFullscreen) {
+  //       await extendedDoc.msExitFullscreen();
+  //     }
+  //   } catch (error) {
+  //     console.warn("Không thể thoát chế độ toàn màn hình:", error);
+  //   }
+  //   setIsFullscreen(false);
+  // }, []);
 
   // Start anti-cheat monitoring
   const startMonitoring = useCallback(() => {
@@ -170,10 +173,11 @@ export const useAntiCheat = (
   // Stop anti-cheat monitoring
   const stopMonitoring = useCallback(async () => {
     isActive.current = false;
-    if (isFullscreen) {
-      await exitFullscreen();
-    }
-  }, [isFullscreen, exitFullscreen]);
+    //quy
+    // if (isFullscreen) {
+    //   await exitFullscreen();
+    // }
+  }, []); //isFullscreen, exitFullscreen
 
   const resetViolations = useCallback(() => {
     if (!isActive.current) {
@@ -189,25 +193,26 @@ export const useAntiCheat = (
       return;
     }
 
-    // Phát hiện thay đổi trạng thái fullscreen
-    const handleFullscreenChange = () => {
-      const extendedDoc = document as ExtendedDocument;
-      const isNowFullscreen = !!(
-        extendedDoc.fullscreenElement ||
-        extendedDoc.webkitFullscreenElement ||
-        extendedDoc.msFullscreenElement
-      );
+    //quy
+    // // Phát hiện thay đổi trạng thái fullscreen
+    // const handleFullscreenChange = () => {
+    //   const extendedDoc = document as ExtendedDocument;
+    //   const isNowFullscreen = !!(
+    //     extendedDoc.fullscreenElement ||
+    //     extendedDoc.webkitFullscreenElement ||
+    //     extendedDoc.msFullscreenElement
+    //   );
+      
+    //   setIsFullscreen(isNowFullscreen);
 
-      setIsFullscreen(isNowFullscreen);
-
-      if (!isNowFullscreen && finalConfig.enableFullscreen) {
-        addViolation({
-          type: "fullscreen_exit",
-          timestamp: new Date(),
-          description: "Thí sinh đã thoát khỏi chế độ toàn màn hình",
-        });
-      }
-    };
+    //   if (!isNowFullscreen && finalConfig.enableFullscreen) {
+    //     addViolation({
+    //       type: "fullscreen_exit",
+    //       timestamp: new Date(),
+    //       description: "Thí sinh đã thoát khỏi chế độ toàn màn hình",
+    //     });
+    //   }
+    // };
 
     // Phát hiện chuyển tab/cửa sổ (visibility change)
     const handleVisibilityChange = () => {
@@ -325,9 +330,10 @@ export const useAntiCheat = (
     };
 
     // Event listeners
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-    document.addEventListener("msfullscreenchange", handleFullscreenChange);
+    //quy
+    // document.addEventListener("fullscreenchange", handleFullscreenChange);
+    // document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    // document.addEventListener("msfullscreenchange", handleFullscreenChange);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("contextmenu", handleContextMenu);
@@ -340,15 +346,16 @@ export const useAntiCheat = (
 
     // Cleanup
     return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener(
-        "webkitfullscreenchange",
-        handleFullscreenChange
-      );
-      document.removeEventListener(
-        "msfullscreenchange",
-        handleFullscreenChange
-      );
+      //quy
+      // document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      // document.removeEventListener(
+      //   "webkitfullscreenchange",
+      //   handleFullscreenChange
+      // );
+      // document.removeEventListener(
+      //   "msfullscreenchange",
+      //   handleFullscreenChange
+      // );
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("contextmenu", handleContextMenu);
@@ -362,11 +369,12 @@ export const useAntiCheat = (
   return {
     violations,
     warningCount,
-    isFullscreen,
+    // quy
+    // isFullscreen,
     startMonitoring,
     stopMonitoring,
-    enterFullscreen,
-    exitFullscreen,
+    // enterFullscreen,
+    // exitFullscreen,
     resetViolations, // 🔥 NEW: Thêm function reset violations
     maxViolations: finalConfig.maxViolations,
     isMonitoring: isActive.current,

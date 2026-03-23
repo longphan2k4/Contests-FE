@@ -325,6 +325,8 @@ const ControlsPage: React.FC = () => {
     const handleUpdateStatus = (data: ContestantStatusUpdate) => {
       if (data.ListContestant) {
         setListContestant(data.ListContestant);
+        //tuankiet
+        console.log(data.ListContestant)
       }
     };
 
