@@ -72,6 +72,9 @@ const StudentDashboard: React.FC = () => {
     };
   }, []);
 
+  //quy: tạo một useRef để đánh dấu vào phòng thi chưa tránh lặp vô hạn
+  const hasAutoJoinedRef = React.useRef(false);
+
   // Auto join all active matches when socket connects và có thông tin contestant
   useEffect(() => {
     if (!socket || !isConnected || !contestantInfo?.matches) return;
@@ -79,6 +82,31 @@ const StudentDashboard: React.FC = () => {
     contestantInfo.matches.forEach((match: Match) => {
       joinMatchRoom(match.id);
     });
+
+     //quy: sử dụng useRef
+    if (!hasAutoJoinedRef.current) {
+      const ongoingMatch = contestantInfo.matches.find(match => match.status === 'ongoing');
+      if (ongoingMatch) {
+        hasAutoJoinedRef.current = true;
+        
+        // Gửi reconnect signal
+        socket.emit('student:reconnect', {
+          contestantId: contestantInfo.contestant.id,
+          matchId: ongoingMatch.id
+        });
+        
+        showSuccessNotification(`Trận đấu ${ongoingMatch.name} đang diễn ra! Đang chuyển vào phòng thi...`);
+        
+        setTimeout(() => {
+          const matchSlug = ongoingMatch.slug;
+          if (matchSlug) {
+            navigate(`/student/match/${matchSlug}`);
+          } else {
+            navigate(`/student/match/${ongoingMatch.id}`);
+          }
+        }, 1500);
+      }
+    }
 
     // Cleanup - leave all rooms when component unmounts or dependencies change
     return () => {
@@ -101,7 +129,6 @@ const StudentDashboard: React.FC = () => {
     if (!socket) return;
 
     const handleMatchStarted = (data: MatchEventData) => {
-      // 🔥 DEBUG: Console toàn bộ thông tin matches để kiểm tra slug
 
       const match = contestantInfo?.matches.find(m => m.id === data.matchId);
 
@@ -160,7 +187,8 @@ const StudentDashboard: React.FC = () => {
         return {
           ...prev,
           matches: prev.matches.map(match =>
-            match.status === "active"
+            //quy: sửa active thành ongoing
+            match.status === "ongoing"
               ? { ...match, remainingTime: data.timeRemaining }
               : match
           ),
@@ -207,7 +235,7 @@ const StudentDashboard: React.FC = () => {
       socket.off("student:rescued"); // 🔥 NEW: Dọn dẹp listener
       socket.off("match:globalStarted", handleMatchStarted);
     };
-  }, [socket, contestantInfo, navigate, showSuccessNotification]);
+  }, [socket, contestantInfo, navigate]); //quy: bỏ showSuccessNotification 
 
   const getMatchStatusColor = (status: string) => {
     switch (status) {
