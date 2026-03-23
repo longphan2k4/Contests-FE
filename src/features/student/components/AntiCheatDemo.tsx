@@ -24,12 +24,13 @@ const AntiCheatDemo: React.FC = () => {
   const {
     violations,
     warningCount,
-    isFullscreen,
+    //quy
+    // isFullscreen,
     startMonitoring,
     stopMonitoring,
     resetViolations, // 🔥 NEW: Thêm resetViolations
-    enterFullscreen,
-    exitFullscreen,
+    //enterFullscreen,
+    //exitFullscreen,
     maxViolations,
     isMonitoring,
   } = useAntiCheat(
@@ -90,6 +91,8 @@ const AntiCheatDemo: React.FC = () => {
             </p>
           </div>
 
+          
+          {/* quy
           <div
             className={`p-4 rounded-lg ${
               isFullscreen ? "bg-blue-100" : "bg-red-100"
@@ -103,7 +106,7 @@ const AntiCheatDemo: React.FC = () => {
             >
               {isFullscreen ? "🔒 Bật" : "⚠️ Tắt"}
             </p>
-          </div>
+          </div> */}
 
           <div
             className={`p-4 rounded-lg ${
@@ -151,22 +154,22 @@ const AntiCheatDemo: React.FC = () => {
           >
             Reset Violations
           </button>
-
+          {/* quy
           <button
             onClick={enterFullscreen}
             disabled={isFullscreen}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
           >
             Vào Fullscreen
-          </button>
-
+          </button> */}
+          {/* quy
           <button
             onClick={exitFullscreen}
             disabled={!isFullscreen}
             className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:bg-gray-400"
           >
             Thoát Fullscreen
-          </button>
+          </button> */}
         </div>
 
         {/* Instructions */}

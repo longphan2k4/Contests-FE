@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useStudentRealTime } from "../hooks/useStudentRealTime";
 import StudentApiService from "../services/api";
@@ -8,8 +8,9 @@ import {
   ExclamationTriangleIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
-import { useAntiCheat } from "../hooks/useAntiCheat";
-import { Dialog, DialogContent, Typography, Button } from "@mui/material";
+//quy
+// import { useAntiCheat } from "../hooks/useAntiCheat";
+// import { Dialog, DialogContent, Typography, Button } from "@mui/material";
 import { useNotification } from "../../../contexts/NotificationContext";
 import { QuestionAnswerRefactored } from "../components";
 import { useStudentContext } from "../contexts/StudentContext";
@@ -185,37 +186,37 @@ const StudentWaitingRoom: React.FC = () => {
         return "Không xác định";
     }
   };
+  //quy
+  // // 🛡️ State cho modal xác nhận fullscreen
+  // const [showFullscreenConfirm, setShowFullscreenConfirm] = useState(false);
+  // const [fullscreenError, setFullscreenError] = useState<string | null>(null);
 
-  // 🛡️ State cho modal xác nhận fullscreen
-  const [showFullscreenConfirm, setShowFullscreenConfirm] = useState(false);
-  const [fullscreenError, setFullscreenError] = useState<string | null>(null);
+  // // 🛡️ Sử dụng hook anti-cheat để lấy enterFullscreen
+  // const { enterFullscreen, isFullscreen } = useAntiCheat();
 
-  // 🛡️ Sử dụng hook anti-cheat để lấy enterFullscreen
-  const { enterFullscreen, isFullscreen } = useAntiCheat();
+  // // Khi vào trang, nếu chưa fullscreen thì hiện modal
+  // useEffect(() => {
+  //   if (!isFullscreen) {
+  //     setShowFullscreenConfirm(true);
+  //     setFullscreenError(null);
+  //   } else {
+  //     setShowFullscreenConfirm(false);
+  //     setFullscreenError(null);
+  //   }
+  // }, [isFullscreen]);
 
-  // Khi vào trang, nếu chưa fullscreen thì hiện modal
-  useEffect(() => {
-    if (!isFullscreen) {
-      setShowFullscreenConfirm(true);
-      setFullscreenError(null);
-    } else {
-      setShowFullscreenConfirm(false);
-      setFullscreenError(null);
-    }
-  }, [isFullscreen]);
-
-  // Handler xác nhận vào fullscreen trong modal
-  const handleConfirmFullscreen = useCallback(async () => {
-    const success = await enterFullscreen();
-    if (success) {
-      setShowFullscreenConfirm(false);
-      setFullscreenError(null);
-    } else {
-      setFullscreenError(
-        "Không thể vào chế độ toàn màn hình. Vui lòng thử lại hoặc kiểm tra trình duyệt!"
-      );
-    }
-  }, [enterFullscreen]);
+  // // Handler xác nhận vào fullscreen trong modal
+  // const handleConfirmFullscreen = useCallback(async () => {
+  //   const success = await enterFullscreen();
+  //   if (success) {
+  //     setShowFullscreenConfirm(false);
+  //     setFullscreenError(null);
+  //   } else {
+  //     setFullscreenError(
+  //       "Không thể vào chế độ toàn màn hình. Vui lòng thử lại hoặc kiểm tra trình duyệt!"
+  //     );
+  //   }
+  // }, [enterFullscreen]);
 
   if (loading) {
     return (
@@ -518,7 +519,7 @@ const StudentWaitingRoom: React.FC = () => {
         )}
       </div>
 
-      {/* Modal xác nhận fullscreen */}
+      {/* Modal xác nhận fullscreen
       {showFullscreenConfirm && (
         <Dialog open fullWidth maxWidth="xs">
           <DialogContent>
@@ -541,7 +542,7 @@ const StudentWaitingRoom: React.FC = () => {
             )}
           </DialogContent>
         </Dialog>
-      )}
+      )} */}
     </div>
   );
 };

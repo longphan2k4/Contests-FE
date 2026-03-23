@@ -220,7 +220,8 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
   const {
     violations,
     warningCount,
-    isFullscreen,
+    //quy
+    // isFullscreen,
     startMonitoring,
     stopMonitoring,
     resetViolations, // 🔥 NEW: Thêm resetViolations
@@ -1021,6 +1022,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
 
             <Box className="flex items-center gap-2">
               {/* Fullscreen Status */}
+              {/* quy              
               <div
                 className={`px-2 py-1 rounded-full text-xs font-medium ${isFullscreen
                     ? "text-blue-600 bg-blue-100"
@@ -1028,7 +1030,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
                   }`}
               >
                 {isFullscreen ? "🔒 Toàn màn hình" : "⚠️ Chưa toàn màn hình"}
-              </div>
+              </div> */}
 
               {/* Fullscreen Button */}
               {/* {!isFullscreen && (
