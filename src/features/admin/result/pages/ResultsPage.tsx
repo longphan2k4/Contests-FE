@@ -83,14 +83,14 @@ const ResultsPage: React.FC = () => {
     });
 
     // Chuyển đổi Map thành array và sắp xếp theo số câu đúng
-    const allStudents = Array.from(studentMap.values())
-      .sort((a, b) => {
-        // Sắp xếp theo số câu đúng giảm dần, nếu bằng nhau thì theo tỷ lệ chính xác
-        if (b.correct !== a.correct) {
-          return b.correct - a.correct;
-        }
-        return (b.correct / b.total) - (a.correct / a.total);
-      });
+    // const allStudents = Array.from(studentMap.values())
+    //   .sort((a, b) => {
+    //     // Sắp xếp theo số câu đúng giảm dần, nếu bằng nhau thì theo tỷ lệ chính xác
+    //     if (b.correct !== a.correct) {
+    //       return b.correct - a.correct;
+    //     }
+    //     return (b.correct / b.total) - (a.correct / a.total);
+    //   });
 
     // const data = allStudents.map((student, index) => ({
     //   "Hạng": index + 1,
