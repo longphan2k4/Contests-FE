@@ -116,6 +116,8 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                         title={`${contestant.fullname} - ${contestant.status === "banned" ? "Bị cấm" : "Bị loại"}`}
                       >
                         {contestant.registration_number}
+                        {/*tuankiet: hien thi dap an cho thi sinh thua*/}
+                         `{contestant.currentAnswer.answer}`
                       </motion.div>
                     );
                   })}

@@ -1,6 +1,8 @@
 export interface Contestant {
   registration_number: number;
   fullname: string;
+  //tuankiet: them truong cau tra loi hien tai
+  currentAnswer?:any;
   status:
     | "not_started"
     | "in_progress"
