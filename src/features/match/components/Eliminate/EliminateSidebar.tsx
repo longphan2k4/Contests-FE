@@ -116,6 +116,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                         title={`${contestant.fullname} - ${contestant.status === "banned" ? "Bị cấm" : "Bị loại"}`}
                       >
                         {contestant.registration_number}
+                        `{contestant.currentAnswer.answer}`
                       </motion.div>
                     );
                   })}
@@ -157,6 +158,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                         title={`${contestant.fullname} - Câu ${contestant.eliminated_at_question_order}`}
                       >
                         {contestant.registration_number}
+                        
                       </motion.div>
                     );
                   })}

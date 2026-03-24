@@ -778,6 +778,7 @@ const ControlsPage: React.FC = () => {
               ListContestant={listContestant}
               questionOrder={currentQuestion?.questionOrder || 0}
               controlKey={screenControl?.controlKey}
+              refetchListContestant={refetchListContestant}
             />
           </div>
 
