@@ -112,7 +112,7 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
         }}
       >
         {iconsWithBreaks.map((icon, index) => {
-          console.log("hien so do chua cap nhat",icon)
+          console.log(icon)
           // Render line break
           if ('isLineBreak' in icon) {
             return (

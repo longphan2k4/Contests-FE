@@ -92,70 +92,24 @@ const ResultsPage: React.FC = () => {
         return (b.correct / b.total) - (a.correct / a.total);
       });
 
-    // const data = allStudents.map((student, index) => ({
-    //   "Hạng": index + 1,
-    //   "Thí sinh": student.studentName || "N/A",
-    //   "Mã SV": student.studentCode || "N/A",
-    //   "Số câu đúng": student.correct,
-    //   "Tổng câu": student.total,
-    //   "Tỉ lệ chính xác": student.total > 0 ? `${((student.correct / student.total) * 100).toFixed(1)}%` : "0%",
-    //   "Số trận": student.matches,
-    // }));
+    const data = allStudents.map((student, index) => ({
+      "Hạng": index + 1,
+      "Thí sinh": student.studentName || "N/A",
+      "Mã SV": student.studentCode || "N/A",
+      "Số câu đúng": student.correct,
+      "Tổng câu": student.total,
+      "Tỉ lệ chính xác": student.total > 0 ? `${((student.correct / student.total) * 100).toFixed(1)}%` : "0%",
+      "Số trận": student.matches,
+    }));
 
-    //tuankiet
-    const grouped = results.reduce((acc: any, cur) => {
-      const key = cur.contestantId;
-      //tao 1 onject cho moi thi sinh
-      if (!acc[key]) {
-        acc[key] = {
-          contestantId: key,
-          studentCode: cur.contestant.student.studentCode,
-          fullName: cur.contestant.student.fullName,
-          answers: [],
-          totalScore: 0,
-        };
-      }
-      //add tung result cua thi sinh
-      acc[key].answers.push({
-        questionOrder: cur.questionOrder,
-        answer: cur.answer,
-        isCorrect: cur.isCorrect,
-        score: cur.score,
-      });
-      //cong don diem
-      acc[key].totalScore += cur.score;
-      return acc;
-    }, {});
-
-    // convert object -> array
-    const result = Object.values(grouped).map((item: any) => {
-      const answerObj: any = {};
-      const sortedAnswers = item.answers.sort(
-        (a: any, b: any) => a.questionOrder - b.questionOrder
-      );
-      sortedAnswers.forEach((a: any) => {
-        answerObj[`question (${a.questionOrder})`] = a.questionOrder;
-        answerObj[`(${a.questionOrder}) answer`] = a.answer;
-        answerObj[`(${a.questionOrder}) score`] = a.score;
-      });
-
-      return {
-        contestantId: item.contestantId,
-        studentCode: item.studentCode,
-        fullName: item.fullName,
-        ...answerObj,
-        totalScore: item.totalScore,
-      };
-    });
-    console.log("matchResult", result)
     exportExcel(
       {
-        data: result,
-        fileName: `${1}results.xlsx`,
+        data: data,
+        fileName: "results.xlsx",
       },
       {
         onSuccess: () => {
-          showToast(`Xuất Excel thành công - ${result.length} thí sinh`, "success");
+          showToast(`Xuất Excel thành công - ${data.length} thí sinh`, "success");
         },
         onError: (err: any) => {
           showToast(err.response?.data?.message, "error");
@@ -352,7 +306,7 @@ const ResultsPage: React.FC = () => {
               </Alert>
             ) : (
               <>
-                <ResultsTable results={results} fetchResults={fetchResults} />
+                <ResultsTable results={results} fetchResults={fetchResults}/>
 
                 {/* Phân trang */}
                 {totalPages > 0 && (

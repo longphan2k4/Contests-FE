@@ -1,8 +1,6 @@
 export interface Contestant {
   registration_number: number;
   fullname: string;
-  //tuankiet
-  currentAnswer?:any;
   status:
     | "not_started"
     | "in_progress"
