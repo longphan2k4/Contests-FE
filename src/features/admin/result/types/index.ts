@@ -34,6 +34,7 @@ export interface Result {
   matchId: number;
   isCorrect: boolean;
   //quy: thêm score
+  answer:string;
   score: number;
   questionOrder: number;
   createdAt: string;
