@@ -164,7 +164,9 @@ export default function MatchPage() {
 
   // 3. useEffect gọn gàng với isSuccess
   useEffect(() => {
-    if (isSuccessMatch) setMatchInfo(matchInfoRes.data);
+    if (isSuccessMatch) {setMatchInfo(matchInfoRes.data)
+      console.log("matchInfoRes",matchInfoRes.data)
+    };
   }, [isSuccessMatch, matchInfoRes]);
 
   useEffect(() => {
@@ -195,6 +197,7 @@ export default function MatchPage() {
 
   useEffect(() => {
     if (isSuccessContestants) setListContestant(listContestantRes.data);
+    console.log("listContestan",listContestantRes)
   }, [isSuccessContestants, listContestantRes]);
 
   useEffect(() => {
