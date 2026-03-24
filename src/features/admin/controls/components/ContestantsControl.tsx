@@ -12,6 +12,7 @@ interface ContestantProps {
   questionOrder: number;
   controlKey?: ControlKey;
   ListContestant: ListContestant[];
+  refetchListContestant?: () => void;
 }
 
 interface UpdateContestantPayload {
@@ -23,6 +24,7 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
   questionOrder,
   ListContestant,
   controlKey,
+  // refetchListContestant,
 }) => {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const { socket } = useSocket();
@@ -76,27 +78,27 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
         rescued_at_question_order: c.rescuedAtQuestionOrder,
         // currentAnswer:c.contestant.results.find(  (r:any) => r.questionOrder == currentQuestionOrder) || null,
       })))
-      console.log("da cap nhat ket qua")
-      console.log(contestantsData)
-                        // console.log("Thong tin gui di",{
-                        //   id:selectedRow.id,
-                        //   contestantId: selectedRow.contestant.id,
-                        //   matchId: selectedRow.matchId,
-                        //   isCorrect: !selectedRow.isCorrect,
-                        //   questionOrder:selectedRow.questionOrder,
-                        //   name: selectedRow.contestant.student.fullName
-                        // })
-                        //hanleUpdate
-                        // updateResult(row.id,{
-                        //   contestantId: selectedRow.contestant.id,
-                        //   matchId: selectedRow.matchId,
-                        //   isCorrect: !selectedRow.isCorrect,
-                        //   questionOrder:selectedRow.questionOrder,
-                        //   name: selectedRow.contestant.student.fullName
-                        // })
-                        // console.log("da sua dap an thanh",selectedRow.isCorrect?"sai":"dung")
-                        // fetchResults()
-                      // }
+    console.log("da cap nhat ket qua")
+    console.log(contestantsData)
+    // console.log("Thong tin gui di",{
+    //   id:selectedRow.id,
+    //   contestantId: selectedRow.contestant.id,
+    //   matchId: selectedRow.matchId,
+    //   isCorrect: !selectedRow.isCorrect,
+    //   questionOrder:selectedRow.questionOrder,
+    //   name: selectedRow.contestant.student.fullName
+    // })
+    //hanleUpdate
+    // updateResult(row.id,{
+    //   contestantId: selectedRow.contestant.id,
+    //   matchId: selectedRow.matchId,
+    //   isCorrect: !selectedRow.isCorrect,
+    //   questionOrder:selectedRow.questionOrder,
+    //   name: selectedRow.contestant.student.fullName
+    // })
+    // console.log("da sua dap an thanh",selectedRow.isCorrect?"sai":"dung")
+    // fetchResults()
+    // }
 
     socket.emit("contestant:status-update-admin", data, (err: any) => {
       if (err) {
@@ -109,7 +111,6 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
 
   const EmitScreenUpdate = (payload: UpdateSceenControl) => {
     if (!socket || !match) return;
-
     socket.emit("screen:update", { match, ...payload }, (err: any) => {
       if (err) {
         showToast(err.message, "error");
@@ -159,17 +160,16 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
           const maxColumns = group?.match?.maxContestantColumn || 10;
           // Giới hạn tối đa 12 cột để tránh layout bị vỡ
           const actualColumns = Math.min(maxColumns, 12);
-          
+
           return (
             <div
               key={group.id}
-              className={`border-2 ${
-                group?.confirmCurrentQuestion >= questionOrder
+              className={`border-2 ${group?.confirmCurrentQuestion >= questionOrder
                   ? "border-blue-500"
                   : "border-red-500"
-              } rounded-lg p-3 w-full`}
+                } rounded-lg p-3 w-full`}
             >
-              <div 
+              <div
                 className="grid gap-2"
                 style={{ gridTemplateColumns: `repeat(${actualColumns}, minmax(0, 1fr))` }}
               >
@@ -197,11 +197,10 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
           {ListContestant.map(group => (
             <button
               key={group.id}
-              className={`border-2 ${
-                group.confirmCurrentQuestion >= questionOrder
+              className={`border-2 ${group.confirmCurrentQuestion >= questionOrder
                   ? "border-blue-500"
                   : "border-red-500"
-              } rounded-lg p-2`}
+                } rounded-lg p-2`}
             >
               {group?.user?.username} - {group?.contestantMatches.length} thí
               sinh
@@ -289,6 +288,15 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
+          {/*tuankiet*/}
+          {/* <button
+            onClick={() => {refetchListContestant()
+            }}
+            className="bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold text-sm"
+          >
+            Cap nhat trang thai
+          </button> */}
+
           <button
             onClick={() => EmitScreenUpdate({ controlKey: "matchDiagram" })}
             className="bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold text-sm"
