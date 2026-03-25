@@ -71,7 +71,7 @@ export interface Match {
   id: number;
   name: string;
   slug: string;
-  status: "upcoming" | "ongoing" | "completed";
+  status: "upcoming" | "active" | "completed";
   currentQuestion: number;
   remainingTime: number | null;
 }
