@@ -33,6 +33,8 @@ export interface Result {
   contestantId: number;
   matchId: number;
   isCorrect: boolean;
+  //tuankiet: them answer
+  answer:string;
   //quy: thêm score
   score: number;
   questionOrder: number;
