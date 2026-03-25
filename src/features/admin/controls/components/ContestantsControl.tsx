@@ -218,12 +218,21 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
           >
             Chưa bắt đầu
           </button>
-          {/*tuankiet*/}
           <button
             onClick={() => EmitContestantUpdate("in_progress")}
             className="bg-blue-500 text-white px-4 py-2 rounded font-semibold text-sm"
           >
             Đang thi
+          </button>
+           {/*tuankiet*/}
+          <button
+            onClick={() => {
+              EmitContestantUpdate("rescued")
+              EmitContestantUpdate("in_progress")
+            }}
+            className="bg-green-500 text-white px-4 py-2 rounded font-semibold text-sm"
+          >
+            Qua câu
           </button>
 
           <button

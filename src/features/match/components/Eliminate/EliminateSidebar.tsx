@@ -117,7 +117,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                       >
                         {contestant.registration_number}
                         {/*tuankiet: hien thi dap an cho thi sinh thua*/}
-                         `{contestant.currentAnswer.answer}`
+                         `{contestant.currentAnswer?.answer}`
                       </motion.div>
                     );
                   })}
