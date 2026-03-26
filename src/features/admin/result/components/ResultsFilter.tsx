@@ -36,6 +36,7 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
     search: "",
     studentName: "",
     matchName: "",
+    matchId: "",
     roundId: "",
     isCorrect: "all",
     sortBy: "createdAt",
@@ -51,7 +52,12 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
     if (filterState.search) filters.push(`Tìm kiếm: ${filterState.search}`);
     if (filterState.studentName)
       filters.push(`Tên: ${filterState.studentName}`);
-    if (filterState.matchName) filters.push(`Trận: ${filterState.matchName}`);
+    if (filterState.matchId) {
+      const match = uniqueMatches.find(
+        (m) => m.id.toString() === filterState.matchId
+      );
+      if (match) filters.push(`Trận: ${match.name}`);
+    };
     if (filterState.roundId) {
       const round = uniqueRounds.find(
         (r) => r.id.toString() === filterState.roundId
@@ -83,8 +89,8 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
       params.studentName = filterState.studentName.trim();
     }
 
-    if (filterState.matchName.trim()) {
-      params.matchName = filterState.matchName.trim();
+    if (filterState.matchId.trim()) {
+      params.matchId = filterState.matchId.trim();
     }
 
     if (filterState.roundId) {
@@ -106,7 +112,8 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
     if (filterState.sortOrder) {
       params.sortOrder = filterState.sortOrder as "asc" | "desc";
     }
-
+    console.log("du lieu loc", params)
+    console.log("match", uniqueMatches)
     onFilter(params);
   };
 
@@ -115,6 +122,7 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
       search: "",
       studentName: "",
       matchName: "",
+      matchId: "",
       roundId: "",
       isCorrect: "all",
       sortBy: "createdAt",
@@ -131,8 +139,8 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
       newState.search = "";
     } else if (filterIndex === 1 && filterState.studentName) {
       newState.studentName = "";
-    } else if (filterIndex === 2 && filterState.matchName) {
-      newState.matchName = "";
+    } else if (filterIndex === 2 && filterState.matchId) {
+      newState.matchId = "";
     } else if (filterIndex === 3 && filterState.roundId) {
       newState.roundId = "";
     } else if (filterIndex === 4 && filterState.isCorrect !== "all") {
@@ -235,12 +243,19 @@ const ResultsFilter: React.FC<ResultsFilterProps> = ({
               <Autocomplete
                 options={uniqueMatches}
                 getOptionLabel={(option) => option.name}
+                //tuankiet
+                // value={
+                //   uniqueMatches.find((m) => m.name === filterState.matchName) ||
+                //   null
+                // }
+                // onChange={(_, newValue) =>
+                //   handleInputChange("matchName", newValue?.name || "")
+                // }
                 value={
-                  uniqueMatches.find((m) => m.name === filterState.matchName) ||
-                  null
+                  uniqueMatches.find((m) => m.id.toString() === filterState.matchId) || null
                 }
                 onChange={(_, newValue) =>
-                  handleInputChange("matchName", newValue?.name || "")
+                  handleInputChange("matchId", newValue?.id.toString() || "")
                 }
                 renderInput={(params) => (
                   <TextField

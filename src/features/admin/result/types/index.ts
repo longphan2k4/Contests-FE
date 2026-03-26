@@ -47,7 +47,7 @@ export interface Result {
 // Tham số lọc kết quả với nhiều tùy chọn hơn
 export interface ResultFilterParams {
   contestSlug?: string;
-  matchId?: number;
+  matchId?: number|string;
   contestantId?: number;
   roundId?: number;
   studentName?: string;
@@ -112,6 +112,7 @@ export interface FilterState {
   search: string;
   studentName: string;
   matchName: string;
+  matchId: string;
   roundId: string;
   isCorrect: string; // 'all' | 'true' | 'false'
   sortBy: string;
