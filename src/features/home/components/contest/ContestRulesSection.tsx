@@ -1,7 +1,7 @@
-import { 
-  UsersIcon, 
-  CalendarDaysIcon, 
-  TrophyIcon, 
+import {
+  UsersIcon,
+  CalendarDaysIcon,
+  TrophyIcon,
   BookOpenIcon,
   PlayIcon,
   AcademicCapIcon
@@ -14,14 +14,20 @@ const ContestRulesSection = () => {
       title: "Đối tượng tham gia",
       description: "Tất cả sinh viên đang học tập tại Khoa Công nghệ thông tin - Trường Cao Đẳng Kỹ Thuật Cao Thắng"
     },
+
+    //quy
     {
       icon: <CalendarDaysIcon className="w-8 h-8" />,
       title: "Thời gian tổ chức",
-      description: "23/03 - 03/04: Vòng sơ loại • 06/04 - 17/04: Vòng tứ kết & Bán kết • 20/04 - 24/04: Chung kết"
+      description: [
+        "23/03 - 03/04: Vòng sơ loại",
+        "06/04 - 17/04: Vòng tứ kết & Bán kết",
+        "20/04 - 24/04: Chung kết"
+      ]
     },
     {
       icon: <BookOpenIcon className="w-8 h-8" />,
-      title: "8 Lĩnh vực kiến thức",
+      title: "10 Lĩnh vực kiến thức",
       description: `Ngôn ngữ lập trình C++, Cơ sở dữ liệu, Ứng dụng CNTT cơ bản, Phần cứng máy tính,
       Hệ điều hành Windows/Internet, Mạng máy tính, Thiết kế website, Anh văn chuyên ngành CNTT, 
       Trí tuệ nhân tạo (AI) và tin tức/xu hướng công nghệ hiện nay, Công nghệ phần mềm`
@@ -37,13 +43,13 @@ const ContestRulesSection = () => {
     },
     {
       icon: <PlayIcon className="w-6 h-6" />,
-      title: "Tứ kết", 
+      title: "Tứ kết",
       format: "Đấu trường số",
       details: "13 câu hỏi 4 mức độ • 5 trận đấu • Mỗi trận 4 đội • Chọn 24 thí sinh vào Bán Kết"
     },
-     {
+    {
       icon: <PlayIcon className="w-6 h-6" />,
-      title: "Bán kết", 
+      title: "Bán kết",
       format: "Đấu trường số",
       details: "13 câu hỏi 4 mức độ • 2 trận đấu • Mỗi trận 60 thí sinh • Chọn 60 thí sinh vào chung kết"
     },
@@ -100,7 +106,18 @@ const ContestRulesSection = () => {
                 {info.title}
               </h3>
               <p className="text-gray-600 leading-relaxed text-sm">
-                {info.description}
+                {/* quy */}
+                {Array.isArray(info.description) ? (
+                  info.description.map((line, i) => (
+                    <span key={i}>
+                      {line}
+                      {i < info.description.length - 1 && <br />}
+                    </span>
+                  ))
+                ) : (
+                  info.description
+                )}
+                {/* {info.description} */}
               </p>
             </div>
           ))}

@@ -113,12 +113,20 @@ const QuestionResult: React.FC<QuestionResultProps> = ({
               >
                 💡 Giải thích chi tiết:
               </Typography>
+
+              {/* quy */}
               <Typography
+                variant="body1"
+                component="div"  // Quan trọng: cho phép chứa HTML
+                className="text-blue-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: answerResult.explanation }}
+              />
+              {/* <Typography
                 variant="body1"
                 className="text-blue-700 leading-relaxed"
               >
                 {answerResult.explanation}
-              </Typography>
+              </Typography> */}
             </Box>
           )}
           {/* Cảnh báo bị loại
