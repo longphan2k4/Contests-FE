@@ -329,11 +329,15 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
   }, [currentQuestion]);
 
   // 🔥 NEW: Set canShowResult chỉ khi remainingTime < 1
-  useEffect(() => {
-    if (remainingTime < 1 && !canShowResult) {
-      setCanShowResult(true);
-    }
-  }, [remainingTime, canShowResult]);
+  //tuankiet: ko kich hoat theo thoi gian
+  // useEffect(() => {
+  //   if (remainingTime < 1 && !canShowResult) {
+  //     setCanShowResult(true);
+  //   }
+  // }, [remainingTime, canShowResult]);
+  studentSocket?.on("show-answer",()=>{
+    setCanShowResult(true)
+  })
 
   // 🔥 NEW: Sync local state with props from parent
   useEffect(() => {

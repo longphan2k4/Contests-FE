@@ -25,6 +25,8 @@ const AnswerControl: React.FC<AnswerControlType> = ({ currentQuestion }) => {
         showToast("Đã chuyển sang màn hình đáp án ", "success");
       }
     });
+    //tuankiet: gui cho student 
+    socket.emit("show-answer",currentQuestion)
   };
   return (
     <div>

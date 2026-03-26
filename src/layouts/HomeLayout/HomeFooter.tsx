@@ -1,6 +1,6 @@
 import React from 'react';
 import Logo from "../../assets/image/logo/logo-caothang.svg"
-import { CodeBracketIcon, CircleStackIcon, ComputerDesktopIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
+import { CodeBracketIcon, CircleStackIcon, ComputerDesktopIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline'; 
 
 type ProgramItem = {
   id: number;
@@ -81,15 +81,16 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
+          {/* quy: link các trang truyền thông */}
           <div>
             <h4 className="font-bold mb-4">Theo dõi chúng tôi</h4>
             <div className="flex space-x-4">
               {[
-                { icon: 'f', color: 'bg-blue-600 hover:bg-blue-700' },
-                { icon: 't', color: 'bg-blue-400 hover:bg-blue-500' },
-                { icon: 'y', color: 'bg-red-600 hover:bg-red-700' }
+                { icon: 'f', color: 'bg-blue-600 hover:bg-blue-700', href: 'https://www.facebook.com/olympicit.caothang'},
+                { icon: 't', color: 'bg-black hover:bg-black-700', href: 'https://www.tiktok.com/@cntt.ckc'},
+                { icon: 'y', color: 'bg-red-600 hover:bg-red-700', href: 'https://www.youtube.com/@OlympicTinh%E1%BB%8DcC%C4%90KTCaoTh%E1%BA%AFng' }
               ].map((social, index) => (
-                <a key={index} href="https://www.facebook.com/olympicit.caothang" className={`w-10 h-10 ${social.color} rounded-full flex items-center justify-center transition-colors`}>
+                <a key={index} href={social.href} target="_blank" className={`w-10 h-10 ${social.color} rounded-full flex items-center justify-center transition-colors`}>
                   <span className="text-sm font-semibold">{social.icon}</span>
                 </a>
               ))}
