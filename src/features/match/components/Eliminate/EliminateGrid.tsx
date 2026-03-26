@@ -185,12 +185,21 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                 >
                   {/* {icon.registrationNumber} */}
                   {/*tuankiet: noi hien the thi sinh*/}
-                  <div className="flex flex-col items-center justify-center">
-                    <span className="font-black">
+                  <div className="flex flex-col items-center justify-center gap-1">
+                    {/* Số báo danh */}
+                    <span className="text-3xl font-black leading-none tracking-wide drop-shadow-xl">
                       {icon.registrationNumber}
                     </span>
 
-                    <span className="text-[10px]">
+                    {/* Đáp án (siêu nổi bật) */}
+                    <span className="
+    text-lg font-extrabold 
+    text-yellow-300 
+    bg-black/40 
+    px-2 py-0.5 
+    rounded-md 
+    shadow-lg
+  ">
                       {icon?.currentAnswer?.answer}
                     </span>
                   </div>

@@ -46,32 +46,29 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
             <button
               type="button"
               onClick={() => setDisplayMode("eliminated")}
-              className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
-                displayMode === "eliminated"
-                  ? "bg-red-500 text-white shadow-md"
-                  : "bg-transparent text-gray-700 hover:bg-gray-200"
-              }`}
+              className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 ${displayMode === "eliminated"
+                ? "bg-red-500 text-white shadow-md"
+                : "bg-transparent text-gray-700 hover:bg-gray-200"
+                }`}
             >
               Bị loại ({totalEliminated})
             </button>
             <button
               type="button"
               onClick={() => setDisplayMode("rescued")}
-              className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
-                displayMode === "rescued"
-                  ? "bg-green-500 text-white shadow-md"
-                  : "bg-transparent text-gray-700 hover:bg-gray-200"
-              }`}
+              className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 ${displayMode === "rescued"
+                ? "bg-green-500 text-white shadow-md"
+                : "bg-transparent text-gray-700 hover:bg-gray-200"
+                }`}
               disabled={rescuedContestants.length === 0}
             >
               Được cứu ({totalRescued})
             </button>
           </div>
         </div>
-        
-        <h3 className={`text-2xl font-bold text-center ${
-          displayMode === "eliminated" ? "text-red-700" : "text-green-700"
-        }`}>
+
+        <h3 className={`text-2xl font-bold text-center ${displayMode === "eliminated" ? "text-red-700" : "text-green-700"
+          }`}>
           {displayMode === "eliminated"
             ? `Bị loại (${totalEliminated})`
             : `Được cứu (${totalRescued})`}
@@ -88,9 +85,10 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                 <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
                 Câu hiện tại ({questionOrder})
               </h4>
-              
+
               {currentEliminated.length > 0 ? (
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                // <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(70px,1fr))] gap-2">
                   {currentEliminated.map((contestant, index) => {
                     const bgColorClass = contestant.status === "banned"
                       ? "bg-gray-700 text-white border-gray-600"
@@ -98,26 +96,37 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                     const isFadingOut = fadingOutContestants.includes(
                       contestant.registration_number
                     );
-                    
+
                     return (
                       <motion.div
                         key={`current-${contestant.registration_number}`}
                         initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ 
-                          opacity: isFadingOut ? 0 : 1, 
-                          scale: isFadingOut ? 0.8 : 1 
+                        animate={{
+                          opacity: isFadingOut ? 0 : 1,
+                          scale: isFadingOut ? 0.8 : 1
                         }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
                         className={`
-                          rounded-lg h-12 w-12 flex items-center justify-center
-                          border-2 font-bold text-sm transition-all duration-200
-                          hover:scale-105 ${bgColorClass}
-                        `}
+  rounded-lg min-h-16 w-full flex flex-col items-center justify-center
+  border-2 font-bold transition-all duration-200
+  hover:scale-105 ${bgColorClass}
+`}
                         title={`${contestant.fullname} - ${contestant.status === "banned" ? "Bị cấm" : "Bị loại"}`}
                       >
-                        {contestant.registration_number}
+                        {/* {contestant.registration_number} */}
                         {/*tuankiet: hien thi dap an cho thi sinh thua*/}
-                         `{contestant.currentAnswer?.answer}`
+                          {/* Số báo danh */}
+  <div className="text-lg leading-none">
+    {contestant.registration_number}
+  </div>
+
+  {/* Đáp án */}
+<div className="
+  text-sm font-extrabold text-yellow-300 
+  text-center break-all leading-tight px-1
+">
+  {contestant.currentAnswer?.answer}
+</div>
                       </motion.div>
                     );
                   })}
@@ -144,7 +153,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                     const bgColorClass = contestant.status === "banned"
                       ? "bg-gray-600 text-white border-gray-500"
                       : "bg-red-400 text-white border-red-500";
-                    
+
                     return (
                       <motion.div
                         key={`previous-${contestant.registration_number}`}
@@ -174,7 +183,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
               <span className="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></span>
               Thí sinh được cứu
             </h4>
-            
+
             {rescuedContestants.length > 0 ? (
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {rescuedContestants.map((contestant, index) => (
