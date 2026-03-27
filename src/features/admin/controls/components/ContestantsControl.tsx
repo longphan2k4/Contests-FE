@@ -209,79 +209,28 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
           ))}
         </div>
       </div>
+      <div className="flex flex-col gap-3 mt-4">
 
-      <div className="flex gap-2 mt-4 flex-wrap justify-center">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => EmitContestantUpdate("not_started")}
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold text-sm"
-          >
-            Chưa bắt đầu
-          </button>
-          <button
-            onClick={() => EmitContestantUpdate("in_progress")}
-            className="bg-blue-500 text-white px-4 py-2 rounded font-semibold text-sm"
-          >
-            Đang thi
-          </button>
-           {/*tuankiet*/}
-          <button
-            onClick={() => {
-              EmitContestantUpdate("rescued")
-              EmitContestantUpdate("in_progress")
-            }}
-            className="bg-green-500 text-white px-4 py-2 rounded font-semibold text-sm"
-          >
-            Qua câu
-          </button>
+        {/* ===== HÀNG 1: TRẠNG THÁI + CHỌN ===== */}
+        <div className="flex flex-wrap justify-center gap-2">
+          <button onClick={() => EmitContestantUpdate("not_started")} className="bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold text-sm">❓ Chưa bắt đầu</button>
 
-          <button
-            onClick={() => EmitContestantUpdate("confirmed1")}
-            className="bg-yellow-400 text-yellow-900 px-4 py-2 rounded font-semibold text-sm"
-          >
-            Xác nhận 1
-          </button>
+          <button onClick={() => EmitContestantUpdate("in_progress")} className="bg-blue-500 text-white px-4 py-2 rounded font-semibold text-sm">▶️ Đang thi</button>
 
-          <button
-            onClick={() => EmitContestantUpdate("confirmed2")}
-            className="bg-orange-500 text-white px-4 py-2 rounded font-semibold text-sm"
-          >
-            Xác nhận 2
-          </button>
+          <button onClick={() => { EmitContestantUpdate("rescued"); EmitContestantUpdate("in_progress"); }} className="bg-green-500 text-white px-4 py-2 rounded font-semibold text-sm">✅ Sửa đáp án</button>
 
-          <button
-            onClick={() => EmitContestantUpdate("eliminated")}
-            className="bg-red-500 text-white px-4 py-2 rounded font-semibold text-sm"
-          >
-            Loại
-          </button>
+          <button onClick={() => EmitContestantUpdate("confirmed1")} className="bg-yellow-400 text-yellow-900 px-4 py-2 rounded font-semibold text-sm">⚠️ Xác nhận 1</button>
 
-          <button
-            onClick={() => EmitContestantUpdate("rescued")}
-            className="bg-green-500 text-white px-4 py-2 rounded font-semibold text-sm"
-          >
-            Cứu trợ
-          </button>
+          <button onClick={() => EmitContestantUpdate("confirmed2")} className="bg-orange-500 text-white px-4 py-2 rounded font-semibold text-sm">⚠️ Xác nhận 2</button>
 
-          <button
-            onClick={() => EmitContestantUpdate("banned")}
-            className="bg-black text-white px-4 py-2 rounded font-semibold text-sm"
-          >
-            Bị cấm
-          </button>
+          <button onClick={() => EmitContestantUpdate("eliminated")} className="bg-red-500 text-white px-4 py-2 rounded font-semibold text-sm">❌ Loại</button>
 
-          <button
-            onClick={() => EmitContestantUpdate("completed")}
-            className="bg-emerald-500 text-white px-4 py-2 rounded font-semibold text-sm"
-          >
-            Qua vòng
-          </button>
-          <button
-            onClick={() => setSelectedIds([])}
-            className="bg-gray-400 text-white px-4 py-2 rounded"
-          >
-            Bỏ chọn
-          </button>
+          <button onClick={() => EmitContestantUpdate("rescued")} className="bg-green-500 text-white px-4 py-2 rounded font-semibold text-sm">🤝 Cứu trợ</button>
+
+          <button onClick={() => EmitContestantUpdate("banned")} className="bg-black text-white px-4 py-2 rounded font-semibold text-sm">🚫 Bị cấm</button>
+
+          <button onClick={() => setSelectedIds([])} className="bg-gray-400 text-white px-4 py-2 rounded">⬜ Bỏ chọn</button>
+
           <button
             onClick={() =>
               setSelectedIds(
@@ -292,33 +241,22 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
                 )
               )
             }
-            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+            className="bg-gray-600 text-white px-4 py-2 rounded"
           >
-            Chọn tất cả
+            👥 Chọn tất cả
           </button>
+          <button onClick={() => EmitContestantUpdate("completed")} className="bg-emerald-500 text-white px-4 py-2 rounded font-semibold text-sm">🏆 Qua vòng</button>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => EmitScreenUpdate({ controlKey: "matchDiagram" })}
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold text-sm"
-          >
-            Hiện sơ đồ
-          </button>
 
-          <button
-            onClick={() => EmitUpdateEliminate()}
-            className="bg-blue-500 text-white px-4 py-2 rounded font-semibold text-sm"
-          >
-            Hiển thị thí sinh bị loại
-          </button>
+        {/* ===== HÀNG 2: HIỂN THỊ ===== */}
+        <div className="flex flex-wrap justify-center gap-2">
+          <button onClick={() => EmitScreenUpdate({ controlKey: "matchDiagram" })} className="bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold text-sm">📊 Hiện sơ đồ</button>
 
-          <button
-            onClick={() => EmitUpdateRescued()}
-            className="bg-yellow-400 text-yellow-900 px-4 py-2 rounded font-semibold text-sm"
-          >
-            Hiển thị thí sinh được cứu
-          </button>
+          <button onClick={() => EmitUpdateEliminate()} className="bg-purple-500 text-white px-4 py-2 rounded font-semibold text-sm">👁️ Hiển thị và cập nhật kết quả</button>
+
+          <button onClick={() => EmitUpdateRescued()} className="bg-indigo-500 text-white px-4 py-2 rounded font-semibold text-sm">📺 Hiển thị thí sinh được cứu</button>
         </div>
+
       </div>
     </div>
   );
