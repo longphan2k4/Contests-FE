@@ -1,6 +1,7 @@
 
 const SponsorsSection = () => {
   // Dữ liệu mẫu cho các nhà tài trợ
+  //quy: cấu hình thông tin logo
   const sponsors = [
     {
       id: 1,
@@ -25,15 +26,15 @@ const SponsorsSection = () => {
     },
     {
       id: 4,
-      name: "Lexar",
-      logo: "https://th.bing.com/th/id/OIP.EOs7xmX6kpb872r9Q6mQ8wHaB-?r=0&rs=1&pid=ImgDetMain",
+      name: "Vi tính An Phát",
+      logo: "/sponsors/logo-vi-tinh-an-phat.png",
       tier: "silver",
-      website: "https://www.lexar.com/global/"
+      website: "https://vitinhanphat.com.vn/"
     },
     {
       id: 5,
       name: "Smnet",
-      logo: "https://smnet.vn/wp-content/uploads/2024/11/logo-smnet-2024.png",
+      logo: "/sponsors/logo-smnet.png",
       tier: "silver",
       website: "https://smnet.vn/en/"
     },
@@ -53,10 +54,10 @@ const SponsorsSection = () => {
     },
     {
       id: 8,
-      name: "Anta6",
-      logo: "https://anta6.com/wp-content/uploads/2025/03/1-1.png",
+      name: "PAT Group",
+      logo: "/sponsors/logo-pat-group.png",
       tier: "bronze",
-      website: "https://anta6.com/"
+      website: "https://sieuthicongnghe.com.vn/"
     }
   ];
 
@@ -143,6 +144,7 @@ const SponsorsSection = () => {
           </p>
         </div>
 
+        {/* quy: render logo */}
         <div className="space-y-12">
           {['gold', 'silver', 'bronze'].map(tier => renderSponsorTier(tier))}
         </div>

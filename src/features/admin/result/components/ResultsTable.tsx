@@ -107,7 +107,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results, fetchResults }) =>
   // Format date function
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: vi });
+      return format(new Date(dateString), 'dd/MM/yyyy HH:mm:ss', { locale: vi });
     } catch {
       return dateString;
     }
