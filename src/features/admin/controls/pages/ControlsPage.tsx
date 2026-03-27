@@ -786,6 +786,7 @@ const ControlsPage: React.FC = () => {
             <RescueControl
               matchId={matchInfo?.id ?? 0}
               currentQuestionOrder={currentQuestion?.questionOrder || 0}
+              ListContestant={listContestant}
             />
           </div>
 

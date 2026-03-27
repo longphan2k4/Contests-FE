@@ -24,6 +24,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 // import { useSocket } from '@contexts/SocketContext';
 import axiosInstance from '@config/axiosInstance';
 import { useParams } from 'react-router-dom';
+//tuankiet
+import {
+    useEliminatedContestants,
+} from '../../hook/useRescues';
 
 // Type cho rescue từ API mới
 type RescueFromAPI = {
@@ -61,9 +65,11 @@ type RescuedContestant = {
 interface RescueControlPanelProps {
     matchId: number;
     currentQuestionOrder: number;
+    //tuankiet
+    ListContestant: any;
 }
 
-const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, currentQuestionOrder }) => {
+const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, currentQuestionOrder, ListContestant }) => {
     const { match } = useParams();
     const [selectedRescueId, setSelectedRescueId] = useState<number | null>(null);
     const [suggestCount, setSuggestCount] = useState<number>(1);
@@ -71,6 +77,14 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
     const [isLoadingSuggest, setIsLoadingSuggest] = useState(false);
     const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
     const queryClient = useQueryClient();
+    //tuankiet
+    const [suggestPercent, setSuggestPercent] = useState<number>(0);
+
+    //tuankiet
+    const {
+        data: EliminatedContestants,
+        refetch: refetchEliminatedContestants,
+    } = useEliminatedContestants(matchId);
 
     // Helper functions for status display
     const getRescueStatusText = (status: string): string => {
@@ -236,6 +250,10 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentQuestionOrder, matchId]);
+    //tuankiet
+    useEffect(() => {
+        refetchEliminatedContestants()
+    }, [ListContestant])
 
     const mutationAdd = useMutation({
         mutationFn: async () => {
@@ -435,6 +453,22 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                             type="number"
                             value={suggestCount}
                             onChange={e => setSuggestCount(Math.max(1, parseInt(e.target.value, 10)))}
+                            disabled={!selectedRescueId || isRescueDisabled}
+                        />
+                        <TextField
+                            fullWidth
+                            label="% đề xuất tự động"
+                            type="number"
+                            value={suggestPercent}
+                            onChange={e => {
+                                //    refetchEliminatedContestants
+                                console.log("de xuat tu dong ", EliminatedContestants)
+                                const calculate = Math.round(EliminatedContestants.contestants.length * parseInt(e.target.value, 10) / 100);
+                                console.log("de xuat ", calculate)
+                                setSuggestPercent(Math.max(1, parseInt(e.target.value, 10)))
+                                setSuggestCount(calculate)
+                                }
+                            }
                             disabled={!selectedRescueId || isRescueDisabled}
                         />
                         <Button
