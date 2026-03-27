@@ -165,7 +165,9 @@ const Header: React.FC = () => {
             <div className="flex items-center space-x-2 sm:space-x-4 group">
               <div className="w-8 h-8 sm:w-12 sm:h-12 flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
                 <img
-                  src={Logo}
+                  //quy: đổi logo
+                  // src={Logo}
+                  src="/logo_2026_2.jpg"
                   alt="Logo"
                   className="w-5 h-7 sm:w-7 sm:h-10 object-cover"
                 />
