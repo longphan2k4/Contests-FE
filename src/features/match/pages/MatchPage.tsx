@@ -11,6 +11,9 @@ import RescueStatsDisplay from "../components/QuestionDisplay/RescueStatsDisplay
 import ChartDisplay from "../components/QuestionDisplay/ChartDisplay";
 import Info from "../components/QuestionDisplay/Info";
 
+//quy
+import { RescueAnimation } from "@features/student/components";
+
 import { mockContestants } from "../constants";
 
 import { Box, CircularProgress } from "@mui/material";
@@ -76,6 +79,9 @@ export default function MatchPage() {
   >([]);
 
   const [listAward, setListAward] = useState<ListAward | null>(null);
+
+  //quy: trạng thái animation rescue
+  const [showRescueAnimation, setShowRescueAnimation] = useState(false);
 
   // Use rescue hook to fetch initial data
   const {
@@ -236,9 +242,17 @@ export default function MatchPage() {
 
   useEffect(() => {
     if (!socket) {
-      return () => {}; // Empty cleanup function
+      return () => { }; // Empty cleanup function
     }
 
+    //quy handle animation + thời gian hiển thị
+    const handleShowRescue = () => {
+      setShowRescueAnimation(true);
+
+      setTimeout(() => {
+        setShowRescueAnimation(false);
+      }, 7000);
+    };
     const handleScreenUpdate = (data: any) => {
       setScreenControl(data?.updatedScreen);
     };
@@ -339,6 +353,9 @@ export default function MatchPage() {
     socket.on("statisticsContestant:update", handleStatisticsContestant);
     socket.on("update:award", handleUpdateAward);
 
+    //quy
+    socket.on("rescue:show", handleShowRescue);
+
     return () => {
       socket.off("rescue:statusUpdated", getRescueStatus);
       socket.off("screen:update", handleScreenUpdate);
@@ -354,6 +371,10 @@ export default function MatchPage() {
       socket.off("update:Rescued", handleUpdateRescued);
       socket.off("statisticsContestant:update", handleStatisticsContestant);
       socket.off("update:award", handleUpdateAward);
+
+      //quy
+      socket.off("rescue:show", handleShowRescue);
+
     };
   }, [socket]);
 
@@ -578,6 +599,12 @@ export default function MatchPage() {
       {screenControl?.controlKey === "top20Winner" && (
         <div key="top20Winner">
           <TopWinner match_id={matchInfo?.id ?? ""} />
+        </div>
+      )}
+      {/* quy: hiển thị animation cứu trợ */}
+      {showRescueAnimation && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
+          <RescueAnimation isVisible={showRescueAnimation} />
         </div>
       )}
     </>
