@@ -76,6 +76,8 @@ export default function MatchPage() {
   >([]);
 
   const [listAward, setListAward] = useState<ListAward | null>(null);
+  //tuankiet
+  const [canShowAll,setCanShowAll]=useState(Boolean(false))
 
   // Use rescue hook to fetch initial data
   const {
@@ -240,7 +242,15 @@ export default function MatchPage() {
     }
 
     const handleScreenUpdate = (data: any) => {
+      setListContestant(data?.ListContestant);
+      // setCountContestant(prev => ({
+      //   ...prev!,
+      //   countIn_progress: data?.countInProgress ?? 0,
+      // }));
       setScreenControl(data?.updatedScreen);
+      //tuankiet
+      console.log("on screen:update",data)
+      setCanShowAll(()=>true)
     };
 
     const handleCurrentQuestion = (data: any) => {
@@ -285,6 +295,8 @@ export default function MatchPage() {
         countIn_progress: data?.countInProgress ?? 0,
       }));
       setScreenControl(data?.updatedScreen);
+       console.log("on update:Eliminate",data)
+       setCanShowAll(()=>false)
     };
 
     const handleUpdateRescued = (data: any) => {
@@ -509,12 +521,14 @@ export default function MatchPage() {
             currentQuestion={currentQuestion}
             countQuestion={listQuestion.length}
             updateRescuedData={updateRescuedData}
+           
           />
           <EliminateDisplay
             ListContestant={listContestant ?? []}
             currentQuestionOrder={currentQuestion?.questionOrder ?? 0}
             totalIcons={mockContestants.length}
             controlValue={screenControl?.controlValue ?? undefined}
+            canShowAll={canShowAll}
           />
         </div>
       )}

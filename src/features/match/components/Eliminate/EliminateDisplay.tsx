@@ -30,6 +30,8 @@ interface EliminateDisplayProps {
   totalIcons?: number;
   currentQuestionOrder: number;
   controlValue?: ControlValue | null;
+  //tuankiet
+  canShowAll:Boolean
 }
 
 export default function EliminateDisplay({
@@ -37,6 +39,7 @@ export default function EliminateDisplay({
   totalIcons = 100,
   currentQuestionOrder,
   controlValue,
+  canShowAll,
 }: EliminateDisplayProps) {
   const [contestants, setContestants] = useState<Contestant[]>([]);
   const [icons, setIcons] = useState<Icon[]>([]);
@@ -273,6 +276,7 @@ export default function EliminateDisplay({
               maxContestantColumn={ListContestant[0]?.match?.maxContestantColumn}
               icons={icons}
               recentlyRestored={recentlyRestored}
+              canShowAll={ canShowAll}
             />
           </div>
 
@@ -291,6 +295,7 @@ export default function EliminateDisplay({
                 totalRescued={
                   icons.filter(i => i.isActive && i.isRescued).length
                 }
+                canShowAll={canShowAll}
               />
             </div>
           )}

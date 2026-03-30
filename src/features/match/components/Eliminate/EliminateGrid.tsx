@@ -9,6 +9,7 @@ interface EliminateGridProps {
   recentlyRestored: number[];
   maxContestantColumn: number;
   listContestant?: ListContestant[];
+  canShowAll:Boolean
 }
 
 type IconOrBreak = Icon | { id: string; isLineBreak: true };
@@ -33,6 +34,7 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
   maxContestantColumn,
   icons,
   recentlyRestored,
+  canShowAll,
 }) => {
   const totalContestants = icons.length;
 
@@ -147,15 +149,15 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                 animate={
                   icon.isFading
                     ? "disintegrating"
-                    : icon.isDisintegrated
-                      ? "hidden"
+                    : icon.isDisintegrated 
+                      ? (canShowAll && icon.currentAnswer)?"visible":"hidden"//neu bi loai + co sk show + co dap an=> hien thi so do
                       : "visible"
                 }
                 className={`
                   w-full h-full rounded-lg flex items-center justify-center 
                   shadow-lg border-2
                   ${icon.isDisintegrated
-                    ? "bg-red-500 text-white border-red-400 shadow-red-500/30"
+                    ?canShowAll?"bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-400/50 border-blue-400": "bg-red-500 text-white border-red-400 shadow-red-500/30"
                     : recentlyRestored.includes(icon.registrationNumber)
                       ? "bg-green-500 text-white animate-pulse shadow-green-400/50 border-green-400"
                       : icon.isRescued

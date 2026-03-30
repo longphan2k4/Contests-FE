@@ -10,6 +10,7 @@ interface EliminateSidebarProps {
   totalEliminated: number;
   totalRescued: number;
   questionOrder: number;
+  canShowAll:Boolean
 }
 
 const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
@@ -20,11 +21,12 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
   totalEliminated,
   totalRescued,
   questionOrder,
+  canShowAll,
 }) => {
   const currentEliminated = contestants.filter(
     contestant =>
       (contestant.status === "eliminated" || contestant.status === "banned") &&
-      contestant.eliminated_at_question_order === questionOrder
+      contestant.eliminated_at_question_order === questionOrder//tuankiet: them dieu dien de loc
   );
 
   const previousEliminated = contestants.filter(
@@ -86,7 +88,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                 Câu hiện tại ({questionOrder})
               </h4>
 
-              {currentEliminated.length > 0 ? (
+              {(currentEliminated.length > 0 && !canShowAll) ? (
                 // <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(70px,1fr))] gap-2">
                   {currentEliminated.map((contestant, index) => {
