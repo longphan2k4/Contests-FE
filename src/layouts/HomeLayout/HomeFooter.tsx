@@ -1,5 +1,6 @@
 import React from 'react';
-import Logo from "../../assets/image/logo/logo-caothang.svg"
+//quy
+// import Logo from "../../assets/image/logo/logo-caothang.svg"
 import { CodeBracketIcon, CircleStackIcon, ComputerDesktopIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline'; 
 
 type ProgramItem = {
@@ -48,7 +49,9 @@ const Footer: React.FC = () => {
         <div className="grid md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-3 mb-6">
-               <img src={Logo} alt="Logo" className="w-7 h-10 object-cover" />
+              {/* quy logo */}
+               {/* <img src={Logo} alt="Logo" className="w-7 h-10 object-cover" /> */}
+               <img src="/logo_2026_2.jpg" alt="Logo" className="w-7 h-10 object-cover" />
               <div>
                 <h3 className="font-bold">Olympic Tin học 2026</h3>
                 <p className="text-sm text-gray-400">Khoa CNTT</p>
