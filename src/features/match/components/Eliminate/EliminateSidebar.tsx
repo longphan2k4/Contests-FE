@@ -107,26 +107,34 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                         }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
                         className={`
-  rounded-lg min-h-16 w-full flex flex-col items-center justify-center
-  border-2 font-bold transition-all duration-200
-  hover:scale-105 ${bgColorClass}
-`}
+                          rounded-lg min-h-16 w-full flex flex-col items-center justify-center
+                          border-2 font-bold transition-all duration-200
+                          hover:scale-105 ${bgColorClass}
+                        `}
                         title={`${contestant.fullname} - ${contestant.status === "banned" ? "Bị cấm" : "Bị loại"}`}
                       >
                         {/* {contestant.registration_number} */}
                         {/*tuankiet: hien thi dap an cho thi sinh thua*/}
-                          {/* Số báo danh */}
-  <div className="text-lg leading-none">
-    {contestant.registration_number}
-  </div>
+                        {/* Số báo danh */}
+                        <div className="text-lg leading-none">
+                          {contestant.registration_number}
+                        </div>
 
-  {/* Đáp án */}
-<div className="
-  text-sm font-extrabold text-yellow-300 
-  text-center break-all leading-tight px-1
-">
-  {contestant.currentAnswer?.answer}
-</div>
+                        {/* Đáp án */}
+                        <div
+                          className="
+                          text-sm font-extrabold text-yellow-300 
+                          text-center leading-tight px-1
+                          break-words
+                        "
+                          style={{
+                            whiteSpace: 'normal',
+                            wordBreak: 'normal',
+                            overflowWrap: 'break-word'
+                          }}
+                        >
+                          {contestant.currentAnswer?.answer}
+                        </div>
                       </motion.div>
                     );
                   })}
