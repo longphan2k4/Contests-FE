@@ -173,7 +173,10 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                   className="font-black leading-none text-center drop-shadow-lg select-none"
                   style={{
                     textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-                    wordBreak: 'break-all',
+                    //tuankiet: warp theo khoan trang
+                    whiteSpace: 'normal',        // cho phép xuống dòng
+                    overflowWrap: 'break-word',  // nếu quá dài thì mới bẻ
+                    wordBreak: 'normal',         // ưu tiên theo khoảng trắng
                     overflow: 'hidden',
                     display: 'flex',
                     alignItems: 'center',
@@ -193,13 +196,13 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
 
                     {/* Đáp án (siêu nổi bật) */}
                     <span className="
-    text-lg font-extrabold 
-    text-yellow-300 
-    bg-black/40 
-    px-2 py-0.5 
-    rounded-md 
-    shadow-lg
-  ">
+                      text-lg font-extrabold 
+                      text-yellow-300 
+                      bg-black/40 
+                      px-2 py-0.5 
+                      rounded-md 
+                      shadow-lg
+                    ">
                       {icon?.currentAnswer?.answer}
                     </span>
                   </div>
