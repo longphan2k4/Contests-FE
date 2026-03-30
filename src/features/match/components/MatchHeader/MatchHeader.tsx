@@ -43,6 +43,9 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
     useState(false);
   const [hasPlayedEndSound, setHasPlayedEndSound] = useState(false);
 
+  //quy: biến để lưu số đếm cho cứu trợ
+  let lifesaverCount = 0;
+
   // const { socket } = useSocket();
   // const [updateRescuedData, setUpdateRescuedData] = useState<updatedRescuesType[]>(
   //   []
@@ -109,7 +112,8 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
     return lifesaver; // For resurrected and other types
   };
 
-  const renderRescueIcon = (rescue: updatedRescuesType) => {
+  //quy: thêm thuộc tính number
+  const renderRescueIcon = (rescue: updatedRescuesType, number?: number | null) => {
     const icon = getRescueIcon(rescue.rescueType);
     const isEligible = rescue.isEffect;
 
@@ -157,17 +161,24 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
               className="w-10 h-10 md:w-16 md:h-16 object-contain"
               alt={rescue.name}
             />
+
+            {/* quy: Badge số thứ tự */}
+            {number && (
+              <div className="absolute -top-1 -right-1 bg-yellow-400 text-black text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white shadow">
+                {number}
+              </div>
+            )}
           </div>
           {(rescue.status === RescueStatus.used ||
             rescue.status === RescueStatus.passed) && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <img
-                src={close}
-                className="w-10 h-10 md:w-16 md:h-16"
-                alt="Đã sử dụng"
-              />
-            </div>
-          )}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <img
+                  src={close}
+                  className="w-10 h-10 md:w-16 md:h-16"
+                  alt="Đã sử dụng"
+                />
+              </div>
+            )}
         </div>
         <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3 bg-black text-white text-xs rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity z-50">
           {rescue.status === RescueStatus.notUsed
@@ -175,10 +186,10 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
               ? "Sẵn sàng"
               : "Chưa đủ điều kiện"
             : rescue.status === RescueStatus.used
-            ? "Đã dùng"
-            : rescue.status === RescueStatus.passed
-            ? "Đã qua"
-            : "Không khả dụng"}
+              ? "Đã dùng"
+              : rescue.status === RescueStatus.passed
+                ? "Đã qua"
+                : "Không khả dụng"}
         </div>
       </div>
     );
@@ -219,30 +230,27 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
             <div className="relative">
               <div
                 className={`w-24 h-24 flex items-center justify-center rounded-full border-4 
-                ${
-                  timeRemaining <= 5
+                ${timeRemaining <= 5
                     ? "border-red-800 animate-pulse"
                     : timeRemaining <= 10
-                    ? "border-yellow-700"
-                    : "border-blue-500"
-                } 
+                      ? "border-yellow-700"
+                      : "border-blue-500"
+                  } 
                 bg-blue-900 shadow-lg transition-all duration-300`}
               >
                 <div className="absolute inset-0 rounded-full overflow-hidden">
                   <div
                     className={`absolute bottom-0 w-full bg-gradient-to-t 
-                      ${
-                        timeRemaining <= 5
-                          ? "from-red-600 to-red-400"
-                          : timeRemaining <= 10
+                      ${timeRemaining <= 5
+                        ? "from-red-600 to-red-400"
+                        : timeRemaining <= 10
                           ? "from-yellow-600 to-yellow-400"
                           : "from-blue-600 to-blue-400"
                       }`}
                     style={{
-                      height: `${
-                        (timeRemaining / (currentQuestion?.defaultTime ?? 30)) *
+                      height: `${(timeRemaining / (currentQuestion?.defaultTime ?? 30)) *
                         100
-                      }%`,
+                        }%`,
                       transition: "height 1s linear",
                     }}
                   ></div>
@@ -269,7 +277,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
                       top: "calc(50% - 4px)",
                       opacity:
                         i * 30 <
-                        (timeRemaining / (currentQuestion?.defaultTime ?? 30)) *
+                          (timeRemaining / (currentQuestion?.defaultTime ?? 30)) *
                           360
                           ? 1
                           : 0.3,
@@ -284,7 +292,20 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
           <div className="flex justify-center md:justify-end items-center flex-col md:flex-row gap-2">
             {/* Rescue items container */}
             <div className="flex justify-center md:justify-end gap-2 items-center flex-wrap max-w-xs md:max-w-md">
-              {updateRescuedData.map(rescue => renderRescueIcon(rescue))}
+
+              {/* quy: Đếm cứu trợ có type lifesaver */}
+              {
+                updateRescuedData.map((rescue) => {
+                  let number: number | null = null;
+
+                  
+                  if (rescue.rescueType !== "lifelineUsed") {
+                    lifesaverCount += 1;
+                    number = lifesaverCount;
+                  }
+
+                  return renderRescueIcon(rescue, number);
+                })}
             </div>
 
             {/* Contestant count - always at the end */}
@@ -292,13 +313,12 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
               <div className="px-4 py-2 bg-white/20 backdrop-blur-lg rounded-xl shadow-2xl border-2 border-blue-300">
                 <div
                   className={`font-bold text-black flex items-center space-x-1
-                  ${
-                    (countContestant?.countIn_progress ?? 0) <= 5
+                  ${(countContestant?.countIn_progress ?? 0) <= 5
                       ? "animate-pulse text-red-400"
                       : (countContestant?.countIn_progress ?? 0) <= 10
-                      ? "text-orange-300"
-                      : "text-green-300"
-                  }`}
+                        ? "text-orange-300"
+                        : "text-green-300"
+                    }`}
                 >
                   <TrophyIcon className="w-6 h-6" />
                   <span className="text-xl font-extrabold">
