@@ -12,6 +12,9 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SyncIcon from '@mui/icons-material/Sync';
 import EliminatedContestantDialog from './EliminatedContestantDialog';
 
+//quy
+import { useSocket } from '@contexts/SocketContext';
+
 // Import các hooks đã tạo
 import {
     useRescuedContestantsByRescueId,
@@ -85,6 +88,9 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
         data: EliminatedContestants,
         refetch: refetchEliminatedContestants,
     } = useEliminatedContestants(matchId);
+
+    //quy
+    const { socket } = useSocket();
 
     // Helper functions for status display
     const getRescueStatusText = (status: string): string => {
@@ -306,6 +312,12 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
             data: { contestantIds, currentQuestionOrder, rescueId: selectedRescueId }
         }, {
             onSuccess: async (response) => {
+                
+                //quy: gọi socket
+                if (socket && match) {
+                    socket.emit("rescue:show", { match });
+                }
+
                 // Cập nhật lại cache rescue để cập nhật trạng thái "used" ngay lập tức
                 if (response?.rescueUpdated) {
                     queryClient.setQueryData(
