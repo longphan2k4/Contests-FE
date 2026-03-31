@@ -399,13 +399,14 @@ const StudentWaitingRoom: React.FC = () => {
                   🛡️ Quy định chống gian lận
                 </h3>
                 <div className="space-y-3 text-sm text-gray-700">
-                  <div className="flex items-start space-x-2">
+                  {/* quy */}
+                  {/* <div className="flex items-start space-x-2">
                     <span className="text-orange-500 font-bold">•</span>
                     <span>
                       Bắt buộc vào chế độ <strong>toàn màn hình</strong> khi làm
                       bài
                     </span>
-                  </div>
+                  </div> */}
                   <div className="flex items-start space-x-2">
                     <span className="text-orange-500 font-bold">•</span>
                     <span>
