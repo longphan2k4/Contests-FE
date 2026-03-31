@@ -67,6 +67,7 @@ const ContestantsControlUI: React.FC<ContestantProps> = ({
       ids: selectedIds,
     };
     //tuankiet
+    console.log("DSTS:",ListContestant)
     const contestantsData = ListContestant.flatMap(group =>
       group.contestantMatches.map(c => ({
         registration_number: c.registrationNumber,

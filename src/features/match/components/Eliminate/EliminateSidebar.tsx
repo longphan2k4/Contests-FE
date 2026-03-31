@@ -69,12 +69,12 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
           </div>
         </div>
 
-        <h3 className={`text-2xl font-bold text-center ${displayMode === "eliminated" ? "text-red-700" : "text-green-700"
+        {/* <h3 className={`text-2xl font-bold text-center ${displayMode === "eliminated" ? "text-red-700" : "text-green-700"
           }`}>
           {displayMode === "eliminated"
             ? `Bị loại (${totalEliminated})`
             : `Được cứu (${totalRescued})`}
-        </h3>
+        </h3> */}
       </div>
 
       {/* Content - Scrollable */}
@@ -85,12 +85,12 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
             <div className="bg-white rounded-lg p-4 shadow-sm border border-red-200">
               <h4 className="text-lg font-semibold text-red-700 mb-3 flex items-center">
                 <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-                Câu hiện tại ({questionOrder})
+                Danh sách bị loại: {currentEliminated.length}
               </h4>
 
               {(currentEliminated.length > 0 && !canShowAll) ? (
                 // <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(70px,1fr))] gap-2">
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(35px,1fr))] gap-2">
                   {currentEliminated.map((contestant, index) => {
                     const bgColorClass = contestant.status === "banned"
                       ? "bg-gray-700 text-white border-gray-600"
@@ -109,7 +109,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                         }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
                         className={`
-                          rounded-lg min-h-16 w-full flex flex-col items-center justify-center
+                          rounded-lg min-h-8 w-full flex flex-col items-center justify-center
                           border-2 font-bold transition-all duration-200
                           hover:scale-105 ${bgColorClass}
                         `}
@@ -123,7 +123,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                         </div>
 
                         {/* Đáp án */}
-                        <div
+                        {/* <div
                           className="
                           text-sm font-extrabold text-yellow-300 
                           text-center leading-tight px-1
@@ -136,7 +136,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                           }}
                         >
                           {contestant.currentAnswer?.answer}
-                        </div>
+                        </div> */}
                       </motion.div>
                     );
                   })}
@@ -158,7 +158,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                   <span className="w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
                   Các câu trước
                 </h4>
-                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-40 overflow-y-auto">
+                <div className="grid grid-cols-7 sm:grid-cols-7 gap-2 max-h-40 overflow-y-auto">
                   {previousEliminated.map((contestant, index) => {
                     const bgColorClass = contestant.status === "banned"
                       ? "bg-gray-600 text-white border-gray-500"
@@ -171,7 +171,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
                         className={`
-                          rounded-lg h-10 w-10 flex items-center justify-center
+                          rounded-lg h-8 w-8 flex items-center justify-center
                           border font-bold text-xs transition-all duration-200
                           hover:scale-105 ${bgColorClass}
                         `}
@@ -195,7 +195,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
             </h4>
 
             {rescuedContestants.length > 0 ? (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-7 sm:grid-cols-7 gap-2">
                 {rescuedContestants.map((contestant, index) => (
                   <motion.div
                     key={`rescued-${contestant.registration_number}`}
