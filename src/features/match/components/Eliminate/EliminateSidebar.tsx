@@ -90,7 +90,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
 
               {(currentEliminated.length > 0 && !canShowAll) ? (
                 // <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(35px,1fr))] gap-2">
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(40px,1fr))] gap-2">
                   {currentEliminated.map((contestant, index) => {
                     const bgColorClass = contestant.status === "banned"
                       ? "bg-gray-700 text-white border-gray-600"
@@ -158,7 +158,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                   <span className="w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
                   Các câu trước
                 </h4>
-                <div className="grid grid-cols-7 sm:grid-cols-7 gap-2 max-h-40 overflow-y-auto">
+                <div className="grid grid-cols-6 sm:grid-cols-6 gap-2 max-h-40 overflow-y-auto">
                   {previousEliminated.map((contestant, index) => {
                     const bgColorClass = contestant.status === "banned"
                       ? "bg-gray-600 text-white border-gray-500"
@@ -171,7 +171,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
                         className={`
-                          rounded-lg h-8 w-8 flex items-center justify-center
+                          rounded-lg h-10 w-10 flex items-center justify-center
                           border font-bold text-xs transition-all duration-200
                           hover:scale-105 ${bgColorClass}
                         `}
@@ -195,7 +195,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
             </h4>
 
             {rescuedContestants.length > 0 ? (
-              <div className="grid grid-cols-7 sm:grid-cols-7 gap-2">
+              <div className="grid grid-cols-6 sm:grid-cols-6 gap-2">
                 {rescuedContestants.map((contestant, index) => (
                   <motion.div
                     key={`rescued-${contestant.registration_number}`}
