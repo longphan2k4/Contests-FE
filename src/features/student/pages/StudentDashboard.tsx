@@ -611,6 +611,13 @@ const StudentDashboard: React.FC = () => {
                 <div className="flex items-start space-x-3">
                   <ArrowRightIcon className="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
                   <p className="text-gray-600">
+                    Các hành vi vi phạm bao gồm: chuyển tab hoặc minimize cửa sổ, 
+                    sử dụng Copy/Paste (Ctrl+C/V/X), mở menu bằng chuột phải, mở Developer Tools (F12)
+                  </p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <ArrowRightIcon className="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-gray-600">
                     Chờ trận đấu bắt đầu và vào phòng thi
                   </p>
                 </div>
@@ -618,12 +625,6 @@ const StudentDashboard: React.FC = () => {
                   <ArrowRightIcon className="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
                   <p className="text-gray-600">
                     Trả lời câu hỏi trong thời gian quy định
-                  </p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <ArrowRightIcon className="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-gray-600">
-                    Xem kết quả ngay sau khi hết thời gian
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
