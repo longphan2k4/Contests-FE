@@ -9,7 +9,7 @@ interface EliminateGridProps {
   recentlyRestored: number[];
   maxContestantColumn: number;
   listContestant?: ListContestant[];
-  canShowAll:Boolean
+  canShowAll: Boolean
 }
 
 type IconOrBreak = Icon | { id: string; isLineBreak: true };
@@ -149,15 +149,15 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                 animate={
                   icon.isFading
                     ? "disintegrating"
-                    : icon.isDisintegrated 
-                      ? (canShowAll && icon.currentAnswer)?"visible":"hidden"//neu bi loai + co sk show + co dap an=> hien thi so do
+                    : icon.isDisintegrated
+                      ? (canShowAll && icon.currentAnswer) ? "visible" : "hidden"//neu bi loai + co sk show + co dap an=> hien thi so do
                       : "visible"
                 }
                 className={`
                   w-full h-full rounded-lg flex items-center justify-center 
                   shadow-lg border-2
                   ${icon.isDisintegrated
-                    ?canShowAll?"bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-400/50 border-blue-400": "bg-red-500 text-white border-red-400 shadow-red-500/30"
+                    ? canShowAll ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-400/50 border-blue-400" : "bg-red-500 text-white border-red-400 shadow-red-500/30"
                     : recentlyRestored.includes(icon.registrationNumber)
                       ? "bg-green-500 text-white animate-pulse shadow-green-400/50 border-green-400"
                       : icon.isRescued
@@ -197,15 +197,22 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                     </span>
 
                     {/* Đáp án (siêu nổi bật) */}
+                    {/* quy: cắt câu trả lời và giảm kích thước, font-sans xử lý chữ khi có dấu*/}
                     <span className="
-                      text-lg font-extrabold 
+                      text-sm font-extrabold 
                       text-yellow-300 
                       bg-black/40 
                       px-2 py-0.5 
                       rounded-md 
                       shadow-lg
+                      font-sans
                     ">
-                      {icon?.currentAnswer?.answer}
+                      {/* {icon?.currentAnswer?.answer} */}
+                      {icon?.currentAnswer?.answer?.trim() //xóa khoảng trắng đầu và cuối
+                        .split(/\s+/) //tách chuỗi thành mảng từ theo 1 hoặc nhiều khoảng trắng
+                        .slice(0, 2) //lấy 2 từ đầu
+                        .join(' ') //ghép lại
+                      }
                     </span>
                   </div>
 
