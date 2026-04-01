@@ -474,8 +474,17 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
                             value={suggestPercent}
                             onChange={e => {
                                 //    refetchEliminatedContestants
-                                console.log("de xuat tu dong ", EliminatedContestants)
-                                const calculate = Math.round(EliminatedContestants.contestants.length * parseInt(e.target.value, 10) / 100);
+                                //tuankiet: tính toán số lượng đề xuất dựa trên phần trăm và tổng số thí sinh bị loại
+                                const totalEliminated = ListContestant.reduce((sum: number, group: any) => {
+                                const eliminatedInGroup = group.contestantMatches.filter(
+                                    (c: any) => c.status === "eliminated"
+                                ).length;
+                                return sum + eliminatedInGroup;
+                                }, 0);
+
+                                console.log("Tổng thí sinh bị loại:", totalEliminated);
+                                
+                                const calculate = Math.round(totalEliminated * parseInt(e.target.value, 10) / 100);
                                 console.log("de xuat ", calculate)
                                 setSuggestPercent(Math.max(1, parseInt(e.target.value, 10)))
                                 setSuggestCount(calculate)
