@@ -44,8 +44,16 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
     useState(false);
   const [hasPlayedEndSound, setHasPlayedEndSound] = useState(false);
 
-  //quy: biến để lưu số đếm cho cứu trợ
-  let lifesaverCount = 0;
+  //quy: sort danh sách + biến để lưu số đếm cho cứu trợ
+  const sortedRescues = [
+    ...updateRescuedData.filter(r => r.rescueType !== "lifelineUsed"),
+    ...updateRescuedData.filter(r => r.rescueType === "lifelineUsed"),
+  ].map((rescue, index) => {
+    if (rescue.rescueType !== "lifelineUsed") {
+      return { ...rescue, order: index + 1 };
+    }
+    return { ...rescue, order: null };
+  });
 
   // const { socket } = useSocket();
   // const [updateRescuedData, setUpdateRescuedData] = useState<updatedRescuesType[]>(
@@ -301,17 +309,10 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
 
               {/* quy: Đếm cứu trợ có type lifesaver */}
               {
-                updateRescuedData.map((rescue) => {
-                  let number: number | null = null;
-
-                  
-                  if (rescue.rescueType !== "lifelineUsed") {
-                    lifesaverCount += 1;
-                    number = lifesaverCount;
-                  }
-
-                  return renderRescueIcon(rescue, number);
-                })}
+                sortedRescues.map((rescue) =>
+                  renderRescueIcon(rescue, rescue.order)
+                )
+              }
             </div>
 
             {/* Contestant count - always at the end */}
@@ -328,7 +329,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
                 >
                   {/* quy: hinh cai cup */}
                   {/* <TrophyIcon className="w-6 h-6" />  */}
-                  <img 
+                  <img
                     src={khangia}
                     alt="số lượng thí sinh"
                     className="w-10 h-10 object-contain"
