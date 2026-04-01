@@ -15,6 +15,7 @@ interface QuestionControlProp {
 }
 
 const QuestionControl: React.FC<QuestionControlProp> = ({
+  currentQuestion, //quy
   remainingTime,
   controlKey,
 }) => {
@@ -132,14 +133,45 @@ const QuestionControl: React.FC<QuestionControlProp> = ({
         </button>
         <button
           className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium"
-          onClick={() =>
-            EmitScreenUpdate(
+          // onClick={() =>
+          //   EmitScreenUpdate(
+          //     {
+          //       controlKey: "question",
+          //     },
+          //     "Đã chuyển sang màn hình câu hỏi"
+          //   )
+          // }
+          //quy: thay đổi sự kiện onclick để gửi socket gửi câu hỏi cho thí sinh
+          onClick={() => {
+            console.log("currentQuestion:", currentQuestion);
+            if (!socket || !match) return;
+
+            if (!currentQuestion) {
+              showToast("Không có câu hỏi hiện tại", "error");
+              return;
+            }
+
+            socket.emit(
+              "currentQuestion:emit-student",
               {
-                controlKey: "question",
+                match,
+                questionOrder: currentQuestion.questionOrder,
               },
-              "Đã chuyển sang màn hình câu hỏi"
-            )
-          }
+              (err: any, res: any) => {
+                if (err) {
+                  showToast(err.message, "error");
+                } else {
+                  showToast(res.message, "success");
+
+                  // Sau khi set câu hỏi -> chuyển screen
+                  EmitScreenUpdate(
+                    { controlKey: "question" },
+                    "Đã hiển thị câu hỏi"
+                  );
+                }
+              }
+            );
+          }}
         >
           Show
         </button>

@@ -713,6 +713,7 @@ const ControlsPage: React.FC = () => {
               className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100"
             >
               <QuestionControl
+                currentQuestion={currentQuestion??undefined}//quy
                 remainingTime={matchInfo?.remainingTime}
                 controlKey={screenControl?.controlKey}
               />
