@@ -23,9 +23,10 @@ export interface Contestant {
   rescued_at_question_order?: number | null;
 }
 
-import type { ControlValue, ListContestant } from "../../types/control.type";
+import type { CurrentQuestion,ControlValue, ListContestant } from "../../types/control.type"; //quy: import type CurrentQuestion
 
 interface EliminateDisplayProps {
+  currentQuestion: CurrentQuestion | null; //quy
   ListContestant: ListContestant[];
   totalIcons?: number;
   currentQuestionOrder: number;
@@ -40,6 +41,7 @@ export default function EliminateDisplay({
   currentQuestionOrder,
   controlValue,
   canShowAll,
+  currentQuestion, //quy
 }: EliminateDisplayProps) {
   const [contestants, setContestants] = useState<Contestant[]>([]);
   const [icons, setIcons] = useState<Icon[]>([]);
@@ -276,6 +278,7 @@ export default function EliminateDisplay({
               maxContestantColumn={ListContestant[0]?.match?.maxContestantColumn}
               icons={icons}
               recentlyRestored={recentlyRestored}
+              currentQuestion={currentQuestion} //quy
               canShowAll={ canShowAll}
             />
           </div>

@@ -4,12 +4,16 @@ import type { Icon } from "../../types";
 import type { Variants, Easing } from "framer-motion";
 import type { ListContestant } from "@features/match/types/control.type";
 
+//quy
+import type { CurrentQuestion } from "../../types/control.type";
+
 interface EliminateGridProps {
   icons: Icon[];
   recentlyRestored: number[];
   maxContestantColumn: number;
   listContestant?: ListContestant[];
   canShowAll: Boolean
+  currentQuestion: CurrentQuestion | null; //quy
 }
 
 type IconOrBreak = Icon | { id: string; isLineBreak: true };
@@ -35,6 +39,7 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
   icons,
   recentlyRestored,
   canShowAll,
+  currentQuestion,
 }) => {
   const totalContestants = icons.length;
 
@@ -100,6 +105,31 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
       }
     });
   }
+
+  //quy: xử lý loại đáp án và hiển thị
+  const getDisplayAnswer = (
+    answer: string | undefined,
+    currentQuestion: CurrentQuestion | null
+  ) => {
+    if (!answer || !currentQuestion) return "";
+
+    //Nếu là trắc nghiệm
+    if (currentQuestion.questionType === "multiple_choice") {
+      const index = currentQuestion.options.findIndex(
+        (opt) => opt.trim() === answer.trim()
+      );
+      if (index === -1) return answer; // fallback nếu không match
+
+      return ["A", "B", "C", "D"][index] || "";
+    }
+
+    //Nếu là tự luận thì cắt 2 từ đầu tiên
+    return answer
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .join(" ");
+  };
 
   return (
     <div className="w-full h-full overflow-hidden p-0 sm:p-0">
@@ -208,11 +238,8 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                       font-sans
                     ">
                       {/* {icon?.currentAnswer?.answer} */}
-                      {icon?.currentAnswer?.answer?.trim() //xóa khoảng trắng đầu và cuối
-                        .split(/\s+/) //tách chuỗi thành mảng từ theo 1 hoặc nhiều khoảng trắng
-                        .slice(0, 2) //lấy 2 từ đầu
-                        .join(' ') //ghép lại
-                      }
+                      {/* quy: hiển thị câu hỏi sau khi đã định dạng */}
+                      {getDisplayAnswer(icon?.currentAnswer?.answer, currentQuestion)}
                     </span>
                   </div>
 

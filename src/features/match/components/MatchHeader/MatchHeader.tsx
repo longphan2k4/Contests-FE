@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
   QuestionMarkCircleIcon,
-  TrophyIcon,
+  // TrophyIcon, quy bỏ icon
 } from "@heroicons/react/24/outline";
 //import phao1 from "./images/phao1.png";
 import khangia from "./images/khangia.png";
+import paperplane from "./images/paperplane.png";
 //import khongdung from "./images/delete.png";
 import close from "./images/close.png";
 import lifesaver from "./images/lifesaver.png";
@@ -107,7 +108,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
 
   const getRescueIcon = (rescueType: string): string => {
     if (rescueType === "lifelineUsed") {
-      return khangia;
+      return paperplane;
     }
     return lifesaver; // For resurrected and other types
   };
@@ -325,7 +326,13 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
                         : "text-green-300"
                     }`}
                 >
-                  <TrophyIcon className="w-6 h-6" />
+                  {/* quy: hinh cai cup */}
+                  {/* <TrophyIcon className="w-6 h-6" />  */}
+                  <img 
+                    src={khangia}
+                    alt="số lượng thí sinh"
+                    className="w-10 h-10 object-contain"
+                  />
                   <span className="text-xl font-extrabold">
                     {(countContestant?.countIn_progress ?? 0)
                       .toString()

@@ -53,7 +53,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                 : "bg-transparent text-gray-700 hover:bg-gray-200"
                 }`}
             >
-              Bị loại ({totalEliminated})
+              Bị loại: {totalEliminated}
             </button>
             <button
               type="button"
@@ -64,7 +64,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                 }`}
               disabled={rescuedContestants.length === 0}
             >
-              Được cứu ({totalRescued})
+              Được cứu: {totalRescued}
             </button>
           </div>
         </div>
@@ -85,7 +85,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
             <div className="bg-white rounded-lg p-4 shadow-sm border border-red-200">
               <h4 className="text-lg font-semibold text-red-700 mb-3 flex items-center">
                 <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-                Danh sách bị loại: {currentEliminated.length}
+                Bị loại ở câu này: {currentEliminated.length}
               </h4>
 
               {(currentEliminated.length > 0 && !canShowAll) ? (
@@ -156,7 +156,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
               <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                 <h4 className="text-lg font-semibold text-gray-700 mb-3 flex items-center">
                   <span className="w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
-                  Các câu trước
+                  Danh sách bị loại
                 </h4>
                 <div className="grid grid-cols-6 sm:grid-cols-6 gap-2 max-h-40 overflow-y-auto">
                   {previousEliminated.map((contestant, index) => {
