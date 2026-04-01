@@ -268,6 +268,7 @@ export default function MatchPage() {
     };
 
     const handleCurrentQuestion = (data: any) => {
+      console.log('hien thi cau hoi hien tai: ',data?.currentQuestion);//quy
       setMatchInfo(data?.matchInfo);
       setCurrentQuestion(data?.currentQuestion);
       setListContestant(data?.ListContestant);
@@ -547,6 +548,7 @@ export default function MatchPage() {
           <EliminateDisplay
             ListContestant={listContestant ?? []}
             currentQuestionOrder={currentQuestion?.questionOrder ?? 0}
+            currentQuestion={currentQuestion} //quy: lay cau hoi hien tai
             totalIcons={mockContestants.length}
             controlValue={screenControl?.controlValue ?? undefined}
             canShowAll={canShowAll}
