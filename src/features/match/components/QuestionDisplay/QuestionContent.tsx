@@ -260,11 +260,12 @@ const QuestionContent: React.FC<QuestionContentProps> = ({
             className="flex items-center p-4 border-2 border-gray-200 rounded-lg bg-white hover:bg-gray-50 hover:border-blue-300 transition-all duration-200 w-full cursor-pointer group"
           >
             <div className="flex items-center justify-center w-10 h-10 mr-4 rounded-full bg-gray-100 group-hover:bg-blue-100 transition-colors">
-              <span className="font-bold text-lg text-gray-700 group-hover:text-blue-700">
+              <span className="font-bold text-2xl text-gray-700 group-hover:text-blue-700">
                 {String.fromCharCode(65 + index)}
               </span>
             </div>
-            <span className="text-base font-medium text-gray-800 leading-relaxed">
+            {/* quy kích thước chữ */}
+            <span className="text-2xl text-gray-800">
               {option}
             </span>
           </div>
@@ -276,8 +277,9 @@ const QuestionContent: React.FC<QuestionContentProps> = ({
   return (
     <>
       <div className="p-6 bg-white rounded-lg shadow-md border transition-all duration-300">
+        {/* quy: kích thước chữ */}
         <div
-          className="text-xl font-semibold mb-6 leading-relaxed"
+          className="text-2xl font-semibold mb-6 leading-relaxed"
           dangerouslySetInnerHTML={{
             __html: DOMPurify.sanitize(content || ""),
           }}
