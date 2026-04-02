@@ -160,6 +160,9 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
           // Chỉ render các item active
           if (!icon.isActive) return null;
 
+          //quy: trường hợp không chọn đáp án
+          const isNoAnswer = icon?.currentAnswer?.answer === "[KHÔNG CHỌN ĐÁP ÁN]";
+
           return (
             <motion.div
               key={icon.id}
@@ -227,19 +230,28 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                     </span>
 
                     {/* Đáp án (siêu nổi bật) */}
-                    {/* quy: cắt câu trả lời và giảm kích thước, font-sans xử lý chữ khi có dấu*/}
-                    <span className="
-                      text-sm font-extrabold 
+                    {/* quy: cắt câu trả lời và thay đổi kích thước, font-sans xử lý chữ khi có dấu*/}
+                    <span
+                      className={`
+                      font-extrabold 
                       text-yellow-300 
                       bg-black/40 
                       px-2 py-0.5 
                       rounded-md 
                       shadow-lg
                       font-sans
-                    ">
+                       ${
+                        isNoAnswer
+                          ? "text-xs"
+                          : currentQuestion?.questionType === "multiple_choice"
+                            ? "text-2xl"
+                            : "text-xs"
+                        }
+                    `}
+                    >
                       {/* {icon?.currentAnswer?.answer} */}
                       {/* quy: hiển thị câu hỏi sau khi đã định dạng */}
-                      {getDisplayAnswer(icon?.currentAnswer?.answer, currentQuestion)}
+                     {isNoAnswer ? "KHÔNG CHỌN" : getDisplayAnswer(icon?.currentAnswer?.answer, currentQuestion)}
                     </span>
                   </div>
 
