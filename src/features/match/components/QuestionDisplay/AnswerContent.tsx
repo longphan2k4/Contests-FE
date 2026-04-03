@@ -3,13 +3,30 @@ import { type AnswerContentProps } from "../../types/question.types";
 
 const AnswerContent: React.FC<AnswerContentProps> = ({
   answermedia = [],
-  correctAnswer,
+  // correctAnswer,
   controlValue = "",
+  //quy
+  currentQuestion,
 }) => {
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(
     null
   );
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  //quy
+  const getCorrectAnswerLabel = () => {
+    const options = currentQuestion?.options || [];
+    const correct = currentQuestion?.correctAnswer;
+
+    const index = options.findIndex(
+      (opt) =>
+        opt.trim().toLowerCase() === correct?.trim().toLowerCase()
+    );
+
+    if (index === -1) return correct; // fallback nếu không tìm thấy
+
+    const labels = ["A", "B", "C", "D"];
+    return `${labels[index]}. ${correct}`;
+  };
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -241,7 +258,7 @@ const AnswerContent: React.FC<AnswerContentProps> = ({
   return (
     <>
       <div className="p-6 bg-white rounded-lg shadow-md border transition-all duration-300">
-        <div className="flex items-center mb-6">
+        <div className="flex items-center justify-center mb-6">
           <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full mr-3">
             <svg
               className="w-5 h-5 text-green-600"
@@ -255,9 +272,11 @@ const AnswerContent: React.FC<AnswerContentProps> = ({
               />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-800">
+          <h2 className="text-[clamp(18px,2.5vw,35px)] font-semibold text-gray-800">
             Đáp án đúng:{" "}
-            <span className="text-green-600 font-bold">{correctAnswer}</span>
+            <span className="text-green-600 font-bold">
+              {getCorrectAnswerLabel()}
+            </span>
           </h2>
         </div>
 

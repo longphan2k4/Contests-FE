@@ -6,10 +6,10 @@ interface QuestionIntroProp {
 
 const QuestionIntro: React.FC<QuestionIntroProp> = ({ intro }) => {
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md border transition-all duration-300">
+    <div className="min-h-[50vh] p-6 bg-white rounded-lg shadow-md border">
     {/* quy: kích thước chữ */}
-      <h1 className="text-2xl font-semibold">Thông tin câu hỏi</h1>
-      <div className="text-2xl leading-normal">{intro}</div>
+      <h1 className="text-[clamp(18px,2.5vw,35px)] font-semibold">Thông tin câu hỏi</h1>
+      <div className="text-[clamp(18px,2.5vw,35px)] leading-normal">{intro}</div>
     </div>
   );
 };
