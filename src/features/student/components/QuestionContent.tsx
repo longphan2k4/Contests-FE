@@ -13,15 +13,15 @@ interface MediaData {
 
 interface QuestionContentProps {
   intro?: string;
-  content: string;
+  content?: string;
   media?: MediaData[];
   onMediaClick: (media: MediaData) => void;
   children?: React.ReactNode;
 }
 
 const QuestionContent: React.FC<QuestionContentProps> = ({
-  intro,
-  content,
+  // intro,
+  // content,
   media,
   onMediaClick,
   children,
@@ -29,7 +29,8 @@ const QuestionContent: React.FC<QuestionContentProps> = ({
   return (
     <Card>
       <CardContent>
-        {intro && (
+        {/* tuankiet: an noi dung cau hoi: into,content */}
+        {/* {intro && (
           <Typography variant="body2" className="text-gray-600 mb-3 italic">
             📝 {intro}
           </Typography>
@@ -40,7 +41,7 @@ const QuestionContent: React.FC<QuestionContentProps> = ({
           dangerouslySetInnerHTML={{
             __html: content,
           }}
-        />
+        /> */}
 
         <Divider className="mb-4" />
 

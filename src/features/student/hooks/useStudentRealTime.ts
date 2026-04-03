@@ -5,7 +5,8 @@ import { useStudentContext } from "../contexts/StudentContext";
 
 interface QuestionData {
   id: number;
-  content: string;
+  //Tuankiet: ko nhan intro, content tu backend nua
+  content?: string;
   intro?: string;
   questionType: string;
   difficulty: string;
