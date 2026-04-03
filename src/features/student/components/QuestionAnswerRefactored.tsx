@@ -34,7 +34,8 @@ interface MediaData {
 
 interface QuestionData {
   id: number;
-  content: string;
+  //Tuankiet: ko nhan intro, content tu backend nua
+  content?: string;
   intro?: string;
   questionType: string; // Đây là field chính xác từ server
   difficulty: string;
@@ -687,8 +688,8 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
 
       {/* Nội dung câu hỏi + options chung nền trắng */}
       <QuestionContent
-        intro={currentQuestion.question.intro}
-        content={currentQuestion.question.content}
+        // intro={currentQuestion.question.intro}
+        // content={currentQuestion.question.content}
         media={currentQuestion.question.media}
         onMediaClick={handleMediaClick}
       >
