@@ -14,6 +14,7 @@ interface QuestionData {
   options: string[];
   correctAnswer?: string;
   explanation?: string;
+  // media?: any[]; // Có thể định nghĩa rõ hơn nếu có cấu trúc media cụ thể
 }
 
 interface CurrentQuestionData {
@@ -190,6 +191,7 @@ export const useStudentRealTime = (
       const isMatchingId = data.matchSlug === matchIdString;
 
       if (isMatchingSlug || isMatchingId) {
+        console.log("Received questionShown event:", data);
         const newState = {
           currentQuestion: data.currentQuestionData || null,
           remainingTime: data.remainingTime || 0, // 🔥 FIX: Dùng remainingTime từ event
