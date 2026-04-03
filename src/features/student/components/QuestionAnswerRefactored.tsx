@@ -186,7 +186,9 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
       clearTimeout(antiCheatWarningTimer.current);
     }
   }, [handleAntiCheatTerminate]);
-
+  
+  //tuankiet: Tat anticheat tam thoi
+  const ENABLE_ANTICHEAT = false;
   // 🛡️ NEW: Anti-cheat hook
   const {
     violations,
@@ -200,11 +202,11 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
     isMonitoring,
   } = useAntiCheat(
     {
-      enableFullscreen: true,
-      enableTabSwitchDetection: true,
-      enableCopyPasteBlocking: true,
-      enableContextMenuBlocking: true,
-      enableDevToolsBlocking: true,
+      enableFullscreen: ENABLE_ANTICHEAT,
+      enableTabSwitchDetection: ENABLE_ANTICHEAT,
+      enableCopyPasteBlocking: ENABLE_ANTICHEAT,
+      enableContextMenuBlocking: ENABLE_ANTICHEAT,
+      enableDevToolsBlocking: ENABLE_ANTICHEAT,
       maxViolations: 3,
       warningBeforeTermination: true,
     },
