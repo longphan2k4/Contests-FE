@@ -85,7 +85,7 @@ const RescueControlPanel: React.FC<RescueControlPanelProps> = ({ matchId, curren
 
     //tuankiet
     const {
-        data: EliminatedContestants,
+        // data: EliminatedContestants,
         refetch: refetchEliminatedContestants,
     } = useEliminatedContestants(matchId);
 
