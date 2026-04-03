@@ -47,7 +47,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   //quy: sort danh sách + biến để lưu số đếm cho cứu trợ
   //tuankiet: them rule cho cuu tro may bay
   const hasUnusedResurrected = updateRescuedData.some(
-  r => r.rescueType === "resurrected" && r.status === "notUsed"
+  r => r.rescueType === "resurrected" && r.status !== "used"
 );
   const sortedRescues = [
     ...updateRescuedData.filter(r => r.rescueType !== "lifelineUsed"),
