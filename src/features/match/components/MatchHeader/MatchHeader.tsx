@@ -45,15 +45,34 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   const [hasPlayedEndSound, setHasPlayedEndSound] = useState(false);
 
   //quy: sort danh sách + biến để lưu số đếm cho cứu trợ
+  //tuankiet: them rule cho cuu tro may bay
+  const hasUnusedResurrected = updateRescuedData.some(
+  r => r.rescueType === "resurrected" && r.status === "notUsed"
+);
   const sortedRescues = [
     ...updateRescuedData.filter(r => r.rescueType !== "lifelineUsed"),
     ...updateRescuedData.filter(r => r.rescueType === "lifelineUsed"),
   ].map((rescue, index) => {
-    if (rescue.rescueType !== "lifelineUsed") {
-      return { ...rescue, order: index + 1 };
+     let newRescue = { ...rescue };
+    //tuankiet
+      // 🔥 RULE: lifeline chỉ active khi không còn resurrected chưa dùng
+    if (rescue.rescueType === "lifelineUsed") {
+      newRescue.isEffect = !hasUnusedResurrected;
+      newRescue.status= newRescue.isEffect ? RescueStatus.notUsed : RescueStatus.notEligible;
     }
-    return { ...rescue, order: null };
+
+    if (rescue.rescueType !== "lifelineUsed") {
+    return { ...newRescue, order: index + 1 };
+    }
+
+    return { ...newRescue, order: null };
+    // if (rescue.rescueType !== "lifelineUsed") {
+    //   return { ...rescue, order: index + 1 };
+    // }
+    // return { ...rescue, order: null };
   });
+
+  console.log("sortedRescues:", sortedRescues);
 
   // const { socket } = useSocket();
   // const [updateRescuedData, setUpdateRescuedData] = useState<updatedRescuesType[]>(
