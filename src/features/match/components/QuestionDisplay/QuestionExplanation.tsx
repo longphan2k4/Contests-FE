@@ -23,13 +23,13 @@ const QuestionExplanation: React.FC<QuestionExplanationProp> = ({
     <div className="min-h-[55vh] w-full p-6 bg-white rounded-lg shadow-md border transition-all duration-300 break-words overflow-auto">
       
       {/* Title */}
-      <h1 className="font-semibold mb-4 text-[clamp(18px,2.5vw,35px)]">
+      <h1 className="font-semibold mb-4 text-[clamp(14px,2.3vw,36px)]">
         Mở rộng thêm về câu hỏi:
       </h1>
 
       {/* Content */}
       <div
-        className="leading-relaxed text-[clamp(16px,2.5vw,35px)]"
+        className="leading-relaxed text-[clamp(14px,2.3vw,35px)]"
         dangerouslySetInnerHTML={{
           __html: DOMPurify.sanitize(explanation || ""),
         }}
