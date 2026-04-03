@@ -1,5 +1,8 @@
 // types/question.types.ts
 
+//quy
+import type { CurrentQuestion } from "./control.type";
+
 export interface QuestionData {
   questionNumber: number;
   phase: string;
@@ -36,6 +39,8 @@ export interface AnswerContentProps {
   answermedia: Media[] | null;
   correctAnswer: string | null;
   controlValue?: string | null;
+  //quy
+  currentQuestion: CurrentQuestion | null;
 }
 
 export interface AnswerDisplayProps {
