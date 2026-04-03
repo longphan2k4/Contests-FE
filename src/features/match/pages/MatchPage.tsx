@@ -531,6 +531,8 @@ export default function MatchPage() {
           <AnswerContent
             controlValue={screenControl?.controlValue ?? null}
             answermedia={currentQuestion?.mediaAnswer ?? null}
+            //quy
+            currentQuestion={currentQuestion}
             correctAnswer={currentQuestion?.correctAnswer ?? null}
           />
         </div>
