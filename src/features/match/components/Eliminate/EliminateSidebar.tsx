@@ -42,8 +42,8 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
   return (
     <div className="h-full bg-gradient-to-b from-gray-50 to-gray-100 border-l border-gray-300 shadow-lg flex flex-col">
       {/* Header - Fixed */}
-      <div className="flex-shrink-0 p-4 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex justify-center mb-3">
+      <div className="flex-shrink-0 py-2 px-4 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex justify-center">
           <div className="inline-flex rounded-lg shadow-md bg-gray-100 p-1" role="group">
             <button
               type="button"
@@ -89,8 +89,8 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
               </h4>
 
               {(currentEliminated.length > 0 && !canShowAll) ? (
-                // <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(40px,1fr))] gap-2">
+                <div className="grid grid-cols-6 gap-2">
+                {/* <div className="grid grid-cols-[repeat(auto-fit,minmax(40px,1fr))] gap-2"> */}
                   {currentEliminated.map((contestant, index) => {
                     const bgColorClass = contestant.status === "banned"
                       ? "bg-gray-700 text-white border-gray-600"
@@ -109,7 +109,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                         }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
                         className={`
-                          rounded-lg min-h-8 w-full flex flex-col items-center justify-center
+                          rounded-lg h-10 w-10 flex flex-col items-center justify-center
                           border-2 font-bold transition-all duration-200
                           hover:scale-105 ${bgColorClass}
                         `}
@@ -141,12 +141,14 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                     );
                   })}
                 </div>
-              ) : (
+              ) 
+              : (
                 <div className="text-center py-6 text-gray-500">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                  {/* quy xóa text */}
+                  {/* <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
                     <span className="text-2xl">🎉</span>
                   </div>
-                  <p>Không có thí sinh nào bị loại ở câu này</p>
+                  <p>Không có thí sinh nào bị loại ở câu này</p> */}
                 </div>
               )}
             </div>
@@ -172,7 +174,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                         transition={{ duration: 0.3, delay: index * 0.05 }}
                         className={`
                           rounded-lg h-10 w-10 flex items-center justify-center
-                          border font-bold text-xs transition-all duration-200
+                          border font-bold text-lg transition-all duration-200
                           hover:scale-105 ${bgColorClass}
                         `}
                         title={`${contestant.fullname} - Câu ${contestant.eliminated_at_question_order}`}
