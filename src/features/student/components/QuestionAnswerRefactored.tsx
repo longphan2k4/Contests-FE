@@ -107,6 +107,18 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
   const [isInRescueMode, setIsInRescueMode] = useState(false);
   const [rescueMessage, setRescueMessage] = useState("");
   const [justRescued, setJustRescued] = useState(false);
+  //tuankiet: justRescued de tranh truong hop bi ban hoac loai roi ma duoc cuu tro lai thi van bi tu dong submit cau hoi tiep theo, vi luc do da het thoi gian chon dap an nen se tu dong submit cau hoi tiep theo, neu co justRescued thi se khong tu dong submit nua ma se de cho thi sinh tu chon dap an, sau khi cuu tro xong thi set justRescued ve false de cho phep tu dong submit cau hoi tiep theo neu thoi gian het
+  const justRescuedRef = useRef(false);
+
+  useEffect(() => {
+  justRescuedRef.current = justRescued;
+}, [justRescued]);
+useEffect(() => {
+  if (isRescued && !showRescueAnimation) {
+    setJustRescued(true);
+    justRescuedRef.current = true; // 👈 QUAN TRỌNG
+  }
+}, [isRescued]);
 
   // NEW: State để lưu kết quả tạm thời từ server (chưa hiển thị)
   const [pendingResult, setPendingResult] = useState<{
@@ -393,6 +405,7 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
       setIsInRescueMode(true);
       setShowRescueAnimation(true);
       setRescueMessage("Bạn được một cơ hội mới!");
+      setJustRescued(true);
 
       setIsEliminatedState(false);
       setEliminationMessageState("");
@@ -522,11 +535,15 @@ const QuestionAnswerRefactored: React.FC<QuestionAnswerProps> = ({
       (!isBanned || isRescued) &&
       !isInRescueMode &&
       !showRescueAnimation &&
-      !justRescued &&
+      // !justRescued &&
+      //tuankiet: them justRescuedRef de tranh truong hop bi ban hoac loai roi ma duoc cuu tro lai thi van bi tu dong submit cau hoi tiep theo, vi luc do da het thoi gian chon dap an nen se tu dong submit cau hoi tiep theo, neu co justRescued thi se khong tu dong submit nua ma se de cho thi sinh tu chon dap an, sau khi cuu tro xong thi set justRescued ve false de cho phep tu dong submit cau hoi tiep theo neu thoi gian het
+      !justRescuedRef.current && // 👈 dùng ref thay state
       !isApiSubmitting &&
       currentQuestion
     ) {
       const answerToSubmit = selectedAnswer || "[KHÔNG CHỌN ĐÁP ÁN]";
+      console.log("justRescuedRef.current:", justRescuedRef.current);
+      console.log("isRescued:", isRescued);
       handleSubmitAnswer(answerToSubmit);
     }
   }, [
