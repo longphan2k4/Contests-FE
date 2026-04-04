@@ -258,8 +258,8 @@ const AnswerContent: React.FC<AnswerContentProps> = ({
   return (
     <>
       <div className="p-6 bg-white rounded-lg shadow-md border transition-all duration-300">
-        <div className="flex justify-center items-center mb-6">
-          <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full mr-3">
+        <div className="flex items-center justify-center items-center mb-6">
+          {/* <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full mr-3">
             <svg
               className="w-10 h-10 text-green-600"
               fill="currentColor"
@@ -271,10 +271,24 @@ const AnswerContent: React.FC<AnswerContentProps> = ({
                 clipRule="evenodd"
               />
             </svg>
-          </div>
+          </div> */}
           <h2 className="text-8xl font-semibold text-gray-800">
-            Đáp án đúng:{" "}
-            <span className="text-blue-800 font-bold">
+            <span className="inline-flex items-center mr-4 align-middle">
+              <svg
+                className="w-10 h-10 text-green-600 mr-3"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+
+              <span>Đáp án đúng:</span>
+            </span>
+            <span className="text-blue-800 font-bold inline-block break-words align-middle">
               {getCorrectAnswerLabel()}
             </span>
           </h2>

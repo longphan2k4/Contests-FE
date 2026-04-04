@@ -46,22 +46,56 @@ const QuestionControl: React.FC<QuestionControlProp> = ({
     });
   };
 
+  // const handlePlay = () => {
+  //   if (!socket || !match) return;
+
+  //   if (controlKey !== "question") {
+  //     showToast("Vui lòng hiển thị câu hỏi trước", "error");
+  //     return;
+  //   }
+
+  //   socket.emit("timer:play", { match }, (err: any, res: any) => {
+  //     if (err) {
+  //       showToast(err.message, "error");
+  //     } else {
+  //       showToast(res.message, "success");
+  //     }
+  //   });
+  // };
+
+  //quy show câu hỏi khi bấm play
   const handlePlay = () => {
-    if (!socket || !match) return;
+  if (!socket || !match) return;
 
-    if (controlKey !== "question") {
-      showToast("Vui lòng hiển thị câu hỏi trước", "error");
-      return;
-    }
+  if (!currentQuestion) {
+    showToast("Không có câu hỏi hiện tại", "error");
+    return;
+  }
 
-    socket.emit("timer:play", { match }, (err: any, res: any) => {
+  // 1. Emit câu hỏi cho thí sinh
+  socket.emit(
+    "currentQuestion:emit-student",
+    {
+      match,
+      questionOrder: currentQuestion.questionOrder,
+    },
+    (err: any) => {
       if (err) {
         showToast(err.message, "error");
-      } else {
-        showToast(res.message, "success");
+        return;
       }
-    });
-  };
+
+      // 2. Sau khi emit thành công -> start timer
+      socket.emit("timer:play", { match }, (err2: any) => {
+        if (err2) {
+          showToast(err2.message, "error");
+        } else {
+          showToast("Đã hiển thị câu hỏi và bắt đầu đếm giờ", "success");
+        }
+      });
+    }
+  );
+};
 
   const handlePause = () => {
     if (!socket || !match) return;
@@ -133,45 +167,45 @@ const QuestionControl: React.FC<QuestionControlProp> = ({
         </button>
         <button
           className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md font-medium"
-          // onClick={() =>
-          //   EmitScreenUpdate(
-          //     {
-          //       controlKey: "question",
-          //     },
-          //     "Đã chuyển sang màn hình câu hỏi"
-          //   )
-          // }
-          //quy: thay đổi sự kiện onclick để gửi socket gửi câu hỏi cho thí sinh
-          onClick={() => {
-            console.log("currentQuestion:", currentQuestion);
-            if (!socket || !match) return;
-
-            if (!currentQuestion) {
-              showToast("Không có câu hỏi hiện tại", "error");
-              return;
-            }
-
-            socket.emit(
-              "currentQuestion:emit-student",
+          onClick={() =>
+            EmitScreenUpdate(
               {
-                match,
-                questionOrder: currentQuestion.questionOrder,
+                controlKey: "question",
               },
-              (err: any, res: any) => {
-                if (err) {
-                  showToast(err.message, "error");
-                } else {
-                  showToast(res.message, "success");
+              "Đã chuyển sang màn hình câu hỏi"
+            )
+          }
+          //quy: thay đổi sự kiện onclick để gửi socket gửi câu hỏi cho thí sinh
+          // onClick={() => {
+          //   console.log("currentQuestion:", currentQuestion);
+          //   if (!socket || !match) return;
 
-                  // Sau khi set câu hỏi -> chuyển screen
-                  EmitScreenUpdate(
-                    { controlKey: "question" },
-                    "Đã hiển thị câu hỏi"
-                  );
-                }
-              }
-            );
-          }}
+          //   if (!currentQuestion) {
+          //     showToast("Không có câu hỏi hiện tại", "error");
+          //     return;
+          //   }
+
+          //   socket.emit(
+          //     "currentQuestion:emit-student",
+          //     {
+          //       match,
+          //       questionOrder: currentQuestion.questionOrder,
+          //     },
+          //     (err: any, res: any) => {
+          //       if (err) {
+          //         showToast(err.message, "error");
+          //       } else {
+          //         showToast(res.message, "success");
+
+          //         // Sau khi set câu hỏi -> chuyển screen
+          //         EmitScreenUpdate(
+          //           { controlKey: "question" },
+          //           "Đã hiển thị câu hỏi"
+          //         );
+          //       }
+          //     }
+          //   );
+          // }}
         >
           Show
         </button>
