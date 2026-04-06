@@ -47,7 +47,10 @@ export default function FormAutocompleteFilter({
       disableClearable={disableClearable}
       ListboxProps={{
         style: {
-          maxHeight: 48 * 10 + 8,
+          // maxHeight: 48 * 10 + 8,
+          //quy: hiển thị full danh sách thí sinh nút gold
+          maxHeight: 40 * 10,
+          overflowY: "auto",
         },
       }}
       renderOption={(props, option) => (
