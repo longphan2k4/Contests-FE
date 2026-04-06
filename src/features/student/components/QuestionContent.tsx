@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Card, CardContent, Divider } from "@mui/material";
+import { Box, Card, CardContent, Divider } from "@mui/material";
 import MediaGrid from "./MediaGrid";
 
 interface MediaData {
