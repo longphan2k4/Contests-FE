@@ -46,9 +46,19 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
 
   //quy: sort danh sách + biến để lưu số đếm cho cứu trợ
   //tuankiet: them rule cho cuu tro may bay
-  const hasUnusedResurrected = updateRescuedData.some(
-  r => r.rescueType === "resurrected" && r.status !== "used"
-);
+  //   const hasUnusedResurrected = updateRescuedData.some(
+  //   r => r.rescueType === "resurrected" && r.status !== "used"
+  // );
+  //quy
+  // Check còn rescue nào chưa dùng (ngoại trừ lifeline)
+  const hasUnusedOtherRescues = updateRescuedData.some(
+    r =>
+      r.rescueType !== "lifelineUsed" &&
+      r.status !== RescueStatus.used &&
+      r.status !== RescueStatus.passed
+  );
+  // Check chỉ còn 1 thí sinh
+  const isOnlyOneContestant = (countContestant?.countIn_progress ?? 0) === 1;
   const sortedRescues = [
     ...updateRescuedData.filter(r => r.rescueType !== "lifelineUsed"),
     ...updateRescuedData.filter(r => r.rescueType === "lifelineUsed"),
@@ -56,9 +66,18 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
      let newRescue = { ...rescue };
     //tuankiet
       // 🔥 RULE: lifeline chỉ active khi không còn resurrected chưa dùng
+    // if (rescue.rescueType === "lifelineUsed") {
+    //   newRescue.isEffect = !hasUnusedResurrected;
+    //   newRescue.status= newRescue.isEffect ? RescueStatus.notUsed : RescueStatus.notEligible;
+    // }
+    //quy
     if (rescue.rescueType === "lifelineUsed") {
-      newRescue.isEffect = !hasUnusedResurrected;
-      newRescue.status= newRescue.isEffect ? RescueStatus.notUsed : RescueStatus.notEligible;
+      const canUseLifeline =
+        !hasUnusedOtherRescues && isOnlyOneContestant;
+      newRescue.isEffect = canUseLifeline;
+      if (!canUseLifeline) {
+        newRescue.status = RescueStatus.notEligible;
+      }
     }
 
     if (rescue.rescueType !== "lifelineUsed") {
@@ -335,7 +354,8 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
             </div>
 
             {/* Contestant count - always at the end */}
-            <div className="flex-shrink-0 flex items-center">
+            {/* quy: ẩn bằng thuộc tính invisible */}
+            <div className="flex-shrink-0 flex items-center invisible">
               <div className="px-4 py-2 bg-white/20 backdrop-blur-lg rounded-xl shadow-2xl border-2 border-blue-300">
                 <div
                   className={`font-bold text-black flex items-center space-x-1
