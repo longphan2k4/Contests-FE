@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import banner from "../assets/manhinhcho2.jpg"
+//quy: update màn hình chờ
+// import banner from "../assets/manhinhcho2.jpg"
+import banner from "../assets/Background_2026.png"
 
 // Type definitions
 interface Sparkle {
