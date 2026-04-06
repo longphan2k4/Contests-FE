@@ -88,12 +88,12 @@ const ControlsOnline: React.FC<ControlsOnlineProps> = ({ matchData }) => {
           {/* Row 1: Start Match và Show Question */}
           <button
             onClick={handleStartExam}
-            disabled={
-              (matchData && matchData.status !== "upcoming") ||
-              examState.isStarted ||
-              examState.isLoading ||
-              !isConnected
-            }
+            // disabled={
+            //   (matchData && matchData.status !== "upcoming") ||
+            //   examState.isStarted ||
+            //   examState.isLoading ||
+            //   !isConnected
+            // }
             className={`px-20 py-4 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors ${
               (matchData && matchData.status !== "upcoming") ||
               examState.isStarted ||
