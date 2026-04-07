@@ -387,10 +387,14 @@ const ResultsPage: React.FC = () => {
                               onChange={handleChangeRowsPerPage}
                               label="Hiển thị"
                             >
-                              <MenuItem value={5}>5</MenuItem>
+                              {/* <MenuItem value={5}>5</MenuItem>
                               <MenuItem value={10}>10</MenuItem>
-                              <MenuItem value={25}>25</MenuItem>
+                              <MenuItem value={25}>25</MenuItem> */}
                               <MenuItem value={50}>50</MenuItem>
+                              <MenuItem value={100}>100</MenuItem>
+                              <MenuItem value={200}>200</MenuItem>
+                              <MenuItem value={500}>500</MenuItem>
+                              <MenuItem value={800}>800</MenuItem>
                             </Select>
                           </FormControl>
                         </Box>
