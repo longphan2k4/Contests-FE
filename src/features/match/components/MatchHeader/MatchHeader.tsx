@@ -20,7 +20,6 @@ import {
   RescueStatus,
 } from "../../types/control.type";
 
-// import { useSocket } from "../../../../contexts/SocketContext";
 
 interface MatchHeaderProps {
   remainingTime?: number;
@@ -92,6 +91,9 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   });
 
   console.log("sortedRescues:", sortedRescues);
+  //quy: log
+  console.log("danh sach dang thi: ", countContestant?.countIn_progress);
+  console.log("danh sach duoc cuu: ", countContestant?.countRescued);
 
   // const { socket } = useSocket();
   // const [updateRescuedData, setUpdateRescuedData] = useState<updatedRescuesType[]>(
@@ -355,7 +357,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
 
             {/* Contestant count - always at the end */}
             {/* quy: ẩn bằng thuộc tính invisible */}
-            <div className="flex-shrink-0 flex items-center invisible">
+            <div className="flex-shrink-0 flex items-center">
               <div className="px-4 py-2 bg-white/20 backdrop-blur-lg rounded-xl shadow-2xl border-2 border-blue-300">
                 <div
                   className={`font-bold text-black flex items-center space-x-1
@@ -374,7 +376,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
                     className="w-10 h-10 object-contain"
                   />
                   <span className="text-xl font-extrabold">
-                    {(countContestant?.countIn_progress ?? 0)
+                    {((countContestant?.countIn_progress ?? 0) + (countContestant?.countRescued ?? 0))
                       .toString()
                       .padStart(2, "0")}
                     <span className="text-blue-200 mx-1">/</span>
