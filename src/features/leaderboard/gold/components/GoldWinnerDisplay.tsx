@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 //quy: thêm logo 2026 gold
-import Logo from "../../gold/assets/images/Logo/Logo-gold.png";
-// import Logo from "../../gold/assets/images/Logo/gold_winner_2.png";
+// import Logo from "../../gold/assets/images/Logo/Logo-gold.png";
+import Logo from "../../gold/assets/images/Logo/gold_winner.png";
 import Laurel from "../../gold/assets/images/Logo/laurel.png";
 import sound from "../../gold/assets/sounds/Sound GiaiThuong.mp3";
 import type { GoldWinnerProps } from "../types/GoldWinnerProps";

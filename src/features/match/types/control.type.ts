@@ -172,6 +172,8 @@ export type countContestant = {
   countIn_progress: number;
   countEliminated: number;
   total: number;
+  //quy
+  countRescued: number;
 };
 
 export type SceenControl = {

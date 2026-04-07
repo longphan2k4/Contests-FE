@@ -308,6 +308,8 @@ export default function MatchPage() {
       setCountContestant(prev => ({
         ...prev!,
         countIn_progress: data?.countInProgress ?? 0,
+        //quy
+        countRescued: data?.countRescued ?? 0,
       }));
       setScreenControl(data?.updatedScreen);
        console.log("on update:Eliminate",data)
