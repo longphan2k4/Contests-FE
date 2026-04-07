@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef, type JSX } from "react";
-import banner from "../MatchHeader/images/ManHinhCho.png";
+
+//quy: update màn hình chờ
+// import banner from "../MatchHeader/images/ManHinhCho.png";
+import banner from "../MatchHeader/images/Background_2026.png";
 
 // Define interfaces for sparkle and VIP effect objects
 interface Sparkle {
