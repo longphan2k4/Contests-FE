@@ -59,7 +59,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
       r.status !== RescueStatus.passed
   );
   // Check chỉ còn 1 thí sinh
-  const isOnlyOneContestant = (countContestant?.countIn_progress ?? 0) === 1;
+  const isOnlyOneContestant = (countContestant?.countIn_progress ?? 0)+(countContestant?.countRescued ?? 0) === 1;
   const sortedRescues = [
     ...updateRescuedData.filter(r => r.rescueType !== "lifelineUsed"),
     ...updateRescuedData.filter(r => r.rescueType === "lifelineUsed"),
@@ -96,6 +96,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   //quy: log
   console.log("danh sach dang thi: ", countContestant?.countIn_progress);
   console.log("danh sach duoc cuu: ", countContestant?.countRescued);
+  console.log("danh sach thi sinh: ", countContestant);
 
   // const { socket } = useSocket();
   // const [updateRescuedData, setUpdateRescuedData] = useState<updatedRescuesType[]>(
