@@ -409,7 +409,9 @@ const Background: React.FC<BackgroundProps> = ({ url }) => {
         <img
           src={url || banner}
           alt="Tech Banner"
-          className="w-full h-full object-cover"
+          className="w-full object-cover"
+          // className="w-full h-full object-cover"
+
         />
       </div>
 

@@ -100,3 +100,49 @@
     opacity: 0.3;
   }
 }
+
+
+
+/* Container */
+.tooltip-wrapper {
+  position: relative;
+  /* display: inline-block; */
+}
+
+/* Hộp nội dung */
+.tooltip-box {
+  position: absolute;
+  top: calc(100% + 10px); /* Nằm dưới */
+  left: 20px;            /* Lệch phải 20px so với mép trái của nút */
+  
+  background-color: #27A4F2; /* Màu xanh đậm Vietnix */
+  color: white;
+  padding: 10px;
+  border-radius: 6px;
+  width: 180px;
+  z-index: 10;
+  
+  /* Ẩn mặc định */
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Mũi tên */
+.tooltip-box::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 15px; /* Mũi tên lệch theo hộp */
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent #27A4F2 transparent;
+}
+
+/* --- CHỈ CẦN CSS NÀY ĐỂ HIỂN THỊ --- */
+.tooltip-wrapper:hover .tooltip-box {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}

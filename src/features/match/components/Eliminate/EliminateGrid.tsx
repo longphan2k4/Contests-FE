@@ -223,11 +223,14 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                 >
                   {/* {icon.registrationNumber} */}
                   {/*tuankiet: noi hien the thi sinh*/}
-                  <div className="flex flex-col items-center justify-center gap-1">
+                  <div className="flex flex-col items-center justify-center gap-1 tooltip-wrapper">
                     {/* Số báo danh */}
                     <span className="text-3xl font-black leading-none tracking-wide drop-shadow-xl">
                       {icon.registrationNumber}
                     </span>
+                                          <div className="tooltip-box">
+                                              {icon?.currentAnswer?.answer}
+                      </div>
 
                     {/* Đáp án (siêu nổi bật) */}
                     {/* quy: cắt câu trả lời và thay đổi kích thước, font-sans xử lý chữ khi có dấu*/}
@@ -240,8 +243,7 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                       rounded-md 
                       shadow-lg
                       font-sans
-                       ${
-                        isNoAnswer
+                       ${isNoAnswer
                           ? "text-xs"
                           : currentQuestion?.questionType === "multiple_choice"
                             ? "text-2xl"
@@ -249,9 +251,10 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                         }
                     `}
                     >
-                      {/* {icon?.currentAnswer?.answer} */}
+
+
                       {/* quy: hiển thị câu hỏi sau khi đã định dạng */}
-                     {isNoAnswer ? "KHÔNG CHỌN" : getDisplayAnswer(icon?.currentAnswer?.answer, currentQuestion)}
+                      {isNoAnswer ? "KHÔNG CHỌN" : getDisplayAnswer(icon?.currentAnswer?.answer, currentQuestion)}
                     </span>
                   </div>
 
