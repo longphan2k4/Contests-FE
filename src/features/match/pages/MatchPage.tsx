@@ -494,6 +494,7 @@ export default function MatchPage() {
             currentQuestion={currentQuestion}
             countQuestion={listQuestion.length}
             updateRescuedData={updateRescuedData}
+                canRenderRescuedAnimation={!canShowAll}
           />
           <QuestionContent
             content={currentQuestion?.content}
@@ -529,6 +530,7 @@ export default function MatchPage() {
             currentQuestion={currentQuestion}
             countQuestion={listQuestion.length}
             updateRescuedData={updateRescuedData}
+                canRenderRescuedAnimation={!canShowAll}
           />
           <AnswerContent
             controlValue={screenControl?.controlValue ?? null}
@@ -547,6 +549,7 @@ export default function MatchPage() {
             currentQuestion={currentQuestion}
             countQuestion={listQuestion.length}
             updateRescuedData={updateRescuedData}
+                canRenderRescuedAnimation={!canShowAll}
            
           />
           <EliminateDisplay
@@ -570,6 +573,7 @@ export default function MatchPage() {
             currentQuestion={currentQuestion}
             countQuestion={listQuestion.length}
             updateRescuedData={updateRescuedData}
+             canRenderRescuedAnimation={!canShowAll}//ko render hieu ung cuu tro khi Hien so do
           />
           <QuestionExplanation
             explanation={
@@ -605,6 +609,7 @@ export default function MatchPage() {
             currentQuestion={currentQuestion}
             countQuestion={listQuestion.length}
             updateRescuedData={updateRescuedData}
+             canRenderRescuedAnimation={!canShowAll}//ko render hieu ung cuu tro khi Hien so do
           />
           <QuestionIntro
             intro={currentQuestion?.intro ?? "Câu hỏi này không có thông tin"}
