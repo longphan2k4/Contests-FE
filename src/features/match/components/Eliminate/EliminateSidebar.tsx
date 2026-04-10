@@ -85,7 +85,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
             <div className="bg-white rounded-lg p-4 shadow-sm border border-red-200">
               <h4 className="text-lg font-semibold text-red-700 mb-3 flex items-center">
                 <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-                Bị loại ở câu này: {currentEliminated.length}
+                Bị loại ở câu này: {canShowAll?0:currentEliminated.length}
               </h4>
 
               {(currentEliminated.length > 0 && !canShowAll) ? (
