@@ -112,15 +112,30 @@
 /* Hộp nội dung */
 .tooltip-box {
   position: absolute;
-  top: calc(100% + 10px); /* Nằm dưới */
-  left: 20px;            /* Lệch phải 20px so với mép trái của nút */
-  
-  background-color: #27A4F2; /* Màu xanh đậm Vietnix */
+  /* top: calc(100% + 10px);
+  left: 20px;           */
+ top: 0;
+  left: calc(100% + 10px);
+  transform: none;
+  /* background-color: #27A4F2; */
+  background: linear-gradient(135deg, #ff4d4f, #ff0000);
   color: white;
   padding: 10px;
   border-radius: 6px;
-  width: 180px;
-  z-index: 10;
+  /* width: 180px; */
+  /* chỉnh chiều rộng hover */
+  min-width: 220px;
+  /* max-width: 300px; */
+  max-width: min(300px, 80vw);
+  z-index: 999;
+
+   /* wrap text */
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+
+  /* chỉnh cỡ chữ hover */
+  font-size: 34px;
   
   /* Ẩn mặc định */
   visibility: hidden;
@@ -133,8 +148,12 @@
 .tooltip-box::after {
   content: "";
   position: absolute;
-  bottom: 100%;
-  left: 15px; /* Mũi tên lệch theo hộp */
+  /* bottom: 100%;
+  left: 15px; */
+  bottom: 10px;
+  /* top: 50%; */
+  left: -12px;
+  transform: translateY(-50%);
   border-width: 6px;
   border-style: solid;
   border-color: transparent transparent #27A4F2 transparent;
@@ -145,4 +164,10 @@
   visibility: visible;
   opacity: 1;
   transform: translateY(0);
+}
+
+/* thuộc tính để 3 ô dưới hiện nội dung lên trên   */
+.tooltip-top .tooltip-box {
+  top: auto;
+  bottom: 0;
 }

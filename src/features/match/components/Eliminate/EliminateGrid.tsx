@@ -129,7 +129,7 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
   };
 
   return (
-    <div className="w-full h-full overflow-hidden p-0 sm:p-0">
+    <div className="w-full h-full overflow-visible p-0 sm:p-0">
       <div
         className="w-full h-full grid place-items-center"
         style={{
@@ -166,7 +166,7 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: index * 0.02 }}
-              className="relative w-full h-full flex items-center justify-center"
+              className="relative w-full h-full flex items-center justify-center z-0 hover:z-50"
               style={{
                 minWidth: '20px',
                 minHeight: '20px',
@@ -209,7 +209,7 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                     whiteSpace: 'normal',        // cho phép xuống dòng
                     overflowWrap: 'break-word',  // nếu quá dài thì mới bẻ
                     wordBreak: 'normal',         // ưu tiên theo khoảng trắng
-                    overflow: 'hidden',
+                    overflow: 'visible',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -220,13 +220,13 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
                 >
                   {/* {icon.registrationNumber} */}
                   {/*tuankiet: noi hien the thi sinh*/}
-                  <div className="flex flex-col items-center justify-center gap-1 tooltip-wrapper">
+                  <div className={`flex flex-col items-center justify-center gap-1 tooltip-wrapper ${index > icons.length - columns * 3 ? "tooltip-top" : ""}`}>
                     {/* Số báo danh */}
                     <span className="text-3xl font-black leading-none tracking-wide drop-shadow-xl">
                       {icon.registrationNumber}
                     </span>
-                                          <div className="tooltip-box">
-                                              {icon?.currentAnswer?.answer}
+                    <div className="tooltip-box font-sans">
+                      {icon?.currentAnswer?.answer}
                       </div>
 
                     {/* Đáp án (siêu nổi bật) */}
