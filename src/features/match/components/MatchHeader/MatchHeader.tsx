@@ -27,6 +27,7 @@ interface MatchHeaderProps {
   countContestant: countContestant | null;
   countQuestion?: number;
   updateRescuedData: updatedRescuesType[];
+  canRenderRescuedAnimation:boolean;
 }
 
 const MatchHeader: React.FC<MatchHeaderProps> = ({
@@ -35,6 +36,7 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
   countContestant,
   countQuestion,
   updateRescuedData,
+  canRenderRescuedAnimation,
 }) => {
   const [timeRemaining, setTimeRemaining] = useState<number>(
     currentQuestion?.defaultTime ?? 30
@@ -190,17 +192,17 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
     }
 
     // Add bubble effect for eligible rescues
-    if (rescue.status === RescueStatus.notUsed && isEligible) {
+    if (rescue.status === RescueStatus.notUsed && isEligible ) {
       animationClass += " animate-bounce";
     }
 
     return (
       <div key={rescue.id} className="relative group">
         <div
-          className={`relative w-10 h-10 md:w-16 md:h-16 ${filterClass} rounded-4xl shadow-lg ${animationClass}`}
+          className={`relative w-10 h-10 md:w-16 md:h-16 ${filterClass} rounded-4xl shadow-lg ${canRenderRescuedAnimation?animationClass:""}`}
         >
           {/* Bubble effect for eligible rescues */}
-          {rescue.status === RescueStatus.notUsed && isEligible && (
+          {rescue.status === RescueStatus.notUsed  && canRenderRescuedAnimation && isEligible  && (
             <div className="absolute -inset-2 rounded-full border-2 border-yellow-400 animate-ping opacity-75"></div>
           )}
 
