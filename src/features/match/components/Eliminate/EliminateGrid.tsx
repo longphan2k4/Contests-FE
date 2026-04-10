@@ -123,12 +123,9 @@ const EliminateGrid: React.FC<EliminateGridProps> = ({
       return ["A", "B", "C", "D"][index] || "";
     }
 
-    //Nếu là tự luận thì cắt 2 từ đầu tiên
-    return answer
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .join(" ");
+    // Nếu là tự luận -> tối đa 15 ký tự
+    const trimmed = answer.trim();
+    return trimmed.length > 15 ? trimmed.slice(0, 15) + "..." : trimmed;
   };
 
   return (
