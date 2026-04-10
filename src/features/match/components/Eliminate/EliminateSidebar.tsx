@@ -53,7 +53,7 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
                 : "bg-transparent text-gray-700 hover:bg-gray-200"
                 }`}
             >
-              Bị loại: {totalEliminated}
+              Bị loại: {canShowAll?0:totalEliminated}
             </button>
             <button
               type="button"
