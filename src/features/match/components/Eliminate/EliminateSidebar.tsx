@@ -86,8 +86,8 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
             {/* Current Question Eliminated */}
             <div className="bg-white rounded-lg p-4 shadow-sm border border-red-200">
               <h4 className="text-lg font-semibold text-red-700 mb-3 flex items-center">
-                <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-                Bị loại ở câu này: {canShowAll?0:currentEliminated.length}
+                {/* <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span> */}
+                📋 Bị loại ở câu này: {canShowAll?0:currentEliminated.length}
               </h4>
 
               {(currentEliminated.length > 0 && !canShowAll) ? (
@@ -159,8 +159,8 @@ const EliminateSidebar: React.FC<EliminateSidebarProps> = ({
             {previousEliminated.length > 0 && (
               <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                 <h4 className="text-lg font-semibold text-gray-700 mb-3 flex items-center">
-                  <span className="w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
-                  Bị loại <SquareIcon style={{ color: 'red' }} /> và bị cấm <SquareIcon style={{ color: 'black' }} />
+                  {/* <span className="w-3 h-3 bg-gray-400 rounded-full mr-2"></span> */}
+                  📋 Bị loại <SquareIcon style={{ color: 'red' }} /> và bị cấm <SquareIcon style={{ color: 'black' }} />
                 </h4>
                 <div className="grid grid-cols-6 sm:grid-cols-6 gap-2 max-h-40 overflow-y-auto">
                   {previousEliminated.map((contestant, index) => {
