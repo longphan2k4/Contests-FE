@@ -3,7 +3,7 @@ import type { CardStyles } from "../types/CardStyles";
 // import { useParticles } from "../hooks/useParticles";
 import ContestantCard from "./ContestantCard";
 import type { Award } from "@features/match/types/control.type";
-import sound from "../../gold/assets/sounds/Sound GiaiThuong.mp3";
+// import sound from "../../gold/assets/sounds/Sound GiaiThuong.mp3";
 
 type Top3Props = {
   ListAward: {
@@ -60,9 +60,9 @@ const TopThreeBoard: React.FC<Top3Props> = ({ ListAward }) => {
         ref={particlesRef}
         className="absolute inset-0 z-0 pointer-events-none"
       />
-      <audio ref={audioRef} autoPlay>
+      {/* <audio ref={audioRef} autoPlay>
         <source src={sound} type="audio/mp3" />
-      </audio>
+      </audio> */}
       <div className="absolute inset-0 z-0 opacity-10 pointer-events-none hexagon-grid" />
       <div className="relative z-20 w-full max-w-6xl mx-auto p-4 md:p-8">
         <div className="text-center mb-6 md:mb-8">
