@@ -10,7 +10,8 @@ import paperplane from "./images/paperplane.png";
 import close from "./images/close.png";
 import lifesaver from "./images/lifesaver.png";
 import QuestionInfo from "../../components/QuestionDisplay/QuestionInfo";
-import pip from "./sounds/pip.mp3";
+//quy: bỏ âm thanh đếm
+// import pip from "./sounds/pip.mp3";
 // import Pum from "./sounds/pum1s.mp3";
 
 import {
@@ -113,8 +114,10 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({
       // Play end sound when time runs out
     } else if (timeRemaining >= 0 && timeRemaining <= 10) {
       // Play pip sound every second
-      const pipAudio = new Audio(pip);
-      pipAudio.play().catch(console.error);
+
+      //quy: bỏ âm thanh đếm
+      // const pipAudio = new Audio(pip);
+      // pipAudio.play().catch(console.error);
     }
   }, [timeRemaining, hasPlayedEndSound]);
 

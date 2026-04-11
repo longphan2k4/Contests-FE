@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 // import Logo from "../../gold/assets/images/Logo/Logo-gold.png";
 import Logo from "../../gold/assets/images/Logo/gold_winner.png";
 import Laurel from "../../gold/assets/images/Logo/laurel.png";
-import sound from "../../gold/assets/sounds/Sound GiaiThuong.mp3";
+// import sound from "../../gold/assets/sounds/Sound GiaiThuong.mp3";
 import type { GoldWinnerProps } from "../types/GoldWinnerProps";
 import { useFireworkAnimation } from "../hooks/useFireworkAnimation";
 
@@ -34,9 +34,9 @@ const GoldWinnerDisplay: React.FC<GoldWinnerProps> = ({ studentName }) => {
 
   return (
     <div>
-      <audio ref={audioRef} autoPlay>
+      {/* <audio ref={audioRef} autoPlay>
         <source src={sound} type="audio/mp3" />
-      </audio>
+      </audio> */}
       <div className="screen gold align-items-center items-center">
         <div className="effect">
           <div className="light1"></div>
