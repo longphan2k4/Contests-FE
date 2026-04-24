@@ -71,7 +71,7 @@ const TopThreeBoard: React.FC<Top3Props> = ({ ListAward }) => {
             <div className="absolute -inset-1 bg-yellow-300 opacity-20 blur-md rounded-lg z-0" />
           </h1>
           <p className="mt-2 md:mt-4 text-gray-600 italic font-extrabold md:text-3xl">
-            Cuộc thi Olympic Tin học 2025
+            Cuộc thi Olympic Tin học 2026
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mt-6 md:mt-12 justify-items-center">
