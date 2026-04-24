@@ -1,6 +1,6 @@
 import { Autocomplete, TextField, createFilterOptions } from "@mui/material";
 import { Controller } from "react-hook-form";
-import type { Control, FieldError } from "react-hook-form";
+import type { Control, FieldError, FieldValues } from "react-hook-form";
 import { CAO_THANG_COLORS } from "../../common/theme";
 
 export interface OptionType {
@@ -8,11 +8,11 @@ export interface OptionType {
   value: string | number;
 }
 
-interface FormSelectProps {
+interface FormSelectProps<T extends FieldValues = any> {
   id: string;
   name: string;
   label: string;
-  control: Control<any>;
+  control: Control<T>;
   options: OptionType[];
   error?: FieldError;
   defaultValue?: string | number | (string | number)[];
@@ -23,7 +23,7 @@ interface FormSelectProps {
 
 const filter = createFilterOptions<OptionType>({ limit: 10 });
 
-const FormSelect = ({
+const FormSelect = <T extends FieldValues = any>({
   id,
   name,
   label,
@@ -34,7 +34,7 @@ const FormSelect = ({
   disabled = false,
   placeholder,
   multiple = false,
-}: FormSelectProps) => {
+}: FormSelectProps<T>) => {
   // Tính toán giá trị mặc định từ value
   const calculatedDefaultValue = multiple
     ? options.filter(
@@ -45,7 +45,7 @@ const FormSelect = ({
   return (
     <Controller
       name={name}
-      control={control}
+      control={control as Control<FieldValues>}
       defaultValue={calculatedDefaultValue}
       render={({ field }) => {
         const currentValue = field.value;
